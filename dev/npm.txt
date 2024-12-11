@@ -1,4 +1,11 @@
-npm install react react-dom
-npm install allotment --legacy-peer-deps
-npm install -D @tailwindcss/forms --legacy-peer-deps
-npm i preline  --legacy-peer-deps
+npm i react react-dom
+npm i allotment --legacy-peer-deps
+npm i -D @tailwindcss/forms --legacy-peer-deps
+npm i preline --legacy-peer-deps
+npm i @dnd-kit/core --legacy-peer-deps
+npm i @ dnd-kit/sortable --legacy-peer-deps
+npm i @dnd-kit/modifiers --legacy-peer-deps
+npm i uuid --legacy-peer-deps
+
+*allotmentのバージョンが古く、「 --legacy-peer-deps」を付与してインストールした
+⇒他のライブラリのインストール時にもこのオプション付与を要求されるようになった
