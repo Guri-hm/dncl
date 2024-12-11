@@ -2,14 +2,14 @@
 import * as React from "react";
 import { Allotment } from "allotment";
 import "allotment/dist/style.css";
-import DragDropContext from "../components/DragDropContext";
+import Container from "../components/Container";
 
 export default function Home() {
   return (
     <div className="w-full border-solid border-2 h-dvh">
       <Allotment>
         <Allotment.Pane className="p-1" minSize={200}>
-          <DragDropContext></DragDropContext>
+          <Container></Container>
         </Allotment.Pane>
         <Allotment.Pane snap>
           <div className="flex flex-col bg-white border shadow-sm rounded-xl dark:bg-neutral-900 dark:border-neutral-700 dark:shadow-neutral-700/70">
