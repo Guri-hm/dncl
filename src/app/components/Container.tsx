@@ -67,10 +67,13 @@ const Contaienr = () => {
         if (!overId) return;
 
         // ドラッグ、ドロップ時のコンテナ取得
-        // container1,container2,container3,container4のいずれかを持つ
+        // container1,container2のいずれかを持つ
         const activeContainer = findContainer(id);
         const overContainer = findContainer(over?.id);
 
+        console.log(items["container1"])
+        console.log(items["container2"])
+        console.log("bbb")
         if (
             !activeContainer ||
             !overContainer ||
@@ -79,6 +82,7 @@ const Contaienr = () => {
             return;
         }
 
+        console.log("aaaa")
         setItems((prev) => {
             // 移動元のコンテナの要素配列を取得
             const activeItems = prev[activeContainer];
@@ -101,11 +105,14 @@ const Contaienr = () => {
                 newIndex = overIndex >= 0 ? overIndex + modifier : overItems.length + 1;
             }
 
+            console.log(activeIndex)
+            console.log(items[activeContainer][activeIndex])
             return {
                 ...prev,
-                [activeContainer]: [
-                    ...prev[activeContainer].filter((item) => item !== active.id),
-                ],
+                // 元のコンテナから要素を消さない場合はコメントアウト
+                // [activeContainer]: [
+                //     ...prev[activeContainer].filter((item) => item !== active.id),
+                // ],
                 [overContainer]: [
                     ...prev[overContainer].slice(0, newIndex),
                     items[activeContainer][activeIndex],
@@ -122,11 +129,11 @@ const Contaienr = () => {
         const id = active.id.toString();
         //ドロップした場所にあったリソースのid
         const overId = over?.id;
-
         if (!overId) return;
 
         // ドラッグ、ドロップ時のコンテナ取得
         // container1,container2,container3,container4のいずれかを持つ
+        return
         const activeContainer = findContainer(id);
         const overContainer = findContainer(over?.id);
 
@@ -138,10 +145,13 @@ const Contaienr = () => {
             return;
         }
 
+        console.log("bbb")
+        console.log(activeContainer)
+        console.log(overContainer)
         // 配列のインデックス取得
         const activeIndex = items[activeContainer].indexOf(id);
         const overIndex = items[overContainer].indexOf(overId.toString());
-
+        return
         if (activeIndex !== overIndex) {
             setItems((items) => ({
                 ...items,
@@ -192,16 +202,6 @@ const Contaienr = () => {
                     id="container2"
                     label="container2"
                     items={items.container2}
-                />
-                <SortableContainer
-                    id="container3"
-                    label="container3"
-                    items={items.container3}
-                />
-                <SortableContainer
-                    id="container4"
-                    label="container4"
-                    items={items.container4}
                 />
                 {/* DragOverlay */}
                 <DragOverlay>{activeId ? <Item id={activeId} /> : null}</DragOverlay>
