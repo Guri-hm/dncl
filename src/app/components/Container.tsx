@@ -18,7 +18,7 @@ import Item from "./Item";
 import { v4 as uuidv4 } from "uuid";
 
 interface Block {
-    id: string;
+    id: UniqueIdentifier;
     code: string;
 }
 
@@ -48,18 +48,27 @@ const Contaienr = () => {
         if (id in items) {
             return id;
         }
-        console.log(id)
-        console.log(Object.keys(items))
-        return Object.keys(items).find((key: string) =>
+        const findContainerById = (data: { [key: string]: Block[] }, targetId: UniqueIdentifier) => {
+            for (let key in data) {
+                if (data[key].some(item => item.id === targetId)) {
+                    return key;
+                }
+            }
+            return null;
+        }
 
-            items[key].includes(id)
-
-        );
+        return findContainerById(items, id);
     };
+
+
     const findItem = (id: UniqueIdentifier) => {
-        return Object.keys(items).find((key: string) =>
-            items[key].includes(id.toString())
+
+        //オブジェクト配列に平坦化し、idで検索
+        const item = Object.values(items).flat().find((member: Block) =>
+            member.id === id
         );
+
+        return item ? item : null;
     };
 
     // ドラッグ開始時に発火する関数
@@ -67,10 +76,9 @@ const Contaienr = () => {
         const { active } = event;
         //ドラッグしたリソースのid
         const id = active.id.toString();
-        const aa = findContainer(id);
-        console.log(active)
+        const item: Block | null = findItem(id);
         setActiveId(id);
-        setActiveValue("");
+        setActiveValue(item?.code);
     };
 
     //ドラッグ可能なアイテムがドロップ可能なコンテナの上に移動時に発火する関数
@@ -95,7 +103,6 @@ const Contaienr = () => {
         ) {
             return;
         }
-
         setItems((prev) => {
             // 移動元のコンテナの要素配列を取得
             const activeItems = prev[activeContainer];
@@ -103,8 +110,8 @@ const Contaienr = () => {
             const overItems = prev[overContainer];
 
             // 配列のインデックス取得
-            const activeIndex = activeItems.indexOf(id);
-            const overIndex = overItems.indexOf(overId.toString());
+            const activeIndex = activeItems.findIndex(item => item.id === id);
+            const overIndex = overItems.findIndex(item => item.id === overId);
 
             let newIndex;
             if (overId in prev) {
@@ -120,10 +127,12 @@ const Contaienr = () => {
 
             return {
                 ...prev,
-                // 元のコンテナから要素を消さない場合はコメントアウト
-                // [activeContainer]: [
-                //     ...prev[activeContainer].filter((item) => item !== active.id),
-                // ],
+                // 元のコンテナから要素を消し、新たなIDを付与して複製
+                // 配列を複製し、なかの要素のidを変更した場合はコンポーネントの内容が変更されたという警告が出る
+                [activeContainer]: [
+                    ...prev[activeContainer].filter((item) => item.id !== active.id),
+                    { id: uuidv4(), code: activeItems[activeIndex].code }
+                ],
                 [overContainer]: [
                     ...prev[overContainer].slice(0, newIndex),
                     items[activeContainer][activeIndex],
@@ -142,6 +151,7 @@ const Contaienr = () => {
         const overId = over?.id;
         if (!overId) return;
 
+        return
         // ドラッグ、ドロップ時のコンテナ取得
         // container1,container2,container3,container4のいずれかを持つ
         const activeContainer = findContainer(id);
@@ -213,7 +223,7 @@ const Contaienr = () => {
                     items={items.container2}
                 />
                 {/* DragOverlay */}
-                <DragOverlay>{activeId ? <Item value={activeId} /> : null}</DragOverlay>
+                <DragOverlay>{activeValue ? <Item value={activeValue} /> : null}</DragOverlay>
             </DndContext>
         </div>
     );
