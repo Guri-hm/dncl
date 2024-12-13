@@ -3,10 +3,11 @@ import { CSS } from "@dnd-kit/utilities";
 import { UniqueIdentifier } from "@dnd-kit/core";
 import Item from "./Item";
 
-const SortableItem = ({ id }: { id: UniqueIdentifier }) => {
+const SortableItem = ({ id, value }: { id: UniqueIdentifier, value: string }) => {
     const { attributes, listeners, setNodeRef, transform, transition } =
         useSortable({ id });
-
+    // console.log(`id:${id}`)
+    // console.log(`value:${value}`)
     return (
         <div
             ref={setNodeRef}
@@ -14,7 +15,7 @@ const SortableItem = ({ id }: { id: UniqueIdentifier }) => {
             {...attributes}
             {...listeners}
         >
-            <Item id={id} />
+            <Item key={id} value={value} />
         </div>
     );
 };

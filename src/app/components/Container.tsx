@@ -15,20 +15,25 @@ import {
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import SortableContainer from "./SortableContainer";
 import Item from "./Item";
+import { v4 as uuidv4 } from "uuid";
+
+interface Block {
+    id: string;
+    code: string;
+}
 
 const Contaienr = () => {
     // ドラッグ&ドロップでソート可能なリスト
     const [items, setItems] = useState<{
-        [key: string]: string[];
+        [key: string]: Block[];
     }>({
-        container1: ["A", "B", "C"],
-        container2: ["D", "E", "F"],
-        container3: ["G", "H", "I"],
-        container4: [],
+        container1: [{ id: uuidv4(), code: "A" }, { id: uuidv4(), code: "B" }],
+        container2: [{ id: uuidv4(), code: "C" }, { id: uuidv4(), code: "D" }],
     });
 
     //リストのリソースid（リストの値）
     const [activeId, setActiveId] = useState<UniqueIdentifier>();
+    const [activeValue, setActiveValue] = useState<string>();
 
     // ドラッグの開始、移動、終了などにどのような入力を許可するかを決めるprops
     const sensors = useSensors(
@@ -43,6 +48,15 @@ const Contaienr = () => {
         if (id in items) {
             return id;
         }
+        console.log(id)
+        console.log(Object.keys(items))
+        return Object.keys(items).find((key: string) =>
+
+            items[key].includes(id)
+
+        );
+    };
+    const findItem = (id: UniqueIdentifier) => {
         return Object.keys(items).find((key: string) =>
             items[key].includes(id.toString())
         );
@@ -53,7 +67,10 @@ const Contaienr = () => {
         const { active } = event;
         //ドラッグしたリソースのid
         const id = active.id.toString();
+        const aa = findContainer(id);
+        console.log(active)
         setActiveId(id);
+        setActiveValue("");
     };
 
     //ドラッグ可能なアイテムがドロップ可能なコンテナの上に移動時に発火する関数
@@ -71,9 +88,6 @@ const Contaienr = () => {
         const activeContainer = findContainer(id);
         const overContainer = findContainer(over?.id);
 
-        console.log(items["container1"])
-        console.log(items["container2"])
-        console.log("bbb")
         if (
             !activeContainer ||
             !overContainer ||
@@ -82,7 +96,6 @@ const Contaienr = () => {
             return;
         }
 
-        console.log("aaaa")
         setItems((prev) => {
             // 移動元のコンテナの要素配列を取得
             const activeItems = prev[activeContainer];
@@ -105,8 +118,6 @@ const Contaienr = () => {
                 newIndex = overIndex >= 0 ? overIndex + modifier : overItems.length + 1;
             }
 
-            console.log(activeIndex)
-            console.log(items[activeContainer][activeIndex])
             return {
                 ...prev,
                 // 元のコンテナから要素を消さない場合はコメントアウト
@@ -133,9 +144,12 @@ const Contaienr = () => {
 
         // ドラッグ、ドロップ時のコンテナ取得
         // container1,container2,container3,container4のいずれかを持つ
-        return
         const activeContainer = findContainer(id);
         const overContainer = findContainer(over?.id);
+        // console.log(`id:${id}`)
+        // console.log(`activeContainer:${activeContainer}`)
+        // console.log(`over?.id:${over?.id}`)
+        // console.log(`overContainer:${overContainer}`)
 
         if (
             !activeContainer ||
@@ -144,14 +158,9 @@ const Contaienr = () => {
         ) {
             return;
         }
-
-        console.log("bbb")
-        console.log(activeContainer)
-        console.log(overContainer)
         // 配列のインデックス取得
         const activeIndex = items[activeContainer].indexOf(id);
         const overIndex = items[overContainer].indexOf(overId.toString());
-        return
         if (activeIndex !== overIndex) {
             setItems((items) => ({
                 ...items,
@@ -204,7 +213,7 @@ const Contaienr = () => {
                     items={items.container2}
                 />
                 {/* DragOverlay */}
-                <DragOverlay>{activeId ? <Item id={activeId} /> : null}</DragOverlay>
+                <DragOverlay>{activeId ? <Item value={activeId} /> : null}</DragOverlay>
             </DndContext>
         </div>
     );
