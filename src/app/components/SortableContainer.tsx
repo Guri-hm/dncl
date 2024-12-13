@@ -1,8 +1,8 @@
-import { useDroppable } from "@dnd-kit/core";
+import { useDroppable, UniqueIdentifier } from "@dnd-kit/core";
 import { rectSortingStrategy, SortableContext } from "@dnd-kit/sortable";
 import SortableItem from "./SortableItem";
 interface Block {
-    id: string;
+    id: UniqueIdentifier;
     code: string;
 }
 
