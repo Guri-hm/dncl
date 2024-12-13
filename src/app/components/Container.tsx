@@ -151,15 +151,10 @@ const Contaienr = () => {
         const overId = over?.id;
         if (!overId) return;
 
-        return
         // ドラッグ、ドロップ時のコンテナ取得
         // container1,container2,container3,container4のいずれかを持つ
         const activeContainer = findContainer(id);
         const overContainer = findContainer(over?.id);
-        // console.log(`id:${id}`)
-        // console.log(`activeContainer:${activeContainer}`)
-        // console.log(`over?.id:${over?.id}`)
-        // console.log(`overContainer:${overContainer}`)
 
         if (
             !activeContainer ||
@@ -169,8 +164,8 @@ const Contaienr = () => {
             return;
         }
         // 配列のインデックス取得
-        const activeIndex = items[activeContainer].indexOf(id);
-        const overIndex = items[overContainer].indexOf(overId.toString());
+        const activeIndex = items[activeContainer].findIndex(item => item.id === id);
+        const overIndex = items[overContainer].findIndex(item => item.id === overId);
         if (activeIndex !== overIndex) {
             setItems((items) => ({
                 ...items,
