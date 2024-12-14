@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { UniqueIdentifier } from "@dnd-kit/core";
-
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Allotment } from "allotment";
 import { createPortal } from "react-dom";
 import { DndContext } from '@dnd-kit/core';
 import {
@@ -17,6 +16,7 @@ import {
   MeasuringStrategy,
   DropAnimation,
   defaultDropAnimation,
+  defaultDropAnimationSideEffects,
   Modifier
 } from "@dnd-kit/core";
 import {
@@ -33,10 +33,8 @@ import {
   removeItem,
   removeChildrenOf,
   setProperty,
-  getChildrenIds
-} from "../utilities/utilities";
-import type { FlattenedItem, SensorContext, TreeItems } from "../models/types";
-import { sortableTreeKeyboardCoordinates } from "./keyboardCoordinates";
+} from "../utilities";
+import type { FlattenedItem, SensorContext, TreeItems } from "../types";
 import { SortableTreeItem } from "../components";
 
 const initialItems: TreeItems = [
@@ -89,7 +87,13 @@ const measuring = {
 
 const dropAnimation: DropAnimation = {
   ...defaultDropAnimation,
-  dragSourceOpacity: 0.5
+  sideEffects: defaultDropAnimationSideEffects({
+    styles: {
+      active: {
+        opacity: '1',
+      },
+    },
+  }),
 };
 
 interface Props {
@@ -157,8 +161,6 @@ export function SortableTree({
     ? flattenedItems.find(({ id }) => id === activeId)
     : null;
 
-  const [expandedIds, setExpandedIds] = useState<UniqueIdentifier[]>([])
-
   useEffect(() => {
     sensorContext.current = {
       items: flattenedItems,
@@ -166,21 +168,7 @@ export function SortableTree({
     };
   }, [flattenedItems, offsetLeft]);
 
-  const handleToggleExpand = useCallback(
-    (id: UniqueIdentifier) => {
-      setExpandedIds((expandedIds) => {
-        if (expandedIds.includes(id)) {
-          const childrenIds = getChildrenIds(items, id)
-          return expandedIds.filter(
-            (expandedId) => expandedId !== id && !childrenIds.includes(expandedId)
-          )
-        } else {
-          return [...new Set([...expandedIds, id])]
-        }
-      })
-    },
-    [items]
-  )
+  const [visible, setVisible] = useState(true);
 
   return (
     <DndContext
@@ -193,56 +181,97 @@ export function SortableTree({
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
-        {flattenedItems.map(({ id, children, collapsed, depth }) => (
-          <SortableTreeItem
-            key={id}
-            id={id}
-            value={id}
-            depth={id === activeId && projected ? projected.depth : depth}
-            indentationWidth={indentationWidth}
-            indicator={indicator}
-            collapsed={Boolean(collapsed && children.length)}
-            onCollapse={
-              collapsible && children.length
-                ? () => handleCollapse(id)
-                : undefined
-            }
-            onRemove={removable ? () => handleRemove(id) : undefined}
-          />
-        ))}
-        {createPortal(
-          <DragOverlay
-            dropAnimation={dropAnimation}
-            modifiers={indicator ? [adjustTranslate] : undefined}
-          >
-            {activeId && activeItem ? (
-              <SortableTreeItem
-                id={activeId}
-                depth={activeItem.depth}
-                clone
-                childCount={getChildCount(items, activeId) + 1}
-                value={activeId}
-                indentationWidth={indentationWidth}
-              />
-            ) : null}
-          </DragOverlay>,
-          document.body
-        )}
-      </SortableContext>
+      <Allotment>
+        <Allotment onVisibleChange={(_index, value) => {
+          setVisible(value);
+        }} separator={false}>
+          <Allotment.Pane className="p-1">
+            <button
+              type="button"
+              onClick={() => {
+                setVisible((visible) => !visible);
+                if (visible) {
+
+                }
+              }}
+            >
+              {visible ? "Hide" : "Show"}
+            </button>
+          </Allotment.Pane>
+          <Allotment.Pane visible={visible} snap>
+            <>aaa</>
+          </Allotment.Pane>
+        </Allotment>
+        <Allotment.Pane className="p-1" minSize={200}>
+          <div className="relative z-10 col-span-3 bg-slate-800 rounded-xl shadow-lg xl:ml-0 dark:shadow-none dark:ring-1 dark:ring-inset dark:ring-white/10">
+            <div className="relative flex text-slate-400 text-xs leading-6">
+              <div className="mt-2 flex-none text-sky-300 border-t border-b border-t-transparent border-b-sky-300 px-4 py-1 flex items-center">DNCL</div>
+              <div className="flex-auto flex pt-2 rounded-tr-xl overflow-hidden">
+                <div className="flex-auto -mr-px bg-slate-700/50 border border-slate-500/30 rounded-tl"></div>
+              </div>
+              <div className="absolute top-2 right-0 h-8 flex items-center pr-4"><div className="relative flex -mr-2">
+                <button type="button" className="text-slate-500 hover:text-slate-400">
+                  <svg fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="w-8 h-8"><path d="M13 10.75h-1.25a2 2 0 0 0-2 2v8.5a2 2 0 0 0 2 2h8.5a2 2 0 0 0 2-2v-8.5a2 2 0 0 0-2-2H19"></path><path d="M18 12.25h-4a1 1 0 0 1-1-1v-1.5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1.5a1 1 0 0 1-1 1ZM13.75 16.25h4.5M13.75 19.25h4.5"></path></svg>
+                </button>
+              </div>
+              </div>
+            </div>
+            <div className="relative text-white">
+              <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
+                {flattenedItems.map(({ id, children, collapsed, depth }) => (
+                  <SortableTreeItem
+                    key={id}
+                    id={id}
+                    value={id}
+                    depth={id === activeId && projected ? projected.depth : depth}
+                    indentationWidth={indentationWidth}
+                    indicator={indicator}
+                    collapsed={Boolean(collapsed && children.length)}
+                    onCollapse={
+                      collapsible && children.length
+                        ? () => handleCollapse(id)
+                        : undefined
+                    }
+                    onRemove={removable ? () => handleRemove(id) : undefined}
+                  />
+                ))}
+              </SortableContext>
+            </div>
+          </div>
+          {createPortal(
+            <DragOverlay
+              dropAnimation={dropAnimation}
+              modifiers={indicator ? [adjustTranslate] : undefined}
+            >
+              {activeId && activeItem ? (
+                <SortableTreeItem
+                  id={activeId}
+                  depth={activeItem.depth}
+                  clone
+                  childCount={getChildCount(items, activeId) + 1}
+                  value={activeId}
+                  indentationWidth={indentationWidth}
+                />
+              ) : null}
+            </DragOverlay>,
+            document.body
+          )}
+        </Allotment.Pane>
+      </Allotment >
     </DndContext>
+
   );
 
   function handleDragStart({ active: { id: activeId } }: DragStartEvent) {
-    setActiveId(activeId);
-    setOverId(activeId);
+    setActiveId(activeId.toString());
+    setOverId(activeId.toString());
 
     const activeItem = flattenedItems.find(({ id }) => id === activeId);
 
     if (activeItem) {
       setCurrentPosition({
         parentId: activeItem.parentId,
-        overId: activeId
+        overId: activeId.toString()
       });
     }
 
@@ -254,7 +283,7 @@ export function SortableTree({
   }
 
   function handleDragOver({ over }: DragOverEvent) {
-    setOverId(over?.id ?? null);
+    setOverId(over?.id.toString() ?? null);
   }
 
   function handleDragEnd({ active, over }: DragEndEvent) {

@@ -19,7 +19,7 @@ import { v4 as uuidv4 } from "uuid";
 import { SortableTree } from "./SortableTree";
 
 interface Block {
-    id: UniqueIdentifier;
+    id: string;
     code: string;
 }
 

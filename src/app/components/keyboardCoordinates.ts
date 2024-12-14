@@ -7,8 +7,8 @@ import {
   DroppableContainer,
 } from '@dnd-kit/core';
 
-import type {SensorContext} from './types';
-import {getProjection} from './utilities';
+import type { SensorContext } from '../types/treeItem';
+import { getProjection } from '../utilities';
 
 const directions: string[] = [
   KeyboardCode.Down,
@@ -26,7 +26,7 @@ export const sortableTreeKeyboardCoordinates: (
   event,
   {
     currentCoordinates,
-    context: {active, over, collisionRect, droppableContainers},
+    context: { active, over, collisionRect, droppableContainers },
   }
 ) => {
   if (directions.includes(event.code)) {
@@ -37,11 +37,11 @@ export const sortableTreeKeyboardCoordinates: (
     event.preventDefault();
 
     const {
-      current: {items, offset},
+      current: { items, offset },
     } = context;
 
     if (horizontal.includes(event.code) && over?.id) {
-      const {depth, maxDepth, minDepth} = getProjection(
+      const { depth, maxDepth, minDepth } = getProjection(
         items,
         active.id,
         over.id,
@@ -117,12 +117,12 @@ export const sortableTreeKeyboardCoordinates: (
       const activeNodeRect = droppableContainers.get(active.id)?.rect.current;
 
       if (newNode && activeNodeRect) {
-        const newRect = getClientRect(newNode, {ignoreTransform: true});
-        const newItem = items.find(({id}) => id === closestId);
-        const activeItem = items.find(({id}) => id === active.id);
+        const newRect = getClientRect(newNode, { ignoreTransform: true });
+        const newItem = items.find(({ id }) => id === closestId);
+        const activeItem = items.find(({ id }) => id === active.id);
 
         if (newItem && activeItem) {
-          const {depth} = getProjection(
+          const { depth } = getProjection(
             items,
             active.id,
             closestId,
