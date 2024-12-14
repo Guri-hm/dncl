@@ -1,4 +1,5 @@
 import { arrayMove } from '@dnd-kit/sortable';
+import { UniqueIdentifier } from "@dnd-kit/core";
 
 import type { FlattenedItem, TreeItem, TreeItems } from '../models/types';
 
@@ -159,22 +160,17 @@ export function setProperty<T extends keyof TreeItem>(
   property: T,
   setter: (value: TreeItem[T]) => TreeItem[T]
 ) {
-  console.log(items)
-  let i = 0;
-  for (const item of items) {
-    i++;
-    console.log(item)
-    console.log(i)
+  for (let item of items) {
     if (item.id === id) {
-      break;
+      console.log(item)
       item[property] = setter(item[property]);
-      console.log(item[property])
+      console.log(item)
       continue;
     }
 
-    // if (item.children.length) {
-    //   item.children = setProperty(item.children, id, property, setter);
-    // }
+    if (item.children.length) {
+      item.children = setProperty(item.children, id, property, setter);
+    }
   }
 
   return [...items];
@@ -213,4 +209,25 @@ export function removeChildrenOf(items: FlattenedItem[], ids: string[]) {
 
     return true;
   });
+}
+
+
+const findFromTreeItem = (items: TreeItem[], id: UniqueIdentifier): FlattenedItem | undefined => {
+  const flattenedItems = flatten(items)
+  return flattenedItems.find((item) => item.id === id)
+}
+
+export const getChildrenIds = (
+  items: TreeItems,
+  id: UniqueIdentifier,
+  includeSelf = false
+): UniqueIdentifier[] => {
+  const item = findFromTreeItem(items, id)
+  if (!item) {
+    return []
+  }
+
+  const childrenIds = item.children.flatMap((child) => getChildrenIds(items, child.id, true))
+
+  return includeSelf ? [id, ...childrenIds] : childrenIds
 }
