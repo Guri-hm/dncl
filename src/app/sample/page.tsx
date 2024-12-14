@@ -1,11 +1,15 @@
 "use client"
-import Contaienr from "../components/Container"
-export default function Home() {
 
+import { DndContext } from '@dnd-kit/core';
+export default function Home() {
+  const defaultAnnouncements = {
+
+  }
   return (
     <>
       <div style={{ display: 'flex' }}>
-        <Contaienr></Contaienr>
+        <DndContext >
+        </DndContext>
       </div>
     </>
   )

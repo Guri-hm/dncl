@@ -17,6 +17,8 @@ import SortableContainer from "./SortableContainer";
 import Item from "./Item";
 import { v4 as uuidv4 } from "uuid";
 
+import { SortableTree } from "./SortableTree";
+
 interface Block {
     id: UniqueIdentifier;
     code: string;
@@ -220,6 +222,8 @@ const Contaienr = () => {
                 {/* DragOverlay */}
                 <DragOverlay>{activeValue ? <Item value={activeValue} /> : null}</DragOverlay>
             </DndContext>
+
+            <SortableTree></SortableTree>
         </div>
     );
 };
