@@ -4,7 +4,7 @@ import classNames from "classnames";
 import { Action } from "./Action";
 import { Handle } from "./Handle";
 import { Remove } from "./Remove";
-import styles from "./TreeItem.module.css";
+import styles from "./TreeItem.module.scss";
 
 export interface Props extends HTMLAttributes<HTMLLIElement> {
   childCount?: number;
@@ -45,6 +45,7 @@ export const TreeItem = forwardRef<HTMLDivElement, Props>(
     },
     ref
   ) => {
+    // console.log(collapsed)
     return (
       <li
         className={classNames(

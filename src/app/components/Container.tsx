@@ -223,7 +223,7 @@ const Contaienr = () => {
                 <DragOverlay>{activeValue ? <Item value={activeValue} /> : null}</DragOverlay>
             </DndContext>
 
-            <SortableTree></SortableTree>
+            <SortableTree collapsible indicator removable ></SortableTree>
         </div>
     );
 };

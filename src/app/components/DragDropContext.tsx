@@ -79,7 +79,6 @@ export default function DragDropContext() {
         // let oldIndex = 1;
         // let newIndex = 2;
 
-        console.log(items)
         // return items;
         return arrayMove(items, oldIndex, newIndex);
       });

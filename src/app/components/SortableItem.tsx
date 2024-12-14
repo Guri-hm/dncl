@@ -6,8 +6,6 @@ import Item from "./Item";
 const SortableItem = ({ id, value }: { id: UniqueIdentifier, value: string }) => {
     const { attributes, listeners, setNodeRef, transform, transition } =
         useSortable({ id });
-    // console.log(`id:${id}`)
-    // console.log(`value:${value}`)
     return (
         <div
             ref={setNodeRef}

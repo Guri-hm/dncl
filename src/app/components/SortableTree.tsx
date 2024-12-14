@@ -105,7 +105,6 @@ export function SortableTree({
   removable
 }: Props) {
   const [items, setItems] = useState(() => defaultItems);
-  console.log({ items });
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
@@ -175,21 +174,24 @@ export function SortableTree({
     >
       <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
         {flattenedItems.map(({ id, children, collapsed, depth }) => (
-          <SortableTreeItem
-            key={id}
-            id={id}
-            value={id}
-            depth={id === activeId && projected ? projected.depth : depth}
-            indentationWidth={indentationWidth}
-            indicator={indicator}
-            collapsed={Boolean(collapsed && children.length)}
-            onCollapse={
-              collapsible && children.length
-                ? () => handleCollapse(id)
-                : undefined
-            }
-            onRemove={removable ? () => handleRemove(id) : undefined}
-          />
+          <>
+            <div>{typeof collapsed}</div>
+            <SortableTreeItem
+              key={id}
+              id={id}
+              value={id}
+              depth={id === activeId && projected ? projected.depth : depth}
+              indentationWidth={indentationWidth}
+              indicator={indicator}
+              collapsed={Boolean(collapsed && children.length)}
+              onCollapse={
+                collapsible && children.length
+                  ? () => handleCollapse(id)
+                  : undefined
+              }
+              onRemove={removable ? () => handleRemove(id) : undefined}
+            />
+          </>
         ))}
         {createPortal(
           <DragOverlay
@@ -276,6 +278,7 @@ export function SortableTree({
   }
 
   function handleCollapse(id: string) {
+    console.log(items)
     setItems((items) =>
       setProperty(items, id, "collapsed", (value) => {
         return !value;
@@ -283,63 +286,13 @@ export function SortableTree({
     );
   }
 
-  function getMovementAnnouncement(
-    eventName: string,
-    activeId: string,
-    overId?: string
-  ) {
-    if (overId && projected) {
-      if (eventName !== "onDragEnd") {
-        if (
-          currentPosition &&
-          projected.parentId === currentPosition.parentId &&
-          overId === currentPosition.overId
-        ) {
-          return;
-        } else {
-          setCurrentPosition({
-            parentId: projected.parentId,
-            overId
-          });
-        }
-      }
-
-      const clonedItems: FlattenedItem[] = JSON.parse(
-        JSON.stringify(flattenTree(items))
-      );
-      const overIndex = clonedItems.findIndex(({ id }) => id === overId);
-      const activeIndex = clonedItems.findIndex(({ id }) => id === activeId);
-      const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
-
-      const previousItem = sortedItems[overIndex - 1];
-
-      let announcement;
-      const movedVerb = eventName === "onDragEnd" ? "dropped" : "moved";
-      const nestedVerb = eventName === "onDragEnd" ? "dropped" : "nested";
-
-      if (!previousItem) {
-        const nextItem = sortedItems[overIndex + 1];
-        announcement = `${activeId} was ${movedVerb} before ${nextItem.id}.`;
-      } else {
-        if (projected.depth > previousItem.depth) {
-          announcement = `${activeId} was ${nestedVerb} under ${previousItem.id}.`;
-        } else {
-          let previousSibling: FlattenedItem | undefined = previousItem;
-          while (previousSibling && projected.depth < previousSibling.depth) {
-            const parentId: string | null = previousSibling.parentId;
-            previousSibling = sortedItems.find(({ id }) => id === parentId);
-          }
-
-          if (previousSibling) {
-            announcement = `${activeId} was ${movedVerb} after ${previousSibling.id}.`;
-          }
-        }
-      }
-
-      return announcement;
-    }
-
-    return;
+  function aaa(id: string) {
+    console.log(id)
+    setItems((items) =>
+      setProperty(items, id, "collapsed", (value) => {
+        return !value;
+      })
+    );
   }
 }
 
