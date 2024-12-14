@@ -16,60 +16,12 @@ import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import SortableContainer from "./SortableContainer";
 import Item from "./Item";
 import { v4 as uuidv4 } from "uuid";
-import { TreeItem } from '../type/treeItem'
-
-import SortableTree from "./SortableTree";
+import { SortableTree } from "./SortableTree";
 
 interface Block {
     id: UniqueIdentifier;
     code: string;
 }
-
-type SortableTreeProps = {
-    defaultItems: TreeItem[]
-}
-
-const initialItems: TreeItem[] = [
-    {
-        id: "Course",
-        children: [
-            {
-                id: "Module",
-                children: [
-                    { id: "Lesson", children: [{ id: "Learning Object", children: [] }] }
-                ]
-            }
-        ]
-    },
-    {
-        id: "Course 1",
-        children: [
-            {
-                id: "Module 1",
-                children: [
-                    {
-                        id: "Lesson 1",
-                        children: [{ id: "Learning Object 1", children: [] }]
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        id: "Course 2",
-        children: [
-            {
-                id: "Module 2",
-                children: [
-                    {
-                        id: "Lesson 2",
-                        children: [{ id: "Learning Object 2", children: [] }]
-                    }
-                ]
-            }
-        ]
-    }
-];
 
 const Contaienr = () => {
     // ドラッグ&ドロップでソート可能なリスト
@@ -270,8 +222,7 @@ const Contaienr = () => {
                 <DragOverlay>{activeValue ? <Item value={activeValue} /> : null}</DragOverlay>
             </DndContext>
 
-            {/* <SortableTree collapsible indicator removable ></SortableTree> */}
-            <SortableTree defaultItems={initialItems}></SortableTree>
+            <SortableTree collapsible indicator removable ></SortableTree>
         </div>
     );
 };

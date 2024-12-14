@@ -162,9 +162,7 @@ export function setProperty<T extends keyof TreeItem>(
 ) {
   for (let item of items) {
     if (item.id === id) {
-      console.log(item)
       item[property] = setter(item[property]);
-      console.log(item)
       continue;
     }
 

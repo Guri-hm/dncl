@@ -4,6 +4,7 @@ import { Allotment } from "allotment";
 import "allotment/dist/style.css";
 import Container from "../components/Container";
 
+
 export default function Home() {
   return (
     <div className="w-full border-solid border-2 h-dvh">
