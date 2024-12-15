@@ -2,6 +2,7 @@ import type { RefObject } from 'react';
 
 export interface TreeItem {
   id: string;
+  code: string;
   children: TreeItem[];
   collapsed?: boolean;
 }

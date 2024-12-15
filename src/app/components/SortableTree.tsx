@@ -35,49 +35,65 @@ import {
   setProperty,
 } from "../utilities";
 import type { FlattenedItem, SensorContext, TreeItems } from "../types";
-import { SortableTreeItem } from "../components";
+import { SortableTreeItem, FragmentsTreeItem } from "../components";
+import { v4 as uuidv4 } from "uuid";
 
 const initialItems: TreeItems = [
   {
-    id: "Course",
+    id: uuidv4(),
+    code: "Course",
     children: [
       {
-        id: "Module",
+        id: uuidv4(),
+        code: "Module",
         children: [
-          { id: "Lesson", children: [{ id: "Learning Object", children: [] }] }
+          { id: uuidv4(), code: "Lesson", children: [{ id: uuidv4(), code: "Learning Object", children: [] }] }
         ]
       }
     ]
   },
   {
-    id: "Course 1",
+    id: uuidv4(),
+    code: "Course1",
     children: [
       {
-        id: "Module 1",
+        id: uuidv4(),
+        code: "Module 1",
         children: [
           {
-            id: "Lesson 1",
-            children: [{ id: "Learning Object 1", children: [] }]
+            id: uuidv4(),
+            code: "Lesson 1",
+            children: [{ id: uuidv4(), code: "Learning Object 1", children: [] }]
           }
         ]
       }
     ]
   },
   {
-    id: "Course 2",
+    id: uuidv4(),
+    code: "Course2",
     children: [
       {
-        id: "Module 2",
+        id: uuidv4(),
+        code: "Module 2",
         children: [
           {
-            id: "Lesson 2",
-            children: [{ id: "Learning Object 2", children: [] }]
+            id: uuidv4(),
+            code: "Lesson 2",
+            children: [{ id: uuidv4(), code: "Learning Object 2", children: [] }]
           }
         ]
       }
     ]
-  }
+  },
 ];
+const fragments: TreeItems = [
+  {
+    id: uuidv4(),
+    code: "代入文",
+    children: []
+  }
+]
 
 const measuring = {
   droppable: {
@@ -113,6 +129,7 @@ export function SortableTree({
 }: Props) {
   const [items, setItems] = useState(() => defaultItems);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [activeCode, setActiveCode] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
   const [currentPosition, setCurrentPosition] = useState<{
@@ -199,7 +216,23 @@ export function SortableTree({
             </button>
           </Allotment.Pane>
           <Allotment.Pane visible={visible} snap>
-            <>aaa</>
+            <div className="text-lg font-bold">代入文</div>
+            {fragments.map(({ id, children, collapsed }) => (
+              <FragmentsTreeItem
+                key={id}
+                id={id}
+                value={id}
+                indentationWidth={indentationWidth}
+                indicator={indicator}
+                collapsed={Boolean(collapsed && children.length)}
+                onCollapse={
+                  collapsible && children.length
+                    ? () => handleCollapse(id)
+                    : undefined
+                }
+                onRemove={removable ? () => handleRemove(id) : undefined}
+              />
+            ))}
           </Allotment.Pane>
         </Allotment>
         <Allotment.Pane className="p-1" minSize={200}>
@@ -218,11 +251,11 @@ export function SortableTree({
             </div>
             <div className="relative text-white">
               <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
-                {flattenedItems.map(({ id, children, collapsed, depth }) => (
+                {flattenedItems.map(({ id, children, collapsed, depth, code }) => (
                   <SortableTreeItem
                     key={id}
                     id={id}
-                    value={id}
+                    value={code}
                     depth={id === activeId && projected ? projected.depth : depth}
                     indentationWidth={indentationWidth}
                     indicator={indicator}
@@ -249,7 +282,7 @@ export function SortableTree({
                   depth={activeItem.depth}
                   clone
                   childCount={getChildCount(items, activeId) + 1}
-                  value={activeId}
+                  value={activeCode ? activeCode : ""}
                   indentationWidth={indentationWidth}
                 />
               ) : null}
@@ -269,6 +302,7 @@ export function SortableTree({
     const activeItem = flattenedItems.find(({ id }) => id === activeId);
 
     if (activeItem) {
+      setActiveCode(activeItem?.code);
       setCurrentPosition({
         parentId: activeItem.parentId,
         overId: activeId.toString()
