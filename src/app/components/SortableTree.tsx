@@ -34,8 +34,8 @@ import {
   removeChildrenOf,
   setProperty,
 } from "../utilities";
-import type { FlattenedItem, SensorContext, TreeItems } from "../types";
-import { SortableTreeItem, FragmentsTreeItem } from "../components";
+import type { FlattenedItem, SensorContext, TreeItems, FragmentItems } from "../types";
+import { SortableTreeItem, FragmentsListItem } from "../components";
 import { v4 as uuidv4 } from "uuid";
 
 const initialItems: TreeItems = [
@@ -217,20 +217,11 @@ export function SortableTree({
           </Allotment.Pane>
           <Allotment.Pane visible={visible} snap>
             <div className="text-lg font-bold">代入文</div>
-            {fragments.map(({ id, children, collapsed }) => (
-              <FragmentsTreeItem
+            {fragments.map(({ id, code }) => (
+              <FragmentsListItem
                 key={id}
                 id={id}
-                value={id}
-                indentationWidth={indentationWidth}
-                indicator={indicator}
-                collapsed={Boolean(collapsed && children.length)}
-                onCollapse={
-                  collapsible && children.length
-                    ? () => handleCollapse(id)
-                    : undefined
-                }
-                onRemove={removable ? () => handleRemove(id) : undefined}
+                value={code}
               />
             ))}
           </Allotment.Pane>

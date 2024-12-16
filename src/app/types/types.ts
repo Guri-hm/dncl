@@ -19,3 +19,11 @@ export type SensorContext = RefObject<{
   items: FlattenedItem[];
   offset: number;
 }>;
+
+export interface FragmentItem {
+  id: string;
+  code: string;
+  depth: number;
+}
+
+export type FragmentItems = FragmentItem[];

@@ -2,16 +2,16 @@ import React, { CSSProperties } from 'react';
 import { AnimateLayoutChanges, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-import { TreeItem, Props as TreeItemProps } from './TreeItem';
+import { ListItem, Props as ListItemProps } from './ListItem';
 
-interface Props extends TreeItemProps {
+interface Props extends ListItemProps {
   id: string;
 }
 
 const animateLayoutChanges: AnimateLayoutChanges = ({ isSorting, wasDragging }) =>
   isSorting || wasDragging ? false : true;
 
-export function FragmentsTreeItem({ id, ...props }: Props) {
+export function FragmentsListItem({ id, ...props }: Props) {
   const {
     attributes,
     isDragging,
@@ -30,7 +30,7 @@ export function FragmentsTreeItem({ id, ...props }: Props) {
     transition,
   };
   return (
-    <TreeItem
+    <ListItem
       ref={setDraggableNodeRef}
       wrapperRef={setDroppableNodeRef}
       style={style}
