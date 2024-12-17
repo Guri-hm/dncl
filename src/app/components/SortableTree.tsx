@@ -87,11 +87,13 @@ const initialItems: TreeItems = [
     ]
   },
 ];
-const fragments: TreeItems = [
+const fragments: FragmentItems = [
   {
     id: uuidv4(),
     code: "代入文",
-    children: []
+    children: [],
+    index: 0,
+    parentId: null,
   }
 ]
 
@@ -153,7 +155,7 @@ export function SortableTree({
   const projected =
     activeId && overId
       ? getProjection(
-        flattenedItems,
+        [...flattenedItems, ...fragments],
         activeId,
         overId,
         offsetLeft,
@@ -175,7 +177,7 @@ export function SortableTree({
     flattenedItems
   ]);
   const activeItem = activeId
-    ? flattenedItems.find(({ id }) => id === activeId)
+    ? [...flattenedItems, ...fragments].find(({ id }) => id === activeId)
     : null;
 
   useEffect(() => {
@@ -216,7 +218,7 @@ export function SortableTree({
             </button>
           </Allotment.Pane>
           <Allotment.Pane visible={visible} snap>
-            <div className="text-lg font-bold">代入文</div>
+            <div className="text-lg font-bold">一覧</div>
             {fragments.map(({ id, code }) => (
               <FragmentsListItem
                 key={id}
@@ -290,7 +292,7 @@ export function SortableTree({
     setActiveId(activeId.toString());
     setOverId(activeId.toString());
 
-    const activeItem = flattenedItems.find(({ id }) => id === activeId);
+    const activeItem = [...flattenedItems, ...fragments].find(({ id }) => id === activeId);
 
     if (activeItem) {
       setActiveCode(activeItem?.code);

@@ -21,8 +21,6 @@ export function getProjection(
   const previousItem = newItems[overItemIndex - 1];
   const nextItem = newItems[overItemIndex + 1];
   const dragDepth = getDragDepth(dragOffset, indentationWidth);
-  
-  return
   const projectedDepth = activeItem.depth + dragDepth;
   const maxDepth = getMaxDepth({
     previousItem,

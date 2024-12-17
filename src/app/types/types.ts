@@ -9,9 +9,10 @@ export interface TreeItem {
 
 export type TreeItems = TreeItem[];
 
+//?付与でオプション扱い(デフォルトはundefined)
 export interface FlattenedItem extends TreeItem {
   parentId: null | string;
-  depth: number;
+  depth?: number;
   index: number;
 }
 
@@ -20,10 +21,8 @@ export type SensorContext = RefObject<{
   offset: number;
 }>;
 
-export interface FragmentItem {
-  id: string;
-  code: string;
-  depth: number;
+//ツリーに追加する要素の型
+export interface FragmentItem extends FlattenedItem {
 }
 
 export type FragmentItems = FragmentItem[];
