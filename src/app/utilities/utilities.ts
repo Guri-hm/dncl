@@ -33,7 +33,6 @@ export function getProjection(
   } else if (projectedDepth < minDepth) {
     depth = minDepth;
   }
-
   return { depth, maxDepth, minDepth, parentId: getParentId() };
 
   function getParentId() {

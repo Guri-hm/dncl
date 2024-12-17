@@ -94,6 +94,7 @@ const fragments: FragmentItems = [
     children: [],
     index: 0,
     parentId: null,
+    depth: 0
   }
 ]
 
@@ -131,6 +132,7 @@ export function SortableTree({
 }: Props) {
   const [items, setItems] = useState(() => defaultItems);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [inAdditionId, setInAdditonId] = useState<string | null>(null);
   const [activeCode, setActiveCode] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
@@ -142,7 +144,14 @@ export function SortableTree({
         collapsed && children.length ? [...acc, id] : acc,
       []
     );
+    if (inAdditionId) {
+      const additionItem = fragments.find(({ id }) => id == inAdditionId);
+      if (additionItem) {
+        flattenedTree.push(additionItem);
+      }
+    }
 
+    // flattenedTree.push(...fragments)
     return removeChildrenOf(
       flattenedTree,
       activeId ? [activeId, ...collapsedItems] : collapsedItems
@@ -293,6 +302,11 @@ export function SortableTree({
     if (activeItem) {
       setActiveCode(activeItem?.code);
     }
+
+    if (fragments.some(item => item.id === activeId)) {
+      //要素追加のためのドラッグと判定
+      setInAdditonId(activeId.toString());
+    };
 
     document.body.style.setProperty("cursor", "grabbing");
   }
