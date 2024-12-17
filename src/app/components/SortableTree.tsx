@@ -336,6 +336,7 @@ export function SortableTree({
       const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
       const newItems = buildTree(sortedItems);
 
+      console.log(newItems)
       setItems(newItems);
     }
   }
