@@ -134,10 +134,6 @@ export function SortableTree({
   const [activeCode, setActiveCode] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
-  const [currentPosition, setCurrentPosition] = useState<{
-    parentId: string | null;
-    overId: string;
-  } | null>(null);
 
   const flattenedItems = useMemo(() => {
     const flattenedTree = flattenTree(items);
@@ -296,10 +292,6 @@ export function SortableTree({
 
     if (activeItem) {
       setActiveCode(activeItem?.code);
-      setCurrentPosition({
-        parentId: activeItem.parentId,
-        overId: activeId.toString()
-      });
     }
 
     document.body.style.setProperty("cursor", "grabbing");
@@ -342,7 +334,6 @@ export function SortableTree({
     setOverId(null);
     setActiveId(null);
     setOffsetLeft(0);
-    setCurrentPosition(null);
 
     document.body.style.setProperty("cursor", "");
   }
