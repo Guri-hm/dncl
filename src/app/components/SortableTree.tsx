@@ -320,11 +320,17 @@ export function SortableTree({
       const clonedItems: FlattenedItem[] = JSON.parse(
         JSON.stringify(flattenTree(items))
       );
-      console.log(clonedItems)
+      let additionItem = fragments.find(({ id }) => id === active.id);
+      if (additionItem) {
+        clonedItems.push(additionItem);
+      }
       const overIndex = clonedItems.findIndex(({ id }) => id === over.id);
       const activeIndex = clonedItems.findIndex(({ id }) => id === active.id);
       const activeTreeItem = clonedItems[activeIndex];
 
+      if (additionItem) {
+        activeTreeItem.id = uuidv4();
+      }
       clonedItems[activeIndex] = { ...activeTreeItem, depth, parentId };
 
       const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
