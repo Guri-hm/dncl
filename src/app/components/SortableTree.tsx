@@ -132,6 +132,7 @@ export function SortableTree({
 }: Props) {
   const [items, setItems] = useState(() => defaultItems);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [inAdditionId, setInAdditonId] = useState<string | null>(null);
   const [activeCode, setActiveCode] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
@@ -143,18 +144,19 @@ export function SortableTree({
         collapsed && children.length ? [...acc, id] : acc,
       []
     );
-    const additionItem = fragments.find(({ id }) => id == activeId);
-    if (additionItem) {
-      //要素追加のためのドラッグと判定
-      flattenedTree.push(additionItem);
+    if (inAdditionId) {
+      const additionItem = fragments.find(({ id }) => id == inAdditionId);
+      if (additionItem) {
+        flattenedTree.push(additionItem);
+      }
     }
 
+    // flattenedTree.push(...fragments)
     return removeChildrenOf(
       flattenedTree,
       activeId ? [activeId, ...collapsedItems] : collapsedItems
     );
   }, [activeId, items]);
-
   const projected =
     activeId && overId
       ? getProjection(
@@ -300,7 +302,12 @@ export function SortableTree({
     if (activeItem) {
       setActiveCode(activeItem?.code);
     }
-    console.log(activeItem)
+
+    if (fragments.some(item => item.id === activeId)) {
+      //要素追加のためのドラッグと判定
+      setInAdditonId(activeId.toString());
+    };
+
     document.body.style.setProperty("cursor", "grabbing");
   }
 
@@ -320,7 +327,6 @@ export function SortableTree({
       const clonedItems: FlattenedItem[] = JSON.parse(
         JSON.stringify(flattenTree(items))
       );
-      console.log(clonedItems)
       const overIndex = clonedItems.findIndex(({ id }) => id === over.id);
       const activeIndex = clonedItems.findIndex(({ id }) => id === active.id);
       const activeTreeItem = clonedItems[activeIndex];
@@ -330,6 +336,7 @@ export function SortableTree({
       const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
       const newItems = buildTree(sortedItems);
 
+      console.log(newItems)
       setItems(newItems);
     }
   }
@@ -342,6 +349,7 @@ export function SortableTree({
     setOverId(null);
     setActiveId(null);
     setOffsetLeft(0);
+
     document.body.style.setProperty("cursor", "");
   }
 
