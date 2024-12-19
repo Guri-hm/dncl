@@ -74,7 +74,7 @@ const initialItems: TreeItems = [
   //   ]
   // },
 ];
-const fragments_initialItems: FragmentItems = [
+const fragments: FragmentItems = [
   {
     id: uuidv4(),
     code: "代入文",
@@ -131,11 +131,6 @@ export function SortableTree({
   const [overId, setOverId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
 
-  const fragments = useMemo(() => {
-    console.log("fragments")
-    return fragments_initialItems;
-  }, [activeId, items]);
-
   const flattenedItems = useMemo(() => {
     const flattenedTree = flattenTree(items);
     const collapsedItems = flattenedTree.reduce<string[]>(
@@ -143,12 +138,10 @@ export function SortableTree({
         collapsed && children.length ? [...acc, id] : acc,
       []
     );
-    let additionItem = fragments.find(({ id }) => id == activeId);
+    const additionItem = fragments.find(({ id }) => id == activeId);
     if (additionItem) {
       //要素追加のためのドラッグと判定
-      additionItem = JSON.parse(JSON.stringify(additionItem));
-      if (!additionItem) return;
-      // additionItem.id = uuidv4();
+      //ここで配列に入れた要素は位置移動とドロップ時の処理で消滅し、同じidをもつ要素がドラッグを受け付けなくなる
       flattenedTree.push(additionItem);
     }
 
@@ -161,7 +154,7 @@ export function SortableTree({
   const projected =
     activeId && overId
       ? getProjection(
-        [...flattenedItems, ...fragments],
+        [...flattenedItems],
         activeId,
         overId,
         offsetLeft,
@@ -319,17 +312,18 @@ export function SortableTree({
     resetState();
 
     if (projected && over) {
-      console.log(active.id)
       const { depth, parentId } = projected;
-      const clonedItems: FlattenedItem[] = JSON.parse(
-        JSON.stringify(flattenTree(items))
-      );
+      const clonedItems: FlattenedItem[] = structuredClone(flattenTree(items));
       const additionItem: FlattenedItem = fragments.find(({ id }) => id === active.id);
+
       if (additionItem) {
+        //元の要素のidを更新しないと追加のためのドラッグできなくなる
+        fragments.forEach(item => { item.id = uuidv4() });
+
         let clonedItem: FlattenedItem = JSON.parse(JSON.stringify(additionItem));
         const newId = uuidv4();
+
         clonedItem.id = newId;
-        over.id = newId;
         active.id = newId;
         clonedItems.push(clonedItem);
       }
@@ -339,6 +333,8 @@ export function SortableTree({
 
       clonedItems[activeIndex] = { ...activeTreeItem, depth, parentId };
 
+      console.log(`activeIndex:${activeIndex}`)
+      console.log(`overIndex:${overIndex}`)
       const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
       const newItems = buildTree(sortedItems);
 
