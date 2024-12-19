@@ -34,63 +34,58 @@ import {
   removeChildrenOf,
   setProperty,
 } from "../utilities";
-import type { FlattenedItem, SensorContext, TreeItems, FragmentItems } from "../types";
+import type { FlattenedItem, SensorContext, TreeItems, FragmentItems, FragmentItem } from "../types";
 import { SortableTreeItem, FragmentsListItem } from "../components";
 import { v4 as uuidv4 } from "uuid";
 
 const initialItems: TreeItems = [
   {
     id: uuidv4(),
-    code: "Course",
+    code: "x ← 2",
     children: [
-      {
-        id: uuidv4(),
-        code: "Module",
-        children: [
-          { id: uuidv4(), code: "Lesson", children: [{ id: uuidv4(), code: "Learning Object", children: [] }] }
-        ]
-      }
     ]
   },
   {
     id: uuidv4(),
-    code: "Course1",
+    code: "もし x = 2 ならば",
     children: [
       {
         id: uuidv4(),
-        code: "Module 1",
-        children: [
-          {
-            id: uuidv4(),
-            code: "Lesson 1",
-            children: [{ id: uuidv4(), code: "Learning Object 1", children: [] }]
-          }
-        ]
+        code: "x を表示する",
+        children: []
       }
     ]
   },
-  {
-    id: uuidv4(),
-    code: "Course2",
-    children: [
-      {
-        id: uuidv4(),
-        code: "Module 2",
-        children: [
-          {
-            id: uuidv4(),
-            code: "Lesson 2",
-            children: [{ id: uuidv4(), code: "Learning Object 2", children: [] }]
-          }
-        ]
-      }
-    ]
-  },
+  // {
+  //   id: uuidv4(),
+  //   code: "Course2",
+  //   children: [
+  //     {
+  //       id: uuidv4(),
+  //       code: "Module 2",
+  //       children: [
+  //         {
+  //           id: uuidv4(),
+  //           code: "Lesson 2",
+  //           children: [{ id: uuidv4(), code: "Learning Object 2", children: [] }]
+  //         }
+  //       ]
+  //     }
+  //   ]
+  // },
 ];
-const fragments: FragmentItems = [
+const fragments_initialItems: FragmentItems = [
   {
     id: uuidv4(),
     code: "代入文",
+    children: [],
+    index: 0,
+    parentId: null,
+    depth: 0
+  },
+  {
+    id: uuidv4(),
+    code: "条件文",
     children: [],
     index: 0,
     parentId: null,
@@ -136,6 +131,11 @@ export function SortableTree({
   const [overId, setOverId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
 
+  const fragments = useMemo(() => {
+    console.log("fragments")
+    return fragments_initialItems;
+  }, [activeId, items]);
+
   const flattenedItems = useMemo(() => {
     const flattenedTree = flattenTree(items);
     const collapsedItems = flattenedTree.reduce<string[]>(
@@ -143,9 +143,12 @@ export function SortableTree({
         collapsed && children.length ? [...acc, id] : acc,
       []
     );
-    const additionItem = fragments.find(({ id }) => id == activeId);
+    let additionItem = fragments.find(({ id }) => id == activeId);
     if (additionItem) {
       //要素追加のためのドラッグと判定
+      additionItem = JSON.parse(JSON.stringify(additionItem));
+      if (!additionItem) return;
+      // additionItem.id = uuidv4();
       flattenedTree.push(additionItem);
     }
 
@@ -165,6 +168,7 @@ export function SortableTree({
         indentationWidth
       )
       : null;
+
   const sensorContext: SensorContext = useRef({
     items: flattenedItems,
     offset: offsetLeft
@@ -300,7 +304,6 @@ export function SortableTree({
     if (activeItem) {
       setActiveCode(activeItem?.code);
     }
-    console.log(activeItem)
     document.body.style.setProperty("cursor", "grabbing");
   }
 
@@ -316,21 +319,24 @@ export function SortableTree({
     resetState();
 
     if (projected && over) {
+      console.log(active.id)
       const { depth, parentId } = projected;
       const clonedItems: FlattenedItem[] = JSON.parse(
         JSON.stringify(flattenTree(items))
       );
-      let additionItem = fragments.find(({ id }) => id === active.id);
+      const additionItem: FlattenedItem = fragments.find(({ id }) => id === active.id);
       if (additionItem) {
-        clonedItems.push(additionItem);
+        let clonedItem: FlattenedItem = JSON.parse(JSON.stringify(additionItem));
+        const newId = uuidv4();
+        clonedItem.id = newId;
+        over.id = newId;
+        active.id = newId;
+        clonedItems.push(clonedItem);
       }
       const overIndex = clonedItems.findIndex(({ id }) => id === over.id);
       const activeIndex = clonedItems.findIndex(({ id }) => id === active.id);
       const activeTreeItem = clonedItems[activeIndex];
 
-      if (additionItem) {
-        activeTreeItem.id = uuidv4();
-      }
       clonedItems[activeIndex] = { ...activeTreeItem, depth, parentId };
 
       const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
