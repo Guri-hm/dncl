@@ -333,8 +333,6 @@ export function SortableTree({
 
       clonedItems[activeIndex] = { ...activeTreeItem, depth, parentId };
 
-      console.log(`activeIndex:${activeIndex}`)
-      console.log(`overIndex:${overIndex}`)
       const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
       const newItems = buildTree(sortedItems);
 
