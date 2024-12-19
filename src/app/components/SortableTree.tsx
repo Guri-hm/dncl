@@ -342,6 +342,8 @@ export function SortableTree({
 
   function handleDragCancel() {
     resetState();
+    //元の要素のidを更新しないと追加のためのドラッグできなくなる
+    fragments.forEach(item => { item.id = uuidv4() });
   }
 
   function resetState() {
