@@ -286,7 +286,6 @@ export function SortableTree({
         </Allotment.Pane>
       </Allotment >
     </DndContext>
-
   );
 
   function handleDragStart({ active: { id: activeId } }: DragStartEvent) {
