@@ -37,6 +37,7 @@ import {
 import type { FlattenedItem, SensorContext, TreeItems, FragmentItems, FragmentItem } from "../types";
 import { SortableTreeItem, FragmentsListItem } from "../components";
 import { v4 as uuidv4 } from "uuid";
+import { Droppable } from "./Droppable";
 
 const initialItems: TreeItems = [
   {
@@ -188,11 +189,10 @@ export function SortableTree({
   }, [flattenedItems, offsetLeft]);
 
   const [visible, setVisible] = useState(true);
-
   return (
     <DndContext
+      // 衝突検知を collisionDetection={closestCenter} にすると、全エリアでDropOver扱いになる
       sensors={sensors}
-      collisionDetection={closestCenter}
       measuring={measuring}
       onDragStart={handleDragStart}
       onDragMove={handleDragMove}
@@ -216,6 +216,7 @@ export function SortableTree({
             >
               {visible ? "Hide" : "Show"}
             </button>
+            <Droppable id="dropAreaA">ドロップした</Droppable>
           </Allotment.Pane>
           <Allotment.Pane visible={visible} snap>
             <div className="text-lg font-bold">一覧</div>
@@ -311,6 +312,11 @@ export function SortableTree({
   function handleDragEnd({ active, over }: DragEndEvent) {
     resetState();
 
+    if (over == null) {
+      return;
+    }
+
+    alert("aaa")
     if (projected && over) {
       const { depth, parentId } = projected;
       const clonedItems: FlattenedItem[] = structuredClone(flattenTree(items));
