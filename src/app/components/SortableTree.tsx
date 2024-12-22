@@ -36,6 +36,7 @@ import {
 import type { FlattenedItem, SensorContext, TreeItems, FragmentItems, FragmentItem } from "../types";
 import { SortableTreeItem, FragmentsListItem } from "../components";
 import { v4 as uuidv4 } from "uuid";
+import { DnclEditDialog } from "../components";
 
 const initialItems: TreeItems = [
   {
@@ -129,6 +130,7 @@ export function SortableTree({
   const [activeCode, setActiveCode] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
+  const [openDnclDialog, setOpenDnclDialog] = React.useState(false);
 
   const flattenedItems = useMemo(() => {
     const flattenedTree = flattenTree(items);
@@ -214,6 +216,8 @@ export function SortableTree({
             >
               {visible ? "Hide" : "Show"}
             </button>
+            <DnclEditDialog open={openDnclDialog} setOpen={setOpenDnclDialog}></DnclEditDialog>
+
           </Allotment.Pane>
           <Allotment.Pane visible={visible} snap>
             <div className="text-lg font-bold">一覧</div>
@@ -224,6 +228,7 @@ export function SortableTree({
                 value={code}
               />
             ))}
+
           </Allotment.Pane>
         </Allotment>
         <Allotment.Pane className="p-1" minSize={200}>
@@ -314,7 +319,7 @@ export function SortableTree({
       const additionItem: FlattenedItem | undefined = fragments.find(({ id }) => id === active.id);
 
       if (additionItem) {
-
+        setOpenDnclDialog(true);
         let clonedItem: FlattenedItem = JSON.parse(JSON.stringify(additionItem));
         const newId = uuidv4();
 
