@@ -3,7 +3,6 @@ import { Allotment } from "allotment";
 import { createPortal } from "react-dom";
 import { DndContext } from '@dnd-kit/core';
 import {
-  Announcements,
   closestCenter,
   PointerSensor,
   useSensor,
@@ -37,7 +36,6 @@ import {
 import type { FlattenedItem, SensorContext, TreeItems, FragmentItems, FragmentItem } from "../types";
 import { SortableTreeItem, FragmentsListItem } from "../components";
 import { v4 as uuidv4 } from "uuid";
-import { Droppable } from "./Droppable";
 
 const initialItems: TreeItems = [
   {
@@ -216,7 +214,6 @@ export function SortableTree({
             >
               {visible ? "Hide" : "Show"}
             </button>
-            <Droppable id="dropAreaA">ドロップした</Droppable>
           </Allotment.Pane>
           <Allotment.Pane visible={visible} snap>
             <div className="text-lg font-bold">一覧</div>
@@ -311,19 +308,12 @@ export function SortableTree({
   function handleDragEnd({ active, over }: DragEndEvent) {
     resetState();
 
-    if (over == null) {
-      return;
-    }
-
-    alert("aaa")
     if (projected && over) {
       const { depth, parentId } = projected;
       const clonedItems: FlattenedItem[] = structuredClone(flattenTree(items));
-      const additionItem: FlattenedItem = fragments.find(({ id }) => id === active.id);
+      const additionItem: FlattenedItem | undefined = fragments.find(({ id }) => id === active.id);
 
       if (additionItem) {
-        //元の要素のidを更新しないと追加のためのドラッグできなくなる
-        fragments.forEach(item => { item.id = uuidv4() });
 
         let clonedItem: FlattenedItem = JSON.parse(JSON.stringify(additionItem));
         const newId = uuidv4();
@@ -343,6 +333,9 @@ export function SortableTree({
 
       setItems(newItems);
     }
+
+    //元の要素のidを更新しないと追加のためのドラッグできなくなる
+    fragments.forEach(item => { item.id = uuidv4() });
   }
 
   function handleDragCancel() {
