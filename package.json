@@ -17,7 +17,6 @@
     "@mui/material": "^6.2.1",
     "allotment": "^1.20.2",
     "next": "15.0.4",
-    "preline": "^2.6.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "uuid": "^11.0.3"
