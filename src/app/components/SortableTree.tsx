@@ -33,7 +33,7 @@ import {
   removeChildrenOf,
   setProperty,
 } from "../utilities";
-import type { FlattenedItem, SensorContext, TreeItems, FragmentItems, FragmentItem } from "../types";
+import { FlattenedItem, SensorContext, TreeItems, FragmentItems, FragmentItem, Statement } from "../types";
 import { SortableTreeItem, FragmentsListItem } from "../components";
 import { v4 as uuidv4 } from "uuid";
 import { DnclEditDialog } from "../components";
@@ -81,7 +81,8 @@ const fragments: FragmentItems = [
     children: [],
     index: 0,
     parentId: null,
-    depth: 0
+    depth: 0,
+    statementType: Statement.Input
   },
   {
     id: uuidv4(),
@@ -89,7 +90,8 @@ const fragments: FragmentItems = [
     children: [],
     index: 0,
     parentId: null,
-    depth: 0
+    depth: 0,
+    statementType: Statement.Condition
   }
 ]
 
@@ -130,7 +132,8 @@ export function SortableTree({
   const [activeCode, setActiveCode] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
-  const [openDnclDialog, setOpenDnclDialog] = React.useState(false);
+  const [openDnclDialog, setOpenDnclDialog] = useState(false);
+  const [statementType, setStatementType] = useState<Statement>(Statement.Input);
 
   const flattenedItems = useMemo(() => {
     const flattenedTree = flattenTree(items);
@@ -216,7 +219,7 @@ export function SortableTree({
             >
               {visible ? "Hide" : "Show"}
             </button>
-            <DnclEditDialog open={openDnclDialog} setOpen={setOpenDnclDialog}></DnclEditDialog>
+            <DnclEditDialog open={openDnclDialog} setOpen={setOpenDnclDialog} statementType={statementType}></DnclEditDialog>
 
           </Allotment.Pane>
           <Allotment.Pane visible={visible} snap>
@@ -231,7 +234,7 @@ export function SortableTree({
 
           </Allotment.Pane>
         </Allotment>
-        <Allotment.Pane className="p-1" minSize={200}>
+        <Allotment.Pane minSize={200}>
           <div className="relative z-10 col-span-3 bg-slate-800 rounded-xl shadow-lg xl:ml-0 dark:shadow-none dark:ring-1 dark:ring-inset dark:ring-white/10">
             <div className="relative flex text-slate-400 text-xs leading-6">
               <div className="mt-2 flex-none text-sky-300 border-t border-b border-t-transparent border-b-sky-300 px-4 py-1 flex items-center">DNCL</div>
@@ -316,11 +319,14 @@ export function SortableTree({
     if (projected && over) {
       const { depth, parentId } = projected;
       const clonedItems: FlattenedItem[] = structuredClone(flattenTree(items));
-      const additionItem: FlattenedItem | undefined = fragments.find(({ id }) => id === active.id);
+      const fragmentItem: FragmentItem | undefined = fragments.find(({ id }) => id === active.id);
+      // const additionItem: FlattenedItem | undefined = fragments.find(({ id }) => id === active.id);
 
-      if (additionItem) {
+      if (fragmentItem) {
+        console.log(fragmentItem)
         setOpenDnclDialog(true);
-        let clonedItem: FlattenedItem = JSON.parse(JSON.stringify(additionItem));
+        setStatementType(fragmentItem.statementType);
+        let clonedItem: FlattenedItem = JSON.parse(JSON.stringify(fragmentItem));
         const newId = uuidv4();
 
         clonedItem.id = newId;

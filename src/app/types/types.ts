@@ -21,8 +21,15 @@ export type SensorContext = RefObject<{
   offset: number;
 }>;
 
+export enum Statement {
+  Input = 'input',
+  Condition = 'condition'
+}
+
+
 //ツリーに追加する要素の型
 export interface FragmentItem extends FlattenedItem {
+  statementType: Statement;
 }
 
 export type FragmentItems = FragmentItem[];

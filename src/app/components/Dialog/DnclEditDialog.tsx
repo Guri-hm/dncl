@@ -6,13 +6,18 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import { Statement } from "../../types";
+import { StatementName } from './StatementName';
+import { StatementDesc } from './StatementDesc';
+import { StatementEditor } from './StatementEditor';
 
 interface Props {
     open: boolean;
     setOpen: any;
+    statementType: Statement
 }
 
-export function DnclEditDialog({ open, setOpen, ...props }: Props) {
+export function DnclEditDialog({ open, setOpen, statementType, ...props }: Props) {
 
     const handleClickOpen = () => {
         setOpen(true);
@@ -24,9 +29,6 @@ export function DnclEditDialog({ open, setOpen, ...props }: Props) {
 
     return (
         <React.Fragment>
-            <Button variant="outlined" onClick={handleClickOpen}>
-                Open form dialog
-            </Button>
             <Dialog
                 open={open}
                 onClose={handleClose}
@@ -37,32 +39,22 @@ export function DnclEditDialog({ open, setOpen, ...props }: Props) {
                         const formData = new FormData(event.currentTarget);
                         const formJson = Object.fromEntries((formData as any).entries());
                         const email = formJson.email;
-                        console.log(email);
                         handleClose();
                     },
                 }}
             >
-                <DialogTitle>Subscribe</DialogTitle>
+                <DialogTitle>
+                    <StatementName statementType={statementType}></StatementName>
+                </DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        To subscribe to this website, please enter your email address here. We
-                        will send updates occasionally.
+                        <StatementDesc statementType={statementType}></StatementDesc>
                     </DialogContentText>
-                    <TextField
-                        autoFocus
-                        required
-                        margin="dense"
-                        id="name"
-                        name="email"
-                        label="Email Address"
-                        type="email"
-                        fullWidth
-                        variant="standard"
-                    />
+                    <StatementEditor statementType={statementType}></StatementEditor>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleClose}>Cancel</Button>
-                    <Button type="submit">Subscribe</Button>
+                    <Button onClick={handleClose}>キャンセル</Button>
+                    <Button type="submit">挿入</Button>
                 </DialogActions>
             </Dialog>
         </React.Fragment>
