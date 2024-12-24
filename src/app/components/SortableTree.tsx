@@ -203,37 +203,35 @@ export function SortableTree({
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <Allotment>
-        <Allotment onVisibleChange={(_index, value) => {
-          setVisible(value);
-        }} separator={false}>
-          <Allotment.Pane className="p-1">
-            <button
-              type="button"
-              onClick={() => {
-                setVisible((visible) => !visible);
-                if (visible) {
+      <Allotment onVisibleChange={(_index, value) => {
+        setVisible(value);
+      }} separator={false}>
+        <Allotment.Pane className="p-1">
+          <button
+            type="button"
+            onClick={() => {
+              setVisible((visible) => !visible);
+              if (visible) {
 
-                }
-              }}
-            >
-              {visible ? "Hide" : "Show"}
-            </button>
-            <DnclEditDialog open={openDnclDialog} setOpen={setOpenDnclDialog} statementType={statementType}></DnclEditDialog>
+              }
+            }}
+          >
+            {visible ? "Hide" : "Show"}
+          </button>
+          <DnclEditDialog open={openDnclDialog} setOpen={setOpenDnclDialog} statementType={statementType}></DnclEditDialog>
 
-          </Allotment.Pane>
-          <Allotment.Pane visible={visible} snap>
-            <div className="text-lg font-bold">一覧</div>
-            {fragments.map(({ id, code }) => (
-              <FragmentsListItem
-                key={id}
-                id={id}
-                value={code}
-              />
-            ))}
+        </Allotment.Pane>
+        <Allotment.Pane visible={visible} snap>
+          <div className="text-lg font-bold">一覧</div>
+          {fragments.map(({ id, code }) => (
+            <FragmentsListItem
+              key={id}
+              id={id}
+              value={code}
+            />
+          ))}
 
-          </Allotment.Pane>
-        </Allotment>
+        </Allotment.Pane>
         <Allotment.Pane minSize={200}>
           <div className="relative z-10 col-span-3 bg-slate-800 rounded-xl shadow-lg xl:ml-0 dark:shadow-none dark:ring-1 dark:ring-inset dark:ring-white/10">
             <div className="relative flex text-slate-400 text-xs leading-6">
@@ -289,7 +287,7 @@ export function SortableTree({
             document.body
           )}
         </Allotment.Pane>
-      </Allotment >
+      </Allotment>
     </DndContext>
   );
 

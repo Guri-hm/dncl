@@ -1,5 +1,5 @@
-
-import { Statement } from "../../types";
+import { useState } from "react";
+import { Statement, Validation } from "../../types";
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import { ReactElement } from "react";
@@ -10,9 +10,15 @@ type Props = {
     statementType: Statement
 }
 
+function getEnumIndex<T extends Record<string, string | number>>(enumObj: T, value: T[keyof T]): number {
+    return Object.values(enumObj).indexOf(value);
+}
+
 export function StatementEditor(params: Props) {
 
+    const [processIndex, setProcessIndex] = useState<number>(getEnumIndex(processEnum, processEnum.SetValueToVariable));
     let elm: ReactElement = <></>;
+    let sub: ReactElement = <></>;
 
     switch (params.statementType) {
         case Statement.Input:
@@ -23,6 +29,285 @@ export function StatementEditor(params: Props) {
                 getOptionLabel: (option: processTypes) => option.title,
             };
 
+            switch (processIndex) {
+                case getEnumIndex(processEnum, processEnum.SetValueToVariable):
+                    sub =
+                        <>
+                            <TextField
+                                size="small"
+                                required
+                                id="outlined-required"
+                                label="左辺"
+                                defaultValue=""
+                                slotProps={{
+                                    htmlInput: {
+                                        className: 'text-center',
+                                        pattern: Validation.Variable
+                                    }
+                                    ,
+
+                                }}
+                            />
+                            <Box sx={{
+                                display: 'grid',
+                                alignItems: 'center',
+                                marginRight: '2px',
+                                marginLeft: '2px'
+
+                            }}>
+                                <ArrowBackIcon></ArrowBackIcon>
+                            </Box>
+                            <TextField
+                                size="small"
+                                required
+                                id="outlined-required"
+                                label="右辺"
+                                defaultValue=""
+                                slotProps={{
+                                    htmlInput: {
+                                        className: 'text-center',
+                                        pattern: Validation.VariableNumber
+                                    }
+                                }}
+                            />
+                        </>
+                    break;
+
+                case getEnumIndex(processEnum, processEnum.InitializeArray):
+                    //配列の初期化
+                    sub =
+                        <>
+                            <TextField
+                                size="small"
+                                required
+                                id="outlined-required"
+                                label="左辺"
+                                defaultValue=""
+                                slotProps={{
+                                    htmlInput: {
+                                        className: 'text-center',
+                                        pattern: Validation.Variable
+                                    }
+                                    ,
+
+                                }}
+                            />
+                            <Box sx={{
+                                display: 'grid',
+                                alignItems: 'center',
+                                marginRight: '2px',
+                                marginLeft: '2px'
+                            }}>
+                                <ArrowBackIcon></ArrowBackIcon>
+                            </Box>
+                            <Box sx={{
+                                display: 'grid',
+                                alignItems: 'center',
+                                marginRight: '10px',
+                                marginLeft: '10px'
+                            }}>
+                                [
+                            </Box>
+                            <TextField
+                                size="small"
+                                required
+                                id="outlined-required"
+                                label="右辺"
+                                defaultValue=""
+                                slotProps={{
+                                    htmlInput: {
+                                        className: 'text-center',
+                                        pattern: Validation.Array
+                                    }
+                                }}
+                            />
+                            <Box sx={{
+                                display: 'grid',
+                                alignItems: 'center',
+                                marginRight: '10px',
+                                marginLeft: '10px'
+                            }}>
+                                ]
+                            </Box>
+                        </>
+                    break;
+                case getEnumIndex(processEnum, processEnum.AssignValueToIndex):
+                    //添字による配列への代入
+                    sub =
+                        <>
+                            <TextField
+                                size="small"
+                                required
+                                id="outlined-required"
+                                label="左辺(配列名)"
+                                defaultValue=""
+                                slotProps={{
+                                    htmlInput: {
+                                        className: 'text-center',
+                                        pattern: Validation.Variable
+                                    }
+                                    ,
+
+                                }}
+                            />
+                            <Box sx={{
+                                display: 'grid',
+                                alignItems: 'center',
+                                marginRight: '10px',
+                                marginLeft: '10px'
+                            }}>
+                                [
+                            </Box>
+                            <TextField
+                                size="small"
+                                required
+                                id="outlined-required"
+                                label="左辺(添字)"
+                                defaultValue=""
+                                slotProps={{
+                                    htmlInput: {
+                                        className: 'text-center',
+                                        pattern: Validation.VariableNumber
+                                    }
+                                    ,
+
+                                }}
+                                sx={{ width: '120px' }}
+                            />
+                            <Box sx={{
+                                display: 'grid',
+                                alignItems: 'center',
+                                marginRight: '10px',
+                                marginLeft: '10px'
+                            }}>
+                                ]
+                            </Box>
+                            <Box sx={{
+                                display: 'grid',
+                                alignItems: 'center',
+                                marginRight: '2px',
+                                marginLeft: '2px'
+                            }}>
+                                <ArrowBackIcon></ArrowBackIcon>
+                            </Box>
+                            <TextField
+                                size="small"
+                                required
+                                id="outlined-required"
+                                label="右辺"
+                                defaultValue=""
+                                slotProps={{
+                                    htmlInput: {
+                                        className: 'text-center',
+                                        pattern: Validation.VariableNumber
+                                    }
+                                }}
+                            />
+                        </>
+                    break;
+                case getEnumIndex(processEnum, processEnum.BulkAssignToArray):
+                    sub =
+                        <>
+                            <TextField
+                                size="small"
+                                required
+                                id="outlined-required"
+                                label="変数・配列"
+                                defaultValue=""
+                                slotProps={{
+                                    htmlInput: {
+                                        className: 'text-center',
+                                        pattern: Validation.Variable
+                                    }
+                                    ,
+
+                                }}
+                            />
+                            <Box sx={{
+                                display: 'grid',
+                                alignItems: 'center',
+                                marginRight: '10px',
+                                marginLeft: '10px'
+                            }}>
+                                のすべての要素に
+                            </Box>
+                            <TextField
+                                size="small"
+                                required
+                                id="outlined-required"
+                                label=""
+                                defaultValue=""
+                                slotProps={{
+                                    htmlInput: {
+                                        className: 'text-center',
+                                        pattern: Validation.VariableNumber
+                                    }
+                                }}
+                            />
+                            <Box sx={{
+                                display: 'grid',
+                                alignItems: 'center',
+                                marginRight: '10px',
+                                marginLeft: '10px'
+                            }}>
+                                を代入する
+                            </Box>
+                        </>
+                    break;
+                case getEnumIndex(processEnum, processEnum.Increment):
+                case getEnumIndex(processEnum, processEnum.Decrement):
+                    sub =
+                        <>
+                            <TextField
+                                size="small"
+                                required
+                                id="outlined-required"
+                                label="左辺"
+                                defaultValue=""
+                                slotProps={{
+                                    htmlInput: {
+                                        className: 'text-center',
+                                        pattern: Validation.Variable
+                                    }
+                                    ,
+
+                                }}
+                            />
+                            <Box sx={{
+                                display: 'grid',
+                                alignItems: 'center',
+                                marginRight: '10px',
+                                marginLeft: '10px'
+                            }}>
+                                を
+                            </Box>
+                            <TextField
+                                size="small"
+                                required
+                                id="outlined-required"
+                                label=""
+                                defaultValue=""
+                                slotProps={{
+                                    htmlInput: {
+                                        className: 'text-center',
+                                        pattern: Validation.VariableNumber
+                                    }
+                                }}
+                            />
+                            <Box sx={{
+                                display: 'grid',
+                                alignItems: 'center',
+                                marginRight: '10px',
+                                marginLeft: '10px'
+                            }}>
+                                {processIndex == getEnumIndex(processEnum, processEnum.Increment) ? '増やす' : '減らす'}
+                            </Box>
+                        </>
+                    break;
+                default:
+                    break;
+            }
+
             elm =
                 <>
                     <Autocomplete
@@ -32,6 +317,11 @@ export function StatementEditor(params: Props) {
                         renderInput={(params) => (
                             <TextField {...params} label="処理の内容" variant="standard" />
                         )}
+                        onChange={(event: any, newValue: processTypes | null) => {
+                            console.log(newValue)
+                            setProcessIndex(getEnumIndex(processEnum, newValue?.type ?? processEnum.SetValueToVariable));
+                        }}
+                        defaultValue={{ title: processEnum.SetValueToVariable, type: processEnum.SetValueToVariable }}
                     />
                     <Box
                         sx={{
@@ -43,37 +333,7 @@ export function StatementEditor(params: Props) {
                             borderRadius: 1,
                         }}
                     >
-                        <TextField
-                            slotProps={{
-                                htmlInput: {
-                                    className: 'text-center'
-                                }
-                                ,
-
-                            }}
-                            required
-                            id="outlined-required"
-                            label="左辺"
-                            defaultValue=""
-                        />
-                        <Box sx={{
-                            display: 'grid',
-                            alignItems: 'center'
-                        }}>
-                            <ArrowBackIcon></ArrowBackIcon>
-                        </Box>
-                        <TextField
-                            id="outlined-required"
-                            label="右辺"
-                            defaultValue=""
-                            slotProps={{
-                                htmlInput: {
-                                    className: 'text-center'
-                                }
-                                ,
-
-                            }}
-                        />
+                        {sub}
                     </Box>
                 </>;
             break;
@@ -102,6 +362,8 @@ export enum processEnum {
     InitializeArray = '配列の初期化',
     AssignValueToIndex = '配列への代入(添字)',
     BulkAssignToArray = '配列への一括代入',
+    Increment = '加算を伴う代入',
+    Decrement = '減算を伴う代入',
 
 }
 
@@ -113,6 +375,8 @@ const processNames = [
             { title: processEnum.InitializeArray, type: processEnum.InitializeArray },
             { title: processEnum.AssignValueToIndex, type: processEnum.AssignValueToIndex },
             { title: processEnum.BulkAssignToArray, type: processEnum.BulkAssignToArray },
+            { title: processEnum.Increment, type: processEnum.Increment },
+            { title: processEnum.Decrement, type: processEnum.Decrement },
         ]
     }
 ];
