@@ -6,15 +6,30 @@ import { styled } from '@mui/material/styles';
 import Switch from '@mui/material/Switch';
 import { useState } from "react";
 import Box from '@mui/material/Box';
-import { keyPrefixEnum } from "./Enum";
+import { keyPrefixEnum, inputTypeEnum } from "./Enum";
 import Grid from '@mui/material/Grid2';
 
 type Props = {
-  label?: string
+  label?: string | inputTypeEnum
   validation: Validation
-  showSwitch?: boolean
   name: string
+  inputType: inputTypeEnum
 }
+
+enum inputTypeJpEnum {
+  Switch = '変数名・配列名',
+  ArrayWithoutSuffix = '配列名',
+  Array = '配列名',
+  SuffixOnly = '添字',
+  SuffixWithBrackets = '添字',
+  VariableOnly = '変数名',
+  VariableOrNumber = '値・変数名',
+}
+
+const searchKey = (key: inputTypeEnum) => {
+  const keys = Object.keys(inputTypeJpEnum);
+  return keys.includes(key) ? inputTypeJpEnum[key] : null;
+};
 
 const AntSwitch = styled(Switch)(({ theme }) => ({
   width: 28,
@@ -63,26 +78,108 @@ const AntSwitch = styled(Switch)(({ theme }) => ({
   },
 }));
 
-export function DnclTextField({ name, ...params }: Props) {
+export function DnclTextField({ name, inputType, ...params }: Props) {
 
   const [checked, setChecked] = useState(false);
-  const [label, setLabel] = useState<string>(params.label ?? "");
+  const [label, setLabel] = useState<string | null>(params.label ?? searchKey(inputType));
   const [validation, setValidation] = useState<Validation>(params.validation);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setChecked(event.target.checked);
-    setLabel("値・変数名");
+    setLabel(searchKey(inputTypeEnum.VariableOrNumber));
     if (event.target.checked) {
-      setLabel("配列名");
+      setLabel(searchKey(inputTypeEnum.ArrayWithoutSuffix));
       setValidation(Validation.Array)
     }
   };
 
-  return (
-    <Box sx={{ flexGrow: 1 }}>
-      <Grid container spacing={0}>
-        <Grid size={checked ? 'grow' : 12}>
+  const renderContent = () => {
+    switch (inputType) {
+      case inputTypeEnum.Switch:
+        //変数と配列を切り替え可能
+        return (
+          <>
+            <Grid container spacing={0}>
+              <Grid size={checked ? 'grow' : 12}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  required
+                  id="outlined-required"
+                  label={label}
+                  defaultValue=""
+                  slotProps={{
+                    htmlInput: {
+                      className: 'text-center',
+                      pattern: validation
+                    }
+                    ,
+
+                  }}
+                  name={name}
+                />
+              </Grid>
+              {checked ?
+                <Grid container size='auto'>
+                  <Grid size="auto" sx={{
+                    display: 'grid',
+                    alignItems: 'center',
+                    marginLeft: '10px',
+                    marginRight: '10px'
+                  }}>
+                    [
+                  </Grid>
+                  <Grid size="grow">
+                    <TextField
+                      size="small"
+                      required
+                      id="outlined-required"
+                      label="添字"
+                      defaultValue=""
+                      slotProps={{
+                        htmlInput: {
+                          className: 'text-center',
+                          pattern: Validation.VariableOrNumber
+                        }
+                        ,
+
+                      }}
+                      sx={{ width: '100px' }}
+                      name={name + keyPrefixEnum.Suffix}
+                    />
+                  </Grid>
+                  <Grid size="auto" sx={{
+                    display: 'grid',
+                    alignItems: 'center',
+                    marginLeft: '10px',
+                    marginRight: '10px'
+                  }}>
+                    ]
+                  </Grid>
+                </Grid>
+                :
+                null
+              }
+              {inputType == inputTypeEnum.Switch ?
+                <Grid size={12}>
+                  <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                    {/* <Typography>変数</Typography> */}
+                    <AntSwitch onChange={(handleChange)} inputProps={{ 'aria-label': 'ant design' }} />
+                    <Typography>配列</Typography>
+                  </Stack>
+                </Grid>
+                :
+                null
+              }
+            </Grid>
+          </>
+        );
+      case inputTypeEnum.SuffixOnly:
+      case inputTypeEnum.VariableOnly:
+      case inputTypeEnum.ArrayWithoutSuffix:
+        return <Grid size="grow">
           <TextField
+            fullWidth
             size="small"
             required
             id="outlined-required"
@@ -91,15 +188,35 @@ export function DnclTextField({ name, ...params }: Props) {
             slotProps={{
               htmlInput: {
                 className: 'text-center',
-                pattern: validation
+                pattern: Validation.VariableOrNumber
               }
               ,
 
             }}
-            name={name}
+            name={name + keyPrefixEnum.Suffix}
           />
         </Grid>
-        {checked ?
+      case inputTypeEnum.Array:
+        return <Grid container spacing={0}>
+          <Grid size={'grow'}>
+            <TextField
+              fullWidth
+              size="small"
+              required
+              id="outlined-required"
+              label={label}
+              defaultValue=""
+              slotProps={{
+                htmlInput: {
+                  className: 'text-center',
+                  pattern: validation
+                }
+                ,
+
+              }}
+              name={name}
+            />
+          </Grid>
           <Grid container size='auto'>
             <Grid size="auto" sx={{
               display: 'grid',
@@ -119,7 +236,7 @@ export function DnclTextField({ name, ...params }: Props) {
                 slotProps={{
                   htmlInput: {
                     className: 'text-center',
-                    pattern: Validation.VariableNumber
+                    pattern: Validation.VariableOrNumber
                   }
                   ,
 
@@ -137,21 +254,74 @@ export function DnclTextField({ name, ...params }: Props) {
               ]
             </Grid>
           </Grid>
-          :
-          null
-        }
-        {params.showSwitch ?
-          <Grid size={12}>
-            <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-              {/* <Typography>変数</Typography> */}
-              <AntSwitch onChange={(handleChange)} inputProps={{ 'aria-label': 'ant design' }} />
-              <Typography>配列</Typography>
-            </Stack>
+        </Grid>
+      case inputTypeEnum.SuffixWithBrackets:
+        return <Grid container size='auto'>
+          <Grid size="auto" sx={{
+            display: 'grid',
+            alignItems: 'center',
+            marginLeft: '10px',
+            marginRight: '10px'
+          }}>
+            [
           </Grid>
-          :
-          null
-        }
-      </Grid>
+          <Grid size="grow">
+            <TextField
+              fullWidth
+              size="small"
+              required
+              id="outlined-required"
+              label={label}
+              defaultValue=""
+              slotProps={{
+                htmlInput: {
+                  className: 'text-center',
+                  pattern: Validation.VariableOrNumber
+                }
+                ,
+
+              }}
+              name={name + keyPrefixEnum.Suffix}
+            />
+          </Grid>
+          <Grid size="auto" sx={{
+            display: 'grid',
+            alignItems: 'center',
+            marginLeft: '10px',
+            marginRight: '10px'
+          }}>
+            ]
+          </Grid>
+        </Grid>;
+      case inputTypeEnum.VariableOrNumber:
+        return <Grid size="grow">
+          <TextField
+            fullWidth
+            size="small"
+            required
+            id="outlined-required"
+            label={label}
+            defaultValue=""
+            slotProps={{
+              htmlInput: {
+                className: 'text-center',
+                pattern: Validation.VariableOrNumber
+              }
+              ,
+
+            }}
+            name={name + keyPrefixEnum.Suffix}
+          />
+        </Grid>
+      default:
+        return null;
+
+    }
+  };
+
+  return (
+    <Box sx={{ flexGrow: 1 }}>
+      {renderContent()}
     </Box>
   );
 }

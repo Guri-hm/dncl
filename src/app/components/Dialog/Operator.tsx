@@ -22,6 +22,7 @@ export function Operator({ type, ...props }: Props) {
   return (
     <Box sx={{
       display: 'grid',
+      height: '40px',
       alignItems: 'center',
       marginRight: '2px',
       marginLeft: '2px'
