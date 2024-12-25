@@ -5,15 +5,6 @@ import "allotment/dist/style.css";
 import { SortableTree } from "../components/SortableTree";
 export default function Home() {
 
-  const validArrayString = /^(?:(?:[a-zA-Z_$][a-zA-Z0-9_$]*|\d+)(?:,(?:[a-zA-Z_$][a-zA-Z0-9_$]*|\d+))*)$/;
-
-  const input = "1";
-  if (validArrayString.test(input)) {
-    console.log("入力内容は有効です");
-  } else {
-    console.log("-----入力内容が無効です------");
-  }
-
   return (
     <div className="w-full border-solid border-2 h-dvh">
       <Allotment>

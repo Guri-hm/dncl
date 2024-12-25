@@ -1,6 +1,5 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -38,7 +37,9 @@ export function DnclEditDialog({ open, setOpen, statementType, ...props }: Props
                         event.preventDefault();
                         const formData = new FormData(event.currentTarget);
                         const formJson = Object.fromEntries((formData as any).entries());
-                        const email = formJson.email;
+                        // const email = formJson.email;
+                        console.log(formJson)
+                        console.dir(formJson)
                         handleClose();
                     },
                 }}

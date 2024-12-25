@@ -321,7 +321,6 @@ export function SortableTree({
       // const additionItem: FlattenedItem | undefined = fragments.find(({ id }) => id === active.id);
 
       if (fragmentItem) {
-        console.log(fragmentItem)
         setOpenDnclDialog(true);
         setStatementType(fragmentItem.statementType);
         let clonedItem: FlattenedItem = JSON.parse(JSON.stringify(fragmentItem));

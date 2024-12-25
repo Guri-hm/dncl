@@ -1,6 +1,7 @@
 
 import { Statement } from "../../types";
-
+import React from 'react';
+import { Typography } from "@mui/material";
 type Props = {
     statementType: Statement
 }
@@ -25,7 +26,9 @@ export function StatementDesc(params: Props) {
     return (
         <>
             {str}
-            <p dangerouslySetInnerHTML={{ __html: sub.replace(/\n/g, '<br />') }} />
+            <Typography variant="caption" gutterBottom sx={{ display: 'block' }}>
+                {sub.split('\n').map((line, index) => (<React.Fragment key={index}> {line} <br /> </React.Fragment>))}
+            </Typography>
         </>
 
     );
