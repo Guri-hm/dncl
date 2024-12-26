@@ -9,11 +9,17 @@ import { Statement } from "../../types";
 import { StatementName } from './StatementName';
 import { StatementDesc } from './StatementDesc';
 import { StatementEditor } from './StatementEditor';
+import { keyPrefixEnum } from './Enum';
 
 interface Props {
     open: boolean;
     setOpen: any;
     statementType: Statement
+}
+
+const refineStatement = (data: { [k: string]: any; }, keywordPart: keyPrefixEnum) => {
+    const leftSideElements = Object.fromEntries(Object.entries(data).filter(([key, value]) => key.includes(keywordPart)));
+    console.log(leftSideElements);
 }
 
 export function DnclEditDialog({ open, setOpen, statementType, ...props }: Props) {
@@ -38,8 +44,8 @@ export function DnclEditDialog({ open, setOpen, statementType, ...props }: Props
                         const formData = new FormData(event.currentTarget);
                         const formJson = Object.fromEntries((formData as any).entries());
                         // const email = formJson.email;
-                        console.log(formJson)
-                        console.dir(formJson)
+                        refineStatement(formJson, keyPrefixEnum.LeftSide);
+                        refineStatement(formJson, keyPrefixEnum.RigthSide);
                         handleClose();
                     },
                 }}
