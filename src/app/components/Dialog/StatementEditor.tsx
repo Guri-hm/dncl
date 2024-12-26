@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Statement, Validation, OperatorEnum } from "../../types";
+import { Statement, OperatorEnum } from "../../types";
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import { ReactElement } from "react";
@@ -32,38 +32,38 @@ export function StatementEditor(params: Props) {
         switch (index) {
             case getEnumIndex(processEnum, processEnum.SetValueToVariable):
                 return <>
-                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} validation={Validation.Variable} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.VariableOnly}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.VariableOnly}></DnclTextField>
                     <Operator type={OperatorEnum.SimpleAssignment}></Operator>
-                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} validation={Validation.VariableOrNumber} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.Switch}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.Switch}></DnclTextField>
                 </>
 
             case getEnumIndex(processEnum, processEnum.InitializeArray):
                 //配列の初期化
                 return <>
-                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} validation={Validation.Variable} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.ArrayWithoutSuffix}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.ArrayWithoutSuffix}></DnclTextField>
                     <Operator type={OperatorEnum.SimpleAssignment}></Operator>
-                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} validation={Validation.Variable} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SuffixWithBrackets} label=""></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SuffixWithBrackets} label=""></DnclTextField>
                 </>
             case getEnumIndex(processEnum, processEnum.AssignValueToIndex):
                 //添字による配列への代入
                 return <>
-                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} validation={Validation.Variable} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.Array}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.Array}></DnclTextField>
                     <Operator type={OperatorEnum.SimpleAssignment}></Operator>
-                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} validation={Validation.Variable} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.VariableOrNumber}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.VariableOrNumber}></DnclTextField>
                 </>
             case getEnumIndex(processEnum, processEnum.BulkAssignToArray):
                 return <>
-                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_1`} validation={Validation.Variable} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.ArrayWithoutSuffix}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_1`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.ArrayWithoutSuffix}></DnclTextField>
                     <NowrapText text={'のすべての要素に'}></NowrapText>
-                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_2`} validation={Validation.Variable} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.VariableOrNumber}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_2`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.VariableOrNumber}></DnclTextField>
                     <NowrapText text={'を代入する'}></NowrapText>
                 </>
             case getEnumIndex(processEnum, processEnum.Increment):
             case getEnumIndex(processEnum, processEnum.Decrement):
                 return <>
-                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_1`} validation={Validation.Variable} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.Switch}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_1`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.Switch}></DnclTextField>
                     <NowrapText text={'を'}></NowrapText>
-                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_2`} validation={Validation.Variable} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.VariableOrNumber}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_2`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.VariableOrNumber}></DnclTextField>
                     <NowrapText text={processIndex == getEnumIndex(processEnum, processEnum.Increment) ? '増やす' : '減らす'}></NowrapText>
                 </>
             default:

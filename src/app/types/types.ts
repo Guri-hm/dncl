@@ -21,13 +21,6 @@ export type SensorContext = RefObject<{
   offset: number;
 }>;
 
-export enum Validation {
-  Variable = '^[a-zA-Z_$][a-zA-Z0-9_$]*$', //変数名のルール
-  VariableOrNumber = '^(?:[a-zA-Z_$][a-zA-Z0-9_$]*|[0-9]+)$',//変数名および数値
-  InitializeArray = '^(?:(?:[a-zA-Z_$][a-zA-Z0-9_$]*|[0-9]+)(?:,(?:[a-zA-Z_$][a-zA-Z0-9_$]*|[0-9]+))*)$',//配列内のカンマ区切りの文字列
-  Array = '^[a-zA-Z_$][a-zA-Z0-9_$]*$',//配列名のルール
-}
-
 export enum Statement {
   Input = 'input',
   Condition = 'condition'
