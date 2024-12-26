@@ -99,7 +99,7 @@ export function DnclTextField({ name, inputType, ...params }: Props) {
           <>
             <Grid container spacing={0}>
               <Grid size={checked ? 'grow' : 12}>
-                <ValidatedTextField name={name} label={label} pattern={ValidationEnum.Variable}></ValidatedTextField>
+                <ValidatedTextField name={name} label={checked ? inputTypeJpEnum.Array : inputTypeJpEnum.VariableOrNumber} pattern={checked ? ValidationEnum.Array : ValidationEnum.VariableOrNumber}></ValidatedTextField>
               </Grid>
               {checked &&
                 <Grid container size='auto'>
