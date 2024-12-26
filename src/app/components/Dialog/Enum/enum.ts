@@ -19,6 +19,7 @@ export enum inputTypeEnum {
   Array = 'Array',
   SuffixOnly = 'SuffixOnly',
   SuffixWithBrackets = 'SuffixWithBrackets',
+  InitializeArray = 'InitializeArray',
   VariableOnly = 'VariableOnly',
   VariableOrNumber = 'VariableOrNumber',
 }

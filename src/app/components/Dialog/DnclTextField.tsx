@@ -156,6 +156,14 @@ export function DnclTextField({ name, inputType, ...params }: Props) {
           </Grid>
           <FixedHeightGrid>]</FixedHeightGrid>
         </Grid>;
+      case inputTypeEnum.InitializeArray:
+        return <Grid container size='auto'>
+          <FixedHeightGrid>[</FixedHeightGrid>
+          <Grid size="grow">
+            <ValidatedTextField name={name + keyPrefixEnum.Suffix} label={label} pattern={ValidationEnum.InitializeArray}></ValidatedTextField>
+          </Grid>
+          <FixedHeightGrid>]</FixedHeightGrid>
+        </Grid>;
       case inputTypeEnum.VariableOrNumber:
         return <Grid size="grow">
           <ValidatedTextField name={name + keyPrefixEnum.Suffix} label={label} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>

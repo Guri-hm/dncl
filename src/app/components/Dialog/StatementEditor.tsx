@@ -42,7 +42,7 @@ export function StatementEditor(params: Props) {
                 return <>
                     <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.ArrayWithoutSuffix}></DnclTextField>
                     <Operator type={OperatorEnum.SimpleAssignment}></Operator>
-                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SuffixWithBrackets} label=""></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.InitializeArray} label=""></DnclTextField>
                 </>
             case getEnumIndex(processEnum, processEnum.AssignValueToIndex):
                 //添字による配列への代入
