@@ -142,6 +142,12 @@ export function SortableTree({
   const [offsetLeft, setOffsetLeft] = useState(0);
   const [editor, setEditor] = useState<DnclEditor>({ onSubmit: null, open: false, type: Statement.Input, overIndex: 0 });
 
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+
   const flattenedItems = useMemo(() => {
     const flattenedTree = flattenTree(items);
     const collapsedItems = flattenedTree.reduce<string[]>(
@@ -199,6 +205,12 @@ export function SortableTree({
   }, [flattenedItems, offsetLeft]);
 
   const [visible, setVisible] = useState(true);
+
+  if (!isClient) {
+    //documentオブジェクトはクライアントサイドでしか利用できないため、サーバサイドのエラーが発生する
+    // サーバーサイドでは何もレンダリングしない
+    return null;
+  }
   return (
     <DndContext
       // 衝突検知を collisionDetection={closestCenter} にすると、全エリアでDropOver扱いになる
