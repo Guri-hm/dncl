@@ -33,10 +33,9 @@ import {
   removeChildrenOf,
   setProperty,
 } from "../utilities";
-import { FlattenedItem, SensorContext, TreeItems, FragmentItems, FragmentItem, Statement } from "../types";
-import { SortableTreeItem, FragmentsListItem } from "../components";
+import { FlattenedItem, SensorContext, TreeItems, FragmentItems, FragmentItem, Statement, DnclEditor } from "../types";
+import { SortableTreeItem, FragmentsListItem, DnclEditDialog } from "../components";
 import { v4 as uuidv4 } from "uuid";
-import { DnclEditDialog } from "../components";
 
 const initialItems: TreeItems = [
   {
@@ -132,8 +131,7 @@ export function SortableTree({
   const [activeCode, setActiveCode] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
-  const [openDnclDialog, setOpenDnclDialog] = useState(false);
-  const [statementType, setStatementType] = useState<Statement>(Statement.Input);
+  const [editor, setEditor] = useState<DnclEditor>({ onSubmit: null, open: false, type: Statement.Input });
 
   const flattenedItems = useMemo(() => {
     const flattenedTree = flattenTree(items);
@@ -218,7 +216,7 @@ export function SortableTree({
           >
             {visible ? "Hide" : "Show"}
           </button>
-          <DnclEditDialog open={openDnclDialog} setOpen={setOpenDnclDialog} statementType={statementType}></DnclEditDialog>
+          <DnclEditDialog editor={editor} setEditor={setEditor}></DnclEditDialog>
 
         </Allotment.Pane>
         <Allotment.Pane visible={visible} snap>
@@ -311,6 +309,10 @@ export function SortableTree({
     setOverId(over?.id.toString() ?? null);
   }
 
+  const addStatementToTree = (statementText: string) => {
+
+  }
+
   function handleDragEnd({ active, over }: DragEndEvent) {
     resetState();
 
@@ -321,8 +323,7 @@ export function SortableTree({
       // const additionItem: FlattenedItem | undefined = fragments.find(({ id }) => id === active.id);
 
       if (fragmentItem) {
-        setOpenDnclDialog(true);
-        setStatementType(fragmentItem.statementType);
+        setEditor((prevState: DnclEditor) => ({ ...prevState, open: true, type: fragmentItem.statementType }));
         let clonedItem: FlattenedItem = JSON.parse(JSON.stringify(fragmentItem));
         const newId = uuidv4();
 

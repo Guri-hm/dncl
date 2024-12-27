@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { OperatorEnum } from "../../types";
+import { OperatorEnum } from '@/app/enum';
 import { ReactElement } from "react";
 
 type Props = {

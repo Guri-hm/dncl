@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Statement, OperatorEnum } from "../../types";
+import { Statement } from "../../types";
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import { ReactElement } from "react";
@@ -8,6 +8,7 @@ import { DnclTextField } from "./DnclTextField";
 import { Operator } from "./Operator";
 import { processEnum, keyPrefixEnum, inputTypeEnum } from "./Enum";
 import { NowrapText } from "./NowrapText";
+import { OperatorEnum } from "@/app/enum";
 
 type Props = {
     statementType: Statement

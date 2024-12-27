@@ -26,14 +26,16 @@ export enum Statement {
   Condition = 'condition'
 }
 
-export enum OperatorEnum {
-  SimpleAssignment = '単純代入',
-}
-
-
 //ツリーに追加する要素の型
 export interface FragmentItem extends FlattenedItem {
   statementType: Statement;
 }
 
 export type FragmentItems = FragmentItem[];
+
+export type DnclEditor = {
+  item?: FragmentItem,
+  open: boolean,
+  onSubmit: any,
+  type: Statement
+}

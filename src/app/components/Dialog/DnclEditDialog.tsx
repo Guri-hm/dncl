@@ -5,16 +5,16 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import { Statement } from "../../types";
+import { Statement, DnclEditor } from "../../types";
 import { StatementName } from './StatementName';
 import { StatementDesc } from './StatementDesc';
 import { StatementEditor } from './StatementEditor';
 import { keyPrefixEnum } from './Enum';
+import { OperatorEnum } from '@/app/enum';
 
 interface Props {
-    open: boolean;
-    setOpen: any;
-    statementType: Statement
+    editor: DnclEditor;
+    setEditor: any;
 }
 
 const refineStatement = (data: { [k: string]: any; }, keywordPart: keyPrefixEnum) => {
@@ -22,20 +22,30 @@ const refineStatement = (data: { [k: string]: any; }, keywordPart: keyPrefixEnum
     console.log(leftSideElements);
 }
 
-export function DnclEditDialog({ open, setOpen, statementType, ...props }: Props) {
+const getOperator = (statementType: Statement) => {
+
+    switch (statementType) {
+        case Statement.Input:
+            return OperatorEnum.SimpleAssignment;
+        default:
+            return "";
+    }
+}
+
+export function DnclEditDialog({ editor, setEditor, ...props }: Props) {
 
     const handleClickOpen = () => {
-        setOpen(true);
+        setEditor((prevState: DnclEditor) => ({ ...prevState, open: true }));
     };
 
     const handleClose = () => {
-        setOpen(false);
+        setEditor((prevState: DnclEditor) => ({ ...prevState, open: false }));
     };
 
     return (
         <React.Fragment>
             <Dialog
-                open={open}
+                open={editor.open}
                 onClose={handleClose}
                 PaperProps={{
                     component: 'form',
@@ -43,21 +53,21 @@ export function DnclEditDialog({ open, setOpen, statementType, ...props }: Props
                         event.preventDefault();
                         const formData = new FormData(event.currentTarget);
                         const formJson = Object.fromEntries((formData as any).entries());
-                        // const email = formJson.email;
-                        refineStatement(formJson, keyPrefixEnum.LeftSide);
-                        refineStatement(formJson, keyPrefixEnum.RigthSide);
+                        const leftside = refineStatement(formJson, keyPrefixEnum.LeftSide);
+                        const rightside = refineStatement(formJson, keyPrefixEnum.RigthSide);
+                        const operator = getOperator(editor.type);
                         handleClose();
                     },
                 }}
             >
                 <DialogTitle>
-                    <StatementName statementType={statementType}></StatementName>
+                    <StatementName statementType={editor.type}></StatementName>
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        <StatementDesc statementType={statementType}></StatementDesc>
+                        <StatementDesc statementType={editor.type}></StatementDesc>
                     </DialogContentText>
-                    <StatementEditor statementType={statementType}></StatementEditor>
+                    <StatementEditor statementType={editor.type}></StatementEditor>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose}>キャンセル</Button>
