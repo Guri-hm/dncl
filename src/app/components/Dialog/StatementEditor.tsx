@@ -9,6 +9,9 @@ import { Operator } from "./Operator";
 import { processEnum, keyPrefixEnum, inputTypeEnum } from "./Enum";
 import { NowrapText } from "./NowrapText";
 import { OperatorEnum } from "@/app/enum";
+import Button from '@mui/material/Button';
+import AddIcon from '@mui/icons-material/Add';
+import { DnclTextFieldProps } from "./DnclTextField";
 
 type Props = {
     statementType: Statement
@@ -18,10 +21,17 @@ function getEnumIndex<T extends Record<string, string | number>>(enumObj: T, val
     return Object.values(enumObj).indexOf(value);
 }
 
+function MyComponent() { return <div>This is a duplicated component.</div>; }
+
 export function StatementEditor(params: Props) {
 
     const [processIndex, setProcessIndex] = useState<number>(getEnumIndex(processEnum, processEnum.SetValueToVariable));
     const [statement, setStatement] = useState<ReactElement | null>(null);
+    const [termComponents, setTermComponents] = useState<DnclTextFieldProps[]>([{ name: keyPrefixEnum.RigthSide }]);
+
+    const addTermComponent = () => {
+        setTermComponents([...termComponents, { name: keyPrefixEnum.RigthSide }]);
+    };
 
     const handleChange = (event: any, newValue: processTypes | null) => {
         const index = getEnumIndex(processEnum, newValue?.type ?? processEnum.SetValueToVariable);
@@ -71,7 +81,14 @@ export function StatementEditor(params: Props) {
                 return <>
                     <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_1`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArrayWithoutSuffix}></DnclTextField>
                     <Operator type={OperatorEnum.SimpleAssignment}></Operator>
-                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.Switch}></DnclTextField>
+                    <Box>
+                        {termComponents.map((component, index) => (<DnclTextField key={`${component.name}_${index}`} name={`${component.name}`} index={index} inputType={inputTypeEnum.Switch} />))}
+                        {/* <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.Switch}></DnclTextField> */}
+                        <Button variant="text" fullWidth size="small" startIcon={<AddIcon />}
+                            onClick={addTermComponent}>
+                            項を追加する
+                        </Button>
+                    </Box>
                 </>
             default:
                 return <></>;
