@@ -131,7 +131,7 @@ export function SortableTree({
   const [activeCode, setActiveCode] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
-  const [editor, setEditor] = useState<DnclEditor>({ onSubmit: null, open: false, type: Statement.Input });
+  const [editor, setEditor] = useState<DnclEditor>({ onSubmit: null, open: false, type: Statement.Input, overIndex: 0 });
 
   const flattenedItems = useMemo(() => {
     const flattenedTree = flattenTree(items);
@@ -195,6 +195,7 @@ export function SortableTree({
       // 衝突検知を collisionDetection={closestCenter} にすると、全エリアでDropOver扱いになる
       sensors={sensors}
       measuring={measuring}
+      collisionDetection={closestCenter}
       onDragStart={handleDragStart}
       onDragMove={handleDragMove}
       onDragOver={handleDragOver}
@@ -309,12 +310,27 @@ export function SortableTree({
     setOverId(over?.id.toString() ?? null);
   }
 
-  const addStatementToTree = (statementText: string) => {
-
+  function refrash() {
+    //元の要素のidを更新しないと追加のためのドラッグできなくなる
+    fragments.forEach(item => { item.id = uuidv4() });
   }
 
   function handleDragEnd({ active, over }: DragEndEvent) {
     resetState();
+
+    const addStatementToTree = (newItem: FlattenedItem, statementText: string, overIndex: number) => {
+      const clonedItems: FlattenedItem[] = structuredClone(flattenTree(items));
+
+      newItem = { ...newItem, code: statementText }
+
+      clonedItems.push(newItem);
+
+      const sortedItems = arrayMove(clonedItems, Number(newItem.id), overIndex);
+      const newItems = buildTree(sortedItems);
+
+      setItems(newItems);
+      refrash();
+    }
 
     if (projected && over) {
       const { depth, parentId } = projected;
@@ -323,13 +339,16 @@ export function SortableTree({
       // const additionItem: FlattenedItem | undefined = fragments.find(({ id }) => id === active.id);
 
       if (fragmentItem) {
-        setEditor((prevState: DnclEditor) => ({ ...prevState, open: true, type: fragmentItem.statementType }));
         let clonedItem: FlattenedItem = JSON.parse(JSON.stringify(fragmentItem));
         const newId = uuidv4();
 
-        clonedItem.id = newId;
-        active.id = newId;
-        clonedItems.push(clonedItem);
+        // clonedItem.id = newId;
+        // active.id = newId;
+        // clonedItems.push(clonedItem);
+
+        clonedItem = { ...clonedItem, id: newId, depth: depth, parentId: parentId }
+        setEditor((prevState: DnclEditor) => ({ ...prevState, item: clonedItem, onSubmit: addStatementToTree, open: true, type: fragmentItem.statementType, overIndex: Number(over.id) }));
+        return;
       }
       const overIndex = clonedItems.findIndex(({ id }) => id === over.id);
       const activeIndex = clonedItems.findIndex(({ id }) => id === active.id);
@@ -343,14 +362,12 @@ export function SortableTree({
       setItems(newItems);
     }
 
-    //元の要素のidを更新しないと追加のためのドラッグできなくなる
-    fragments.forEach(item => { item.id = uuidv4() });
+    refrash();
   }
 
   function handleDragCancel() {
     resetState();
-    //元の要素のidを更新しないと追加のためのドラッグできなくなる
-    fragments.forEach(item => { item.id = uuidv4() });
+    refrash();
   }
 
   function resetState() {

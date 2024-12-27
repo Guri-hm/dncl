@@ -34,8 +34,9 @@ export interface FragmentItem extends FlattenedItem {
 export type FragmentItems = FragmentItem[];
 
 export type DnclEditor = {
-  item?: FragmentItem,
+  item?: FlattenedItem,
   open: boolean,
   onSubmit: any,
-  type: Statement
+  type: Statement,
+  overIndex: number
 }

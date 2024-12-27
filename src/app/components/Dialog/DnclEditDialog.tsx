@@ -18,8 +18,10 @@ interface Props {
 }
 
 const refineStatement = (data: { [k: string]: any; }, keywordPart: keyPrefixEnum) => {
-    const leftSideElements = Object.fromEntries(Object.entries(data).filter(([key, value]) => key.includes(keywordPart)));
-    console.log(leftSideElements);
+    const obj = Object.fromEntries(Object.entries(data).filter(([key, value]) => key.includes(keywordPart)));
+    const valuesArray = Object.values(obj);
+    const statement = valuesArray.join('');
+    return statement;
 }
 
 const getOperator = (statementType: Statement) => {
@@ -56,6 +58,8 @@ export function DnclEditDialog({ editor, setEditor, ...props }: Props) {
                         const leftside = refineStatement(formJson, keyPrefixEnum.LeftSide);
                         const rightside = refineStatement(formJson, keyPrefixEnum.RigthSide);
                         const operator = getOperator(editor.type);
+                        console.log(`${leftside} ${operator} ${rightside}`);
+                        editor.onSubmit(editor.item, `${leftside} ${operator} ${rightside}`, editor.overIndex);
                         handleClose();
                     },
                 }}

@@ -125,8 +125,11 @@ export function DnclTextField({ name, inputType, ...params }: Props) {
             </Grid>
           </>
         );
-      case inputTypeEnum.SuffixOnly:
       case inputTypeEnum.VariableOnly:
+        return <Grid size="grow">
+          <ValidatedTextField name={name} label={label} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
+        </Grid>
+      case inputTypeEnum.SuffixOnly:
       case inputTypeEnum.ArrayWithoutSuffix:
         return <Grid size="grow">
           <ValidatedTextField name={name + keyPrefixEnum.Suffix} label={label} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
