@@ -12,6 +12,9 @@ import { OperatorEnum } from "@/app/enum";
 import Button from '@mui/material/Button';
 import AddIcon from '@mui/icons-material/Add';
 import { DnclTextFieldProps } from "./DnclTextField";
+import IconButton from '@mui/material/IconButton';
+import BackspaceIcon from '@mui/icons-material/Backspace';
+import Stack from '@mui/material/Stack';
 
 type Props = {
     statementType: Statement
@@ -21,8 +24,6 @@ function getEnumIndex<T extends Record<string, string | number>>(enumObj: T, val
     return Object.values(enumObj).indexOf(value);
 }
 
-function MyComponent() { return <div>This is a duplicated component.</div>; }
-
 export function StatementEditor(params: Props) {
 
     const [processIndex, setProcessIndex] = useState<number>(getEnumIndex(processEnum, processEnum.SetValueToVariable));
@@ -31,6 +32,10 @@ export function StatementEditor(params: Props) {
 
     const addTermComponent = () => {
         setTermComponents([...termComponents, { name: keyPrefixEnum.RigthSide }]);
+    };
+    const removeTermComponent = (index: number) => {
+        console.log(index)
+        setTermComponents(termComponents.filter((_, i) => i !== index));
     };
 
     const handleChange = (event: any, newValue: processTypes | null) => {
@@ -81,9 +86,16 @@ export function StatementEditor(params: Props) {
                 return <>
                     <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_1`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArrayWithoutSuffix}></DnclTextField>
                     <Operator type={OperatorEnum.SimpleAssignment}></Operator>
-                    <Box>
-                        {termComponents.map((component, index) => (<DnclTextField key={`${component.name}_${index}`} name={`${component.name}`} index={index} inputType={inputTypeEnum.Switch} />))}
-                        {/* <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.Switch}></DnclTextField> */}
+                    <Box key={111}>
+                        {termComponents.map((component, index) => (
+                            <Stack direction="row" spacing={0} key={`${component.name}_${index}`}>
+                                <DnclTextField name={`${component.name}`} index={index} inputType={inputTypeEnum.Switch} />
+                                {(index == termComponents.length - 1 && index != 0) && <IconButton aria-label="delete" onClick={() => removeTermComponent(index)}><BackspaceIcon /></IconButton>}
+                            </Stack>
+                        )
+                        )
+                        }
+
                         <Button variant="text" fullWidth size="small" startIcon={<AddIcon />}
                             onClick={addTermComponent}>
                             項を追加する
