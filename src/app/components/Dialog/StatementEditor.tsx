@@ -67,19 +67,25 @@ export function StatementEditor(params: Props) {
                     <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_2`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.VariableOrNumber}></DnclTextField>
                     <NowrapText text={processIndex == getEnumIndex(processEnum, processEnum.Increment) ? '増やす' : '減らす'}></NowrapText>
                 </>
+            case getEnumIndex(processEnum, processEnum.ArithmeticOperation):
+                return <>
+                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_1`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArrayWithoutSuffix}></DnclTextField>
+                    <Operator type={OperatorEnum.SimpleAssignment}></Operator>
+                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.Switch}></DnclTextField>
+                </>
             default:
                 return <></>;
         }
     }
 
+    const result = processNames.filter(item => item.statementType == params.statementType)
+        .flatMap(item => item.names);
+    const defaultProps = {
+        options: result,
+        getOptionLabel: (option: processTypes) => option.title,
+    };
     switch (params.statementType) {
         case Statement.Input:
-            const result = processNames.filter(item => item.statementType == Statement.Input)
-                .flatMap(item => item.names);
-            const defaultProps = {
-                options: result,
-                getOptionLabel: (option: processTypes) => option.title,
-            };
             return <>
                 <Autocomplete
                     {...defaultProps}
@@ -104,8 +110,55 @@ export function StatementEditor(params: Props) {
                     {statement ?? getStatement(getEnumIndex(processEnum, processEnum.SetValueToVariable))}
                 </Box>
             </>;
+        case Statement.Operation:
+            return <>
+                <Autocomplete
+                    {...defaultProps}
+                    id="auto-select"
+                    autoSelect
+                    renderInput={(params) => (
+                        <TextField {...params} label="文の内容" variant="standard" />
+                    )}
+                    onChange={handleChange}
+                    defaultValue={{ title: processEnum.ArithmeticOperation, type: processEnum.ArithmeticOperation }}
+                />
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        p: 1,
+                        m: 1,
+                        bgcolor: 'background.paper',
+                        borderRadius: 1,
+                    }}
+                >
+                    {statement ?? getStatement(getEnumIndex(processEnum, processEnum.ArithmeticOperation))}
+                </Box>
+            </>;
         case Statement.Condition:
-            break;
+            return <>
+                <Autocomplete
+                    {...defaultProps}
+                    id="auto-select"
+                    autoSelect
+                    renderInput={(params) => (
+                        <TextField {...params} label="文の内容" variant="standard" />
+                    )}
+                    onChange={handleChange}
+                    defaultValue={null}
+                />
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        p: 1,
+                        m: 1,
+                        bgcolor: 'background.paper',
+                        borderRadius: 1,
+                    }}
+                >
+                </Box>
+            </>;
         default:
             break;
     }
@@ -130,6 +183,19 @@ const processNames = [
             { title: processEnum.Increment, type: processEnum.Increment },
             { title: processEnum.Decrement, type: processEnum.Decrement },
         ]
-    }
+    },
+    {
+        statementType: Statement.Operation,
+        names: [
+            { title: processEnum.ArithmeticOperation, type: processEnum.ArithmeticOperation },
+            { title: processEnum.ComparisonOperation, type: processEnum.ComparisonOperation },
+        ]
+    },
+    {
+        statementType: Statement.Condition,
+        names: [
+            { title: processEnum.SetValueToVariable, type: processEnum.SetValueToVariable },
+        ]
+    },
 ];
 

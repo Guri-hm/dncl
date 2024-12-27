@@ -27,8 +27,12 @@ enum inputTypeJpEnum {
 }
 
 const searchKey = (key: inputTypeEnum) => {
+
+  function getEnumValueByKey(enumObj: any, key: string): any {
+    return enumObj[key as keyof typeof enumObj];
+  }
   const keys = Object.keys(inputTypeJpEnum);
-  return keys.includes(key) ? inputTypeJpEnum[key] : null;
+  return keys.includes(key) ? getEnumValueByKey(inputTypeJpEnum, key) : null;
 };
 
 const AntSwitch = styled(Switch)(({ theme }) => ({
@@ -81,25 +85,39 @@ const AntSwitch = styled(Switch)(({ theme }) => ({
 export function DnclTextField({ name, inputType, ...params }: Props) {
 
   const [checked, setChecked] = useState(false);
-  const [label, setLabel] = useState<string | null>(params.label ?? searchKey(inputType));
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setChecked(event.target.checked);
-    setLabel(searchKey(inputTypeEnum.VariableOrNumber));
-    if (event.target.checked) {
-      setLabel(searchKey(inputTypeEnum.ArrayWithoutSuffix));
-    }
+
   };
 
   const renderContent = () => {
     switch (inputType) {
       case inputTypeEnum.Switch:
+      case inputTypeEnum.SwitchVariableOrArrayWithoutSuffix:
+
+        let label: string = "";
+        let pattern: ValidationEnum = ValidationEnum.Variable;
+
+        switch (inputType) {
+          case inputTypeEnum.Switch:
+            label = checked ? inputTypeJpEnum.Array : inputTypeJpEnum.VariableOrNumber;
+            pattern = checked ? ValidationEnum.Array : ValidationEnum.VariableOrNumber;
+            break;
+          case inputTypeEnum.SwitchVariableOrArrayWithoutSuffix:
+            label = checked ? inputTypeJpEnum.Array : inputTypeJpEnum.VariableOnly;
+            pattern = checked ? ValidationEnum.Array : ValidationEnum.Variable;
+            break;
+          default:
+            break;
+        }
+
         //変数と配列を切り替え可能
         return (
           <>
             <Grid container spacing={0}>
               <Grid size={checked ? 'grow' : 12}>
-                <ValidatedTextField name={name} label={checked ? inputTypeJpEnum.Array : inputTypeJpEnum.VariableOrNumber} pattern={checked ? ValidationEnum.Array : ValidationEnum.VariableOrNumber}></ValidatedTextField>
+                <ValidatedTextField name={name} label={label} pattern={pattern}></ValidatedTextField>
               </Grid>
               {checked &&
                 <Grid container size='auto'>
@@ -113,7 +131,7 @@ export function DnclTextField({ name, inputType, ...params }: Props) {
                   <FixedHeightGrid>]</FixedHeightGrid>
                 </Grid>
               }
-              {inputType == inputTypeEnum.Switch &&
+              {(inputType == inputTypeEnum.Switch || inputType == inputTypeEnum.SwitchVariableOrArrayWithoutSuffix) &&
                 <Grid size={12}>
                   <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
                     {/* <Typography>変数</Typography> */}
@@ -127,18 +145,21 @@ export function DnclTextField({ name, inputType, ...params }: Props) {
         );
       case inputTypeEnum.VariableOnly:
         return <Grid size="grow">
-          <ValidatedTextField name={name} label={label} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
+          <ValidatedTextField name={name} label={inputTypeJpEnum.VariableOnly} pattern={ValidationEnum.Variable}></ValidatedTextField>
         </Grid>
       case inputTypeEnum.SuffixOnly:
+        return <Grid size="grow">
+          <ValidatedTextField name={name + keyPrefixEnum.Suffix} label={inputTypeJpEnum.VariableOrNumber} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
+        </Grid>
       case inputTypeEnum.ArrayWithoutSuffix:
         return <Grid size="grow">
-          <ValidatedTextField name={name + keyPrefixEnum.Suffix} label={label} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
+          <ValidatedTextField name={name} label={inputTypeJpEnum.VariableOrNumber} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
         </Grid>
 
       case inputTypeEnum.Array:
         return <Grid container spacing={0}>
           <Grid size={'grow'}>
-            <ValidatedTextField name={name} label={label} pattern={ValidationEnum.Variable}></ValidatedTextField>
+            <ValidatedTextField name={name} label={inputTypeJpEnum.ArrayWithoutSuffix} pattern={ValidationEnum.Variable}></ValidatedTextField>
           </Grid>
           <Grid container size='auto'>
             <FixedHeightGrid>[</FixedHeightGrid>
@@ -155,7 +176,7 @@ export function DnclTextField({ name, inputType, ...params }: Props) {
         return <Grid container size='auto'>
           <FixedHeightGrid>[</FixedHeightGrid>
           <Grid size="grow">
-            <ValidatedTextField name={name + keyPrefixEnum.Suffix} label={label} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
+            <ValidatedTextField name={name + keyPrefixEnum.Suffix} label={params.label} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
           </Grid>
           <FixedHeightGrid>]</FixedHeightGrid>
         </Grid>;
@@ -163,13 +184,13 @@ export function DnclTextField({ name, inputType, ...params }: Props) {
         return <Grid container size='auto'>
           <FixedHeightGrid>[</FixedHeightGrid>
           <Grid size="grow">
-            <ValidatedTextField name={name + keyPrefixEnum.Suffix} label={label} pattern={ValidationEnum.InitializeArray}></ValidatedTextField>
+            <ValidatedTextField name={name + keyPrefixEnum.Suffix} label={params.label} pattern={ValidationEnum.InitializeArray}></ValidatedTextField>
           </Grid>
           <FixedHeightGrid>]</FixedHeightGrid>
         </Grid>;
       case inputTypeEnum.VariableOrNumber:
         return <Grid size="grow">
-          <ValidatedTextField name={name + keyPrefixEnum.Suffix} label={label} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
+          <ValidatedTextField name={name + keyPrefixEnum.Suffix} label={inputTypeJpEnum.VariableOrNumber} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
         </Grid>
       default:
         return null;

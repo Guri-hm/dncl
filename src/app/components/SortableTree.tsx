@@ -85,13 +85,22 @@ const fragments: FragmentItems = [
   },
   {
     id: uuidv4(),
+    code: "演算",
+    children: [],
+    index: 0,
+    parentId: null,
+    depth: 0,
+    statementType: Statement.Operation
+  },
+  {
+    id: uuidv4(),
     code: "条件文",
     children: [],
     index: 0,
     parentId: null,
     depth: 0,
     statementType: Statement.Condition
-  }
+  },
 ]
 
 const measuring = {
@@ -217,7 +226,7 @@ export function SortableTree({
           >
             {visible ? "Hide" : "Show"}
           </button>
-          <DnclEditDialog editor={editor} setEditor={setEditor}></DnclEditDialog>
+          <DnclEditDialog editor={editor} setEditor={setEditor} refrash={refrash}></DnclEditDialog>
 
         </Allotment.Pane>
         <Allotment.Pane visible={visible} snap>

@@ -15,11 +15,23 @@ import { OperatorEnum } from '@/app/enum';
 interface Props {
     editor: DnclEditor;
     setEditor: any;
+    refrash: any
 }
 
-const refineStatement = (data: { [k: string]: any; }, keywordPart: keyPrefixEnum) => {
+const refineStatement = (data: { [k: string]: string; }, keywordPart: keyPrefixEnum) => {
     const obj = Object.fromEntries(Object.entries(data).filter(([key, value]) => key.includes(keywordPart)));
-    const valuesArray = Object.values(obj);
+
+    //添字は前後に[]をつける
+    const updatedObj: { [k: string]: string; } = {};
+    for (const key in obj) {
+        if (key.includes(keyPrefixEnum.Suffix)) {
+            updatedObj[key] = `[${obj[key]}]`;
+        } else {
+            updatedObj[key] = obj[key];
+        }
+    }
+
+    const valuesArray = Object.values(updatedObj);
     const statement = valuesArray.join('');
     return statement;
 }
@@ -34,7 +46,7 @@ const getOperator = (statementType: Statement) => {
     }
 }
 
-export function DnclEditDialog({ editor, setEditor, ...props }: Props) {
+export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) {
 
     const handleClickOpen = () => {
         setEditor((prevState: DnclEditor) => ({ ...prevState, open: true }));
@@ -42,6 +54,7 @@ export function DnclEditDialog({ editor, setEditor, ...props }: Props) {
 
     const handleClose = () => {
         setEditor((prevState: DnclEditor) => ({ ...prevState, open: false }));
+        refrash();
     };
 
     return (
@@ -58,7 +71,6 @@ export function DnclEditDialog({ editor, setEditor, ...props }: Props) {
                         const leftside = refineStatement(formJson, keyPrefixEnum.LeftSide);
                         const rightside = refineStatement(formJson, keyPrefixEnum.RigthSide);
                         const operator = getOperator(editor.type);
-                        console.log(`${leftside} ${operator} ${rightside}`);
                         editor.onSubmit(editor.item, `${leftside} ${operator} ${rightside}`, editor.overIndex);
                         handleClose();
                     },

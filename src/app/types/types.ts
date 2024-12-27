@@ -23,7 +23,8 @@ export type SensorContext = RefObject<{
 
 export enum Statement {
   Input = 'input',
-  Condition = 'condition'
+  Operation = 'operation',
+  Condition = 'condition',
 }
 
 //ツリーに追加する要素の型
@@ -38,5 +39,5 @@ export type DnclEditor = {
   open: boolean,
   onSubmit: any,
   type: Statement,
-  overIndex: number
+  overIndex: number,
 }
