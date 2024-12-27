@@ -20,7 +20,9 @@ export function StatementDesc(params: Props) {
             break;
         case Statement.Operation:
             str = "算術演算と比較演算，そして論理演算をおこないます。";
-            sub = "";
+            sub = "・加減乗除の四則演算は，『+』，『-』，『×』，『/』で指定します。\n\
+            ・整数の除算では，商を『÷』で，余りを『%』で計算できます。\n\
+            ";
             break;
         case Statement.Condition:
             break;

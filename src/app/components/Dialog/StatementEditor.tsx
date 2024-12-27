@@ -89,6 +89,7 @@ export function StatementEditor(params: Props) {
                     <Box key={111}>
                         {termComponents.map((component, index) => (
                             <Stack direction="row" spacing={0} key={`${component.name}_${index}`}>
+                                {index > 0 && <Operator type={OperatorEnum.ArithmeticOperation}></Operator>}
                                 <DnclTextField name={`${component.name}`} index={index} inputType={inputTypeEnum.Switch} />
                                 {(index == termComponents.length - 1 && index != 0) && <IconButton aria-label="delete" onClick={() => removeTermComponent(index)}><BackspaceIcon /></IconButton>}
                             </Stack>
