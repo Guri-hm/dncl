@@ -13,8 +13,8 @@ import { FixedHeightGrid } from './FixedHeightGrid';
 export interface DnclTextFieldProps {
   label?: string | inputTypeEnum
   name: string
-  inputType?: inputTypeEnum
   index?: number
+  inputType?: inputTypeEnum
 }
 
 enum inputTypeJpEnum {

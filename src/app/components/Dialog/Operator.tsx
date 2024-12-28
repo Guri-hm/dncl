@@ -5,6 +5,7 @@ import { OperatorEnum } from '@/app/enum';
 import { ReactElement } from "react";
 import IconButton from '@mui/material/IconButton';
 import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon';
+import { keyPrefixEnum } from "./Enum";
 
 function AdditionOperator(props: SvgIconProps) {
   return (
@@ -38,7 +39,7 @@ function DivisionOperatorRemaining(props: SvgIconProps) {
 function DivisionOperator(props: SvgIconProps) {
   return (
     <SvgIcon {...props}>
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-slash"> <line x1="19" y1="5" x2="5" y2="19"></line> </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-slash"> <line x1="19" y1="5" x2="5" y2="19"></line> </svg>
     </SvgIcon>
   );
 }
@@ -52,6 +53,8 @@ function MultiplicationOperator(props: SvgIconProps) {
 
 type Props = {
   type: OperatorEnum
+  name?: string
+  parentIndex?: number
 }
 
 const ArithmeticOperatorArray: React.FC<SvgIconProps>[] = [
@@ -63,22 +66,22 @@ const ArithmeticOperatorArray: React.FC<SvgIconProps>[] = [
   DivisionOperatorRemaining
 ];
 
-export function Operator({ type, ...props }: Props) {
-  const [index, setIndex] = useState<number>(0);
+export function Operator({ type, name = "", parentIndex = 0, ...props }: Props) {
+  const [operatorIndex, setOperatorIndex] = useState<number>(0);
 
   let icon: ReactElement = <></>;
   const handleOnClick = () => {
-    let newIndex: number = index + 1;
+    let newIndex: number = operatorIndex + 1;
     switch (type) {
       case OperatorEnum.ArithmeticOperation:
-        if (index == ArithmeticOperatorArray.length - 1) {
+        if (operatorIndex == ArithmeticOperatorArray.length - 1) {
           newIndex = 0;
         }
         break;
       default:
         break;
     }
-    setIndex(newIndex);
+    setOperatorIndex(newIndex);
   }
 
   switch (type) {
@@ -86,9 +89,10 @@ export function Operator({ type, ...props }: Props) {
       icon = <ArrowBackIcon></ArrowBackIcon>
       break;
     case OperatorEnum.ArithmeticOperation:
-      const SpecificIcon = ArithmeticOperatorArray[index];
+      const SpecificIcon = ArithmeticOperatorArray[operatorIndex];
       icon = <IconButton color="primary" aria-label="arithmetic-operation">
         <SpecificIcon onClick={handleOnClick}></SpecificIcon>
+        <input type="hidden" name={`${name}_${keyPrefixEnum.Operator}_${parentIndex}`}></input>
       </IconButton>
       break;
     default:

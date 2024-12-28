@@ -12,7 +12,8 @@ export enum processEnum {
 export enum keyPrefixEnum {
   LeftSide = 'LeftSide',
   RigthSide = 'RigthSide',
-  Suffix = 'Suffix'
+  Suffix = 'Suffix',
+  Operator = 'Operator',
 }
 
 export enum inputTypeEnum {
