@@ -4,9 +4,10 @@ import { FC, ReactNode } from "react";
 type DroppableProp = {
     children: ReactNode;
     id: string
+    style?: React.CSSProperties;
 };
 
-export const Droppable: FC<DroppableProp> = ({ children, id }) => {
+export const Droppable: FC<DroppableProp> = ({ children, id, style }) => {
     const {
         setNodeRef,
         isOver
@@ -17,10 +18,11 @@ export const Droppable: FC<DroppableProp> = ({ children, id }) => {
     return (
         <div
             ref={setNodeRef}
-
+            className={isOver ? "bg-green-200" : ""}
+            style={style}
         >
             <div>
-                <div>ドロップエリア</div>
+                <div></div>
                 {children}
             </div>
         </div>

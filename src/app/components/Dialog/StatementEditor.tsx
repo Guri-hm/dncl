@@ -15,6 +15,15 @@ import { DnclTextFieldProps } from "./DnclTextField";
 import IconButton from '@mui/material/IconButton';
 import BackspaceIcon from '@mui/icons-material/Backspace';
 import Stack from '@mui/material/Stack';
+import { DraggableRoundBrackets } from "./DraggableRoundBrackets";
+import {
+    DndContext,
+    DragOverlay,
+    defaultDropAnimationSideEffects
+} from "@dnd-kit/core";
+import { DraggingItem } from "./DraggingItem";
+import { Droppable } from "../Droppable";
+import Grid from '@mui/material/Grid2';
 
 type Props = {
     statementType: Statement
@@ -29,6 +38,8 @@ export function StatementEditor(params: Props) {
     const [processIndex, setProcessIndex] = useState<number>(getEnumIndex(processEnum, processEnum.SetValueToVariable));
     const [statement, setStatement] = useState<ReactElement | null>(null);
     const [termComponents, setTermComponents] = useState<DnclTextFieldProps[]>([{ name: keyPrefixEnum.RigthSide }]);
+    const [dropCount, setDropCount] = useState(0);
+    const [isDragging, setIsDragging] = useState(false);
 
     const addTermComponent = () => {
         setTermComponents([...termComponents, { name: keyPrefixEnum.RigthSide }]);
@@ -83,24 +94,67 @@ export function StatementEditor(params: Props) {
                 </>
             case getEnumIndex(processEnum, processEnum.ArithmeticOperation):
                 return <>
-                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_1`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArrayWithoutSuffix}></DnclTextField>
-                    <Operator type={OperatorEnum.SimpleAssignment}></Operator>
-                    <Box>
-                        {termComponents.map((component, index) => (
-                            <Stack direction="row" spacing={0} key={`${component.name}_${index}`}>
-                                {index > 0 && <Operator name={`${component.name}`} parentIndex={index} type={OperatorEnum.ArithmeticOperation}></Operator>}
-                                <DnclTextField name={`${component.name}`} index={index} inputType={inputTypeEnum.Switch} />
-                                {(index == termComponents.length - 1 && index != 0) && <IconButton aria-label="delete" onClick={() => removeTermComponent(index)}><BackspaceIcon /></IconButton>}
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <DndContext
+                            onDragStart={(event) => {
+                                const { active } = event;
+                                if (active == null) {
+                                    return;
+                                }
+                                setIsDragging(true);
+                                console.log("aaa")
+                            }}
+                            onDragEnd={(event) => {
+                                const { over } = event;
+                                setIsDragging(false);
+                                if (over == null) {
+                                    return;
+                                }
+                                setDropCount((x) => x + 1);
+                            }}
+                        >
+                            <Stack direction="row" spacing={2}>
+                                <DraggableRoundBrackets id="draggableLeftBraket" label="(" />
+                                <DraggableRoundBrackets id="draggableRightBraket" label=")" />
                             </Stack>
-                        )
-                        )
-                        }
+                            <Stack direction="row" spacing={0}>
 
-                        <Button variant="text" fullWidth size="small" startIcon={<AddIcon />}
-                            onClick={addTermComponent}>
-                            項を追加する
-                        </Button>
-                    </Box>
+                                <DragOverlay
+                                    dropAnimation={{
+                                        sideEffects: defaultDropAnimationSideEffects({
+                                            styles: {
+                                                active: {},
+                                                dragOverlay: {
+                                                    opacity: "0"
+                                                }
+                                            }
+                                        })
+                                    }}
+                                >
+                                    <DraggingItem />
+                                </DragOverlay>
+                                <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_1`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArrayWithoutSuffix}></DnclTextField>
+                                <Operator type={OperatorEnum.SimpleAssignment}></Operator>
+                                <Box>
+                                    {termComponents.map((component, index) => (
+                                        <Stack direction="row" spacing={0} key={`${component.name}_${index}`}>
+                                            <Droppable id="dropAreaA" style={isDragging ? { backgroundColor: 'rgb(191 219 254 / var(--tw-bg-opacity, 1))' } : undefined}>{dropCount}</Droppable>
+                                            {index > 0 && <Operator name={`${component.name}`} parentIndex={index} type={OperatorEnum.ArithmeticOperation}></Operator>}
+                                            <DnclTextField name={`${component.name}`} index={index} inputType={inputTypeEnum.Switch} />
+                                            {(index == termComponents.length - 1 && index != 0) && <IconButton aria-label="delete" onClick={() => removeTermComponent(index)}><BackspaceIcon /></IconButton>}
+                                        </Stack>
+                                    )
+                                    )
+                                    }
+
+                                    <Button variant="text" fullWidth size="small" startIcon={<AddIcon />}
+                                        onClick={addTermComponent}>
+                                        項を追加する
+                                    </Button>
+                                </Box>
+                            </Stack >
+                        </DndContext >
+                    </Box >
                 </>
             default:
                 return <></>;
