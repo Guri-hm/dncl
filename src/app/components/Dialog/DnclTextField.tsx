@@ -113,7 +113,7 @@ export function DnclTextField({ name, inputType, index = 0, ...params }: DnclTex
           <>
             <Grid container spacing={0} direction='column'>
               <Grid container direction='row'>
-                <Grid size={checked ? 'grow' : 'grow'}>
+                <Grid size='grow'>
                   <ValidatedTextField name={`${name}_${index}`} label={label} pattern={pattern}></ValidatedTextField>
                 </Grid>
                 {checked &&
