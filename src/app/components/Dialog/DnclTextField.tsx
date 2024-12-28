@@ -149,7 +149,7 @@ export function DnclTextField({ name, inputType, index = 0, ...params }: DnclTex
         </Grid>
       case inputTypeEnum.ArrayWithoutSuffix:
         return <Grid size="grow">
-          <ValidatedTextField name={`${name}_${index}`} label={inputTypeJpEnum.VariableOrNumber} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
+          <ValidatedTextField name={`${name}_${index}`} label={inputTypeJpEnum.Switch} pattern={ValidationEnum.VariableOrArray}></ValidatedTextField>
         </Grid>
 
       case inputTypeEnum.Array:
