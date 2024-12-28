@@ -89,14 +89,14 @@ export function DnclTextField({ name, inputType, index = 0, ...params }: DnclTex
 
   const renderContent = () => {
     switch (inputType) {
-      case inputTypeEnum.Switch:
+      case inputTypeEnum.SwitchVariableOrArrayWithSuffix:
       case inputTypeEnum.SwitchVariableOrArrayWithoutSuffix:
 
         let label: string = "";
         let pattern: ValidationEnum = ValidationEnum.Variable;
 
         switch (inputType) {
-          case inputTypeEnum.Switch:
+          case inputTypeEnum.SwitchVariableOrArrayWithSuffix:
             label = checked ? inputTypeJpEnum.Array : inputTypeJpEnum.VariableOrNumber;
             pattern = checked ? ValidationEnum.Array : ValidationEnum.VariableOrNumber;
             break;
@@ -127,7 +127,7 @@ export function DnclTextField({ name, inputType, index = 0, ...params }: DnclTex
                   <FixedHeightGrid>]</FixedHeightGrid>
                 </Grid>
               }
-              {(inputType == inputTypeEnum.Switch || inputType == inputTypeEnum.SwitchVariableOrArrayWithoutSuffix) &&
+              {(inputType == inputTypeEnum.SwitchVariableOrArrayWithSuffix || inputType == inputTypeEnum.SwitchVariableOrArrayWithoutSuffix) &&
                 <Grid size={12}>
                   <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
                     {/* <Typography>変数</Typography> */}
@@ -149,7 +149,7 @@ export function DnclTextField({ name, inputType, index = 0, ...params }: DnclTex
         </Grid>
       case inputTypeEnum.ArrayWithoutSuffix:
         return <Grid size="grow">
-          <ValidatedTextField name={`${name}_${index}`} label={inputTypeJpEnum.Switch} pattern={ValidationEnum.VariableOrArray}></ValidatedTextField>
+          <ValidatedTextField name={`${name}_${index}`} label={inputTypeJpEnum.Array} pattern={ValidationEnum.VariableOrArray}></ValidatedTextField>
         </Grid>
 
       case inputTypeEnum.Array:

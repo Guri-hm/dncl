@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Statement } from "../../types";
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -6,23 +6,10 @@ import { ReactElement } from "react";
 import Box from '@mui/material/Box';
 import { DnclTextField } from "./DnclTextField";
 import { Operator } from "./Operator";
-import { processEnum, keyPrefixEnum, inputTypeEnum, bracketEnum } from "./Enum";
+import { processEnum, keyPrefixEnum, inputTypeEnum } from "./Enum";
 import { NowrapText } from "./NowrapText";
-import { OperatorEnum, BraketSymbolEnum } from "@/app/enum";
-import Button from '@mui/material/Button';
-import AddIcon from '@mui/icons-material/Add';
-import { DnclTextFieldProps } from "./DnclTextField";
-import IconButton from '@mui/material/IconButton';
-import BackspaceIcon from '@mui/icons-material/Backspace';
-import Stack from '@mui/material/Stack';
-import { DraggableItem } from "./DraggableItem";
-import {
-    DndContext,
-    DragOverlay,
-    defaultDropAnimationSideEffects
-} from "@dnd-kit/core";
-import { Droppable } from "../Droppable";
-import { FormHelperText } from '@mui/material';
+import { OperatorEnum } from "@/app/enum";
+import { Operation } from "./Operation";
 type Props = {
     statementType: Statement
 }
@@ -31,100 +18,25 @@ function getEnumIndex<T extends Record<string, string | number>>(enumObj: T, val
     return Object.values(enumObj).indexOf(value);
 }
 
-const searchValue = (key: string | null) => {
-
-    if (key == null) return;
-    function getEnumValueByKey(enumObj: any, key: string): any {
-        return enumObj[key as keyof typeof enumObj];
-    }
-    const keys = Object.keys(BraketSymbolEnum);
-    return keys.includes(key) ? getEnumValueByKey(BraketSymbolEnum, key) : null;
-};
-
 export function StatementEditor(params: Props) {
 
-    const [processIndex, setProcessIndex] = useState<number>(getEnumIndex(processEnum, processEnum.SetValueToVariable));
+    const [processIndex, setProcessIndex] = useState<number>(getEnumIndex(processEnum, processEnum.SetValueToVariableOrArrayElement));
     const [statement, setStatement] = useState<ReactElement | null>(null);
-    const [termComponents, setTermComponents] = useState<DnclTextFieldProps[]>([{ name: keyPrefixEnum.RigthSide }]);
-    const [isDragging, setIsDragging] = useState(false);
-    const [activeId, setActiveId] = useState<string>("");
-    const [braketError, setBraketError] = useState<string>("");
-
-    useEffect(() => {
-        checkBraketPair();
-    }, [termComponents]);
-
-    const addTermComponent = () => {
-        setTermComponents([...termComponents, { name: keyPrefixEnum.RigthSide }]);
-    };
-    const removeTermComponent = (index: number) => {
-        setTermComponents(termComponents.filter((_, i) => i !== index));
-    };
-
-    const removeOneSideOfTerm = (id: string) => {
-        //(左辺または右辺)_(項の左側または右側)_(インデックス)という文字列を想定
-        const overIdSplitArray = id.split('_');
-        if (overIdSplitArray[1] == keyPrefixEnum.LeftOfTerm) {
-            setTermComponents((prevItems) =>
-                prevItems.map((item: DnclTextFieldProps, i: number) =>
-                    i === Number(overIdSplitArray[2]) ? { ...item, leftOfTermValue: ((item.leftOfTermValue ? item.leftOfTermValue : "").length > 0 ? item.leftOfTermValue?.slice(0, -1) : "") } : item
-                ));
-        } else {
-            setTermComponents((prevItems) =>
-                prevItems.map((item: DnclTextFieldProps, i: number) =>
-                    i === Number(overIdSplitArray[2]) ? { ...item, rightOfTermValue: ((item.rightOfTermValue ? item.rightOfTermValue : "").length > 0 ? item.rightOfTermValue?.slice(0, -1) : "") } : item
-                ));
-        }
-    }
-    const addOneSideOfTerm = (id: string) => {
-        //(左辺または右辺)_(項の左側または右側)_(インデックス)という文字列を想定
-        const overIdSplitArray = id.split('_');
-        if (overIdSplitArray[1] == keyPrefixEnum.LeftOfTerm) {
-            setTermComponents((prevItems) =>
-                prevItems.map((item: DnclTextFieldProps, i: number) =>
-                    i === Number(overIdSplitArray[2]) ? { ...item, leftOfTermValue: (item.leftOfTermValue ?? "") + searchValue(activeId) } : item
-                ));
-        } else {
-            setTermComponents((prevItems) =>
-                prevItems.map((item: DnclTextFieldProps, i: number) =>
-                    i === Number(overIdSplitArray[2]) ? { ...item, rightOfTermValue: (item.rightOfTermValue ?? "") + searchValue(activeId) } : item
-                ));
-        }
-    }
-
-    const checkBraketPair = () => {
-        const leftOfTermValues: (string | undefined)[] = termComponents.map(item => item.leftOfTermValue);
-        const rightOfTermValues: (string | undefined)[] = termComponents.map(item => item.rightOfTermValue);
-        const values: string = leftOfTermValues.join('') + rightOfTermValues.join('');
-
-        const leftBraketCount = values.split(BraketSymbolEnum.LeftBraket).length - 1;
-        const rightBraketCount = values.split(BraketSymbolEnum.RigthBraket).length - 1;
-        console.log("aaa")
-        if (leftBraketCount == rightBraketCount) {
-            setBraketError("");
-            return;
-        }
-
-        if (leftBraketCount > rightBraketCount) {
-            setBraketError(`『 ${BraketSymbolEnum.RigthBraket} 』を追加してください`);
-        } else {
-            setBraketError(`『 ${BraketSymbolEnum.LeftBraket} 』を追加してください`);
-        }
-    }
 
     const handleChange = (event: any, newValue: processTypes | null) => {
-        const index = getEnumIndex(processEnum, newValue?.type ?? processEnum.SetValueToVariable);
+        const index = getEnumIndex(processEnum, newValue?.type ?? processEnum.SetValueToVariableOrArrayElement);
         setProcessIndex(index);
         setStatement(getStatement(index));
     }
     const getStatement: any = (index: number): ReactElement => {
 
         switch (index) {
-            case getEnumIndex(processEnum, processEnum.SetValueToVariable):
+            case getEnumIndex(processEnum, processEnum.SetValueToVariableOrArrayElement):
                 return <>
-                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.VariableOnly}></DnclTextField>
-                    <Operator type={OperatorEnum.SimpleAssignment}></Operator>
-                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.Switch}></DnclTextField>
+                    <Operation>
+                        <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArrayWithoutSuffix}></DnclTextField>
+                        <Operator type={OperatorEnum.SimpleAssignment}></Operator>
+                    </Operation>
                 </>
 
             case getEnumIndex(processEnum, processEnum.InitializeArray):
@@ -134,98 +46,27 @@ export function StatementEditor(params: Props) {
                     <Operator type={OperatorEnum.SimpleAssignment}></Operator>
                     <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.InitializeArray} label=""></DnclTextField>
                 </>
-            case getEnumIndex(processEnum, processEnum.AssignValueToIndex):
-                //添字による配列への代入
-                return <>
-                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.Array}></DnclTextField>
-                    <Operator type={OperatorEnum.SimpleAssignment}></Operator>
-                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.VariableOrNumber}></DnclTextField>
-                </>
             case getEnumIndex(processEnum, processEnum.BulkAssignToArray):
                 return <>
                     <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_1`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.ArrayWithoutSuffix}></DnclTextField>
                     <NowrapText text={'のすべての要素に'}></NowrapText>
-                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_2`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.VariableOrNumber}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_2`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SwitchVariableOrArrayWithSuffix}></DnclTextField>
                     <NowrapText text={'を代入する'}></NowrapText>
                 </>
             case getEnumIndex(processEnum, processEnum.Increment):
             case getEnumIndex(processEnum, processEnum.Decrement):
                 return <>
-                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_1`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.Switch}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_1`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArrayWithSuffix}></DnclTextField>
                     <NowrapText text={'を'}></NowrapText>
                     <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_2`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.VariableOrNumber}></DnclTextField>
                     <NowrapText text={processIndex == getEnumIndex(processEnum, processEnum.Increment) ? '増やす' : '減らす'}></NowrapText>
                 </>
             case getEnumIndex(processEnum, processEnum.ArithmeticOperation):
                 return <>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        <DndContext
-                            onDragStart={(event) => {
-                                const { active } = event;
-                                if (active == null) {
-                                    return;
-                                }
-                                setActiveId(event.active.id.toString());
-                                setIsDragging(true);
-                            }}
-                            onDragEnd={(event) => {
-                                const { over } = event;
-                                setIsDragging(false);
-                                setActiveId("");
-                                if (over == null) {
-                                    return;
-                                }
-
-                                addOneSideOfTerm(over.id.toString());
-
-                            }}
-                        >
-                            <Stack direction="row" spacing={2}>
-                                <DraggableItem id={bracketEnum.LeftBraket} value={BraketSymbolEnum.LeftBraket} />
-                                <DraggableItem id={bracketEnum.RigthBraket} value={BraketSymbolEnum.RigthBraket} />
-                                <FormHelperText sx={{ display: 'flex', alignItems: 'center' }} error >{braketError}</FormHelperText>
-                            </Stack>
-                            <Stack direction="row" spacing={0}>
-                                <DragOverlay
-                                    dropAnimation={{
-                                        //ドロップ後、元の位置に戻るアニメーションを隠す
-                                        sideEffects: defaultDropAnimationSideEffects({
-                                            styles: {
-                                                active: {},
-                                                dragOverlay: {
-                                                    opacity: "0",
-                                                }
-                                            }
-                                        }),
-                                        //隠すアニメーションの待ち時間なし
-                                        duration: 0
-                                    }}
-                                >
-                                    <DraggableItem id={activeId} value={searchValue(activeId)} cursor="grabbing" />
-                                </DragOverlay>
-                                <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArrayWithoutSuffix}></DnclTextField>
-                                <Operator type={OperatorEnum.SimpleAssignment}></Operator>
-                                <Box>
-                                    {termComponents.map((component, index) => (
-                                        <Stack direction="row" spacing={0} key={`${component.name}_${index}`}>
-                                            <Droppable id={`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.LeftOfTerm}_${index}`} isDragging={isDragging} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.LeftOfTerm}_${index}`)}>{component.leftOfTermValue}</Droppable>
-                                            {index > 0 && <Operator name={`${component.name}`} parentIndex={index} type={OperatorEnum.ArithmeticOperation}></Operator>}
-                                            <DnclTextField name={`${component.name}`} index={index} inputType={inputTypeEnum.Switch} />
-                                            <Droppable id={`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.RightOfTerm}_${index}`} isDragging={isDragging} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.RightOfTerm}_${index}`)}>{component.rightOfTermValue}</Droppable>
-                                            {(index == termComponents.length - 1 && index != 0) && <IconButton aria-label="delete" onClick={() => removeTermComponent(index)}><BackspaceIcon /></IconButton>}
-                                        </Stack>
-                                    )
-                                    )
-                                    }
-
-                                    <Button variant="text" fullWidth size="small" startIcon={<AddIcon />}
-                                        onClick={addTermComponent}>
-                                        項を追加する
-                                    </Button>
-                                </Box>
-                            </Stack >
-                        </DndContext >
-                    </Box >
+                    <Operation>
+                        <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArrayWithoutSuffix}></DnclTextField>
+                        <Operator type={OperatorEnum.SimpleAssignment}></Operator>
+                    </Operation>
                 </>
             default:
                 return <></>;
@@ -249,7 +90,7 @@ export function StatementEditor(params: Props) {
                         <TextField {...params} label="文の内容" variant="standard" />
                     )}
                     onChange={handleChange}
-                    defaultValue={{ title: processEnum.SetValueToVariable, type: processEnum.SetValueToVariable }}
+                    defaultValue={{ title: processEnum.SetValueToVariableOrArrayElement, type: processEnum.SetValueToVariableOrArrayElement }}
                 />
                 <Box
                     sx={{
@@ -261,7 +102,7 @@ export function StatementEditor(params: Props) {
                         borderRadius: 1,
                     }}
                 >
-                    {statement ?? getStatement(getEnumIndex(processEnum, processEnum.SetValueToVariable))}
+                    {statement ?? getStatement(getEnumIndex(processEnum, processEnum.SetValueToVariableOrArrayElement))}
                 </Box>
             </>;
         case Statement.Operation:
@@ -330,9 +171,8 @@ const processNames = [
     {
         statementType: Statement.Input,
         names: [
-            { title: processEnum.SetValueToVariable, type: processEnum.SetValueToVariable },
+            { title: processEnum.SetValueToVariableOrArrayElement, type: processEnum.SetValueToVariableOrArrayElement },
             { title: processEnum.InitializeArray, type: processEnum.InitializeArray },
-            { title: processEnum.AssignValueToIndex, type: processEnum.AssignValueToIndex },
             { title: processEnum.BulkAssignToArray, type: processEnum.BulkAssignToArray },
             { title: processEnum.Increment, type: processEnum.Increment },
             { title: processEnum.Decrement, type: processEnum.Decrement },
@@ -348,7 +188,7 @@ const processNames = [
     {
         statementType: Statement.Condition,
         names: [
-            { title: processEnum.SetValueToVariable, type: processEnum.SetValueToVariable },
+            { title: processEnum.SetValueToVariableOrArrayElement, type: processEnum.SetValueToVariableOrArrayElement },
         ]
     },
 ];

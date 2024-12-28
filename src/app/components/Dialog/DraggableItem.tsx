@@ -7,7 +7,7 @@ import { CSSProperties } from 'react';
 
 type Props = {
     id: string;
-    value: string;
+    value: string | null;
     sx?: SxProps<Theme>;
     cursor?: CSSProperties['cursor'];
 };
