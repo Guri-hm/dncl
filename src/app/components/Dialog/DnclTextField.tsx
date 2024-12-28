@@ -111,24 +111,24 @@ export function DnclTextField({ name, inputType, index = 0, ...params }: DnclTex
         //変数と配列を切り替え可能
         return (
           <>
-            <Grid container spacing={0}>
-              <Grid size={checked ? 'grow' : 12}>
-                <ValidatedTextField name={`${name}_${index}`} label={label} pattern={pattern}></ValidatedTextField>
-              </Grid>
-              {checked &&
-                <Grid container size='auto'>
-                  <FixedHeightGrid>[</FixedHeightGrid>
-                  <Grid size="grow">
-                    <ValidatedTextField sx={() => ({
-                      width: '100px',
-                    })}
-                      name={`${name}_${keyPrefixEnum.Suffix}_${index}`} label={inputTypeJpEnum.SuffixOnly} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
-                  </Grid>
-                  <FixedHeightGrid>]</FixedHeightGrid>
+            <Grid container spacing={0} direction='column'>
+              <Grid container direction='row'>
+                <Grid size={checked ? 'grow' : 'grow'}>
+                  <ValidatedTextField name={`${name}_${index}`} label={label} pattern={pattern}></ValidatedTextField>
                 </Grid>
-              }
+                {checked &&
+                  <Grid container size='grow'>
+                    <FixedHeightGrid>[</FixedHeightGrid>
+                    <Grid size="grow">
+                      <ValidatedTextField
+                        name={`${name}_${keyPrefixEnum.Suffix}_${index}`} label={inputTypeJpEnum.SuffixOnly} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
+                    </Grid>
+                    <FixedHeightGrid>]</FixedHeightGrid>
+                  </Grid>
+                }
+              </Grid>
               {(inputType == inputTypeEnum.SwitchVariableOrArrayWithSuffix || inputType == inputTypeEnum.SwitchVariableOrArrayWithoutSuffix) &&
-                <Grid size={12}>
+                <Grid>
                   <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
                     {/* <Typography>変数</Typography> */}
                     <AntSwitch onChange={(handleChange)} inputProps={{ 'aria-label': 'ant design' }} />
