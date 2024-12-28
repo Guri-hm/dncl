@@ -23,7 +23,6 @@ export const Droppable: FC<DroppableProp> = ({ children, id, isDragging, onClick
     return (
         <Box
             ref={setNodeRef}
-            className={isOver ? "bg-sky-500" : (isDragging ? "bg-sky-200" : "")}
             sx={{
                 whiteSpace: 'nowrap',
                 display: 'grid',
