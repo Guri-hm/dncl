@@ -12,3 +12,7 @@ export enum OperatorEnum {
   Condition = 'condition'
 }
 
+export enum BraketSymbolEnum {
+  LeftBraket = '(',
+  RigthBraket = ')',
+}

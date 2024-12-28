@@ -6,24 +6,23 @@ import { ReactElement } from "react";
 import Box from '@mui/material/Box';
 import { DnclTextField } from "./DnclTextField";
 import { Operator } from "./Operator";
-import { processEnum, keyPrefixEnum, inputTypeEnum } from "./Enum";
+import { processEnum, keyPrefixEnum, inputTypeEnum, bracketEnum } from "./Enum";
 import { NowrapText } from "./NowrapText";
-import { OperatorEnum } from "@/app/enum";
+import { OperatorEnum, BraketSymbolEnum } from "@/app/enum";
 import Button from '@mui/material/Button';
 import AddIcon from '@mui/icons-material/Add';
 import { DnclTextFieldProps } from "./DnclTextField";
 import IconButton from '@mui/material/IconButton';
 import BackspaceIcon from '@mui/icons-material/Backspace';
 import Stack from '@mui/material/Stack';
-import { DraggableRoundBrackets } from "./DraggableRoundBrackets";
+import { DraggableItem } from "./DraggableItem";
 import {
     DndContext,
     DragOverlay,
     defaultDropAnimationSideEffects
 } from "@dnd-kit/core";
-import { DraggingItem } from "./DraggingItem";
 import { Droppable } from "../Droppable";
-import Grid from '@mui/material/Grid2';
+import { createPortal } from "react-dom";
 
 type Props = {
     statementType: Statement
@@ -33,6 +32,16 @@ function getEnumIndex<T extends Record<string, string | number>>(enumObj: T, val
     return Object.values(enumObj).indexOf(value);
 }
 
+const searchValue = (key: string | null) => {
+
+    if (key == null) return;
+    function getEnumValueByKey(enumObj: any, key: string): any {
+        return enumObj[key as keyof typeof enumObj];
+    }
+    const keys = Object.keys(BraketSymbolEnum);
+    return keys.includes(key) ? getEnumValueByKey(BraketSymbolEnum, key) : null;
+};
+
 export function StatementEditor(params: Props) {
 
     const [processIndex, setProcessIndex] = useState<number>(getEnumIndex(processEnum, processEnum.SetValueToVariable));
@@ -40,6 +49,7 @@ export function StatementEditor(params: Props) {
     const [termComponents, setTermComponents] = useState<DnclTextFieldProps[]>([{ name: keyPrefixEnum.RigthSide }]);
     const [dropCount, setDropCount] = useState(0);
     const [isDragging, setIsDragging] = useState(false);
+    const [activeId, setActiveId] = useState<string>("");
 
     const addTermComponent = () => {
         setTermComponents([...termComponents, { name: keyPrefixEnum.RigthSide }]);
@@ -101,12 +111,13 @@ export function StatementEditor(params: Props) {
                                 if (active == null) {
                                     return;
                                 }
+                                setActiveId(event.active.id.toString());
                                 setIsDragging(true);
-                                console.log("aaa")
                             }}
                             onDragEnd={(event) => {
                                 const { over } = event;
                                 setIsDragging(false);
+                                setActiveId("");
                                 if (over == null) {
                                     return;
                                 }
@@ -114,34 +125,37 @@ export function StatementEditor(params: Props) {
                             }}
                         >
                             <Stack direction="row" spacing={2}>
-                                <DraggableRoundBrackets id="draggableLeftBraket" label="(" />
-                                <DraggableRoundBrackets id="draggableRightBraket" label=")" />
+                                <DraggableItem id={bracketEnum.LeftBraket} value={BraketSymbolEnum.LeftBraket} />
+                                <DraggableItem id={bracketEnum.RigthBraket} value={BraketSymbolEnum.RigthBraket} />
                             </Stack>
                             <Stack direction="row" spacing={0}>
-
                                 <DragOverlay
                                     dropAnimation={{
+                                        //ドロップ後、元の位置に戻るアニメーションを隠す
                                         sideEffects: defaultDropAnimationSideEffects({
                                             styles: {
                                                 active: {},
                                                 dragOverlay: {
-                                                    opacity: "0"
+                                                    opacity: "0",
                                                 }
                                             }
-                                        })
+                                        }),
+                                        //隠すアニメーションの待ち時間なし
+                                        duration: 0
                                     }}
                                 >
-                                    <DraggingItem />
+                                    <DraggableItem id={activeId} value={searchValue(activeId)} cursor="grabbing" />
                                 </DragOverlay>
                                 <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_1`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArrayWithoutSuffix}></DnclTextField>
                                 <Operator type={OperatorEnum.SimpleAssignment}></Operator>
                                 <Box>
                                     {termComponents.map((component, index) => (
                                         <Stack direction="row" spacing={0} key={`${component.name}_${index}`}>
-                                            <Droppable id="dropAreaA" style={isDragging ? { backgroundColor: 'rgb(191 219 254 / var(--tw-bg-opacity, 1))' } : undefined}>{dropCount}</Droppable>
+                                            <Droppable id={`${keyPrefixEnum.RigthSide}${keyPrefixEnum.LeftOfTerm}_${index}`} isDragging={isDragging}>{dropCount}</Droppable>
                                             {index > 0 && <Operator name={`${component.name}`} parentIndex={index} type={OperatorEnum.ArithmeticOperation}></Operator>}
                                             <DnclTextField name={`${component.name}`} index={index} inputType={inputTypeEnum.Switch} />
                                             {(index == termComponents.length - 1 && index != 0) && <IconButton aria-label="delete" onClick={() => removeTermComponent(index)}><BackspaceIcon /></IconButton>}
+                                            <Droppable id={`${keyPrefixEnum.RigthSide}${keyPrefixEnum.RightOfTerm}_${index}`} isDragging={isDragging}>{dropCount}</Droppable>
                                         </Stack>
                                     )
                                     )

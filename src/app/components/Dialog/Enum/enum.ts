@@ -9,11 +9,18 @@ export enum processEnum {
   ComparisonOperation = '比較演算',
 }
 
+export enum bracketEnum {
+  LeftBraket = 'LeftBraket',
+  RigthBraket = 'RigthBraket',
+}
+
 export enum keyPrefixEnum {
   LeftSide = 'LeftSide',
   RigthSide = 'RigthSide',
   Suffix = 'Suffix',
   Operator = 'Operator',
+  LeftOfTerm = 'LeftOfTerm',
+  RightOfTerm = 'RightOfTerm',
 }
 
 export enum inputTypeEnum {
