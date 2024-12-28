@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Statement } from "../../types";
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -22,8 +22,7 @@ import {
     defaultDropAnimationSideEffects
 } from "@dnd-kit/core";
 import { Droppable } from "../Droppable";
-import { createPortal } from "react-dom";
-
+import { FormHelperText } from '@mui/material';
 type Props = {
     statementType: Statement
 }
@@ -47,9 +46,13 @@ export function StatementEditor(params: Props) {
     const [processIndex, setProcessIndex] = useState<number>(getEnumIndex(processEnum, processEnum.SetValueToVariable));
     const [statement, setStatement] = useState<ReactElement | null>(null);
     const [termComponents, setTermComponents] = useState<DnclTextFieldProps[]>([{ name: keyPrefixEnum.RigthSide }]);
-    const [dropCount, setDropCount] = useState(0);
     const [isDragging, setIsDragging] = useState(false);
     const [activeId, setActiveId] = useState<string>("");
+    const [braketError, setBraketError] = useState<string>("");
+
+    useEffect(() => {
+        checkBraketPair();
+    }, [termComponents]);
 
     const addTermComponent = () => {
         setTermComponents([...termComponents, { name: keyPrefixEnum.RigthSide }]);
@@ -57,6 +60,57 @@ export function StatementEditor(params: Props) {
     const removeTermComponent = (index: number) => {
         setTermComponents(termComponents.filter((_, i) => i !== index));
     };
+
+    const removeOneSideOfTerm = (id: string) => {
+        //(左辺または右辺)_(項の左側または右側)_(インデックス)という文字列を想定
+        const overIdSplitArray = id.split('_');
+        if (overIdSplitArray[1] == keyPrefixEnum.LeftOfTerm) {
+            setTermComponents((prevItems) =>
+                prevItems.map((item: DnclTextFieldProps, i: number) =>
+                    i === Number(overIdSplitArray[2]) ? { ...item, leftOfTermValue: ((item.leftOfTermValue ? item.leftOfTermValue : "").length > 0 ? item.leftOfTermValue?.slice(0, -1) : "") } : item
+                ));
+        } else {
+            setTermComponents((prevItems) =>
+                prevItems.map((item: DnclTextFieldProps, i: number) =>
+                    i === Number(overIdSplitArray[2]) ? { ...item, rightOfTermValue: ((item.rightOfTermValue ? item.rightOfTermValue : "").length > 0 ? item.rightOfTermValue?.slice(0, -1) : "") } : item
+                ));
+        }
+    }
+    const addOneSideOfTerm = (id: string) => {
+        //(左辺または右辺)_(項の左側または右側)_(インデックス)という文字列を想定
+        const overIdSplitArray = id.split('_');
+        if (overIdSplitArray[1] == keyPrefixEnum.LeftOfTerm) {
+            setTermComponents((prevItems) =>
+                prevItems.map((item: DnclTextFieldProps, i: number) =>
+                    i === Number(overIdSplitArray[2]) ? { ...item, leftOfTermValue: (item.leftOfTermValue ?? "") + searchValue(activeId) } : item
+                ));
+        } else {
+            setTermComponents((prevItems) =>
+                prevItems.map((item: DnclTextFieldProps, i: number) =>
+                    i === Number(overIdSplitArray[2]) ? { ...item, rightOfTermValue: (item.rightOfTermValue ?? "") + searchValue(activeId) } : item
+                ));
+        }
+    }
+
+    const checkBraketPair = () => {
+        const leftOfTermValues: (string | undefined)[] = termComponents.map(item => item.leftOfTermValue);
+        const rightOfTermValues: (string | undefined)[] = termComponents.map(item => item.rightOfTermValue);
+        const values: string = leftOfTermValues.join('') + rightOfTermValues.join('');
+
+        const leftBraketCount = values.split(BraketSymbolEnum.LeftBraket).length - 1;
+        const rightBraketCount = values.split(BraketSymbolEnum.RigthBraket).length - 1;
+        console.log("aaa")
+        if (leftBraketCount == rightBraketCount) {
+            setBraketError("");
+            return;
+        }
+
+        if (leftBraketCount > rightBraketCount) {
+            setBraketError(`『 ${BraketSymbolEnum.RigthBraket} 』を追加してください`);
+        } else {
+            setBraketError(`『 ${BraketSymbolEnum.LeftBraket} 』を追加してください`);
+        }
+    }
 
     const handleChange = (event: any, newValue: processTypes | null) => {
         const index = getEnumIndex(processEnum, newValue?.type ?? processEnum.SetValueToVariable);
@@ -121,12 +175,15 @@ export function StatementEditor(params: Props) {
                                 if (over == null) {
                                     return;
                                 }
-                                setDropCount((x) => x + 1);
+
+                                addOneSideOfTerm(over.id.toString());
+
                             }}
                         >
                             <Stack direction="row" spacing={2}>
                                 <DraggableItem id={bracketEnum.LeftBraket} value={BraketSymbolEnum.LeftBraket} />
                                 <DraggableItem id={bracketEnum.RigthBraket} value={BraketSymbolEnum.RigthBraket} />
+                                <FormHelperText sx={{ display: 'flex', alignItems: 'center' }} error >{braketError}</FormHelperText>
                             </Stack>
                             <Stack direction="row" spacing={0}>
                                 <DragOverlay
@@ -146,16 +203,16 @@ export function StatementEditor(params: Props) {
                                 >
                                     <DraggableItem id={activeId} value={searchValue(activeId)} cursor="grabbing" />
                                 </DragOverlay>
-                                <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_1`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArrayWithoutSuffix}></DnclTextField>
+                                <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArrayWithoutSuffix}></DnclTextField>
                                 <Operator type={OperatorEnum.SimpleAssignment}></Operator>
                                 <Box>
                                     {termComponents.map((component, index) => (
                                         <Stack direction="row" spacing={0} key={`${component.name}_${index}`}>
-                                            <Droppable id={`${keyPrefixEnum.RigthSide}${keyPrefixEnum.LeftOfTerm}_${index}`} isDragging={isDragging}>{dropCount}</Droppable>
+                                            <Droppable id={`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.LeftOfTerm}_${index}`} isDragging={isDragging} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.LeftOfTerm}_${index}`)}>{component.leftOfTermValue}</Droppable>
                                             {index > 0 && <Operator name={`${component.name}`} parentIndex={index} type={OperatorEnum.ArithmeticOperation}></Operator>}
                                             <DnclTextField name={`${component.name}`} index={index} inputType={inputTypeEnum.Switch} />
+                                            <Droppable id={`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.RightOfTerm}_${index}`} isDragging={isDragging} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.RightOfTerm}_${index}`)}>{component.rightOfTermValue}</Droppable>
                                             {(index == termComponents.length - 1 && index != 0) && <IconButton aria-label="delete" onClick={() => removeTermComponent(index)}><BackspaceIcon /></IconButton>}
-                                            <Droppable id={`${keyPrefixEnum.RigthSide}${keyPrefixEnum.RightOfTerm}_${index}`} isDragging={isDragging}>{dropCount}</Droppable>
                                         </Stack>
                                     )
                                     )

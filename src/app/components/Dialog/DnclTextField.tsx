@@ -15,6 +15,10 @@ export interface DnclTextFieldProps {
   name: string
   index?: number
   inputType?: inputTypeEnum
+  value?: string
+  leftOfTermValue?: string
+  rightOfTermValue?: string
+  suffixValue?: string
 }
 
 enum inputTypeJpEnum {
@@ -26,15 +30,6 @@ enum inputTypeJpEnum {
   VariableOnly = '変数名',
   VariableOrNumber = '値・変数名',
 }
-
-const searchKey = (key: inputTypeEnum) => {
-
-  function getEnumValueByKey(enumObj: any, key: string): any {
-    return enumObj[key as keyof typeof enumObj];
-  }
-  const keys = Object.keys(inputTypeJpEnum);
-  return keys.includes(key) ? getEnumValueByKey(inputTypeJpEnum, key) : null;
-};
 
 const AntSwitch = styled(Switch)(({ theme }) => ({
   width: 28,
