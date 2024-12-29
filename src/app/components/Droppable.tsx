@@ -3,6 +3,7 @@ import { Box } from "@mui/material";
 import { FC, ReactNode } from "react";
 import { lightBlue } from '@mui/material/colors';
 import Button from '@mui/material/Button';
+import Grid from '@mui/material/Grid2';
 
 type DroppableProp = {
     children: ReactNode;
@@ -21,7 +22,7 @@ export const Droppable: FC<DroppableProp> = ({ children, id, isDragging, onClick
 
     //Buttonコンポーネントはmin-widthが64pxに設定されているので明示的に0pxに再設定する
     return (
-        <Box
+        <Grid size="auto"
             ref={setNodeRef}
             sx={{
                 whiteSpace: 'nowrap',
@@ -33,6 +34,6 @@ export const Droppable: FC<DroppableProp> = ({ children, id, isDragging, onClick
         >
             <Button onClick={onClick} size="large" sx={{ paddingLeft: '5px', paddingRight: '5px', minWidth: 0, }}>{children}</Button>
             <input type="hidden" name={id} value={`${children}`} />
-        </Box>
+        </Grid>
     )
 }
