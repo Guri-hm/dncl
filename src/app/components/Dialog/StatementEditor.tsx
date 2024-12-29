@@ -20,7 +20,7 @@ function getEnumIndex<T extends Record<string, string | number>>(enumObj: T, val
 
 export function StatementEditor(params: Props) {
 
-    const [processIndex, setProcessIndex] = useState<number>(getEnumIndex(processEnum, processEnum.SetValueToVariableOrArrayElement));
+    const [processIndex, setProcessIndex] = useState<number>(0);
     const [statement, setStatement] = useState<ReactElement | null>(null);
 
     const handleChange = (event: any, newValue: processTypes | null) => {
@@ -67,6 +67,32 @@ export function StatementEditor(params: Props) {
                     <Divider orientation="vertical" flexItem />
                     <NowrapText text={'を表示する'}></NowrapText>
                 </>
+            case getEnumIndex(processEnum, processEnum.If):
+                return <>
+                    <NowrapText text={'もし'}></NowrapText>
+                    <Divider sx={{ marginRight: 1 }} orientation="vertical" flexItem />
+                    <Operation statementType={params.statementType}>
+                    </Operation>
+                    <Divider sx={{ marginLeft: 1 }} orientation="vertical" flexItem />
+                    <NowrapText text={'ならば'}></NowrapText>
+                </>
+            case getEnumIndex(processEnum, processEnum.ElseIf):
+                return <>
+                    <NowrapText text={'を実行し，そうでなくもし'}></NowrapText>
+                    <Divider sx={{ marginRight: 1 }} orientation="vertical" flexItem />
+                    <Operation statementType={params.statementType}>
+                    </Operation>
+                    <Divider sx={{ marginLeft: 1 }} orientation="vertical" flexItem />
+                    <NowrapText text={'ならば'}></NowrapText>
+                </>
+            case getEnumIndex(processEnum, processEnum.Else):
+                return <>
+                    <NowrapText text={'を実行し，そうでなければ'}></NowrapText>
+                </>
+            case getEnumIndex(processEnum, processEnum.EndIf):
+                return <>
+                    <NowrapText text={'を実行する'}></NowrapText>
+                </>
             default:
                 return <></>;
         }
@@ -87,7 +113,7 @@ export function StatementEditor(params: Props) {
             <TextField {...params} label="文の内容" variant="standard" />
         )}
         onChange={handleChange}
-        defaultValue={{ title: processEnum.SetValueToVariableOrArrayElement }}
+        defaultValue={result[0]}
     />
 
     switch (params.statementType) {
@@ -135,6 +161,7 @@ export function StatementEditor(params: Props) {
                         borderRadius: 1,
                     }}
                 >
+                    {statement ?? getStatement(getEnumIndex(processEnum, processEnum.If))}
                 </Box>
             </>;
         default:

@@ -17,8 +17,8 @@ export interface DnclTextFieldProps {
   index?: number
   inputType?: inputTypeEnum
   value?: string
-  leftOfTermValue?: string
-  rightOfTermValue?: string
+  leftOfTermValue?: string[]
+  rightOfTermValue?: string[]
   suffixValue?: string
 }
 

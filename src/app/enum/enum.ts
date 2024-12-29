@@ -30,3 +30,9 @@ export enum BraketSymbolEnum {
   LeftBraket = '(',
   RigthBraket = ')',
 }
+
+export enum LogicalOperationJpEnum {
+  And = 'かつ',
+  Or = 'または',
+  Not = 'でない',
+}

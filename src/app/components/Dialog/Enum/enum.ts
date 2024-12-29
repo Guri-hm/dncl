@@ -16,6 +16,12 @@ export enum bracketEnum {
   RigthBraket = 'RigthBraket',
 }
 
+export enum LogicalOperationEnum {
+  And = 'And',
+  Or = 'Or',
+  Not = 'Not',
+}
+
 export enum keyPrefixEnum {
   LeftSide = 'LeftSide',
   RigthSide = 'RigthSide',

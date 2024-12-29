@@ -22,7 +22,7 @@ export const DraggableItem: FC<Props> = ({ id, value, sx, cursor = "grab" }) => 
     });
 
     return (
-        <Paper ref={setNodeRef} sx={{ display: 'flex', alignItems: 'center', minWidth: '70px', ...sx }}>
+        <Paper ref={setNodeRef} sx={{ display: 'flex', alignItems: 'center', minWidth: '70px', paddingRight: 1, ...sx }}>
 
             <Handle cursor={cursor} {...attributes}{...listeners} ></Handle>
             <span style={{ flexGrow: 1 }}>{value}</span>

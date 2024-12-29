@@ -228,3 +228,36 @@ export const getChildrenIds = (
 
   return includeSelf ? [id, ...childrenIds] : childrenIds
 }
+
+export function enumsToObjects<T>(enumObjs: T[]) {
+
+  const enumToObjectArray = <T extends object>(enumObj: T): { name: string, value: string }[] => {
+    return Object.entries(enumObj).map(([key, value]) => { return { name: key as string, value: value as string } }
+    )
+  };
+
+  let list: any = [];
+  enumObjs.map(enumObj => {
+    list.push(enumToObjectArray(enumObj as Object));
+  })
+  let flatList: { name: string, value: string }[] = list.flat();
+  return flatList;
+}
+
+export function getValueByKey(array: { name: string, value: string }[], key: string): string {
+  const item = array.find(item => item.name === key);
+  if (!item) return "";
+  return item.value;
+}
+
+export function searchEnumValue<T>(enumObj: T, key: string | null): T[keyof T] | null {
+
+  const getEnumKeys = <T extends object>(enumObj: T): (keyof T)[] => { return Object.keys(enumObj).filter(key => isNaN(Number(key))) as (keyof T)[]; };
+
+  if (key == null) return null;
+  function getEnumValueByKey(enumObj: T, key: string): any {
+    return enumObj[key as keyof typeof enumObj];
+  }
+  const keys = getEnumKeys(enumObj as Object);
+  return keys.includes(key as keyof Object) ? getEnumValueByKey(enumObj, key) : null;
+};

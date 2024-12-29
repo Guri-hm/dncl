@@ -227,7 +227,7 @@ export function SortableTree({
       <Allotment onVisibleChange={(_index, value) => {
         setVisible(value);
       }} separator={false}>
-        <Allotment.Pane className="p-1">
+        <Allotment.Pane className="p-1" maxSize={50}>
           <button
             type="button"
             onClick={() => {
