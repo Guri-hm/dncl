@@ -24,7 +24,7 @@ export function StatementEditor(params: Props) {
     const [statement, setStatement] = useState<ReactElement | null>(null);
 
     const handleChange = (event: any, newValue: processTypes | null) => {
-        const index = getEnumIndex(processEnum, newValue?.type ?? processEnum.SetValueToVariableOrArrayElement);
+        const index = getEnumIndex(processEnum, newValue?.title ?? processEnum.SetValueToVariableOrArrayElement);
         setProcessIndex(index);
         setStatement(getStatement(index));
     }
@@ -87,7 +87,7 @@ export function StatementEditor(params: Props) {
             <TextField {...params} label="文の内容" variant="standard" />
         )}
         onChange={handleChange}
-        defaultValue={{ title: processEnum.SetValueToVariableOrArrayElement, type: processEnum.SetValueToVariableOrArrayElement }}
+        defaultValue={{ title: processEnum.SetValueToVariableOrArrayElement }}
     />
 
     switch (params.statementType) {
@@ -145,7 +145,6 @@ export function StatementEditor(params: Props) {
 
 interface processTypes {
     title: processEnum;
-    type: processEnum;
 }
 
 
@@ -154,26 +153,26 @@ const processNames = [
     {
         statementType: StatementEnum.Output,
         names: [
-            { title: processEnum.Output, type: processEnum.Output },
+            { title: processEnum.Output },
         ]
     },
     {
         statementType: StatementEnum.Input,
         names: [
-            { title: processEnum.SetValueToVariableOrArrayElement, type: processEnum.SetValueToVariableOrArrayElement },
-            { title: processEnum.InitializeArray, type: processEnum.InitializeArray },
-            { title: processEnum.BulkAssignToArray, type: processEnum.BulkAssignToArray },
-            { title: processEnum.Increment, type: processEnum.Increment },
-            { title: processEnum.Decrement, type: processEnum.Decrement },
+            { title: processEnum.SetValueToVariableOrArrayElement },
+            { title: processEnum.InitializeArray },
+            { title: processEnum.BulkAssignToArray },
+            { title: processEnum.Increment },
+            { title: processEnum.Decrement },
         ]
     },
     {
         statementType: StatementEnum.Condition,
         names: [
-            { title: processEnum.If, type: processEnum.If },
-            { title: processEnum.Else, type: processEnum.Else },
-            { title: processEnum.ElseIf, type: processEnum.ElseIf },
-            { title: processEnum.EndIf, type: processEnum.EndIf },
+            { title: processEnum.If },
+            { title: processEnum.Else },
+            { title: processEnum.ElseIf },
+            { title: processEnum.EndIf },
         ]
     },
 ];
