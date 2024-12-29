@@ -1,5 +1,5 @@
 
-import { StatementEnum } from "@/app/enum";
+import { StatementEnum, StatementJpEnum } from "@/app/enum";
 
 type Props = {
     statementType: StatementEnum
@@ -10,13 +10,13 @@ export function StatementName(params: Props) {
     let str: string = "";
     switch (params.statementType) {
         case StatementEnum.Output:
-            str = "表示文";
+            str = StatementJpEnum.Output;
             break;
         case StatementEnum.Input:
-            str = "代入文";
+            str = StatementJpEnum.Input;
             break;
         case StatementEnum.Condition:
-            str = "条件文";
+            str = StatementJpEnum.Condition;
             break;
     }
 

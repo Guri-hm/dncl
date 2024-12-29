@@ -36,7 +36,7 @@ import {
 import { FlattenedItem, SensorContext, TreeItems, FragmentItems, FragmentItem, DnclEditor } from "../types";
 import { SortableTreeItem, FragmentsListItem, DnclEditDialog } from "../components";
 import { v4 as uuidv4 } from "uuid";
-import { StatementEnum } from "@/app/enum";
+import { StatementEnum, StatementJpEnum } from "@/app/enum";
 
 const initialItems: TreeItems = [
   {
@@ -77,7 +77,7 @@ const initialItems: TreeItems = [
 const fragments: FragmentItems = [
   {
     id: uuidv4(),
-    code: "表示文",
+    code: StatementJpEnum.Output,
     children: [],
     index: 0,
     parentId: null,
@@ -86,7 +86,7 @@ const fragments: FragmentItems = [
   },
   {
     id: uuidv4(),
-    code: "代入文",
+    code: StatementJpEnum.Input,
     children: [],
     index: 0,
     parentId: null,
@@ -95,7 +95,7 @@ const fragments: FragmentItems = [
   },
   {
     id: uuidv4(),
-    code: "条件文",
+    code: StatementJpEnum.Condition,
     children: [],
     index: 0,
     parentId: null,

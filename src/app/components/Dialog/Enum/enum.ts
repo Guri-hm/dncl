@@ -5,6 +5,10 @@ export enum processEnum {
   BulkAssignToArray = '配列への一括代入',
   Increment = '加算を伴う代入',
   Decrement = '減算を伴う代入',
+  If = 'もし〈条件〉ならば',
+  ElseIf = 'を実行し，そうでなくもし〈条件〉ならば',
+  Else = 'を実行し，そうでなければ',
+  EndIf = 'を実行する',
 }
 
 export enum bracketEnum {

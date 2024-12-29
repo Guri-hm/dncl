@@ -14,6 +14,11 @@ export enum StatementEnum {
   Input = 'input',
   Condition = 'condition',
 }
+export enum StatementJpEnum {
+  Output = '表示文',
+  Input = '代入文',
+  Condition = '条件分岐文',
+}
 
 export enum OperationEnum {
   Operation = 'operation',

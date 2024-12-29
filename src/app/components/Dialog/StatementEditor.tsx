@@ -9,6 +9,7 @@ import { processEnum, keyPrefixEnum, inputTypeEnum } from "./Enum";
 import { NowrapText } from "./NowrapText";
 import { OperationEnum, StatementEnum } from "@/app/enum";
 import { Operation } from "./Operation";
+import { Divider } from "@mui/material";
 type Props = {
     statementType: StatementEnum
 }
@@ -63,6 +64,7 @@ export function StatementEditor(params: Props) {
             case getEnumIndex(processEnum, processEnum.Output):
                 return <>
                     <Operation statementType={params.statementType}></Operation>
+                    <Divider orientation="vertical" flexItem />
                     <NowrapText text={'を表示する'}></NowrapText>
                 </>
             default:
@@ -143,7 +145,6 @@ export function StatementEditor(params: Props) {
 
 interface processTypes {
     title: processEnum;
-    type: processEnum;
 }
 
 
@@ -168,7 +169,10 @@ const processNames = [
     {
         statementType: StatementEnum.Condition,
         names: [
-            { title: processEnum.SetValueToVariableOrArrayElement, type: processEnum.SetValueToVariableOrArrayElement },
+            { title: processEnum.If, type: processEnum.If },
+            { title: processEnum.Else, type: processEnum.Else },
+            { title: processEnum.ElseIf, type: processEnum.ElseIf },
+            { title: processEnum.EndIf, type: processEnum.EndIf },
         ]
     },
 ];
