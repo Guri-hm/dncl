@@ -8,7 +8,7 @@ import { DnclTextField } from "./DnclTextField";
 import { Operator } from "./Operator";
 import { processEnum, keyPrefixEnum, inputTypeEnum } from "./Enum";
 import { NowrapText } from "./NowrapText";
-import { OperatorEnum } from "@/app/enum";
+import { OperationEnum, OperatorEnum } from "@/app/enum";
 import { Operation } from "./Operation";
 type Props = {
     statementType: Statement
@@ -34,8 +34,8 @@ export function StatementEditor(params: Props) {
             case getEnumIndex(processEnum, processEnum.SetValueToVariableOrArrayElement):
                 return <>
                     <Operation>
-                        <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArrayWithoutSuffix}></DnclTextField>
-                        <Operator type={OperatorEnum.SimpleAssignment}></Operator>
+                        <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArray}></DnclTextField>
+                        <Operator type={OperationEnum.SimpleAssignment}></Operator>
                     </Operation>
                 </>
 
@@ -43,29 +43,29 @@ export function StatementEditor(params: Props) {
                 //配列の初期化
                 return <>
                     <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.ArrayWithoutSuffix}></DnclTextField>
-                    <Operator type={OperatorEnum.SimpleAssignment}></Operator>
+                    <Operator type={OperationEnum.SimpleAssignment}></Operator>
                     <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.InitializeArray} label=""></DnclTextField>
                 </>
             case getEnumIndex(processEnum, processEnum.BulkAssignToArray):
                 return <>
                     <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_1`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.ArrayWithoutSuffix}></DnclTextField>
                     <NowrapText text={'のすべての要素に'}></NowrapText>
-                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_2`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SwitchVariableOrArrayWithSuffix}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_2`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SwitchVariableOrNumberOrArray}></DnclTextField>
                     <NowrapText text={'を代入する'}></NowrapText>
                 </>
             case getEnumIndex(processEnum, processEnum.Increment):
             case getEnumIndex(processEnum, processEnum.Decrement):
                 return <>
-                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_1`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArrayWithSuffix}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_0`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArray}></DnclTextField>
                     <NowrapText text={'を'}></NowrapText>
-                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_2`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.VariableOrNumber}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_1`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SwitchVariableOrArray}></DnclTextField>
                     <NowrapText text={processIndex == getEnumIndex(processEnum, processEnum.Increment) ? '増やす' : '減らす'}></NowrapText>
                 </>
             case getEnumIndex(processEnum, processEnum.ArithmeticOperation):
                 return <>
                     <Operation>
-                        <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArrayWithoutSuffix}></DnclTextField>
-                        <Operator type={OperatorEnum.SimpleAssignment}></Operator>
+                        <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArray}></DnclTextField>
+                        <Operator type={OperationEnum.SimpleAssignment}></Operator>
                     </Operation>
                 </>
             default:

@@ -23,14 +23,14 @@ export enum keyPrefixEnum {
 }
 
 export enum inputTypeEnum {
-  SwitchVariableOrArrayWithSuffix = 'SwitchVariableOrArrayWithSuffix',
+  SwitchVariableOrNumberOrArray = 'SwitchVariableOrNumberOrArray',
+  SwitchVariableOrArray = 'SwitchVariableOrArray',
   ArrayWithoutSuffix = 'ArrayWithoutSuffix',
   Array = 'Array',
   SuffixOnly = 'SuffixOnly',
   SuffixWithBrackets = 'SuffixWithBrackets',
   InitializeArray = 'InitializeArray',
   VariableOnly = 'VariableOnly',
-  SwitchVariableOrArrayWithoutSuffix = 'SwitchVariableOrArrayWithoutSuffix',
   VariableOrNumber = 'VariableOrNumber',
 }
 

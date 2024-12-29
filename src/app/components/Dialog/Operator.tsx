@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Box from '@mui/material/Box';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { OperatorEnum } from '@/app/enum';
+import { OperationEnum } from '@/app/enum';
 import { ReactElement } from "react";
 import IconButton from '@mui/material/IconButton';
 import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon';
@@ -52,7 +52,7 @@ function MultiplicationOperator(props: SvgIconProps) {
 }
 
 type Props = {
-  type: OperatorEnum
+  type: OperationEnum
   name?: string
   parentIndex?: number
 }
@@ -73,7 +73,7 @@ export function Operator({ type, name = "", parentIndex = 0, ...props }: Props) 
   const handleOnClick = () => {
     let newIndex: number = operatorIndex + 1;
     switch (type) {
-      case OperatorEnum.ArithmeticOperation:
+      case OperationEnum.Operation:
         if (operatorIndex == ArithmeticOperatorArray.length - 1) {
           newIndex = 0;
         }
@@ -85,10 +85,10 @@ export function Operator({ type, name = "", parentIndex = 0, ...props }: Props) 
   }
 
   switch (type) {
-    case OperatorEnum.SimpleAssignment:
+    case OperationEnum.SimpleAssignment:
       icon = <ArrowBackIcon></ArrowBackIcon>
       break;
-    case OperatorEnum.ArithmeticOperation:
+    case OperationEnum.Operation:
       const SpecificIcon = ArithmeticOperatorArray[operatorIndex];
       icon = <IconButton color="primary" aria-label="arithmetic-operation">
         <SpecificIcon onClick={handleOnClick}></SpecificIcon>

@@ -7,7 +7,7 @@ import { DnclTextField, DnclTextFieldProps } from "./DnclTextField";
 import { Operator } from "./Operator";
 import { Droppable } from "../Droppable";
 import { bracketEnum, inputTypeEnum, keyPrefixEnum } from "./Enum";
-import { BraketSymbolEnum, OperatorEnum } from "@/app/enum";
+import { BraketSymbolEnum, OperationEnum, OperatorEnum } from "@/app/enum";
 import AddIcon from '@mui/icons-material/Add';
 import { useUpdateEffect } from './useUpdateEffect ';
 
@@ -149,8 +149,8 @@ export const Operation: FC<Props> = ({ children }) => {
                         {termComponents.map((component, index) => (
                             <Stack direction="row" spacing={0} key={`${component.name}_${index}`}>
                                 <Droppable id={`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.LeftOfTerm}_${index}`} isDragging={isDragging} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.LeftOfTerm}_${index}`)}>{component.leftOfTermValue}</Droppable>
-                                {index > 0 && <Operator name={`${component.name}`} parentIndex={index} type={OperatorEnum.ArithmeticOperation}></Operator>}
-                                <DnclTextField name={`${component.name}`} index={index} inputType={inputTypeEnum.SwitchVariableOrArrayWithSuffix} />
+                                {index > 0 && <Operator name={`${component.name}`} parentIndex={index} type={OperationEnum.Operation}></Operator>}
+                                <DnclTextField name={`${component.name}`} index={index} inputType={inputTypeEnum.SwitchVariableOrNumberOrArray} />
                                 <Droppable id={`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.RightOfTerm}_${index}`} isDragging={isDragging} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.RightOfTerm}_${index}`)}>{component.rightOfTermValue}</Droppable>
                                 {(index == termComponents.length - 1 && index != 0) && <IconButton aria-label="delete" onClick={() => removeTermComponent(index)}><BackspaceIcon /></IconButton>}
                             </Stack>

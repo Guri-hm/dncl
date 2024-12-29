@@ -89,20 +89,20 @@ export function DnclTextField({ name, inputType, index = 0, ...params }: DnclTex
 
   const renderContent = () => {
     switch (inputType) {
-      case inputTypeEnum.SwitchVariableOrArrayWithSuffix:
-      case inputTypeEnum.SwitchVariableOrArrayWithoutSuffix:
+      case inputTypeEnum.SwitchVariableOrArray:
+      case inputTypeEnum.SwitchVariableOrNumberOrArray:
 
         let label: string = "";
         let pattern: ValidationEnum = ValidationEnum.Variable;
 
         switch (inputType) {
-          case inputTypeEnum.SwitchVariableOrArrayWithSuffix:
-            label = checked ? inputTypeJpEnum.Array : inputTypeJpEnum.VariableOrNumber;
-            pattern = checked ? ValidationEnum.Array : ValidationEnum.VariableOrNumber;
-            break;
-          case inputTypeEnum.SwitchVariableOrArrayWithoutSuffix:
+          case inputTypeEnum.SwitchVariableOrArray:
             label = checked ? inputTypeJpEnum.Array : inputTypeJpEnum.VariableOnly;
             pattern = checked ? ValidationEnum.Array : ValidationEnum.Variable;
+            break;
+          case inputTypeEnum.SwitchVariableOrNumberOrArray:
+            label = checked ? inputTypeJpEnum.Array : inputTypeJpEnum.VariableOrNumber;
+            pattern = checked ? ValidationEnum.Array : ValidationEnum.VariableOrNumber;
             break;
           default:
             break;
@@ -127,15 +127,13 @@ export function DnclTextField({ name, inputType, index = 0, ...params }: DnclTex
                   </Grid>
                 }
               </Grid>
-              {(inputType == inputTypeEnum.SwitchVariableOrArrayWithSuffix || inputType == inputTypeEnum.SwitchVariableOrArrayWithoutSuffix) &&
-                <Grid>
-                  <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-                    {/* <Typography>変数</Typography> */}
-                    <AntSwitch onChange={(handleChange)} inputProps={{ 'aria-label': 'ant design' }} />
-                    <Typography>配列</Typography>
-                  </Stack>
-                </Grid>
-              }
+              <Grid>
+                <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                  {/* <Typography>変数</Typography> */}
+                  <AntSwitch onChange={(handleChange)} inputProps={{ 'aria-label': 'ant design' }} />
+                  <Typography>配列</Typography>
+                </Stack>
+              </Grid>
             </Grid>
           </>
         );
