@@ -145,6 +145,7 @@ export function StatementEditor(params: Props) {
 
 interface processTypes {
     title: processEnum;
+    type: processEnum;
 }
 
 
