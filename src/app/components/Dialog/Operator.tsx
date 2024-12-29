@@ -54,42 +54,56 @@ function MultiplicationOperator(props: SvgIconProps) {
 function EqualToOperator(props: SvgIconProps) {
   return (
     <SvgIcon {...props}>
-      <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"> <rect x="10" y="30" width="80" height="10" fill="black" /> <rect x="10" y="60" width="80" height="10" fill="black" /> </svg>
+      <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg"> <rect x="3" y="8" width="18" height="2" fill="currentColor" /> <rect x="3" y="16" width="18" height="2" fill="currentColor" /> </svg>
     </SvgIcon>
   );
 }
 function NotEqualToOperator(props: SvgIconProps) {
   return (
     <SvgIcon {...props}>
-      <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"> <line x1="10" y1="20" x2="90" y2="80" stroke="black" stroke-width="10" /> <line x1="10" y1="30" x2="90" y2="30" stroke="black" stroke-width="10" /> <line x1="10" y1="70" x2="90" y2="70" stroke="black" stroke-width="10" /> </svg>
+      <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+        <line fill="none" stroke="currentColor" strokeWidth="2" x1="2" y1="9.062" x2="22" y2="9.062" />
+        <line fill="none" stroke="currentColor" strokeWidth="2" x1="2" y1="15.562" x2="22" y2="15.562" />
+        <line fill="none" stroke="currentColor" strokeWidth="2" x1="5.698" y1="3.676" x2="18.302" y2="20.324" />
+      </svg>
     </SvgIcon>
   );
 }
 function GreaterThanOperator(props: SvgIconProps) {
   return (
     <SvgIcon {...props}>
-      <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"> <polyline points="30,20 70,50 30,80" stroke="black" strokeWidth="10" fill="none" /> </svg>
+      <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg"> <polyline points="7,5 17,12 7,19" stroke="currentColor" strokeWidth="2" fill="none" /> </svg>
     </SvgIcon>
   );
 }
 function GreaterThanorEqualToOperator(props: SvgIconProps) {
   return (
     <SvgIcon {...props}>
-      <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"> <polyline points="30,20 70,50 30,80" stroke="black" strokeWidth="10" fill="none" /> <line x1="10" y1="90" x2="90" y2="90" stroke="black" strokeWidth="10" /> </svg>
+      <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+        <polyline points="7,1 17,8 7,15" stroke="currentColor" strokeWidth="2" fill="none" />
+        <line x1="2" y1="17" x2="22" y2="17" stroke="currentColor" strokeWidth="2" />
+        <line x1="2" y1="23" x2="22" y2="23" stroke="currentColor" strokeWidth="2" />
+      </svg>
     </SvgIcon>
   );
 }
 function LessThanOperator(props: SvgIconProps) {
   return (
     <SvgIcon {...props}>
-      <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"> <polyline points="70,20 30,50 70,80" stroke="black" strokeWidth="10" fill="none" /> </svg>
+      <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+        <polyline points="17,5 7,12 17,19" stroke="currentColor" strokeWidth="2" fill="none" />
+      </svg>
     </SvgIcon>
   );
 }
 function LessThanorEqualToOperator(props: SvgIconProps) {
   return (
     <SvgIcon {...props}>
-      <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"> <polyline points="70,20 30,50 70,80" stroke="black" strokeWidth="10" fill="none" /> <line x1="10" y1="90" x2="90" y2="90" stroke="black" strokeWidth="10" /> </svg>
+      <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+        <polyline points="17,1 7,8 17,15" stroke="currentColor" strokeWidth="2" fill="none" />
+        <line x1="2" y1="17" x2="22" y2="17" stroke="currentColor" strokeWidth="2" />
+        <line x1="2" y1="23" x2="22" y2="23" stroke="currentColor" strokeWidth="2" />
+      </svg>
     </SvgIcon>
   );
 }
@@ -129,6 +143,11 @@ export function Operator({ type, name = "", parentIndex = 0, ...props }: Props) 
           newIndex = 0;
         }
         break;
+      case OperationEnum.Condition:
+        if (operatorIndex == ComparisonOperatorArray.length - 1) {
+          newIndex = 0;
+        }
+        break;
       default:
         break;
     }
@@ -140,9 +159,16 @@ export function Operator({ type, name = "", parentIndex = 0, ...props }: Props) 
       elms = <ArrowBackIcon></ArrowBackIcon>
       break;
     case OperationEnum.Operation:
-      const SpecificIcon = ArithmeticOperatorArray[operatorIndex];
+      const ArithmeticIcons = ArithmeticOperatorArray[operatorIndex];
       elms = <IconButton color="primary" aria-label="arithmetic-operation">
-        <SpecificIcon onClick={handleOnClick}></SpecificIcon>
+        <ArithmeticIcons onClick={handleOnClick}></ArithmeticIcons>
+        <input type="hidden" name={`${name}_${keyPrefixEnum.Operator}_${parentIndex}`}></input>
+      </IconButton>
+      break;
+    case OperationEnum.Condition:
+      const ComparisonIcons = ComparisonOperatorArray[operatorIndex];
+      elms = <IconButton color="primary" aria-label="comparison-operation">
+        <ComparisonIcons onClick={handleOnClick}></ComparisonIcons>
         <input type="hidden" name={`${name}_${keyPrefixEnum.Operator}_${parentIndex}`}></input>
       </IconButton>
       break;

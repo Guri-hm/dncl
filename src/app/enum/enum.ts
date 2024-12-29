@@ -21,6 +21,7 @@ export enum StatementJpEnum {
 }
 
 export enum OperationEnum {
+  Condition = 'condition',
   Operation = 'operation',
   JoinString = 'joinString',
   SimpleAssignment = 'simpleAssignment'
