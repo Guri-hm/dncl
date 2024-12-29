@@ -9,6 +9,7 @@ import { keyPrefixEnum, inputTypeEnum, ValidationEnum } from "./Enum";
 import Grid from '@mui/material/Grid2';
 import { ValidatedTextField } from "./ValidatedTextField";
 import { FixedHeightGrid } from './FixedHeightGrid';
+import { FormControlLabel, Radio, RadioGroup } from '@mui/material';
 
 export interface DnclTextFieldProps {
   label?: string | inputTypeEnum
@@ -29,6 +30,17 @@ enum inputTypeJpEnum {
   SuffixWithBrackets = '添字',
   VariableOnly = '変数名',
   VariableOrNumber = '値・変数名',
+  String = '文字列',
+}
+enum SwitchJpEnum {
+  VariableOrNumber = '値・変数',
+  Array = '配列',
+  String = '文字列',
+}
+enum SwitchEnum {
+  VariableOrNumber = 'VariableOrNumber',
+  Array = 'Array',
+  String = 'String',
 }
 
 const AntSwitch = styled(Switch)(({ theme }) => ({
@@ -81,19 +93,24 @@ const AntSwitch = styled(Switch)(({ theme }) => ({
 export function DnclTextField({ name, inputType, index = 0, ...params }: DnclTextFieldProps) {
 
   const [checked, setChecked] = useState(false);
+  const [radioValue, setRadioValue] = useState<SwitchEnum>(SwitchEnum.VariableOrNumber);
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeSwitch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setChecked(event.target.checked);
-
+  };
+  const handleChangeRadio = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRadioValue((event.target as HTMLInputElement).value as SwitchEnum);;
   };
 
+  let label: string = "";
+  let pattern: ValidationEnum = ValidationEnum.Variable;
+
   const renderContent = () => {
+
     switch (inputType) {
       case inputTypeEnum.SwitchVariableOrArray:
       case inputTypeEnum.SwitchVariableOrNumberOrArray:
 
-        let label: string = "";
-        let pattern: ValidationEnum = ValidationEnum.Variable;
 
         switch (inputType) {
           case inputTypeEnum.SwitchVariableOrArray:
@@ -129,10 +146,64 @@ export function DnclTextField({ name, inputType, index = 0, ...params }: DnclTex
               </Grid>
               <Grid>
                 <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-                  {/* <Typography>変数</Typography> */}
-                  <AntSwitch onChange={(handleChange)} inputProps={{ 'aria-label': 'ant design' }} />
-                  <Typography>配列</Typography>
+                  <AntSwitch onChange={(handleChangeSwitch)} inputProps={{ 'aria-label': 'ant design' }} />
+                  <Typography>{SwitchJpEnum.Array}</Typography>
                 </Stack>
+              </Grid>
+            </Grid>
+          </>
+        );
+
+      case inputTypeEnum.Radio:
+
+        switch (radioValue) {
+          case SwitchEnum.VariableOrNumber:
+            label = inputTypeJpEnum.VariableOrNumber;
+            pattern = ValidationEnum.VariableOrNumber;
+            break;
+          case SwitchEnum.Array:
+            label = inputTypeJpEnum.Array;
+            pattern = ValidationEnum.Array;
+            break;
+          case SwitchEnum.String:
+            label = inputTypeJpEnum.String;
+            pattern = ValidationEnum.String;
+            break;
+          default:
+            break;
+        }
+
+        //変数と配列を切り替え可能
+        return (
+          <>
+            <Grid container spacing={0} direction='column'>
+              <Grid container direction='row'>
+                <Grid size='grow'>
+                  <ValidatedTextField name={`${name}_${index}`} label={label} pattern={pattern}></ValidatedTextField>
+                </Grid>
+                {radioValue == SwitchEnum.Array &&
+                  <Grid container size='grow'>
+                    <FixedHeightGrid>[</FixedHeightGrid>
+                    <Grid size="grow">
+                      <ValidatedTextField
+                        name={`${name}_${keyPrefixEnum.Suffix}_${index}`} label={inputTypeJpEnum.SuffixOnly} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
+                    </Grid>
+                    <FixedHeightGrid>]</FixedHeightGrid>
+                  </Grid>
+                }
+              </Grid>
+              <Grid>
+                <RadioGroup
+                  row
+                  aria-labelledby="row-radio-buttons-group-label"
+                  name="row-radio-buttons-group"
+                  onChange={handleChangeRadio}
+                  defaultValue={SwitchEnum.VariableOrNumber}
+                >
+                  <FormControlLabel value={SwitchEnum.VariableOrNumber} control={<Radio size="small" />} label={SwitchJpEnum.VariableOrNumber} />
+                  <FormControlLabel value={SwitchEnum.Array} control={<Radio size="small" />} label={SwitchJpEnum.Array} />
+                  <FormControlLabel value={SwitchEnum.String} control={<Radio size="small" />} label={SwitchJpEnum.String} />
+                </RadioGroup>
               </Grid>
             </Grid>
           </>

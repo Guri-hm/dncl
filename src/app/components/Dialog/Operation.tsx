@@ -1,18 +1,19 @@
-import { defaultDropAnimationSideEffects, DndContext, DragOverlay, useDraggable } from "@dnd-kit/core";
-import { FC, ReactNode, useEffect, useRef, useState } from "react";
-import { Box, Button, FormHelperText, IconButton, Stack, SxProps, Theme } from '@mui/material';
+import { defaultDropAnimationSideEffects, DndContext, DragOverlay } from "@dnd-kit/core";
+import { FC, ReactNode, useState } from "react";
+import { Box, Button, FormHelperText, IconButton, Stack } from '@mui/material';
 import BackspaceIcon from '@mui/icons-material/Backspace';
 import { DraggableItem } from "./DraggableItem";
 import { DnclTextField, DnclTextFieldProps } from "./DnclTextField";
 import { Operator } from "./Operator";
 import { Droppable } from "../Droppable";
 import { bracketEnum, inputTypeEnum, keyPrefixEnum } from "./Enum";
-import { BraketSymbolEnum, OperationEnum, OperatorEnum } from "@/app/enum";
+import { BraketSymbolEnum, OperationEnum, StatementEnum } from "@/app/enum";
 import AddIcon from '@mui/icons-material/Add';
 import { useUpdateEffect } from './useUpdateEffect ';
 
 type Props = {
     children?: ReactNode;
+    statementType?: StatementEnum
 };
 
 function searchEnumValue<T>(enumObj: T, key: string | null): T[keyof T] | null {
@@ -29,7 +30,7 @@ function searchEnumValue<T>(enumObj: T, key: string | null): T[keyof T] | null {
 
 
 
-export const Operation: FC<Props> = ({ children }) => {
+export const Operation: FC<Props> = ({ children, statementType }) => {
 
     const [isDragging, setIsDragging] = useState(false);
     const [termComponents, setTermComponents] = useState<DnclTextFieldProps[]>([{ name: keyPrefixEnum.RigthSide }]);
@@ -98,6 +99,39 @@ export const Operation: FC<Props> = ({ children }) => {
         }
     }
 
+    const draggleItems = (): ReactNode => {
+        switch (statementType) {
+            case StatementEnum.Input:
+            case StatementEnum.Condition:
+                return <>
+                    <Stack direction="row" spacing={2}>
+                        <DraggableItem id={bracketEnum.LeftBraket} value={BraketSymbolEnum.LeftBraket} />
+                        <DraggableItem id={bracketEnum.RigthBraket} value={BraketSymbolEnum.RigthBraket} />
+                        <FormHelperText sx={{ display: 'flex', alignItems: 'center' }} error >{braketError}</FormHelperText>
+                    </Stack>
+                </>;
+            default:
+                return null;
+        }
+    }
+
+    const getOperationType = (type: StatementEnum | undefined): OperationEnum => {
+        switch (type) {
+            case StatementEnum.Output:
+                return OperationEnum.JoinString;
+            default:
+                return OperationEnum.Operation;
+        }
+    }
+    const getSwitchType = (type: StatementEnum | undefined): inputTypeEnum => {
+        switch (type) {
+            case StatementEnum.Output:
+                return inputTypeEnum.Radio;
+            default:
+                return inputTypeEnum.SwitchVariableOrNumberOrArray;
+        }
+    }
+
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <DndContext
@@ -121,11 +155,7 @@ export const Operation: FC<Props> = ({ children }) => {
 
                 }}
             >
-                <Stack direction="row" spacing={2}>
-                    <DraggableItem id={bracketEnum.LeftBraket} value={BraketSymbolEnum.LeftBraket} />
-                    <DraggableItem id={bracketEnum.RigthBraket} value={BraketSymbolEnum.RigthBraket} />
-                    <FormHelperText sx={{ display: 'flex', alignItems: 'center' }} error >{braketError}</FormHelperText>
-                </Stack>
+                {draggleItems()}
                 <Stack direction="row" spacing={0}>
                     <DragOverlay
                         dropAnimation={{
@@ -149,8 +179,8 @@ export const Operation: FC<Props> = ({ children }) => {
                         {termComponents.map((component, index) => (
                             <Stack direction="row" spacing={0} key={`${component.name}_${index}`}>
                                 <Droppable id={`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.LeftOfTerm}_${index}`} isDragging={isDragging} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.LeftOfTerm}_${index}`)}>{component.leftOfTermValue}</Droppable>
-                                {index > 0 && <Operator name={`${component.name}`} parentIndex={index} type={OperationEnum.Operation}></Operator>}
-                                <DnclTextField name={`${component.name}`} index={index} inputType={inputTypeEnum.SwitchVariableOrNumberOrArray} />
+                                {index > 0 && <Operator name={`${component.name}`} parentIndex={index} type={getOperationType(statementType)}></Operator>}
+                                <DnclTextField name={`${component.name}`} index={index} inputType={getSwitchType(statementType)} />
                                 <Droppable id={`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.RightOfTerm}_${index}`} isDragging={isDragging} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.RightOfTerm}_${index}`)}>{component.rightOfTermValue}</Droppable>
                                 {(index == termComponents.length - 1 && index != 0) && <IconButton aria-label="delete" onClick={() => removeTermComponent(index)}><BackspaceIcon /></IconButton>}
                             </Stack>

@@ -9,9 +9,15 @@ export enum OperatorEnum {
   MultiplicationOperator = '×',
 }
 
+export enum StatementEnum {
+  Output = 'output',
+  Input = 'input',
+  Condition = 'condition',
+}
 
 export enum OperationEnum {
   Operation = 'operation',
+  JoinString = 'joinString',
   SimpleAssignment = 'simpleAssignment'
 }
 

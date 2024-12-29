@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Statement } from "../../types";
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import { ReactElement } from "react";
@@ -8,10 +7,10 @@ import { DnclTextField } from "./DnclTextField";
 import { Operator } from "./Operator";
 import { processEnum, keyPrefixEnum, inputTypeEnum } from "./Enum";
 import { NowrapText } from "./NowrapText";
-import { OperationEnum, OperatorEnum } from "@/app/enum";
+import { OperationEnum, StatementEnum } from "@/app/enum";
 import { Operation } from "./Operation";
 type Props = {
-    statementType: Statement
+    statementType: StatementEnum
 }
 
 function getEnumIndex<T extends Record<string, string | number>>(enumObj: T, value: T[keyof T]): number {
@@ -33,7 +32,7 @@ export function StatementEditor(params: Props) {
         switch (index) {
             case getEnumIndex(processEnum, processEnum.SetValueToVariableOrArrayElement):
                 return <>
-                    <Operation>
+                    <Operation statementType={params.statementType}>
                         <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArray}></DnclTextField>
                         <Operator type={OperationEnum.SimpleAssignment}></Operator>
                     </Operation>
@@ -61,12 +60,10 @@ export function StatementEditor(params: Props) {
                     <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_1`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SwitchVariableOrArray}></DnclTextField>
                     <NowrapText text={processIndex == getEnumIndex(processEnum, processEnum.Increment) ? '増やす' : '減らす'}></NowrapText>
                 </>
-            case getEnumIndex(processEnum, processEnum.ArithmeticOperation):
+            case getEnumIndex(processEnum, processEnum.Output):
                 return <>
-                    <Operation>
-                        <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArray}></DnclTextField>
-                        <Operator type={OperationEnum.SimpleAssignment}></Operator>
-                    </Operation>
+                    <Operation statementType={params.statementType}></Operation>
+                    <NowrapText text={'を表示する'}></NowrapText>
                 </>
             default:
                 return <></>;
@@ -79,19 +76,37 @@ export function StatementEditor(params: Props) {
         options: result,
         getOptionLabel: (option: processTypes) => option.title,
     };
+
+    const ddl = <Autocomplete
+        {...defaultProps}
+        id="auto-select"
+        autoSelect
+        renderInput={(params) => (
+            <TextField {...params} label="文の内容" variant="standard" />
+        )}
+        onChange={handleChange}
+        defaultValue={{ title: processEnum.SetValueToVariableOrArrayElement, type: processEnum.SetValueToVariableOrArrayElement }}
+    />
+
     switch (params.statementType) {
-        case Statement.Input:
+        case StatementEnum.Output:
             return <>
-                <Autocomplete
-                    {...defaultProps}
-                    id="auto-select"
-                    autoSelect
-                    renderInput={(params) => (
-                        <TextField {...params} label="文の内容" variant="standard" />
-                    )}
-                    onChange={handleChange}
-                    defaultValue={{ title: processEnum.SetValueToVariableOrArrayElement, type: processEnum.SetValueToVariableOrArrayElement }}
-                />
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        p: 1,
+                        m: 1,
+                        bgcolor: 'background.paper',
+                        borderRadius: 1,
+                    }}
+                >
+                    {statement ?? getStatement(getEnumIndex(processEnum, processEnum.Output))}
+                </Box>
+            </>;
+        case StatementEnum.Input:
+            return <>
+                {ddl}
                 <Box
                     sx={{
                         display: 'flex',
@@ -105,43 +120,9 @@ export function StatementEditor(params: Props) {
                     {statement ?? getStatement(getEnumIndex(processEnum, processEnum.SetValueToVariableOrArrayElement))}
                 </Box>
             </>;
-        case Statement.Operation:
+        case StatementEnum.Condition:
             return <>
-                <Autocomplete
-                    {...defaultProps}
-                    id="auto-select"
-                    autoSelect
-                    renderInput={(params) => (
-                        <TextField {...params} label="文の内容" variant="standard" />
-                    )}
-                    onChange={handleChange}
-                    defaultValue={{ title: processEnum.ArithmeticOperation, type: processEnum.ArithmeticOperation }}
-                />
-                <Box
-                    sx={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        p: 1,
-                        m: 1,
-                        bgcolor: 'background.paper',
-                        borderRadius: 1,
-                    }}
-                >
-                    {statement ?? getStatement(getEnumIndex(processEnum, processEnum.ArithmeticOperation))}
-                </Box>
-            </>;
-        case Statement.Condition:
-            return <>
-                <Autocomplete
-                    {...defaultProps}
-                    id="auto-select"
-                    autoSelect
-                    renderInput={(params) => (
-                        <TextField {...params} label="文の内容" variant="standard" />
-                    )}
-                    onChange={handleChange}
-                    defaultValue={null}
-                />
+                {ddl}
                 <Box
                     sx={{
                         display: 'flex',
@@ -169,7 +150,13 @@ interface processTypes {
 
 const processNames = [
     {
-        statementType: Statement.Input,
+        statementType: StatementEnum.Output,
+        names: [
+            { title: processEnum.Output, type: processEnum.Output },
+        ]
+    },
+    {
+        statementType: StatementEnum.Input,
         names: [
             { title: processEnum.SetValueToVariableOrArrayElement, type: processEnum.SetValueToVariableOrArrayElement },
             { title: processEnum.InitializeArray, type: processEnum.InitializeArray },
@@ -179,14 +166,7 @@ const processNames = [
         ]
     },
     {
-        statementType: Statement.Operation,
-        names: [
-            { title: processEnum.ArithmeticOperation, type: processEnum.ArithmeticOperation },
-            { title: processEnum.ComparisonOperation, type: processEnum.ComparisonOperation },
-        ]
-    },
-    {
-        statementType: Statement.Condition,
+        statementType: StatementEnum.Condition,
         names: [
             { title: processEnum.SetValueToVariableOrArrayElement, type: processEnum.SetValueToVariableOrArrayElement },
         ]

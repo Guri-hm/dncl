@@ -6,6 +6,7 @@ import { ReactElement } from "react";
 import IconButton from '@mui/material/IconButton';
 import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon';
 import { keyPrefixEnum } from "./Enum";
+import { Typography } from "@mui/material";
 
 function AdditionOperator(props: SvgIconProps) {
   return (
@@ -50,7 +51,48 @@ function MultiplicationOperator(props: SvgIconProps) {
     </SvgIcon>
   );
 }
-
+function EqualToOperator(props: SvgIconProps) {
+  return (
+    <SvgIcon {...props}>
+      <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"> <rect x="10" y="30" width="80" height="10" fill="black" /> <rect x="10" y="60" width="80" height="10" fill="black" /> </svg>
+    </SvgIcon>
+  );
+}
+function NotEqualToOperator(props: SvgIconProps) {
+  return (
+    <SvgIcon {...props}>
+      <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"> <line x1="10" y1="20" x2="90" y2="80" stroke="black" stroke-width="10" /> <line x1="10" y1="30" x2="90" y2="30" stroke="black" stroke-width="10" /> <line x1="10" y1="70" x2="90" y2="70" stroke="black" stroke-width="10" /> </svg>
+    </SvgIcon>
+  );
+}
+function GreaterThanOperator(props: SvgIconProps) {
+  return (
+    <SvgIcon {...props}>
+      <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"> <polyline points="30,20 70,50 30,80" stroke="black" strokeWidth="10" fill="none" /> </svg>
+    </SvgIcon>
+  );
+}
+function GreaterThanorEqualToOperator(props: SvgIconProps) {
+  return (
+    <SvgIcon {...props}>
+      <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"> <polyline points="30,20 70,50 30,80" stroke="black" strokeWidth="10" fill="none" /> <line x1="10" y1="90" x2="90" y2="90" stroke="black" strokeWidth="10" /> </svg>
+    </SvgIcon>
+  );
+}
+function LessThanOperator(props: SvgIconProps) {
+  return (
+    <SvgIcon {...props}>
+      <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"> <polyline points="70,20 30,50 70,80" stroke="black" strokeWidth="10" fill="none" /> </svg>
+    </SvgIcon>
+  );
+}
+function LessThanorEqualToOperator(props: SvgIconProps) {
+  return (
+    <SvgIcon {...props}>
+      <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"> <polyline points="70,20 30,50 70,80" stroke="black" strokeWidth="10" fill="none" /> <line x1="10" y1="90" x2="90" y2="90" stroke="black" strokeWidth="10" /> </svg>
+    </SvgIcon>
+  );
+}
 type Props = {
   type: OperationEnum
   name?: string
@@ -66,10 +108,19 @@ const ArithmeticOperatorArray: React.FC<SvgIconProps>[] = [
   DivisionOperatorRemaining
 ];
 
+const ComparisonOperatorArray: React.FC<SvgIconProps>[] = [
+  EqualToOperator,
+  NotEqualToOperator,
+  GreaterThanOperator,
+  GreaterThanorEqualToOperator,
+  LessThanOperator,
+  LessThanorEqualToOperator
+];
+
 export function Operator({ type, name = "", parentIndex = 0, ...props }: Props) {
   const [operatorIndex, setOperatorIndex] = useState<number>(0);
 
-  let icon: ReactElement = <></>;
+  let elms: ReactElement = <></>;
   const handleOnClick = () => {
     let newIndex: number = operatorIndex + 1;
     switch (type) {
@@ -86,14 +137,19 @@ export function Operator({ type, name = "", parentIndex = 0, ...props }: Props) 
 
   switch (type) {
     case OperationEnum.SimpleAssignment:
-      icon = <ArrowBackIcon></ArrowBackIcon>
+      elms = <ArrowBackIcon></ArrowBackIcon>
       break;
     case OperationEnum.Operation:
       const SpecificIcon = ArithmeticOperatorArray[operatorIndex];
-      icon = <IconButton color="primary" aria-label="arithmetic-operation">
+      elms = <IconButton color="primary" aria-label="arithmetic-operation">
         <SpecificIcon onClick={handleOnClick}></SpecificIcon>
         <input type="hidden" name={`${name}_${keyPrefixEnum.Operator}_${parentIndex}`}></input>
       </IconButton>
+      break;
+    case OperationEnum.JoinString:
+      elms = <>
+        <Typography color="primary" fontWeight={700}>と</Typography>
+      </>
       break;
     default:
       return;
@@ -108,7 +164,7 @@ export function Operator({ type, name = "", parentIndex = 0, ...props }: Props) 
       marginLeft: '2px'
 
     }}>
-      {icon}
+      {elms}
     </Box>
   );
 }

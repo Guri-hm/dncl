@@ -1,21 +1,21 @@
 
-import { Statement } from "../../types";
+import { StatementEnum } from "@/app/enum";
 
 type Props = {
-    statementType: Statement
+    statementType: StatementEnum
 }
 
 export function StatementName(params: Props) {
 
     let str: string = "";
     switch (params.statementType) {
-        case Statement.Input:
+        case StatementEnum.Output:
+            str = "表示文";
+            break;
+        case StatementEnum.Input:
             str = "代入文";
             break;
-        case Statement.Operation:
-            str = "演算";
-            break;
-        case Statement.Condition:
+        case StatementEnum.Condition:
             str = "条件文";
             break;
     }

@@ -1,4 +1,5 @@
 import type { RefObject } from 'react';
+import { StatementEnum } from "@/app/enum";
 
 export interface TreeItem {
   id: string;
@@ -21,15 +22,9 @@ export type SensorContext = RefObject<{
   offset: number;
 }>;
 
-export enum Statement {
-  Input = 'input',
-  Operation = 'operation',
-  Condition = 'condition',
-}
-
 //ツリーに追加する要素の型
 export interface FragmentItem extends FlattenedItem {
-  statementType: Statement;
+  statementType: StatementEnum;
 }
 
 export type FragmentItems = FragmentItem[];
@@ -38,6 +33,6 @@ export type DnclEditor = {
   item?: FlattenedItem,
   open: boolean,
   onSubmit: any,
-  type: Statement,
+  type: StatementEnum,
   overIndex: number,
 }

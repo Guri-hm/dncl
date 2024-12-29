@@ -33,9 +33,10 @@ import {
   removeChildrenOf,
   setProperty,
 } from "../utilities";
-import { FlattenedItem, SensorContext, TreeItems, FragmentItems, FragmentItem, Statement, DnclEditor } from "../types";
+import { FlattenedItem, SensorContext, TreeItems, FragmentItems, FragmentItem, DnclEditor } from "../types";
 import { SortableTreeItem, FragmentsListItem, DnclEditDialog } from "../components";
 import { v4 as uuidv4 } from "uuid";
+import { StatementEnum } from "@/app/enum";
 
 const initialItems: TreeItems = [
   {
@@ -76,21 +77,21 @@ const initialItems: TreeItems = [
 const fragments: FragmentItems = [
   {
     id: uuidv4(),
+    code: "表示文",
+    children: [],
+    index: 0,
+    parentId: null,
+    depth: 0,
+    statementType: StatementEnum.Output
+  },
+  {
+    id: uuidv4(),
     code: "代入文",
     children: [],
     index: 0,
     parentId: null,
     depth: 0,
-    statementType: Statement.Input
-  },
-  {
-    id: uuidv4(),
-    code: "演算",
-    children: [],
-    index: 0,
-    parentId: null,
-    depth: 0,
-    statementType: Statement.Operation
+    statementType: StatementEnum.Input
   },
   {
     id: uuidv4(),
@@ -99,7 +100,7 @@ const fragments: FragmentItems = [
     index: 0,
     parentId: null,
     depth: 0,
-    statementType: Statement.Condition
+    statementType: StatementEnum.Condition
   },
 ]
 
@@ -140,7 +141,7 @@ export function SortableTree({
   const [activeCode, setActiveCode] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
-  const [editor, setEditor] = useState<DnclEditor>({ onSubmit: null, open: false, type: Statement.Input, overIndex: 0 });
+  const [editor, setEditor] = useState<DnclEditor>({ onSubmit: null, open: false, type: StatementEnum.Input, overIndex: 0 });
 
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {

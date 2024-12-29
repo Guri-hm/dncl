@@ -5,12 +5,12 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import { Statement, DnclEditor } from "../../types";
+import { DnclEditor } from "../../types";
 import { StatementName } from './StatementName';
 import { StatementDesc } from './StatementDesc';
 import { StatementEditor } from './StatementEditor';
 import { keyPrefixEnum } from './Enum';
-import { OperatorEnum } from '@/app/enum';
+import { OperatorEnum, StatementEnum } from '@/app/enum';
 
 interface Props {
     editor: DnclEditor;
@@ -36,10 +36,10 @@ const refineStatement = (data: { [k: string]: string; }, keywordPart: keyPrefixE
     return statement;
 }
 
-const getOperator = (statementType: Statement) => {
+const getOperator = (statementType: StatementEnum) => {
 
     switch (statementType) {
-        case Statement.Input:
+        case StatementEnum.Input:
             return OperatorEnum.SimpleAssignment;
         default:
             return "";
