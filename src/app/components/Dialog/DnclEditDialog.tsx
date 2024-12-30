@@ -18,6 +18,59 @@ interface Props {
     refrash: any
 }
 
+
+function convertJapaneseLogicalExpression(expression) {
+    return expression
+        .replace(/でない/g, '!')
+        .replace(/かつ/g, '&&')
+        .replace(/または/g, '||')
+        .replace(/がない/g, '=== false');
+}
+
+function isValidLogicalExpression(expression) {
+    const validCharactersRegex = /^[\d\s()&|!><=]+$/;
+    const validLogicalExpressionRegex = /^(true|false|\d+|([!()&|><=\s])+)+$/;
+
+    const convertedExpression = convertJapaneseLogicalExpression(expression);
+
+    // 文字列に許可された文字のみが含まれているかチェック
+    if (!validCharactersRegex.test(convertedExpression)) {
+        return false;
+    }
+
+    // 論理演算子と値の整合性をチェック
+    if (!validLogicalExpressionRegex.test(convertedExpression)) {
+        return false;
+    }
+
+    // 括弧のバランスをチェック
+    let balance = 0;
+    for (let char of convertedExpression) {
+        if (char === '(') {
+            balance++;
+        } else if (char === ')') {
+            balance--;
+        }
+        if (balance < 0) {
+            return false;
+        }
+    }
+    return balance === 0;
+}
+
+// テスト
+const testExpression1 = "(1 > 2)でない かつ (3 <= 4)";
+const testExpression2 = "1 または false";
+const testExpression3 = "true かつ (false または !(true))";
+const testExpression4 = "invalid expression";
+const testExpression5 = "(1) かつ (2 > 3";
+
+console.log(isValidLogicalExpression(testExpression1)); // 出力: true
+console.log(isValidLogicalExpression(testExpression2)); // 出力: true
+console.log(isValidLogicalExpression(testExpression3)); // 出力: true
+console.log(isValidLogicalExpression(testExpression4)); // 出力: false
+console.log(isValidLogicalExpression(testExpression5)); // 出力: false
+
 const refineStatement = (data: { [k: string]: string; }, statementType: StatementEnum, keywordPart: keyPrefixEnum) => {
     const obj = Object.fromEntries(Object.entries(data).filter(([key, value]) => key.includes(keywordPart)));
 
