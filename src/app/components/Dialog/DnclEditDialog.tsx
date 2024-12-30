@@ -26,6 +26,15 @@ function convertJapaneseLogicalExpression(expression) {
         .replace(/または/g, '||')
         .replace(/がない/g, '=== false');
 }
+function replaceNegation(expression) {
+    return expression.replace(/\(([^)]+)\)!/g, '!($1)');
+}
+
+// テスト
+const testString = "(1 > 2)!";
+const replacedString = replaceNegation(testString);
+
+console.log(replacedString); // 出力: !(1 > 2)
 
 function isValidLogicalExpression(expression) {
     const validCharactersRegex = /^[\d\s()&|!><=]+$/;
