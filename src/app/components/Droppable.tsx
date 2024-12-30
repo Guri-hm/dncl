@@ -31,7 +31,7 @@ export const Droppable: FC<DroppableProp> = ({ children, id, isDragging, onClick
                 backgroundColor: isOver ? blue[700] : (isDragging ? blue[100] : "")
             }}
         >
-            <Button onClick={onClick} size="large" sx={{ paddingLeft: '5px', paddingRight: '5px', minWidth: 0, }}>{children}</Button>
+            <Button onClick={onClick} size="large" sx={{ paddingLeft: '5px', paddingRight: '5px', minWidth: 0, fontWeight: 700 }}>{children}</Button>
             <input type="hidden" name={id} value={`${children}`} />
         </Grid>
     )

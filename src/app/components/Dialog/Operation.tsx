@@ -35,7 +35,7 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
     const [isDragging, setIsDragging] = useState(false);
     const [termComponents, setTermComponents] = useState<DnclTextFieldProps[]>([{ name: keyPrefixEnum.RigthSide }]);
     const [activeId, setActiveId] = useState<string>("");
-    const [braketError, setBraketError] = useState<string>("");
+    const [braketError, setBraketError] = useState<string[]>([]);
     const [logicalOperatorError, setLogicalOperatorError] = useState<string>("");
 
     //初回レンダリング時に実行しない
@@ -45,26 +45,60 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
 
     const draggableStringList = enumsToObjects([BraketSymbolEnum, LogicalOperationJpEnum]);
 
-    const checkLogicalOperator = () => {
-
-    }
     const checkBraketPair = () => {
-        const leftOfTermValues: (string[] | undefined)[] = termComponents.map(item => item.leftOfTermValue);
-        const rightOfTermValues: (string[] | undefined)[] = termComponents.map(item => item.rightOfTermValue);
-        const values: string = leftOfTermValues.join('') + rightOfTermValues.join('');
 
-        const leftBraketCount = values.split(BraketSymbolEnum.LeftBraket).length - 1;
-        const rightBraketCount = values.split(BraketSymbolEnum.RigthBraket).length - 1;
-        if (leftBraketCount == rightBraketCount) {
-            setBraketError("");
-            return;
+        let errorArray: string[] = [];
+
+        function checkParenthesesBalance(input: string): { isBalanced: boolean, isCorrectOrder: boolean, balance: number, hasEmptyParentheses: boolean } {
+            let balance = 0;
+            let isCorrectOrder = true;
+            let hasEmptyParentheses = false;
+
+            for (let i = 0; i < input.length; i++) {
+                const char = input[i];
+                if (char === '(') {
+                    if (input[i + 1] === ')') {
+                        hasEmptyParentheses = true;
+                    }
+                    balance++;
+                } else if (char === ')') {
+                    if (balance === 0) {
+                        isCorrectOrder = false;
+                    }
+                    balance--;
+                }
+            }
+
+            return {
+                isBalanced: balance === 0,
+                isCorrectOrder: isCorrectOrder,
+                balance: balance,
+                hasEmptyParentheses: hasEmptyParentheses
+            };
         }
 
-        if (leftBraketCount > rightBraketCount) {
-            setBraketError(`『 ${BraketSymbolEnum.RigthBraket} 』を追加してください`);
-        } else {
-            setBraketError(`『 ${BraketSymbolEnum.LeftBraket} 』を追加してください`);
+        let tmpCode: string[] = [];
+        for (let i = 0; i < termComponents.length; i++) {
+            tmpCode = [...tmpCode, ...(termComponents[i].leftOfTermValue ?? [])];
+            tmpCode = [...tmpCode, ...(termComponents[i].rightOfTermValue ?? [])];
         }
+
+        const result: { isBalanced: boolean, isCorrectOrder: boolean, balance: number, hasEmptyParentheses: boolean } = (checkParenthesesBalance(tmpCode.join('')));
+
+        if (!result.isBalanced) {
+            if (result.balance > 0) {
+                errorArray.push(`『 ${BraketSymbolEnum.RigthBraket} 』を追加してください`);
+            } else {
+                errorArray.push(`『 ${BraketSymbolEnum.LeftBraket} 』を追加してください`);
+            }
+        }
+        if (!result.isCorrectOrder) {
+            errorArray.push(`『 ${BraketSymbolEnum.RigthBraket} 』の前方には対になる『 ${BraketSymbolEnum.LeftBraket} 』が必要です`);
+        }
+        if (result.hasEmptyParentheses) {
+            errorArray.push(`『 ${BraketSymbolEnum.LeftBraket} 』と『 ${BraketSymbolEnum.RigthBraket} 』の内側には要素が必要です`);
+        }
+        setBraketError(errorArray);
     }
 
     const addTermComponent = () => {
@@ -116,19 +150,25 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
         let propertyName = '';
         const draggingString = getValueByKey(draggableStringList, activeId);
         setLogicalOperatorError("");
-        switch (draggingString) {
-            case LogicalOperationJpEnum.And:
-            case LogicalOperationJpEnum.Or:
-                //先頭で「かつ」「または」の論理演算子を禁止
-                if (overIdSplitArray[1] == keyPrefixEnum.LeftOfTerm && Number(overIdSplitArray[2]) == 0) {
-                    setLogicalOperatorError(`「${LogicalOperationJpEnum.And}」「${LogicalOperationJpEnum.Or}」は先頭で使用できません`);
+        if (overIdSplitArray[1] == keyPrefixEnum.LeftOfTerm && Number(overIdSplitArray[2]) == 0) {
+
+            //先頭で「かつ」「または」「でない」の論理演算子を禁止
+            switch (draggingString) {
+                case LogicalOperationJpEnum.And:
+                case LogicalOperationJpEnum.Or:
+                case LogicalOperationJpEnum.Not:
+                    setLogicalOperatorError(`「${LogicalOperationJpEnum.And}」「${LogicalOperationJpEnum.Or}」「${LogicalOperationJpEnum.Not}」は先頭で使用できません`);
                     return;
-                }
-                //末尾で「かつ」「または」の論理演算子を禁止
-                if (overIdSplitArray[1] == keyPrefixEnum.RightOfTerm && Number(overIdSplitArray[2]) == termComponents.length - 1) {
+            }
+        }
+        if (overIdSplitArray[1] == keyPrefixEnum.RightOfTerm && Number(overIdSplitArray[2]) == termComponents.length - 1) {
+            //末尾で「かつ」「または」の論理演算子を禁止
+            switch (draggingString) {
+                case LogicalOperationJpEnum.And:
+                case LogicalOperationJpEnum.Or:
                     setLogicalOperatorError(`「${LogicalOperationJpEnum.And}」「${LogicalOperationJpEnum.Or}」は末尾で使用できません`);
                     return;
-                }
+            }
         }
 
         if (overIdSplitArray[1] == keyPrefixEnum.LeftOfTerm) {
@@ -147,7 +187,11 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
 
     const draggleItems = (statementType: StatementEnum | undefined): ReactNode => {
         const brakets: ReactNode = <>
-            <FormHelperText sx={{ display: 'flex', alignItems: 'center' }} error >{braketError}</FormHelperText>
+            <FormHelperText sx={{ display: 'flex', flexDirection: 'column' }} error >
+                {braketError.map((error, index) => (
+                    <div key={index}> {error} </div>)
+                )}
+            </FormHelperText>
             <Stack direction="row" spacing={2}>
                 <DraggableItem id={bracketEnum.LeftBraket} value={BraketSymbolEnum.LeftBraket} />
                 <DraggableItem id={bracketEnum.RigthBraket} value={BraketSymbolEnum.RigthBraket} />
