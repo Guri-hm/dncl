@@ -18,6 +18,29 @@ interface Props {
     refrash: any
 }
 
+function convertToJavaScript(str: string) {
+    // 置換規則を定義
+    const replacements = [
+        { regex: /\s*また\s*/g, replacement: ' || ' },
+        { regex: /\s*かつ\s*/g, replacement: ' && ' },
+        // { regex: /でない/g, replacement: '!' }
+    ];
+
+    // 置換を適用
+    replacements.forEach(({ regex, replacement }) => {
+        str = str.replace(regex, replacement);
+    });
+
+    return str;
+}
+
+// 使用例
+let input = "a < 1 または b = 1";
+let output = convertToJavaScript(input);
+
+console.log(output); // "a < 1 || b = 1"
+
+
 
 function convertJapaneseLogicalExpression(expression) {
     return expression
@@ -34,7 +57,7 @@ function replaceNegation(expression) {
 const testString = "(1 > 2)!";
 const replacedString = replaceNegation(testString);
 
-console.log(replacedString); // 出力: !(1 > 2)
+// console.log(replacedString); // 出力: !(1 > 2)
 
 function isValidLogicalExpression(expression) {
     const validCharactersRegex = /^[\d\s()&|!><=]+$/;
@@ -74,11 +97,11 @@ const testExpression3 = "true かつ (false または !(true))";
 const testExpression4 = "invalid expression";
 const testExpression5 = "(1) かつ (2 > 3";
 
-console.log(isValidLogicalExpression(testExpression1)); // 出力: true
-console.log(isValidLogicalExpression(testExpression2)); // 出力: true
-console.log(isValidLogicalExpression(testExpression3)); // 出力: true
-console.log(isValidLogicalExpression(testExpression4)); // 出力: false
-console.log(isValidLogicalExpression(testExpression5)); // 出力: false
+// console.log(isValidLogicalExpression(testExpression1)); // 出力: true
+// console.log(isValidLogicalExpression(testExpression2)); // 出力: true
+// console.log(isValidLogicalExpression(testExpression3)); // 出力: true
+// console.log(isValidLogicalExpression(testExpression4)); // 出力: false
+// console.log(isValidLogicalExpression(testExpression5)); // 出力: false
 
 const refineStatement = (data: { [k: string]: string; }, statementType: StatementEnum, keywordPart: keyPrefixEnum) => {
     const obj = Object.fromEntries(Object.entries(data).filter(([key, value]) => key.includes(keywordPart)));
@@ -119,7 +142,9 @@ const refineStatement = (data: { [k: string]: string; }, statementType: Statemen
         pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.RightOfTerm}`]));
     }
 
-    const statement = tmp.join('');
+    const statement = tmp.join(' ');
+    const convertedStr = convertToJavaScript(statement);
+    console.log(convertedStr);
     return statement;
 }
 

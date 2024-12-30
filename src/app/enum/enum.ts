@@ -18,13 +18,22 @@ export enum ArithmeticOperatorSymbolArray {
   DivisionOperatorRemaining = '%',
   NullOperator = '',
 }
-export enum ComparisonOperatorSymbolArray {
+export enum ComparisonOperatorSymbolArrayForJavascript {
+  EqualToOperator = '==',
+  NotEqualToOperator = '!=',
+  GreaterThanOperator = '>',
+  GreaterThanOrEqualToOperator = '>=',
+  LessThanOperator = '<',
+  LessThanOrEqualToOperator = '<=',
+  NullOperator = '',
+}
+export enum ComparisonOperatorSymbolArrayForDncl {
   EqualToOperator = '=',
   NotEqualToOperator = '≠',
   GreaterThanOperator = '≻',
-  GreaterThanorEqualToOperator = '≧',
+  GreaterThanOrEqualToOperator = '≧',
   LessThanOperator = '≺',
-  LessThanorEqualToOperator = '≦',
+  LessThanOrEqualToOperator = '≦',
   NullOperator = '',
 }
 

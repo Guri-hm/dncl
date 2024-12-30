@@ -1,5 +1,4 @@
 npm i react react-dom
-npm i allotment --legacy-peer-deps
 npm i -D @tailwindcss/forms --legacy-peer-deps
 npm i @dnd-kit/core --legacy-peer-deps
 npm i @dnd-kit/sortable --legacy-peer-deps
@@ -8,6 +7,7 @@ npm i uuid --legacy-peer-deps
 npm i sass --save-dev  --legacy-peer-deps
 npm install @mui/material @emotion/react @emotion/styled --legacy-peer-deps
 npm install @mui/icons-material @mui/material @emotion/styled @emotion/react --legacy-peer-deps
+npm i allotment --legacy-peer-deps
 
 *allotmentのバージョンが古く、「 --legacy-peer-deps」を付与してインストールした
 ⇒他のライブラリのインストール時にもこのオプション付与を要求されるようになった

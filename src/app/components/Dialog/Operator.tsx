@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Box from '@mui/material/Box';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { ArithmeticOperatorSymbolArray, ComparisonOperatorSymbolArray, OperationEnum } from '@/app/enum';
+import { ArithmeticOperatorSymbolArray, ComparisonOperatorSymbolArrayForJavascript, OperationEnum } from '@/app/enum';
 import { ReactElement } from "react";
 import IconButton from '@mui/material/IconButton';
 import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon';
@@ -77,7 +77,7 @@ function GreaterThanOperator(props: SvgIconProps) {
     </SvgIcon>
   );
 }
-function GreaterThanorEqualToOperator(props: SvgIconProps) {
+function GreaterThanOrEqualToOperator(props: SvgIconProps) {
   return (
     <SvgIcon {...props}>
       <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg">
@@ -97,7 +97,7 @@ function LessThanOperator(props: SvgIconProps) {
     </SvgIcon>
   );
 }
-function LessThanorEqualToOperator(props: SvgIconProps) {
+function LessThanOrEqualToOperator(props: SvgIconProps) {
   return (
     <SvgIcon {...props}>
       <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg">
@@ -108,6 +108,23 @@ function LessThanorEqualToOperator(props: SvgIconProps) {
     </SvgIcon>
   );
 }
+function AAA(props: SvgIconProps) {
+  return (
+    <SvgIcon {...props} sx={{ width: '40px' }}>
+      <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+        <text x="0" y="20" fontSize="20" fill="currentColor">または</text>
+      </svg>
+
+    </SvgIcon>
+  );
+}
+
+const TextIcon: React.FC<SvgIconProps & { text: string }> = ({ text, ...props }) => (
+  <SvgIcon {...props}>
+    <text x="0" y="20" fontSize="30">{text}</text>
+  </SvgIcon>
+)
+
 type Props = {
   type: OperationEnum
   name?: string
@@ -125,13 +142,17 @@ const ArithmeticOperatorArray: React.FC<SvgIconProps>[] = [
 ];
 
 const ComparisonOperatorArray: React.FC<SvgIconProps>[] = [
+  AAA,
   EqualToOperator,
   NotEqualToOperator,
   GreaterThanOperator,
-  GreaterThanorEqualToOperator,
+  GreaterThanOrEqualToOperator,
   LessThanOperator,
-  LessThanorEqualToOperator,
+  LessThanOrEqualToOperator,
   (props) => <NotInterestedIcon {...props} sx={{ color: 'gray', opacity: 0.5 }} />,
+  // (props) => <TextIcon {...props} text="または" />,
+  // (props) => <TextIcon {...props} text="かつ" />,
+  // (props) => <TextIcon {...props} text="でない" />
 ];
 
 export function Operator({ type, name = "", parentIndex = 0, ...props }: Props) {
@@ -173,7 +194,7 @@ export function Operator({ type, name = "", parentIndex = 0, ...props }: Props) 
       break;
     case OperationEnum.Condition:
       const ComparisonIcons = ComparisonOperatorArray[operatorIndex];
-      const enumComparisonValues = Object.values(ComparisonOperatorSymbolArray);
+      const enumComparisonValues = Object.values(ComparisonOperatorSymbolArrayForJavascript);
       elms = <>
         <IconButton color="primary" aria-label="comparison-operation">
           <ComparisonIcons onClick={handleOnClick}></ComparisonIcons>
