@@ -96,7 +96,7 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
             errorArray.push(`『 ${BraketSymbolEnum.RigthBraket} 』の前方には対になる『 ${BraketSymbolEnum.LeftBraket} 』が必要です`);
         }
         if (result.hasEmptyParentheses) {
-            errorArray.push(`『 ${BraketSymbolEnum.LeftBraket} 』と『 ${BraketSymbolEnum.RigthBraket} 』の内側には要素が必要です`);
+            // errorArray.push(`『 ${BraketSymbolEnum.LeftBraket} 』と『 ${BraketSymbolEnum.RigthBraket} 』の内側には要素が必要です`);
         }
         setBraketError(errorArray);
     }
@@ -116,16 +116,16 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
             return array;
         }
 
-        //(左辺または右辺)_(項の左側または右側)_(インデックス)という文字列を想定
+        //(左辺または右辺)_(項のインデックス)_(項の左側または右側)という文字列を想定
         const overIdSplitArray = id.split('_');
         const item: DnclTextFieldProps | undefined = termComponents.find((item: DnclTextFieldProps, i: number) =>
-            i === Number(overIdSplitArray[2]
+            i === Number(overIdSplitArray[1]
             ));
         if (!item) return;
 
         let newArray: string[] = [];
         let propertyName = '';
-        if (overIdSplitArray[1] == keyPrefixEnum.LeftOfTerm) {
+        if (overIdSplitArray[2] == keyPrefixEnum.LeftOfTerm) {
             newArray = popElment(item.leftOfTermValue);
             propertyName = 'leftOfTermValue';
         } else {
@@ -135,22 +135,22 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
         //プロパティに変数を使うときは[]をつける
         setTermComponents((prevItems) =>
             prevItems.map((item: DnclTextFieldProps, i: number) =>
-                i === Number(overIdSplitArray[2]) ? { ...item, [propertyName]: newArray } : item
+                i === Number(overIdSplitArray[1]) ? { ...item, [propertyName]: newArray } : item
             ));
     }
     const addOneSideOfTerm = (id: string) => {
 
-        //(左辺または右辺)_(項の左側または右側)_(インデックス)という文字列を想定
+        //(左辺または右辺)_(項のインデックス)_(項の左側または右側)という文字列を想定
         const overIdSplitArray = id.split('_');
         const item: DnclTextFieldProps | undefined = termComponents.find((item: DnclTextFieldProps, i: number) =>
-            i === Number(overIdSplitArray[2]
+            i === Number(overIdSplitArray[1]
             ));
         if (!item) return;
         let newArray: string[] = [];
         let propertyName = '';
         const draggingString = getValueByKey(draggableStringList, activeId);
         setLogicalOperatorError("");
-        if (overIdSplitArray[1] == keyPrefixEnum.LeftOfTerm && Number(overIdSplitArray[2]) == 0) {
+        if (overIdSplitArray[2] == keyPrefixEnum.LeftOfTerm && Number(overIdSplitArray[1]) == 0) {
 
             //先頭で「かつ」「または」「でない」の論理演算子を禁止
             switch (draggingString) {
@@ -161,7 +161,7 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
                     return;
             }
         }
-        if (overIdSplitArray[1] == keyPrefixEnum.RightOfTerm && Number(overIdSplitArray[2]) == termComponents.length - 1) {
+        if (overIdSplitArray[2] == keyPrefixEnum.RightOfTerm && Number(overIdSplitArray[1]) == termComponents.length - 1) {
             //末尾で「かつ」「または」の論理演算子を禁止
             switch (draggingString) {
                 case LogicalOperationJpEnum.And:
@@ -171,7 +171,7 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
             }
         }
 
-        if (overIdSplitArray[1] == keyPrefixEnum.LeftOfTerm) {
+        if (overIdSplitArray[2] == keyPrefixEnum.LeftOfTerm) {
             newArray = (item.leftOfTermValue ?? []).concat(draggingString);
             propertyName = 'leftOfTermValue';
         } else {
@@ -181,7 +181,7 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
         //プロパティに変数を使うときは[]をつける
         setTermComponents((prevItems) =>
             prevItems.map((item: DnclTextFieldProps, i: number) =>
-                i === Number(overIdSplitArray[2]) ? { ...item, [propertyName]: newArray } : item
+                i === Number(overIdSplitArray[1]) ? { ...item, [propertyName]: newArray } : item
             ));
     }
 
@@ -189,7 +189,7 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
         const brakets: ReactNode = <>
             <FormHelperText sx={{ display: 'flex', flexDirection: 'column' }} error >
                 {braketError.map((error, index) => (
-                    <div key={index}> {error} </div>)
+                    <span key={index}> {error} </span>)
                 )}
             </FormHelperText>
             <Stack direction="row" spacing={2}>
@@ -283,10 +283,10 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
                     <Box>
                         {termComponents.map((component, index) => (
                             <Stack direction="row" spacing={0} key={`${component.name}_${index}`}>
-                                <Droppable id={`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.LeftOfTerm}_${index}`} isDragging={isDragging} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.LeftOfTerm}_${index}`)}>{component.leftOfTermValue?.join('')}</Droppable>
+                                <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfTerm}`} isDragging={isDragging} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfTerm}`)}>{component.leftOfTermValue?.join('')}</Droppable>
                                 {index > 0 && <Operator name={`${component.name}`} parentIndex={index} type={getOperationType(statementType)}></Operator>}
                                 <DnclTextField name={`${component.name}`} index={index} inputType={getSwitchType(statementType)} />
-                                <Droppable id={`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.RightOfTerm}_${index}`} isDragging={isDragging} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.RightOfTerm}_${index}`)}>{component.rightOfTermValue?.join('')}</Droppable>
+                                <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfTerm}`} isDragging={isDragging} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfTerm}`)}>{component.rightOfTermValue?.join('')}</Droppable>
                                 {(index == termComponents.length - 1 && index != 0) && <IconButton aria-label="delete" onClick={() => removeTermComponent(index)}><BackspaceIcon /></IconButton>}
                             </Stack>
                         ))}

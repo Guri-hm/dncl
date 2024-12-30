@@ -9,6 +9,25 @@ export enum OperatorEnum {
   MultiplicationOperator = '×',
 }
 
+export enum ArithmeticOperatorSymbolArray {
+  AdditionOperator = '+',
+  SubtractionOperator = '-',
+  MultiplicationOperator = '×',
+  DivisionOperator = '/',
+  DivisionOperatorQuotient = '÷',
+  DivisionOperatorRemaining = '%',
+  NullOperator = '',
+}
+export enum ComparisonOperatorSymbolArray {
+  EqualToOperator = '=',
+  NotEqualToOperator = '≠',
+  GreaterThanOperator = '≻',
+  GreaterThanorEqualToOperator = '≧',
+  LessThanOperator = '≺',
+  LessThanorEqualToOperator = '≦',
+  NullOperator = '',
+}
+
 export enum StatementEnum {
   Output = 'output',
   Input = 'input',

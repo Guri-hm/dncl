@@ -1,12 +1,13 @@
 import { useState } from "react";
 import Box from '@mui/material/Box';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { OperationEnum } from '@/app/enum';
+import { ArithmeticOperatorSymbolArray, ComparisonOperatorSymbolArray, OperationEnum } from '@/app/enum';
 import { ReactElement } from "react";
 import IconButton from '@mui/material/IconButton';
 import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon';
 import { keyPrefixEnum } from "./Enum";
 import { Typography } from "@mui/material";
+import NotInterestedIcon from '@mui/icons-material/NotInterested';
 
 function AdditionOperator(props: SvgIconProps) {
   return (
@@ -119,7 +120,8 @@ const ArithmeticOperatorArray: React.FC<SvgIconProps>[] = [
   MultiplicationOperator,
   DivisionOperator,
   DivisionOperatorQuotient,
-  DivisionOperatorRemaining
+  DivisionOperatorRemaining,
+  (props) => <NotInterestedIcon {...props} sx={{ color: 'gray', opacity: 0.5 }} />,
 ];
 
 const ComparisonOperatorArray: React.FC<SvgIconProps>[] = [
@@ -128,7 +130,8 @@ const ComparisonOperatorArray: React.FC<SvgIconProps>[] = [
   GreaterThanOperator,
   GreaterThanorEqualToOperator,
   LessThanOperator,
-  LessThanorEqualToOperator
+  LessThanorEqualToOperator,
+  (props) => <NotInterestedIcon {...props} sx={{ color: 'gray', opacity: 0.5 }} />,
 ];
 
 export function Operator({ type, name = "", parentIndex = 0, ...props }: Props) {
@@ -160,21 +163,28 @@ export function Operator({ type, name = "", parentIndex = 0, ...props }: Props) 
       break;
     case OperationEnum.Operation:
       const ArithmeticIcons = ArithmeticOperatorArray[operatorIndex];
-      elms = <IconButton color="primary" aria-label="arithmetic-operation">
-        <ArithmeticIcons onClick={handleOnClick}></ArithmeticIcons>
-        <input type="hidden" name={`${name}_${keyPrefixEnum.Operator}_${parentIndex}`}></input>
-      </IconButton>
+      const enumArithmeticValues = Object.values(ArithmeticOperatorSymbolArray);
+      elms = <>
+        <IconButton color="primary" aria-label="arithmetic-operation">
+          <ArithmeticIcons onClick={handleOnClick}></ArithmeticIcons>
+        </IconButton>
+        <input type="hidden" name={`${name}_${parentIndex}_${keyPrefixEnum.Operator}`} value={enumArithmeticValues[operatorIndex]}></input>
+      </>
       break;
     case OperationEnum.Condition:
       const ComparisonIcons = ComparisonOperatorArray[operatorIndex];
-      elms = <IconButton color="primary" aria-label="comparison-operation">
-        <ComparisonIcons onClick={handleOnClick}></ComparisonIcons>
-        <input type="hidden" name={`${name}_${keyPrefixEnum.Operator}_${parentIndex}`}></input>
-      </IconButton>
+      const enumComparisonValues = Object.values(ComparisonOperatorSymbolArray);
+      elms = <>
+        <IconButton color="primary" aria-label="comparison-operation">
+          <ComparisonIcons onClick={handleOnClick}></ComparisonIcons>
+        </IconButton>
+        <input type="hidden" name={`${name}_${parentIndex}_${keyPrefixEnum.Operator}`} value={enumComparisonValues[operatorIndex]}></input>
+      </>
       break;
     case OperationEnum.JoinString:
       elms = <>
         <Typography color="primary" fontWeight={700}>と</Typography>
+        <input type="hidden" name={`${name}_${parentIndex}_${keyPrefixEnum.Operator}`}></input>
       </>
       break;
     default:

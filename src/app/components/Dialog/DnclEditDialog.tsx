@@ -18,7 +18,7 @@ interface Props {
     refrash: any
 }
 
-const refineStatement = (data: { [k: string]: string; }, keywordPart: keyPrefixEnum) => {
+const refineStatement = (data: { [k: string]: string; }, statementType: StatementEnum, keywordPart: keyPrefixEnum) => {
     const obj = Object.fromEntries(Object.entries(data).filter(([key, value]) => key.includes(keywordPart)));
 
     //添字は前後に[]をつける
@@ -31,8 +31,33 @@ const refineStatement = (data: { [k: string]: string; }, keywordPart: keyPrefixE
         }
     }
 
-    const valuesArray = Object.values(updatedObj);
-    const statement = valuesArray.join('');
+    const maxRigthSideIndex = Object.keys(obj)
+        .filter(key => key.startsWith(`${keywordPart}_`))
+        .map(key => parseInt(key.split("_")[1], 10))
+        .reduce((max, current) => (current > max ? current : max), -1);
+
+    const pushNotEmptyString = (array: string[], pushedString: string) => {
+        if (pushedString == "") return;
+        array.push(pushedString);
+    }
+
+    const cnvUndefinedToEmptyString = (targetString: string | undefined) => {
+        if (!(targetString)) return "";
+        //オブジェクト内のundefinedは文字列の'undefined'になっている
+        if (targetString == 'undefined') return "";
+        return targetString;
+    }
+
+    let tmp: string[] = [];
+    for (let i = 0; i <= maxRigthSideIndex; i++) {
+        pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.Operator}`]));
+        pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.LeftOfTerm}`]));
+        pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}`]));
+        pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.Suffix}`]));
+        pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.RightOfTerm}`]));
+    }
+
+    const statement = tmp.join('');
     return statement;
 }
 
@@ -68,10 +93,19 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                         event.preventDefault();
                         const formData = new FormData(event.currentTarget);
                         const formJson = Object.fromEntries((formData as any).entries());
-                        const leftside = refineStatement(formJson, keyPrefixEnum.LeftSide);
-                        const rightside = refineStatement(formJson, keyPrefixEnum.RigthSide);
+                        const leftside = refineStatement(formJson, editor.type, keyPrefixEnum.LeftSide);
+                        const rightside = refineStatement(formJson, editor.type, keyPrefixEnum.RigthSide);
                         const operator = getOperator(editor.type);
+
+                        switch (editor.type) {
+                            case StatementEnum.Condition:
+
+                            default:
+                                break;
+                        }
                         editor.onSubmit(editor.item, `${leftside} ${operator} ${rightside}`, editor.overIndex);
+                        // console.log(`${leftside} ${operator} ${rightside}`);
+                        // console.log(formJson);
                         handleClose();
                     },
                 }}
@@ -90,6 +124,6 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                     <Button type="submit">挿入</Button>
                 </DialogActions>
             </Dialog>
-        </React.Fragment>
+        </React.Fragment >
     );
 }

@@ -48,18 +48,18 @@ export function StatementEditor(params: Props) {
                 </>
             case getEnumIndex(processEnum, processEnum.BulkAssignToArray):
                 return <>
-                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_1`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.ArrayWithoutSuffix}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.ArrayWithoutSuffix}></DnclTextField>
                     <NowrapText text={'のすべての要素に'}></NowrapText>
-                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_2`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SwitchVariableOrNumberOrArray}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SwitchVariableOrNumberOrArray}></DnclTextField>
                     <NowrapText text={'を代入する'}></NowrapText>
                 </>
             case getEnumIndex(processEnum, processEnum.Increment):
             case getEnumIndex(processEnum, processEnum.Decrement):
                 return <>
-                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_0`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArray}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArray}></DnclTextField>
                     <NowrapText text={'を'}></NowrapText>
-                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}_1`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SwitchVariableOrArray}></DnclTextField>
-                    <NowrapText text={processIndex == getEnumIndex(processEnum, processEnum.Increment) ? '増やす' : '減らす'}></NowrapText>
+                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SwitchVariableOrArray}></DnclTextField>
+                    <NowrapText text={index == getEnumIndex(processEnum, processEnum.Increment) ? '増やす' : '減らす'}></NowrapText>
                 </>
             case getEnumIndex(processEnum, processEnum.Output):
                 return <>
