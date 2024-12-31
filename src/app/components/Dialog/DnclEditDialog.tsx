@@ -62,11 +62,11 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
             return targetString.replace(/(\w+)\s*÷\s*(\w+)/g, 'Math.floor($1 / $2)');
         }
 
-        const checkBraketPair = (targetString: string) => {
+        const checkBraketPair = (targetStringArray: string[]) => {
 
             let errorArray: string[] = [];
 
-            const result: { isBalanced: boolean, isCorrectOrder: boolean, balance: number, hasEmptyParentheses: boolean } = (checkParenthesesBalance(targetString));
+            const result: { isBalanced: boolean, isCorrectOrder: boolean, balance: number, hasEmptyParentheses: boolean } = (checkParenthesesBalance(targetStringArray));
 
             if (!result.isBalanced) {
                 if (result.balance > 0) {
@@ -135,22 +135,26 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
             }
         }
 
+
         //メイン処理はここから
         let result: boolean;
+        console.log(termsMaxIndex)
         for (let i = 1; i <= termsMaxIndex; i++) {
             result = existsOperator(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.Operator}`]);
             if (!result) {
+                console.log("演算子がありません");
                 setError(["演算子がありません"]);
                 return false;
             }
         }
+        return;
 
         let strArray: string[] = getStringArray(updatedObj, termsMaxIndex, keywordPart);
 
         let statement = strArray.join(' ');
         if (statement.trim().length == 0) return true;
+        result = checkBraketPair(strArray);
 
-        result = checkBraketPair(statement);
         if (!result) {
             setError(["括弧の位置に誤りがあります"]);
             return false;
@@ -258,8 +262,10 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                         event.preventDefault();
                         const formData = new FormData(event.currentTarget);
                         const formJson = Object.fromEntries((formData as any).entries());
-                        if (!checkStatement(formJson, editor.type, keyPrefixEnum.LeftSide)) return;
+                        console.log(formJson)
+                        // if (!checkStatement(formJson, editor.type, keyPrefixEnum.LeftSide)) return;
                         if (!checkStatement(formJson, editor.type, keyPrefixEnum.RigthSide)) return;
+                        return
                         const operator = getOperator(editor.type);
 
                         let leftside = getDnclStatement(formJson, editor.type, keyPrefixEnum.LeftSide);
@@ -325,7 +331,7 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                     <EditorBox statementType={editor.type}></EditorBox>
                 </DialogContent>
                 <DialogActions>
-                    {error.join('')}
+                    {/* {error.join('')} */}
                     <Button onClick={handleClose}>キャンセル</Button>
                     <Button type="submit">挿入</Button>
                 </DialogActions>
