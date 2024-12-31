@@ -23,9 +23,9 @@ export function EditorBox(params: Props) {
         const index = getEnumIndex(processEnum, newValue?.title ?? processEnum.SetValueToVariableOrArrayElement);
         setStatement(StatementEditor(index));
     }
-    const StatementEditor: any = (index: number): ReactElement => {
+    const StatementEditor = (index: number): ReactElement => {
 
-        const hdnInput: any = (index: number) => {
+        const hdnInput = (index: number): ReactElement => {
             return (
                 <>
                     <input name="processIndex" type="hidden" value={index}></input>;
