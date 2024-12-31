@@ -102,7 +102,7 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
         const updatedObj = updateObjWithSquareBrackets(obj);
 
         //オペランドの数を取得
-        const termsMaxIndex = Object.keys(obj)
+        const operandsMaxIndex = Object.keys(obj)
             .filter(key => key.startsWith(`${keywordPart}_`))
             .map(key => parseInt(key.split("_")[1], 10))
             .reduce((max, current) => (current > max ? current : max), -1);
@@ -143,7 +143,7 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
 
         //メイン処理はここから
         let result: boolean;
-        for (let i = 1; i <= termsMaxIndex; i++) {
+        for (let i = 1; i <= operandsMaxIndex; i++) {
             result = existsOperator(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.Operator}`]);
             if (!result) {
                 setError(["演算子がありません"]);
@@ -151,7 +151,7 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
             }
         }
 
-        let strArray: string[] = getStringArray(updatedObj, termsMaxIndex, keywordPart);
+        let strArray: string[] = getStringArray(updatedObj, operandsMaxIndex, keywordPart);
 
         let statement = strArray.join(' ');
         if (statement.trim().length == 0) return true;
@@ -185,11 +185,11 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
         return isValidExpression(statement);
     }
 
-    const getStringArray = (obj: { [k: string]: string }, termsMaxIndex: number, keywordPart: keyPrefixEnum): string[] => {
+    const getStringArray = (obj: { [k: string]: string }, operandsMaxIndex: number, keywordPart: keyPrefixEnum): string[] => {
 
         let strArray: string[] = [];
 
-        for (let i = 0; i <= termsMaxIndex; i++) {
+        for (let i = 0; i <= operandsMaxIndex; i++) {
             const cnvUndefinedToEmptyString = (targetString: string | undefined) => {
                 if (!(targetString)) return "";
                 //オブジェクト内のundefinedは文字列の'undefined'になっている
@@ -201,7 +201,7 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                 array.push(pushedString);
             }
             pushNotEmptyString(strArray, cnvUndefinedToEmptyString(obj[`${keywordPart}_${i}_${keyPrefixEnum.Operator}`]));
-            pushNotEmptyString(strArray, cnvUndefinedToEmptyString(obj[`${keywordPart}_${i}_${keyPrefixEnum.LeftOfTerm}`]));
+            pushNotEmptyString(strArray, cnvUndefinedToEmptyString(obj[`${keywordPart}_${i}_${keyPrefixEnum.LeftOfOperand}`]));
 
             if (cnvUndefinedToEmptyString(obj[`${keywordPart}_${i}_${keyPrefixEnum.String}`]) == 'true') {
                 pushNotEmptyString(strArray, `"${cnvUndefinedToEmptyString(obj[`${keywordPart}_${i}`])}"`);
@@ -209,7 +209,7 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                 pushNotEmptyString(strArray, cnvUndefinedToEmptyString(obj[`${keywordPart}_${i}`]));
             };
             pushNotEmptyString(strArray, cnvUndefinedToEmptyString(obj[`${keywordPart}_${i}_${keyPrefixEnum.Suffix}`]));
-            pushNotEmptyString(strArray, cnvUndefinedToEmptyString(obj[`${keywordPart}_${i}_${keyPrefixEnum.RightOfTerm}`]));
+            pushNotEmptyString(strArray, cnvUndefinedToEmptyString(obj[`${keywordPart}_${i}_${keyPrefixEnum.RightOfOperand}`]));
             pushNotEmptyString(strArray, cnvUndefinedToEmptyString(obj[`${keywordPart}_${i}_${keyPrefixEnum.Negation}`]));
         }
 
@@ -236,13 +236,13 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
         const obj = Object.fromEntries(Object.entries(data).filter(([key, value]) => key.includes(keywordPart)));
 
         //オペランドの数を取得
-        const termsMaxIndex = Object.keys(obj)
+        const operandsMaxIndex = Object.keys(obj)
             .filter(key => key.startsWith(`${keywordPart}_`))
             .map(key => parseInt(key.split("_")[1], 10))
             .reduce((max, current) => (current > max ? current : max), -1);
 
         const updatedObj = updateObjWithSquareBrackets(obj);
-        let strArray: string[] = getStringArray(updatedObj, termsMaxIndex, keywordPart);
+        let strArray: string[] = getStringArray(updatedObj, operandsMaxIndex, keywordPart);
 
         for (let i = 0; i < strArray.length; i++) {
             strArray[i] = strArray[i]

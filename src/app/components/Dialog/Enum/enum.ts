@@ -27,8 +27,8 @@ export enum keyPrefixEnum {
   RigthSide = 'RigthSide',
   Suffix = 'Suffix',
   Operator = 'Operator',
-  LeftOfTerm = 'LeftOfTerm',
-  RightOfTerm = 'RightOfTerm',
+  LeftOfOperand = 'LeftOfOperand',
+  RightOfOperand = 'RightOfOperand',
   Negation = 'Negation',
   String = 'String',
 }

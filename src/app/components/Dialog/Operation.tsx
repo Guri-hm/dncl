@@ -35,14 +35,14 @@ const DraggableOperatorsBox: FC<DraggableOperatorsProps> = ({ children }) => {
 export const Operation: FC<Props> = ({ children, statementType }) => {
 
     const [isDragging, setIsDragging] = useState(false);
-    const [termComponents, setTermComponents] = useState<DnclTextFieldProps[]>([{ name: keyPrefixEnum.RigthSide }]);
+    const [operandComponents, setOperandComponents] = useState<DnclTextFieldProps[]>([{ name: keyPrefixEnum.RigthSide }]);
     const [activeId, setActiveId] = useState<string>("");
     const [braketError, setBraketError] = useState<string[]>([]);
 
     //初回レンダリング時に実行しない
     useUpdateEffect(() => {
         checkBraketPair();
-    }, [termComponents]);
+    }, [operandComponents]);
 
     const draggableStringList = enumsToObjects([BraketSymbolEnum, OperatorTypeJpEnum]);
 
@@ -52,13 +52,13 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
 
     const checkBraketPair = () => {
 
-        console.log(termComponents)
+        console.log(operandComponents)
         let errorArray: string[] = [];
 
         let tmpCode: string[] = [];
-        for (let i = 0; i < termComponents.length; i++) {
-            tmpCode = [...tmpCode, ...(termComponents[i].leftOfTermValue ?? [])];
-            tmpCode = [...tmpCode, ...(termComponents[i].rightOfTermValue ?? [])];
+        for (let i = 0; i < operandComponents.length; i++) {
+            tmpCode = [...tmpCode, ...(operandComponents[i].leftOfOperandValue ?? [])];
+            tmpCode = [...tmpCode, ...(operandComponents[i].rightOfOperandValue ?? [])];
         }
 
         const result: { isBalanced: boolean, isCorrectOrder: boolean, balance: number, hasEmptyParentheses: boolean } = (checkParenthesesBalance(tmpCode));
@@ -79,14 +79,14 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
         setBraketError(errorArray);
     }
 
-    const addTermComponent = () => {
-        setTermComponents([...termComponents, { name: keyPrefixEnum.RigthSide }]);
+    const addOperandComponent = () => {
+        setOperandComponents([...operandComponents, { name: keyPrefixEnum.RigthSide }]);
     };
-    const removeTermComponent = (index: number) => {
-        setTermComponents(termComponents.filter((_, i) => i !== index));
+    const removeOperandComponent = (index: number) => {
+        setOperandComponents(operandComponents.filter((_, i) => i !== index));
     };
 
-    const removeOneSideOfTerm = (id: string) => {
+    const removeOneSideOfOperand = (id: string) => {
 
         const popElment = (array: string[] | undefined): string[] => {
             if (!array) return [];
@@ -96,22 +96,22 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
 
         //(左辺または右辺)_(オペランドのインデックス)_(オペランドの左側または右側)という文字列を想定
         const overIdSplitArray = id.split('_');
-        const item: DnclTextFieldProps | undefined = termComponents.find((item: DnclTextFieldProps, i: number) =>
+        const item: DnclTextFieldProps | undefined = operandComponents.find((item: DnclTextFieldProps, i: number) =>
             i === Number(overIdSplitArray[1]
             ));
         if (!item) return;
 
         let newArray: string[] = [];
         let propertyName = '';
-        if (overIdSplitArray[2] == keyPrefixEnum.LeftOfTerm) {
-            newArray = popElment(item.leftOfTermValue);
-            propertyName = 'leftOfTermValue';
+        if (overIdSplitArray[2] == keyPrefixEnum.LeftOfOperand) {
+            newArray = popElment(item.leftOfOperandValue);
+            propertyName = 'leftOfOperandValue';
         } else {
-            newArray = popElment(item.rightOfTermValue)
-            propertyName = 'rightOfTermValue';
+            newArray = popElment(item.rightOfOperandValue)
+            propertyName = 'rightOfOperandValue';
         }
         //プロパティに変数を使うときは[]をつける
-        setTermComponents((prevItems) =>
+        setOperandComponents((prevItems) =>
             prevItems.map((item: DnclTextFieldProps, i: number) =>
                 i === Number(overIdSplitArray[1]) ? { ...item, [propertyName]: newArray } : item
             ));
@@ -122,7 +122,7 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
         const overIdSplitArray = id.split('_');
         let propertyName = 'operator';
         //プロパティに変数を使うときは[]をつける
-        setTermComponents((prevItems) =>
+        setOperandComponents((prevItems) =>
             prevItems.map((item: DnclTextFieldProps, i: number) =>
                 i === Number(overIdSplitArray[1]) ? { ...item, [propertyName]: activeId } : item
             ));
@@ -130,17 +130,17 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
     const removeOperator = (index: number) => {
         let propertyName = 'operator';
         //プロパティに変数を使うときは[]をつける
-        setTermComponents((prevItems) =>
+        setOperandComponents((prevItems) =>
             prevItems.map((item: DnclTextFieldProps, i: number) =>
                 i === Number(index) ? { ...item, [propertyName]: null } : item
             ));
     }
 
-    const addOneSideOfTerm = (id: string) => {
+    const addOneSideOfOperand = (id: string) => {
 
         //(左辺または右辺)_(オペランドのインデックス)_(オペランドの左側または右側)という文字列を想定
         const overIdSplitArray = id.split('_');
-        const item: DnclTextFieldProps | undefined = termComponents.find((item: DnclTextFieldProps, i: number) =>
+        const item: DnclTextFieldProps | undefined = operandComponents.find((item: DnclTextFieldProps, i: number) =>
             i === Number(overIdSplitArray[1]
             ));
         if (!item) return;
@@ -148,15 +148,15 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
         let propertyName = '';
         const draggingString = getValueByKey(draggableStringList, activeId);
 
-        if (overIdSplitArray[2] == keyPrefixEnum.LeftOfTerm) {
-            newArray = (item.leftOfTermValue ?? []).concat(draggingString);
-            propertyName = 'leftOfTermValue';
+        if (overIdSplitArray[2] == keyPrefixEnum.LeftOfOperand) {
+            newArray = (item.leftOfOperandValue ?? []).concat(draggingString);
+            propertyName = 'leftOfOperandValue';
         } else {
-            newArray = (item.rightOfTermValue ?? []).concat(draggingString);
-            propertyName = 'rightOfTermValue';
+            newArray = (item.rightOfOperandValue ?? []).concat(draggingString);
+            propertyName = 'rightOfOperandValue';
         }
         //プロパティに変数を使うときは[]をつける
-        setTermComponents((prevItems) =>
+        setOperandComponents((prevItems) =>
             prevItems.map((item: DnclTextFieldProps, i: number) =>
                 i === Number(overIdSplitArray[1]) ? { ...item, [propertyName]: newArray } : item
             ));
@@ -165,7 +165,7 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
     const draggleItems = (statementType: StatementEnum | undefined): ReactNode => {
         const brakets: ReactNode = <>
             <ErrorMsgBox sx={{ display: 'flex', flexDirection: 'column' }} errorArray={braketError}></ErrorMsgBox>
-            {termComponents.map((component, index) => (
+            {operandComponents.map((component, index) => (
                 !component.operator && index > 0 ?
                     <ErrorMsgBox sx={{ display: 'flex', flexDirection: 'column' }} errorArray={[`${index}番目と${index + 1}番目のオペランドの間に演算子が必要です`]}></ErrorMsgBox>
                     : null
@@ -237,7 +237,7 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
                         setOperator(over.id.toString())
                     } else {
                         if (isActiveIdOperator(activeId)) return;
-                        addOneSideOfTerm(over.id.toString());
+                        addOneSideOfOperand(over.id.toString());
                     }
 
                 }}
@@ -262,26 +262,26 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
                     </DragOverlay>
                     {children}
                     <Box>
-                        {termComponents.map((component, index) => (
+                        {operandComponents.map((component, index) => (
                             <Stack direction="row" spacing={0} key={`${component.name}_${index}`}>
                                 {(index != 0) && <DroppableOperator id={`${component.name}_${index}_${keyPrefixEnum.Operator}`} name={`${component.name}`} parentIndex={index} isDragging={isDragging && isActiveIdOperator(activeId)} endOfArrayEvent={() => removeOperator(index)} type={component.operator}></DroppableOperator>}
                                 {
                                     (statementType == StatementEnum.Output && index > 0) &&
                                     <Operator name={`${component.name}`} parentIndex={index} type={OperationEnum.JoinString}></Operator>
                                 }
-                                <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfTerm}`} isDragging={isDragging && isNotActiveIdOperator(activeId)} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfTerm}`)} stringArray={component.leftOfTermValue}>{component.leftOfTermValue?.join('')}</Droppable>
+                                <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfOperand}`} isDragging={isDragging && isNotActiveIdOperator(activeId)} onClick={() => removeOneSideOfOperand(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfOperand}`)} stringArray={component.leftOfOperandValue}>{component.leftOfOperandValue?.join('')}</Droppable>
 
                                 <DnclTextField name={`${component.name}`} index={index} inputType={getSwitchType(statementType)} />
-                                <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfTerm}`} isDragging={isDragging && isNotActiveIdOperator(activeId)} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfTerm}`)} stringArray={component.rightOfTermValue}>{component.rightOfTermValue?.join('')}</Droppable>
+                                <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfOperand}`} isDragging={isDragging && isNotActiveIdOperator(activeId)} onClick={() => removeOneSideOfOperand(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfOperand}`)} stringArray={component.rightOfOperandValue}>{component.rightOfOperandValue?.join('')}</Droppable>
 
                                 {(statementType == StatementEnum.Condition && index != 0) && <Operator name={`${component.name}`} parentIndex={index} type={OperationEnum.Negation}></Operator>}
 
-                                {(index == termComponents.length - 1 && index != 0) && <IconButton aria-label="delete" onClick={() => removeTermComponent(index)}><BackspaceIcon /></IconButton>}
+                                {(index == operandComponents.length - 1 && index != 0) && <IconButton aria-label="delete" onClick={() => removeOperandComponent(index)}><BackspaceIcon /></IconButton>}
                             </Stack>
                         ))}
 
                         <Button variant="text" fullWidth size="small" startIcon={<AddIcon />}
-                            onClick={addTermComponent}>
+                            onClick={addOperandComponent}>
                             オペランドを追加する
                         </Button>
                     </Box>
