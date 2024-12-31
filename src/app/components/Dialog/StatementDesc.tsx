@@ -31,6 +31,24 @@ export function StatementDesc(params: Props) {
             ・〈条件〉の子要素〈処理〉は表示文や代入文で作成します。\n\
             ";
             break;
+        case StatementEnum.ConditionalLoopPreTest:
+            str = "〈条件〉が成り立つ間，〈処理〉を繰り返し実行します。";
+            sub = "・〈処理〉を実行する前に 〈条件〉が成り立つかどうか判定されるため，〈処理〉が1回も実行されないことがあります。\n\
+            ";
+            break;
+        case StatementEnum.ConditionalLoopPostTest:
+            str = "〈条件〉が成り立つまで，〈処理〉を繰り返し実行します。";
+            sub = "・〈処理〉を実行した後に 〈条件〉が成り立つかどうか判定されるため，〈処理〉は少なくとも1回は実行されます。\n\
+            ";
+            break;
+        case StatementEnum.SequentialIteration:
+            str = "〈変数〉の値を増やしながら，〈処理〉を繰返し実行します。";
+            sub = "順次繰り返し文は，以下の手順で実行されます。\n\
+            1.〈変数〉に〈初期値〉が代入されます。\n\
+            2.〈変数〉の値が〈終了値〉よりも大きければ，繰り返しを終了します。\n\
+            3.〈処理〉を実行し，〈変数〉の値に〈差分〉を加え，手順2に戻ります。\n\
+            ";
+            break;
     }
 
 

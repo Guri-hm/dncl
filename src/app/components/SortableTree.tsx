@@ -102,6 +102,33 @@ const fragments: FragmentItems = [
     depth: 0,
     statementType: StatementEnum.Condition
   },
+  {
+    id: uuidv4(),
+    code: StatementJpEnum.ConditionalLoopPreTest,
+    children: [],
+    index: 0,
+    parentId: null,
+    depth: 0,
+    statementType: StatementEnum.ConditionalLoopPreTest
+  },
+  {
+    id: uuidv4(),
+    code: StatementJpEnum.ConditionalLoopPostTest,
+    children: [],
+    index: 0,
+    parentId: null,
+    depth: 0,
+    statementType: StatementEnum.ConditionalLoopPostTest
+  },
+  {
+    id: uuidv4(),
+    code: StatementJpEnum.SequentialIteration,
+    children: [],
+    index: 0,
+    parentId: null,
+    depth: 0,
+    statementType: StatementEnum.SequentialIteration
+  },
 ]
 
 const measuring = {

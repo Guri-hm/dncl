@@ -9,6 +9,12 @@ export enum processEnum {
   ElseIf = 'を実行し，そうでなくもし〈条件〉ならば',
   Else = 'を実行し，そうでなければ',
   EndIf = 'を実行する',
+  While = '〈条件〉の間',
+  EndWhile = 'を繰り返す',
+  DoWhile = '繰り返し，',
+  EndDoWhile = 'を，〈条件〉になるまで実行する',
+  For = '〈変数〉を〈初期値〉から〈終了値〉まで〈差分〉ずつ増やしながら，',
+  EndFor = 'を繰り返す',
 }
 
 export enum bracketEnum {
@@ -31,6 +37,9 @@ export enum keyPrefixEnum {
   RightOfOperand = 'RightOfOperand',
   Negation = 'Negation',
   String = 'String',
+  InitialValue = 'InitialValue',
+  EndValue = 'EndValue',
+  Difference = 'Difference',
 }
 
 export enum inputTypeEnum {
@@ -44,10 +53,13 @@ export enum inputTypeEnum {
   InitializeArray = 'InitializeArray',
   VariableOnly = 'VariableOnly',
   VariableOrNumber = 'VariableOrNumber',
+  Number = 'Number',
 }
 
+//\dがうまく解釈されないため、エスケープシーケンスを更にエスケープする必要がある
 export enum ValidationEnum {
   Variable = '^[a-zA-Z_$][a-zA-Z0-9_$]*$', //変数名のルール
+  Integer = '^-?[\\d]+$', //整数
   VariableOrNumber = '^(?:[a-zA-Z_$][a-zA-Z0-9_$]*|[0-9]+)$',//変数名および数値
   InitializeArray = '^(?:(?:[a-zA-Z_$][a-zA-Z0-9_$]*|[0-9]+)(?:,(?:[a-zA-Z_$][a-zA-Z0-9_$]*|[0-9]+))*)$',//配列内のカンマ区切りの文字列
   Array = '^[a-zA-Z_$][a-zA-Z0-9_$]*$',//配列名のルール

@@ -76,6 +76,7 @@ export function ValidatedTextField({ sx = [], name, label, pattern, isIMEOn = fa
           className: 'text-center',
           pattern: pattern,
           inputMode: isIMEOn ? 'text' : 'none',
+          maxLength: 15
         }
         ,
       }}

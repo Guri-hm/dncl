@@ -305,7 +305,7 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                                 processPhrase = `もし${rightside}ならば`;
                                 break;
                             case getEnumIndex(processEnum, processEnum.ElseIf):
-                                processPhrase = `を実行し，そうでなくもし${leftside} ${operator} ${rightside}ならば`;
+                                processPhrase = `を実行し，そうでなくもし${rightside}ならば`;
                                 break;
 
                             case getEnumIndex(processEnum, processEnum.Else):
@@ -315,7 +315,18 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                             case getEnumIndex(processEnum, processEnum.EndIf):
                                 processPhrase = `を実行する`;
                                 break;
-
+                            case getEnumIndex(processEnum, processEnum.While):
+                                processPhrase = `${rightside}の間，`;
+                                break;
+                            case getEnumIndex(processEnum, processEnum.EndWhile):
+                                processPhrase = `を繰り返す`;
+                                break;
+                            case getEnumIndex(processEnum, processEnum.DoWhile):
+                                processPhrase = `繰り返し，`;
+                                break;
+                            case getEnumIndex(processEnum, processEnum.EndDoWhile):
+                                processPhrase = `を，${rightside}になるまで実行する`;
+                                break;
                             default:
                                 return "";
                         }

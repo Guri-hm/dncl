@@ -11,7 +11,9 @@ import { OperationEnum, StatementEnum } from "@/app/enum";
 import { Operation } from "./Operation";
 import { Divider, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
 import { getEnumIndex } from "@/app/utilities";
-import { CustomBox } from "./Droppable copy";
+import { CustomBox } from "./CustomBox";
+import Grid from '@mui/material/Grid2';
+
 type Props = {
     statementType: StatementEnum
 }
@@ -106,6 +108,65 @@ export function EditorBox(params: Props) {
                     <NowrapText text={'を実行する'}></NowrapText>
                     {hdnInput(index)}
                 </>
+            case getEnumIndex(processEnum, processEnum.While):
+                return <>
+                    <Operation statementType={params.statementType}>
+                    </Operation>
+                    <Divider sx={{ marginLeft: 1 }} orientation="vertical" flexItem />
+                    <NowrapText text={'の間，'}></NowrapText>
+                    {hdnInput(index)}
+                </>
+            case getEnumIndex(processEnum, processEnum.EndWhile):
+                return <>
+                    <NowrapText text={'を繰り返す'}></NowrapText>
+                    {hdnInput(index)}
+                </>
+            case getEnumIndex(processEnum, processEnum.DoWhile):
+                return <>
+                    <NowrapText text={'繰り返し，'}></NowrapText>
+                    {hdnInput(index)}
+                </>
+            case getEnumIndex(processEnum, processEnum.EndDoWhile):
+                return <>
+                    <NowrapText text={'を，'}></NowrapText>
+                    <Divider sx={{ marginRight: 1 }} orientation="vertical" flexItem />
+                    <Operation statementType={params.statementType}>
+                    </Operation>
+                    <Divider sx={{ marginLeft: 1 }} orientation="vertical" flexItem />
+                    <NowrapText text={'になるまで実行する'}></NowrapText>
+                    {hdnInput(index)}
+                </>
+            case getEnumIndex(processEnum, processEnum.For):
+                return <>
+                    <Grid container spacing={1} direction='column'>
+                        <Grid container direction='row'>
+                            <Grid size='grow'>
+                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.VariableOnly}></DnclTextField>
+                            </Grid>
+                            <NowrapText text={'を'}></NowrapText>
+                            <Grid size='grow'>
+                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.InitialValue}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.InitialValue} inputType={inputTypeEnum.Number} label={"初期値"}></DnclTextField>
+                            </Grid>
+                            <NowrapText text={'から'}></NowrapText>
+                        </Grid>
+                        <Grid container direction='row'>
+                            <Grid size='grow'>
+                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.EndValue}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.EndValue} inputType={inputTypeEnum.Number} label={"終了値"}></DnclTextField>
+                            </Grid>
+                            <NowrapText text={'まで'}></NowrapText>
+                            <Grid size='grow'>
+                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.Difference}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.Difference} inputType={inputTypeEnum.Number} label={"差分"}></DnclTextField>
+                            </Grid>
+                            <NowrapText text={'ずつ増やしながら，'}></NowrapText>
+                        </Grid>
+                    </Grid>
+                    {hdnInput(index)}
+                </>
+            case getEnumIndex(processEnum, processEnum.EndFor):
+                return <>
+                    <NowrapText text={'を繰り返す'}></NowrapText>
+                    {hdnInput(index)}
+                </>
             default:
                 return <></>
         }
@@ -150,6 +211,27 @@ export function EditorBox(params: Props) {
                     {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.If))}
                 </CustomBox>
             </>
+        case StatementEnum.ConditionalLoopPreTest:
+            return <>
+                {ddl}
+                <CustomBox>
+                    {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.While))}
+                </CustomBox>
+            </>
+        case StatementEnum.ConditionalLoopPostTest:
+            return <>
+                {ddl}
+                <CustomBox>
+                    {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.DoWhile))}
+                </CustomBox>
+            </>
+        case StatementEnum.SequentialIteration:
+            return <>
+                {ddl}
+                <CustomBox>
+                    {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.For))}
+                </CustomBox>
+            </>
         default:
             break;
     }
@@ -184,6 +266,27 @@ const processNames = [
             { title: processEnum.Else },
             { title: processEnum.ElseIf },
             { title: processEnum.EndIf },
+        ]
+    },
+    {
+        statementType: StatementEnum.ConditionalLoopPreTest,
+        names: [
+            { title: processEnum.While },
+            { title: processEnum.EndWhile },
+        ]
+    },
+    {
+        statementType: StatementEnum.ConditionalLoopPostTest,
+        names: [
+            { title: processEnum.DoWhile },
+            { title: processEnum.EndDoWhile },
+        ]
+    },
+    {
+        statementType: StatementEnum.SequentialIteration,
+        names: [
+            { title: processEnum.For },
+            { title: processEnum.EndFor },
         ]
     },
 ];

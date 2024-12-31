@@ -18,6 +18,15 @@ export function StatementName(params: Props) {
         case StatementEnum.Condition:
             str = StatementJpEnum.Condition;
             break;
+        case StatementEnum.ConditionalLoopPreTest:
+            str = StatementJpEnum.ConditionalLoopPreTest;
+            break;
+        case StatementEnum.ConditionalLoopPostTest:
+            str = StatementJpEnum.ConditionalLoopPostTest;
+            break;
+        case StatementEnum.SequentialIteration:
+            str = StatementJpEnum.SequentialIteration;
+            break;
     }
 
 

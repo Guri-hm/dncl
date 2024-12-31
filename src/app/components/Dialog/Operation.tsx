@@ -193,7 +193,13 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
                         <DraggableItem id={OperationEnum.Logical} value={OperatorTypeJpEnum.Logical} />
                     </Stack>
                 </DraggableOperatorsBox>
-
+            case StatementEnum.ConditionalLoopPreTest:
+            case StatementEnum.ConditionalLoopPostTest:
+                return <DraggableOperatorsBox>
+                    <Stack direction="row" spacing={2} sx={{ marginTop: 1 }}>
+                        <DraggableItem id={OperationEnum.Comparison} value={OperatorTypeJpEnum.Comparison} />
+                    </Stack>
+                </DraggableOperatorsBox>
             default:
                 return null;
         }
