@@ -181,7 +181,7 @@ export function DnclTextField({ name, inputType, index = 0, ...params }: DnclTex
             <Grid container spacing={0} direction='column'>
               <Grid container direction='row'>
                 <Grid size='grow'>
-                  <ValidatedTextField name={`${name}_${index}`} label={label} pattern={pattern}></ValidatedTextField>
+                  <ValidatedTextField name={`${name}_${index}`} label={label} pattern={pattern} isIMEOn={radioValue == SwitchEnum.String ? true : false}></ValidatedTextField>
                 </Grid>
                 {radioValue == SwitchEnum.Array &&
                   <Grid container size='grow'>

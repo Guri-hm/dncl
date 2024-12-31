@@ -37,7 +37,6 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
     const [termComponents, setTermComponents] = useState<DnclTextFieldProps[]>([{ name: keyPrefixEnum.RigthSide }]);
     const [activeId, setActiveId] = useState<string>("");
     const [braketError, setBraketError] = useState<string[]>([]);
-    const [logicalOperatorError, setLogicalOperatorError] = useState<string[]>([]);
 
     //初回レンダリング時に実行しない
     useUpdateEffect(() => {
@@ -142,34 +141,7 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
         let newArray: string[] = [];
         let propertyName = '';
         const draggingString = getValueByKey(draggableStringList, activeId);
-        let errorArray: string[] = [];
 
-        if (overIdSplitArray[2] == keyPrefixEnum.LeftOfTerm && draggingString == LogicalOperationJpEnum.Not) {
-
-            //左側「でない」の論理演算子を禁止
-            errorArray.push(`「${LogicalOperationJpEnum.Not}」は左側で使用できません`);
-        }
-        if (overIdSplitArray[2] == keyPrefixEnum.LeftOfTerm && Number(overIdSplitArray[1]) == 0) {
-
-            //先頭で「かつ」「または」の論理演算子を禁止
-            switch (draggingString) {
-                case LogicalOperationJpEnum.And:
-                case LogicalOperationJpEnum.Or:
-                    errorArray.push(`「${LogicalOperationJpEnum.And}」「${LogicalOperationJpEnum.Or}」「${LogicalOperationJpEnum.Not}」は先頭で使用できません`);
-            }
-        }
-        if (overIdSplitArray[2] == keyPrefixEnum.RightOfTerm && Number(overIdSplitArray[1]) == termComponents.length - 1) {
-            //末尾で「かつ」「または」の論理演算子を禁止
-            switch (draggingString) {
-                case LogicalOperationJpEnum.And:
-                case LogicalOperationJpEnum.Or:
-                    errorArray.push(`「${LogicalOperationJpEnum.And}」「${LogicalOperationJpEnum.Or}」は末尾で使用できません`);
-            }
-        }
-        setLogicalOperatorError(errorArray);
-        if (errorArray.length > 0) {
-            return;
-        }
         if (overIdSplitArray[2] == keyPrefixEnum.LeftOfTerm) {
             newArray = (item.leftOfTermValue ?? []).concat(draggingString);
             propertyName = 'leftOfTermValue';
@@ -205,12 +177,7 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
             case StatementEnum.Condition:
                 return <DraggableOperatorsBox>
                     {brakets}
-                    <FormHelperText sx={{ display: 'flex', flexDirection: 'column' }} error >
-                        {logicalOperatorError.map((error, index) => (
-                            <span key={index}> {error} </span>)
-                        )}
-                    </FormHelperText>
-                    <Stack direction="row" spacing={1}>
+                    <Stack direction="row" spacing={2} sx={{ marginTop: 1 }}>
                         <DraggableItem id={OperationEnum.Arithmetic} value={OperatorTypeJpEnum.Arithmetic} />
                         <DraggableItem id={OperationEnum.Comparison} value={OperatorTypeJpEnum.Comparison} />
                         <DraggableItem id={OperationEnum.Logical} value={OperatorTypeJpEnum.Logical} />
@@ -287,7 +254,7 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
                     <Box>
                         {termComponents.map((component, index) => (
                             <Stack direction="row" spacing={0} key={`${component.name}_${index}`}>
-                                {(index != 0) && <DroppableOperator id={`${component.name}_${index}_${keyPrefixEnum.Operator}`} parentIndex={index} isDragging={isDragging && isActiveIdOperator(activeId)} endOfArrayEvent={() => removeOperator(index)} type={component.operator}></DroppableOperator>}
+                                {(index != 0) && <DroppableOperator id={`${component.name}_${index}_${keyPrefixEnum.Operator}`} name={`${component.name}`} parentIndex={index} isDragging={isDragging && isActiveIdOperator(activeId)} endOfArrayEvent={() => removeOperator(index)} type={component.operator}></DroppableOperator>}
 
                                 <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfTerm}`} isDragging={isDragging && isNotActiveIdOperator(activeId)} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfTerm}`)} stringArray={component.leftOfTermValue}>{component.leftOfTermValue?.join('')}</Droppable>
 

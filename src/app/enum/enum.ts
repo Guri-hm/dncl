@@ -1,18 +1,12 @@
 
 export enum OperatorEnum {
   SimpleAssignment = '←',
-  AdditionOperator = '+',
-  SubtractionOperator = '-',
-  DivisionOperator = '/',
-  DivisionOperatorQuotient = '÷',
-  DivisionOperatorRemaining = '%',
-  MultiplicationOperator = '×',
 }
 
-export enum ArithmeticOperatorSymbolArray {
+export enum ArithmeticOperatorSymbolArrayForJavascript {
   AdditionOperator = '+',
   SubtractionOperator = '-',
-  MultiplicationOperator = '×',
+  MultiplicationOperator = '*',
   DivisionOperator = '/',
   DivisionOperatorQuotient = '÷',
   DivisionOperatorRemaining = '%',

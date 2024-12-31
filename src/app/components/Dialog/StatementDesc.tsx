@@ -27,6 +27,7 @@ export function StatementDesc(params: Props) {
         case StatementEnum.Condition:
             str = "〈条件〉が成り立つかどうかによって，実行する処理を切り替えます。";
             sub = "・〈条件〉には比較演算か論理演算を使用します。\n\
+            ・比較演算と論理演算が使用されない場合、，非ゼロの数値は「真」と判断されます。\n\
             ・〈条件〉の子要素〈処理〉は表示文や代入文で作成します。\n\
             ";
             break;

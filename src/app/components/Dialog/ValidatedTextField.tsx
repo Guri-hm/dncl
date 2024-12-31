@@ -8,6 +8,7 @@ type Props = {
   name: string
   pattern: ValidationEnum
   sx?: SxProps<Theme>;
+  isIMEOn?: boolean;
 }
 
 enum validationMessageEnum {
@@ -45,7 +46,7 @@ const getMsgByValidationEnum = (validation: ValidationEnum) => {
   }
 }
 
-export function ValidatedTextField({ sx = [], name, label, pattern, ...params }: Props) {
+export function ValidatedTextField({ sx = [], name, label, pattern, isIMEOn = false, ...params }: Props) {
 
   const [inputError, setInputError] = useState(false);
 
@@ -73,7 +74,8 @@ export function ValidatedTextField({ sx = [], name, label, pattern, ...params }:
       slotProps={{
         htmlInput: {
           className: 'text-center',
-          pattern: pattern
+          pattern: pattern,
+          inputMode: isIMEOn ? 'text' : 'none',
         }
         ,
       }}

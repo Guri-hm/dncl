@@ -8,13 +8,14 @@ import { OperationEnum } from "../enum";
 
 type DroppableProp = {
     id: string
+    name: string
     isDragging: boolean;
     endOfArrayEvent?: any;
     parentIndex?: number
     type?: OperationEnum
 };
 
-export const DroppableOperator: FC<DroppableProp> = ({ id, isDragging, endOfArrayEvent, type, parentIndex, }) => {
+export const DroppableOperator: FC<DroppableProp> = ({ id, name, isDragging, endOfArrayEvent, type, parentIndex, }) => {
     const {
         setNodeRef,
         isOver
@@ -33,7 +34,7 @@ export const DroppableOperator: FC<DroppableProp> = ({ id, isDragging, endOfArra
             }}
         >
             {type &&
-                <Operator name={`${id}`} parentIndex={parentIndex} type={type} event={endOfArrayEvent}></Operator>
+                <Operator name={`${name}`} parentIndex={parentIndex} type={type} event={endOfArrayEvent}></Operator>
             }
         </Grid>
     )

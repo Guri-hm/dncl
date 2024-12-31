@@ -19,6 +19,19 @@ interface Props {
     refrash: any
 }
 
+function convertStrToBool(str) {
+    if (typeof str != 'string') {
+        return Boolean(str);
+    }
+    try {
+        var obj = JSON.parse(str.toLowerCase());
+        return obj == true;
+    } catch (e) {
+        console.log(e)
+        return str != '';
+    }
+}
+
 function convertToJavaScript(str: string) {
     // 置換規則を定義
     const replacements = [
@@ -39,6 +52,11 @@ function transformNegation(str: string) {
     return str.replace(/\(([^()]+)\)でない/g, '!($1)').replace(/([^()]+)でない/g, '!($1)');
 }
 
+function convertDivision(str: string) {
+    // 「÷」記号を使った除算をMath.floorで包む式に変換 
+    return str.replace(/(\w+)\s*÷\s*(\w+)/g, 'Math.floor($1 / $2)');
+}
+
 const getOperator = (statementType: StatementEnum) => {
 
     switch (statementType) {
@@ -53,33 +71,41 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
 
     const [error, setError] = useState<string[]>([]);
 
-    const checkBraketPair = (targetString: string) => {
-
-        let errorArray: string[] = [];
-
-        const result: { isBalanced: boolean, isCorrectOrder: boolean, balance: number, hasEmptyParentheses: boolean } = (checkParenthesesBalance(targetString));
-
-        if (!result.isBalanced) {
-            if (result.balance > 0) {
-                errorArray.push(`『 ${BraketSymbolEnum.RigthBraket} 』を追加してください`);
-            } else {
-                errorArray.push(`『 ${BraketSymbolEnum.LeftBraket} 』を追加してください`);
-            }
-        }
-        if (!result.isCorrectOrder) {
-            errorArray.push(`『 ${BraketSymbolEnum.RigthBraket} 』の前方には対になる『 ${BraketSymbolEnum.LeftBraket} 』が必要です`);
-        }
-        if (result.hasEmptyParentheses) {
-            errorArray.push(`『 ${BraketSymbolEnum.LeftBraket} 』と『 ${BraketSymbolEnum.RigthBraket} 』の内側には要素が必要です`);
-        }
-        setError(errorArray);
-        if (errorArray.length > 0) {
-            return false;
-        }
-        return true;
-    }
-
     const checkStatement = (data: { [k: string]: string; }, statementType: StatementEnum, keywordPart: keyPrefixEnum): boolean => {
+
+        const checkBraketPair = (targetString: string) => {
+
+            let errorArray: string[] = [];
+
+            const result: { isBalanced: boolean, isCorrectOrder: boolean, balance: number, hasEmptyParentheses: boolean } = (checkParenthesesBalance(targetString));
+
+            if (!result.isBalanced) {
+                if (result.balance > 0) {
+                    errorArray.push(`『 ${BraketSymbolEnum.RigthBraket} 』を追加してください`);
+                } else {
+                    errorArray.push(`『 ${BraketSymbolEnum.LeftBraket} 』を追加してください`);
+                }
+            }
+            if (!result.isCorrectOrder) {
+                errorArray.push(`『 ${BraketSymbolEnum.RigthBraket} 』の前方には対になる『 ${BraketSymbolEnum.LeftBraket} 』が必要です`);
+            }
+            if (result.hasEmptyParentheses) {
+                errorArray.push(`『 ${BraketSymbolEnum.LeftBraket} 』と『 ${BraketSymbolEnum.RigthBraket} 』の内側には要素が必要です`);
+            }
+            setError(errorArray);
+            if (errorArray.length > 0) {
+                return false;
+            }
+            return true;
+        }
+
+        const existsOperator = (targetString: string | undefined): boolean => {
+            if (!(targetString)) return false;
+            //オブジェクト内のundefinedは文字列の'undefined'になっている
+            if (targetString == 'undefined') return false;
+            return true;
+        }
+
         const obj = Object.fromEntries(Object.entries(data).filter(([key, value]) => key.includes(keywordPart)));
 
         //添字は前後に[]をつける
@@ -110,25 +136,46 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
         }
 
         let tmp: string[] = [];
+        let result: boolean;
+        for (let i = 1; i <= maxRigthSideIndex; i++) {
+            result = existsOperator(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.Operator}`]);
+            if (!result) {
+                console.log("演算子がありません");
+                break;
+            }
+        }
         for (let i = 0; i <= maxRigthSideIndex; i++) {
             pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.Operator}`]));
             pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.LeftOfTerm}`]));
             pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}`]));
             pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.Suffix}`]));
             pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.RightOfTerm}`]));
+            pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.Negation}`]));
         }
 
         const statement = tmp.join(' ');
         console.log(statement);
         const convertedStr = convertToJavaScript(statement);
         console.log(convertedStr);
-        let result = checkBraketPair(convertedStr);
+        result = checkBraketPair(convertedStr);
         if (!result) {
             console.log("括弧の位置に誤りがあります");
         }
-        const dnclStatement = transformNegation(convertedStr);
+        let dnclStatement = "";
+        dnclStatement = transformNegation(convertedStr);
+        dnclStatement = convertDivision(dnclStatement);
         console.log(dnclStatement);
 
+        function isValidExpression(targetString: string) {
+            try {
+                new Function(`return ${targetString}`);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        console.log(isValidExpression(dnclStatement));
         // console.log(resutl);
     }
 
@@ -155,6 +202,7 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                         const formData = new FormData(event.currentTarget);
                         const formJson = Object.fromEntries((formData as any).entries());
                         // const leftside = checkStatement(formJson, editor.type, keyPrefixEnum.LeftSide);
+                        console.log(formJson)
                         const rightside = checkStatement(formJson, editor.type, keyPrefixEnum.RigthSide);
                         // const leftside = refineStatement(formJson, editor.type, keyPrefixEnum.LeftSide);
                         // const rightside = refineStatement(formJson, editor.type, keyPrefixEnum.RigthSide);
