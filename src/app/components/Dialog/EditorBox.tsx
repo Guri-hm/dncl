@@ -2,7 +2,7 @@ import { useState } from "react";
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import { ReactElement } from "react";
-import Box from '@mui/material/Box';
+import Box, { BoxProps } from '@mui/material/Box';
 import { DnclTextField } from "./DnclTextField";
 import { Operator } from "./Operator";
 import { processEnum, keyPrefixEnum, inputTypeEnum } from "./Enum";
@@ -126,6 +126,23 @@ export function EditorBox(params: Props) {
         onChange={handleChange}
         defaultValue={result[0]}
     />
+
+    interface CustomBoxProps extends BoxProps { children: React.ReactNode; }
+
+    const CustomBox: React.FC<CustomBoxProps> = ({ children, sx, ...props }) => {
+        return (
+            <Box sx={{
+                display: 'flex',
+                flexDirection: 'row',
+                p: 1,
+                m: 1,
+                bgcolor: 'background.paper',
+                borderRadius: 1,
+                ...sx,
+            }} {...props} >
+                {children}
+            </Box>);
+    };
 
     switch (params.statementType) {
         case StatementEnum.Output:

@@ -138,16 +138,13 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
 
         //メイン処理はここから
         let result: boolean;
-        console.log(termsMaxIndex)
         for (let i = 1; i <= termsMaxIndex; i++) {
             result = existsOperator(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.Operator}`]);
             if (!result) {
-                console.log("演算子がありません");
                 setError(["演算子がありません"]);
                 return false;
             }
         }
-        return;
 
         let strArray: string[] = getStringArray(updatedObj, termsMaxIndex, keywordPart);
 
@@ -260,14 +257,12 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                     component: 'form',
                     onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
                         event.preventDefault();
-                        setError([Math.random().toString()]);
 
                         const formData = new FormData(event.currentTarget);
                         const formJson = Object.fromEntries((formData as any).entries());
-                        console.log(formJson)
-                        // if (!checkStatement(formJson, editor.type, keyPrefixEnum.LeftSide)) return;
+                        if (!checkStatement(formJson, editor.type, keyPrefixEnum.LeftSide)) return;
                         if (!checkStatement(formJson, editor.type, keyPrefixEnum.RigthSide)) return;
-                        return
+
                         const operator = getOperator(editor.type);
 
                         let leftside = getDnclStatement(formJson, editor.type, keyPrefixEnum.LeftSide);
@@ -329,10 +324,10 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                     <DialogContentText>
                         <StatementDesc statementType={editor.type}></StatementDesc>
                     </DialogContentText>
-                    <ErrorMsgBox sx={{ display: 'flex', flexDirection: 'column' }} errorArray={error}></ErrorMsgBox>
                     <EditorBox statementType={editor.type}></EditorBox>
                 </DialogContent>
                 <DialogActions>
+                    <ErrorMsgBox sx={{ display: 'flex', flexDirection: 'column' }} errorArray={error}></ErrorMsgBox>
                     <Button onClick={handleClose}>キャンセル</Button>
                     <Button type="submit">挿入</Button>
                 </DialogActions>
