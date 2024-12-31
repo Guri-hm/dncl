@@ -8,7 +8,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import { DnclEditor } from "../../types";
 import { StatementName } from './StatementName';
 import { StatementDesc } from './StatementDesc';
-import { StatementEditor } from './StatementEditor';
+import { EditorBox } from './EditorBox';
 import { keyPrefixEnum, processEnum } from './Enum';
 import { ArithmeticOperatorSymbolArrayForDncl, ArithmeticOperatorSymbolArrayForJavascript, BraketSymbolEnum, ComparisonOperatorSymbolArrayForDncl, ComparisonOperatorSymbolArrayForJavascript, OperatorEnum, StatementEnum } from '@/app/enum';
 import { checkParenthesesBalance } from '@/app/utilities';
@@ -266,8 +266,8 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                         let rightside = getDnclStatement(formJson, editor.type, keyPrefixEnum.RigthSide);
 
                         let processPhrase = "";
-                        console.log(formJson.processIndex)
-                        console.log(getEnumIndex(processEnum, processEnum.EndIf))
+                        console.log(leftside)
+                        console.log(rightside)
 
                         switch (Number(formJson.processIndex)) {
                             case getEnumIndex(processEnum, processEnum.SetValueToVariableOrArrayElement):
@@ -290,7 +290,7 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                                 break;
 
                             case getEnumIndex(processEnum, processEnum.If):
-                                processPhrase = `もし${leftside} ${operator} ${rightside}ならば`;
+                                processPhrase = `もし${rightside}ならば`;
                                 break;
                             case getEnumIndex(processEnum, processEnum.ElseIf):
                                 processPhrase = `を実行し，そうでなくもし${leftside} ${operator} ${rightside}ならば`;
@@ -321,7 +321,7 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                     <DialogContentText>
                         <StatementDesc statementType={editor.type}></StatementDesc>
                     </DialogContentText>
-                    <StatementEditor statementType={editor.type}></StatementEditor>
+                    <EditorBox statementType={editor.type}></EditorBox>
                 </DialogContent>
                 <DialogActions>
                     {error.join('')}

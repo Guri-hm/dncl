@@ -2,7 +2,7 @@ import { useState } from "react";
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import { ReactElement } from "react";
-import Box from '@mui/material/Box';
+import Box, { BoxProps } from '@mui/material/Box';
 import { DnclTextField } from "./DnclTextField";
 import { Operator } from "./Operator";
 import { processEnum, keyPrefixEnum, inputTypeEnum } from "./Enum";
@@ -15,15 +15,15 @@ type Props = {
     statementType: StatementEnum
 }
 
-export function StatementEditor(params: Props) {
+export function EditorBox(params: Props) {
 
     const [statement, setStatement] = useState<ReactElement | null>(null);
 
     const handleChange = (event: any, newValue: processTypes | null) => {
         const index = getEnumIndex(processEnum, newValue?.title ?? processEnum.SetValueToVariableOrArrayElement);
-        setStatement(getStatement(index));
+        setStatement(StatementEditor(index));
     }
-    const getStatement: any = (index: number): ReactElement => {
+    const StatementEditor: any = (index: number): ReactElement => {
 
         switch (index) {
             case getEnumIndex(processEnum, processEnum.SetValueToVariableOrArrayElement):
@@ -120,57 +120,44 @@ export function StatementEditor(params: Props) {
         defaultValue={result[0]}
     />
 
+    interface CustomBoxProps extends BoxProps { children: React.ReactNode; }
+
+    const CustomBox: React.FC<CustomBoxProps> = ({ children, sx, ...props }) => {
+        return (
+            <Box sx={{
+                display: 'flex',
+                flexDirection: 'row',
+                p: 1,
+                m: 1,
+                bgcolor: 'background.paper',
+                borderRadius: 1,
+                ...sx,
+            }} {...props} >
+                {children}
+            </Box>);
+    };
+
+    let statementEditor: any;
     switch (params.statementType) {
         case StatementEnum.Output:
-            return <>
-                <Box
-                    sx={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        p: 1,
-                        m: 1,
-                        bgcolor: 'background.paper',
-                        borderRadius: 1,
-                    }}
-                >
-                    {statement ?? getStatement(getEnumIndex(processEnum, processEnum.Output))}
-                </Box>
-            </>;
+            statementEditor = StatementEditor(getEnumIndex(processEnum, processEnum.Output));
+            break;
         case StatementEnum.Input:
-            return <>
-                {ddl}
-                <Box
-                    sx={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        p: 1,
-                        m: 1,
-                        bgcolor: 'background.paper',
-                        borderRadius: 1,
-                    }}
-                >
-                    {statement ?? getStatement(getEnumIndex(processEnum, processEnum.SetValueToVariableOrArrayElement))}
-                </Box>
-            </>;
+            statementEditor = StatementEditor(getEnumIndex(processEnum, processEnum.SetValueToVariableOrArrayElement));
+            break;
         case StatementEnum.Condition:
-            return <>
-                {ddl}
-                <Box
-                    sx={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        p: 1,
-                        m: 1,
-                        bgcolor: 'background.paper',
-                        borderRadius: 1,
-                    }}
-                >
-                    {statement ?? getStatement(getEnumIndex(processEnum, processEnum.If))}
-                </Box>
-            </>;
+            statementEditor = StatementEditor(getEnumIndex(processEnum, processEnum.If));
+            break;
         default:
             break;
     }
+
+    return <>
+        {ddl}
+        <CustomBox>
+            {statement ?? statementEditor}
+        </CustomBox>
+    </>;
 }
 
 
