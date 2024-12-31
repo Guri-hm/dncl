@@ -118,20 +118,10 @@ export function EditorBox(params: Props) {
         getOptionLabel: (option: processTypes) => option.title,
     };
 
-    // const ddl = <Autocomplete
-    //     {...defaultProps}
-    //     id="auto-select"
-    //     autoSelect
-    //     renderInput={(params) => (
-    //         <TextField {...params} label="文の内容" variant="standard" />
-    //     )}
-    //     onChange={handleChange}
-    //     defaultValue={result[0]}
-    // />
     const ddl = <Box sx={{ minWidth: 120 }}>
         <FormControl variant="standard" fullWidth>
-            <InputLabel id="simple-select-outlined-label">文の内容</InputLabel>
-            <Select labelId="simple-select-outlined-label" defaultValue={result[0].title} onChange={handleChange} label="文の内容" >
+            <InputLabel id="process-select-label">文の内容</InputLabel>
+            <Select labelId="process-select-label" defaultValue={result[0].title} onChange={handleChange} label="文の内容" >
                 {result.map((item, index) => (
                     <MenuItem key={index} value={item.title}> {item.title} </MenuItem>
                 ))}
@@ -196,5 +186,5 @@ const processNames = [
             { title: processEnum.EndIf },
         ]
     },
-]
+];
 
