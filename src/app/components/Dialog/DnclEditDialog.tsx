@@ -9,9 +9,10 @@ import { DnclEditor } from "../../types";
 import { StatementName } from './StatementName';
 import { StatementDesc } from './StatementDesc';
 import { StatementEditor } from './StatementEditor';
-import { keyPrefixEnum } from './Enum';
-import { BraketSymbolEnum, OperatorEnum, StatementEnum } from '@/app/enum';
+import { keyPrefixEnum, processEnum } from './Enum';
+import { ArithmeticOperatorSymbolArrayForDncl, ArithmeticOperatorSymbolArrayForJavascript, BraketSymbolEnum, ComparisonOperatorSymbolArrayForDncl, ComparisonOperatorSymbolArrayForJavascript, OperatorEnum, StatementEnum } from '@/app/enum';
 import { checkParenthesesBalance } from '@/app/utilities';
+import { getEnumIndex } from "@/app/utilities";
 
 interface Props {
     editor: DnclEditor;
@@ -97,27 +98,19 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
         const obj = Object.fromEntries(Object.entries(data).filter(([key, value]) => key.includes(keywordPart)));
 
         //添字は前後に[]をつける
-        const updatedObj: { [k: string]: string; } = {};
-        for (const key in obj) {
-            if (key.includes(keyPrefixEnum.Suffix)) {
-                updatedObj[key] = `[${obj[key]}]`;
-            } else {
-                updatedObj[key] = obj[key];
-            }
-        }
+        const updatedObj = updateObjWithSquareBrackets(obj);
 
         //項の数を取得
-        const maxRigthSideIndex = Object.keys(obj)
+        const termsMaxIndex = Object.keys(obj)
             .filter(key => key.startsWith(`${keywordPart}_`))
             .map(key => parseInt(key.split("_")[1], 10))
             .reduce((max, current) => (current > max ? current : max), -1);
 
-
         const sanitizeInput = (targetString: string) => {
-            // 許可された文字セット: アルファベット、数字、スペース、および一部の記号（.,!?<>!=&|）
-            const regex = /^[a-zA-Z0-9 \.,!?<>=!&|]*$/;
-
+            // 許可された文字セット: アルファベット、数字、スペース、および一部の記号（.,!?<>=!&|+-/*()%! など）
             console.log(targetString)
+            const regex = /^[a-zA-Z0-9 \.,!?<>=!&|\+\-\*/\(\)%!]*$/;
+
             if (regex.test(targetString)) {
                 return targetString;
             } else {
@@ -143,17 +136,47 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
         }
 
         //メイン処理はここから
-        let strArray: string[] = [];
         let result: boolean;
-        for (let i = 1; i <= maxRigthSideIndex; i++) {
+        for (let i = 1; i <= termsMaxIndex; i++) {
             result = existsOperator(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.Operator}`]);
             if (!result) {
-                console.log("演算子がありません");
-                break;
+                setError(["演算子がありません"]);
+                return false;
             }
         }
 
-        for (let i = 0; i <= maxRigthSideIndex; i++) {
+        let strArray: string[] = getStringArray(updatedObj, termsMaxIndex, keywordPart);
+
+        let statement = strArray.join(' ');
+        if (statement.trim().length == 0) return true;
+
+        result = checkBraketPair(statement);
+        if (!result) {
+            setError(["括弧の位置に誤りがあります"]);
+            return false;
+        }
+
+        statement = convertToJavaScript(statement);
+        statement = transformNegation(statement);
+        statement = convertDivision(statement);
+        statement = escapeHtml(statement);
+
+        try {
+            statement = sanitizeInput(statement);
+        } catch (e: any) {
+            setError(["不適切な文字が使用されています"]);
+            return false;
+        }
+
+        //Function関数で実行し、エラーがあるかチェック
+        return isValidExpression(statement);
+    }
+
+    const getStringArray = (obj: { [k: string]: string }, termsMaxIndex: number, keywordPart: keyPrefixEnum): string[] => {
+
+        let strArray: string[] = [];
+
+        for (let i = 0; i <= termsMaxIndex; i++) {
             const cnvUndefinedToEmptyString = (targetString: string | undefined) => {
                 if (!(targetString)) return "";
                 //オブジェクト内のundefinedは文字列の'undefined'になっている
@@ -164,40 +187,55 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                 if (pushedString == "") return;
                 array.push(pushedString);
             }
-            pushNotEmptyString(strArray, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.Operator}`]));
-            pushNotEmptyString(strArray, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.LeftOfTerm}`]));
-            pushNotEmptyString(strArray, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}`]));
-            pushNotEmptyString(strArray, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.Suffix}`]));
-            pushNotEmptyString(strArray, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.RightOfTerm}`]));
-            pushNotEmptyString(strArray, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.Negation}`]));
+            pushNotEmptyString(strArray, cnvUndefinedToEmptyString(obj[`${keywordPart}_${i}_${keyPrefixEnum.Operator}`]));
+            pushNotEmptyString(strArray, cnvUndefinedToEmptyString(obj[`${keywordPart}_${i}_${keyPrefixEnum.LeftOfTerm}`]));
+            pushNotEmptyString(strArray, cnvUndefinedToEmptyString(obj[`${keywordPart}_${i}`]));
+            pushNotEmptyString(strArray, cnvUndefinedToEmptyString(obj[`${keywordPart}_${i}_${keyPrefixEnum.Suffix}`]));
+            pushNotEmptyString(strArray, cnvUndefinedToEmptyString(obj[`${keywordPart}_${i}_${keyPrefixEnum.RightOfTerm}`]));
+            pushNotEmptyString(strArray, cnvUndefinedToEmptyString(obj[`${keywordPart}_${i}_${keyPrefixEnum.Negation}`]));
         }
 
-        let statement = strArray.join(' ');
-        console.log(statement);
-        statement = convertToJavaScript(statement);
-        console.log(statement);
+        return strArray;
+    }
 
-        result = checkBraketPair(statement);
-        if (!result) {
-            console.log("括弧の位置に誤りがあります");
+    const updateObjWithSquareBrackets = (obj: { [k: string]: string; }) => {
+
+        //添字は前後に[]をつける
+        const updatedObj: { [k: string]: string; } = {};
+        for (const key in obj) {
+            if (key.includes(keyPrefixEnum.Suffix)) {
+                updatedObj[key] = `[${obj[key]}]`;
+            } else {
+                updatedObj[key] = obj[key];
+            }
+        }
+        return updatedObj;
+    }
+
+    const getDnclStatement = (data: { [k: string]: string; }, statementType: StatementEnum, keywordPart: keyPrefixEnum): string => {
+
+        //キーワードを含むオブジェクトを取得
+        const obj = Object.fromEntries(Object.entries(data).filter(([key, value]) => key.includes(keywordPart)));
+
+        //項の数を取得
+        const termsMaxIndex = Object.keys(obj)
+            .filter(key => key.startsWith(`${keywordPart}_`))
+            .map(key => parseInt(key.split("_")[1], 10))
+            .reduce((max, current) => (current > max ? current : max), -1);
+
+        const updatedObj = updateObjWithSquareBrackets(obj);
+        let strArray: string[] = getStringArray(updatedObj, termsMaxIndex, keywordPart);
+
+        for (let i = 0; i < strArray.length; i++) {
+            strArray[i] = strArray[i]
+                .replace(ComparisonOperatorSymbolArrayForJavascript.EqualToOperator, ComparisonOperatorSymbolArrayForDncl.EqualToOperator)
+                .replace(ComparisonOperatorSymbolArrayForJavascript.NotEqualToOperator, ComparisonOperatorSymbolArrayForDncl.NotEqualToOperator)
+                .replace(ComparisonOperatorSymbolArrayForJavascript.GreaterThanOrEqualToOperator, ComparisonOperatorSymbolArrayForDncl.GreaterThanOrEqualToOperator)
+                .replace(ComparisonOperatorSymbolArrayForJavascript.LessThanOrEqualToOperator, ComparisonOperatorSymbolArrayForDncl.LessThanOrEqualToOperator)
+                .replace(ArithmeticOperatorSymbolArrayForJavascript.MultiplicationOperator, ArithmeticOperatorSymbolArrayForDncl.MultiplicationOperator)
         }
 
-        statement = transformNegation(statement);
-        statement = convertDivision(statement);
-
-        console.log(statement);
-
-        statement = escapeHtml(statement);
-        console.log(statement)
-        // 使用例
-        try {
-            statement = sanitizeInput(statement);
-        } catch (e: any) {
-            console.error(e.message);
-        }
-
-        console.log(isValidExpression(statement));
-        // console.log(resutl);
+        return strArray.join(' ')
     }
 
     const handleClickOpen = () => {
@@ -220,22 +258,58 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                         event.preventDefault();
                         const formData = new FormData(event.currentTarget);
                         const formJson = Object.fromEntries((formData as any).entries());
-                        // const leftside = checkStatement(formJson, editor.type, keyPrefixEnum.LeftSide);
-                        const rightside = checkStatement(formJson, editor.type, keyPrefixEnum.RigthSide);
-                        // const leftside = refineStatement(formJson, editor.type, keyPrefixEnum.LeftSide);
-                        // const rightside = refineStatement(formJson, editor.type, keyPrefixEnum.RigthSide);
+                        if (!checkStatement(formJson, editor.type, keyPrefixEnum.LeftSide)) return;
+                        if (!checkStatement(formJson, editor.type, keyPrefixEnum.RigthSide)) return;
                         const operator = getOperator(editor.type);
 
-                        return;
-                        switch (editor.type) {
-                            case StatementEnum.Condition:
+                        let leftside = getDnclStatement(formJson, editor.type, keyPrefixEnum.LeftSide);
+                        let rightside = getDnclStatement(formJson, editor.type, keyPrefixEnum.RigthSide);
+
+                        let processPhrase = "";
+                        console.log(formJson.processIndex)
+                        console.log(getEnumIndex(processEnum, processEnum.EndIf))
+
+                        switch (Number(formJson.processIndex)) {
+                            case getEnumIndex(processEnum, processEnum.SetValueToVariableOrArrayElement):
+                                processPhrase = `${leftside} ${operator} ${rightside}`;
+                                break;
+
+                            case getEnumIndex(processEnum, processEnum.InitializeArray):
+                                break;
+
+                            case getEnumIndex(processEnum, processEnum.BulkAssignToArray):
+                                break;
+
+                            case getEnumIndex(processEnum, processEnum.Increment):
+                                break;
+
+                            case getEnumIndex(processEnum, processEnum.Decrement):
+                                break;
+
+                            case getEnumIndex(processEnum, processEnum.Output):
+                                break;
+
+                            case getEnumIndex(processEnum, processEnum.If):
+                                processPhrase = `もし${leftside} ${operator} ${rightside}ならば`;
+                                break;
+                            case getEnumIndex(processEnum, processEnum.ElseIf):
+                                processPhrase = `を実行し，そうでなくもし${leftside} ${operator} ${rightside}ならば`;
+                                break;
+
+                            case getEnumIndex(processEnum, processEnum.Else):
+                                processPhrase = `を実行し，そうでなければ`;
+                                break;
+
+                            case getEnumIndex(processEnum, processEnum.EndIf):
+                                processPhrase = `を実行する`;
+                                break;
 
                             default:
-                                break;
+                                return "";
                         }
-                        editor.onSubmit(editor.item, `${leftside} ${operator} ${rightside}`, editor.overIndex);
-                        // console.log(`${leftside} ${operator} ${rightside}`);
-                        // console.log(formJson);
+
+                        console.log(processPhrase)
+                        editor.onSubmit(editor.item, processPhrase, editor.overIndex);
                         handleClose();
                     },
                 }}

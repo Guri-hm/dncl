@@ -10,12 +10,9 @@ import { NowrapText } from "./NowrapText";
 import { OperationEnum, StatementEnum } from "@/app/enum";
 import { Operation } from "./Operation";
 import { Divider } from "@mui/material";
+import { getEnumIndex } from "@/app/utilities";
 type Props = {
     statementType: StatementEnum
-}
-
-function getEnumIndex<T extends Record<string, string | number>>(enumObj: T, value: T[keyof T]): number {
-    return Object.values(enumObj).indexOf(value);
 }
 
 export function StatementEditor(params: Props) {
@@ -35,6 +32,7 @@ export function StatementEditor(params: Props) {
                         <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArray}></DnclTextField>
                         <Operator type={OperationEnum.SimpleAssignment}></Operator>
                     </Operation>
+                    <input name="processIndex" type="hidden" value={index}></input>
                 </>
 
             case getEnumIndex(processEnum, processEnum.InitializeArray):
@@ -43,6 +41,7 @@ export function StatementEditor(params: Props) {
                     <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.ArrayWithoutSuffix}></DnclTextField>
                     <Operator type={OperationEnum.SimpleAssignment}></Operator>
                     <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.InitializeArray} label=""></DnclTextField>
+                    <input name="processIndex" type="hidden" value={index}></input>
                 </>
             case getEnumIndex(processEnum, processEnum.BulkAssignToArray):
                 return <>
@@ -50,6 +49,7 @@ export function StatementEditor(params: Props) {
                     <NowrapText text={'のすべての要素に'}></NowrapText>
                     <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SwitchVariableOrNumberOrArray}></DnclTextField>
                     <NowrapText text={'を代入する'}></NowrapText>
+                    <input name="processIndex" type="hidden" value={index}></input>
                 </>
             case getEnumIndex(processEnum, processEnum.Increment):
             case getEnumIndex(processEnum, processEnum.Decrement):
@@ -58,12 +58,14 @@ export function StatementEditor(params: Props) {
                     <NowrapText text={'を'}></NowrapText>
                     <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SwitchVariableOrArray}></DnclTextField>
                     <NowrapText text={index == getEnumIndex(processEnum, processEnum.Increment) ? '増やす' : '減らす'}></NowrapText>
+                    <input name="processIndex" type="hidden" value={index}></input>
                 </>
             case getEnumIndex(processEnum, processEnum.Output):
                 return <>
                     <Operation statementType={params.statementType}></Operation>
                     <Divider orientation="vertical" flexItem />
                     <NowrapText text={'を表示する'}></NowrapText>
+                    <input name="processIndex" type="hidden" value={index}></input>
                 </>
             case getEnumIndex(processEnum, processEnum.If):
                 return <>
@@ -73,6 +75,7 @@ export function StatementEditor(params: Props) {
                     </Operation>
                     <Divider sx={{ marginLeft: 1 }} orientation="vertical" flexItem />
                     <NowrapText text={'ならば'}></NowrapText>
+                    <input name="processIndex" type="hidden" value={index}></input>
                 </>
             case getEnumIndex(processEnum, processEnum.ElseIf):
                 return <>
@@ -82,14 +85,17 @@ export function StatementEditor(params: Props) {
                     </Operation>
                     <Divider sx={{ marginLeft: 1 }} orientation="vertical" flexItem />
                     <NowrapText text={'ならば'}></NowrapText>
+                    <input name="processIndex" type="hidden" value={index}></input>
                 </>
             case getEnumIndex(processEnum, processEnum.Else):
                 return <>
                     <NowrapText text={'を実行し，そうでなければ'}></NowrapText>
+                    <input name="processIndex" type="hidden" value={index}></input>
                 </>
             case getEnumIndex(processEnum, processEnum.EndIf):
                 return <>
                     <NowrapText text={'を実行する'}></NowrapText>
+                    <input name="processIndex" type="hidden" value={index}></input>
                 </>
             default:
                 return <></>;
@@ -171,8 +177,6 @@ export function StatementEditor(params: Props) {
 interface processTypes {
     title: processEnum;
 }
-
-
 
 const processNames = [
     {

@@ -38,6 +38,9 @@ export enum ComparisonOperatorSymbolArrayForDncl {
   LessThanOrEqualToOperator = '≦',
   NullOperator = '',
 }
+export enum ArithmeticOperatorSymbolArrayForDncl {
+  MultiplicationOperator = '×',
+}
 
 export enum StatementEnum {
   Output = 'output',

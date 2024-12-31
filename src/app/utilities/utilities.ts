@@ -229,6 +229,10 @@ export const getChildrenIds = (
   return includeSelf ? [id, ...childrenIds] : childrenIds
 }
 
+export function getEnumIndex<T extends Record<string, string | number>>(enumObj: T, value: T[keyof T]): number {
+  return Object.values(enumObj).indexOf(value);
+}
+
 export function enumsToObjects<T>(enumObjs: T[]) {
 
   const enumToObjectArray = <T extends object>(enumObj: T): { name: string, value: string }[] => {
