@@ -10,6 +10,7 @@ import Grid from '@mui/material/Grid2';
 import { ValidatedTextField } from "./ValidatedTextField";
 import { FixedHeightGrid } from './FixedHeightGrid';
 import { FormControlLabel, Radio, RadioGroup } from '@mui/material';
+import { OperationEnum } from '@/app/enum';
 
 export interface DnclTextFieldProps {
   label?: string | inputTypeEnum
@@ -20,6 +21,7 @@ export interface DnclTextFieldProps {
   leftOfTermValue?: string[]
   rightOfTermValue?: string[]
   suffixValue?: string
+  operator?: OperationEnum
 }
 
 enum inputTypeJpEnum {

@@ -3,16 +3,18 @@ import { FC, ReactNode } from "react";
 import { blue } from '@mui/material/colors';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid2';
+import { Operator } from "./Dialog/Operator";
+import { OperationEnum } from "../enum";
 
 type DroppableProp = {
-    children: ReactNode;
     id: string
     isDragging: boolean;
-    onClick?: any;
-    stringArray?: string[];
+    endOfArrayEvent?: any;
+    parentIndex?: number
+    type?: OperationEnum
 };
 
-export const Droppable: FC<DroppableProp> = ({ children, id, isDragging, onClick, stringArray = [] }) => {
+export const DroppableOperator: FC<DroppableProp> = ({ id, isDragging, endOfArrayEvent, type, parentIndex, }) => {
     const {
         setNodeRef,
         isOver
@@ -24,15 +26,14 @@ export const Droppable: FC<DroppableProp> = ({ children, id, isDragging, onClick
         <Grid size="auto"
             ref={setNodeRef}
             sx={{
-                whiteSpace: 'nowrap',
-                display: 'grid',
                 height: '40px',
-                alignItems: 'center',
-                backgroundColor: isOver ? blue[700] : (isDragging ? blue[100] : "")
+                backgroundColor: isOver ? blue[700] : (isDragging ? blue[100] : ""),
+                paddingLeft: '5px', paddingRight: '5px'
             }}
         >
-            <Button onClick={onClick} size="large" sx={{ paddingLeft: '5px', paddingRight: '5px', minWidth: 0, fontWeight: 700 }}>{children}</Button>
-            <input type="hidden" name={id} value={`${stringArray.join(' ')}`} />
+            {type &&
+                <Operator name={`${id}`} parentIndex={parentIndex} type={type} event={endOfArrayEvent}></Operator>
+            }
         </Grid>
     )
 }

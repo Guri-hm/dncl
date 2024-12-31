@@ -16,7 +16,6 @@ export enum ArithmeticOperatorSymbolArray {
   DivisionOperator = '/',
   DivisionOperatorQuotient = '÷',
   DivisionOperatorRemaining = '%',
-  NullOperator = '',
 }
 export enum ComparisonOperatorSymbolArrayForJavascript {
   EqualToOperator = '==',
@@ -25,15 +24,15 @@ export enum ComparisonOperatorSymbolArrayForJavascript {
   GreaterThanOrEqualToOperator = '>=',
   LessThanOperator = '<',
   LessThanOrEqualToOperator = '<=',
-  NotUsed = '',
-  // And = '&&',
-  // Or = '||',
-  // Not = '!',
 }
 
+export enum AndOrOperatorJpArrayForDncl {
+  AndOperator = 'かつ',
+  OrOperator = 'または',
+}
 export enum NegationOperatorJpArray {
-  NegationOperator = 'でない',
   NullOperator = '',
+  NegationOperator = 'でない',
 }
 
 export enum ComparisonOperatorSymbolArrayForDncl {
@@ -58,11 +57,17 @@ export enum StatementJpEnum {
 }
 
 export enum OperationEnum {
-  Condition = 'condition',
-  Operation = 'operation',
   JoinString = 'joinString',
   SimpleAssignment = 'simpleAssignment',
   Negation = ' negation',
+  Arithmetic = 'Arithmetic',
+  Comparison = 'Comparison',
+  Logical = 'Logical',
+}
+export enum OperatorTypeJpEnum {
+  Arithmetic = '算術',
+  Comparison = '比較',
+  Logical = '論理',
 }
 
 export enum BraketSymbolEnum {

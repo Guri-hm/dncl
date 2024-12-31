@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Box from '@mui/material/Box';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { ArithmeticOperatorSymbolArray, ComparisonOperatorSymbolArrayForJavascript, NegationOperatorJpArray, OperationEnum } from '@/app/enum';
+import { AndOrOperatorJpArrayForDncl, ArithmeticOperatorSymbolArray, ComparisonOperatorSymbolArrayForJavascript, NegationOperatorJpArray, OperationEnum } from '@/app/enum';
 import { ReactElement } from "react";
 import IconButton from '@mui/material/IconButton';
 import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon';
@@ -117,6 +117,7 @@ type Props = {
   type: OperationEnum
   name?: string
   parentIndex?: number
+  event?: any
 }
 
 const ArithmeticOperatorArray: React.FC<SvgIconProps>[] = [
@@ -126,7 +127,6 @@ const ArithmeticOperatorArray: React.FC<SvgIconProps>[] = [
   DivisionOperator,
   DivisionOperatorQuotient,
   DivisionOperatorRemaining,
-  (props) => <NotInterestedIcon {...props} sx={{ color: 'gray', opacity: 0.5 }} />,
 ];
 
 const ComparisonOperatorArray: React.FC<SvgIconProps>[] = [
@@ -137,33 +137,42 @@ const ComparisonOperatorArray: React.FC<SvgIconProps>[] = [
   GreaterThanOrEqualToOperator,
   LessThanOperator,
   LessThanOrEqualToOperator,
-  (props) => <NotInterestedIcon {...props} sx={{ color: 'gray', opacity: 0.2 }} />,
-  // (props) => <TextIcon {...props} text="かつ" />,
-  // (props) => <TextIcon {...props} text="または" />,
-  // (props) => <TextIcon {...props} text="でない" />
+];
+const LogicalOperatorArray: React.FC<SvgIconProps>[] = [
+
+  (props) => <TextIcon {...props} text="かつ" />,
+  (props) => <TextIcon {...props} text="または" />,
 ];
 
 const NegationOperatorArray: React.FC<SvgIconProps>[] = [
 
-  (props) => <TextIcon {...props} text="でない" />,
   (props) => <NotInterestedIcon {...props} sx={{ color: 'gray', opacity: 0.2 }} />,
+  (props) => <TextIcon {...props} text="でない" />,
 ];
 
-export function Operator({ type, name = "", parentIndex = 0, ...props }: Props) {
+export function Operator({ type, name = "", parentIndex = 0, event, ...props }: Props) {
   const [operatorIndex, setOperatorIndex] = useState<number>(0);
 
   let elms: ReactElement = <></>;
   const handleOnClick = () => {
     let newIndex: number = operatorIndex + 1;
     switch (type) {
-      case OperationEnum.Operation:
+      case OperationEnum.Arithmetic:
         if (operatorIndex == ArithmeticOperatorArray.length - 1) {
           newIndex = 0;
+          if (event) event();
         }
         break;
-      case OperationEnum.Condition:
+      case OperationEnum.Comparison:
         if (operatorIndex == ComparisonOperatorArray.length - 1) {
           newIndex = 0;
+          if (event) event();
+        }
+        break;
+      case OperationEnum.Logical:
+        if (operatorIndex == LogicalOperatorArray.length - 1) {
+          newIndex = 0;
+          if (event) event();
         }
         break;
       case OperationEnum.Negation:
@@ -179,38 +188,61 @@ export function Operator({ type, name = "", parentIndex = 0, ...props }: Props) 
 
   let SvgIconButton: any;
   let enumValues: any;
+  let newIndex: number = operatorIndex;
   switch (type) {
     case OperationEnum.SimpleAssignment:
       elms = <ArrowBackIcon></ArrowBackIcon>
       break;
-    case OperationEnum.Operation:
-      SvgIconButton = ArithmeticOperatorArray[operatorIndex];
+    case OperationEnum.Arithmetic:
+      if (operatorIndex > ArithmeticOperatorArray.length - 1) {
+        setOperatorIndex(0);
+        newIndex = 0;
+      }
+      SvgIconButton = ArithmeticOperatorArray[newIndex];
       enumValues = Object.values(ArithmeticOperatorSymbolArray);
       elms = <>
         <IconButton color="primary" aria-label="arithmetic-operation">
           <SvgIconButton onClick={handleOnClick}></SvgIconButton>
         </IconButton>
-        <input type="hidden" name={`${name}_${parentIndex}_${keyPrefixEnum.Operator}`} value={enumValues[operatorIndex]}></input>
+        <input type="hidden" name={`${name}_${parentIndex}_${keyPrefixEnum.Operator}`} value={enumValues[newIndex]}></input>
       </>
       break;
-    case OperationEnum.Condition:
-      SvgIconButton = ComparisonOperatorArray[operatorIndex];
+    case OperationEnum.Comparison:
+      if (operatorIndex > ComparisonOperatorArray.length - 1) {
+        setOperatorIndex(0);
+        newIndex = 0;
+      }
+      SvgIconButton = ComparisonOperatorArray[newIndex];
       enumValues = Object.values(ComparisonOperatorSymbolArrayForJavascript);
       elms = <>
         <IconButton color="primary" aria-label="comparison-operation">
           <SvgIconButton onClick={handleOnClick}></SvgIconButton>
         </IconButton>
-        <input type="hidden" name={`${name}_${parentIndex}_${keyPrefixEnum.Operator}`} value={enumValues[operatorIndex]}></input>
+        <input type="hidden" name={`${name}_${parentIndex}_${keyPrefixEnum.Operator}`} value={enumValues[newIndex]}></input>
+      </>
+      break;
+    case OperationEnum.Logical:
+      if (operatorIndex > LogicalOperatorArray.length - 1) {
+        setOperatorIndex(0);
+        newIndex = 0;
+      }
+      SvgIconButton = LogicalOperatorArray[newIndex];
+      enumValues = Object.values(AndOrOperatorJpArrayForDncl);
+      elms = <>
+        <IconButton color="primary" aria-label="comparison-operation">
+          <SvgIconButton onClick={handleOnClick}></SvgIconButton>
+        </IconButton>
+        <input type="hidden" name={`${name}_${parentIndex}_${keyPrefixEnum.Operator}`} value={enumValues[newIndex]}></input>
       </>
       break;
     case OperationEnum.Negation:
-      SvgIconButton = NegationOperatorArray[operatorIndex];
+      SvgIconButton = NegationOperatorArray[newIndex];
       enumValues = Object.values(NegationOperatorJpArray);
       elms = <>
         <IconButton sx={{ padding: 0 }} color="primary" aria-label="comparison-operation">
           <SvgIconButton onClick={handleOnClick}></SvgIconButton>
         </IconButton>
-        <input type="hidden" name={`${name}_${parentIndex}_${keyPrefixEnum.Negation}`} value={enumValues[operatorIndex]}></input>
+        <input type="hidden" name={`${name}_${parentIndex}_${keyPrefixEnum.Negation}`} value={enumValues[newIndex]}></input>
       </>
       break;
     case OperationEnum.JoinString:

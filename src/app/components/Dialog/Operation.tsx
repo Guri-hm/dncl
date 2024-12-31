@@ -6,11 +6,12 @@ import { DraggableItem } from "./DraggableItem";
 import { DnclTextField, DnclTextFieldProps } from "./DnclTextField";
 import { Operator } from "./Operator";
 import { Droppable } from "../Droppable";
-import { bracketEnum, inputTypeEnum, keyPrefixEnum, LogicalOperationEnum } from "./Enum";
-import { BraketSymbolEnum, LogicalOperationJpEnum, OperationEnum, StatementEnum } from "@/app/enum";
+import { bracketEnum, inputTypeEnum, keyPrefixEnum } from "./Enum";
+import { BraketSymbolEnum, LogicalOperationJpEnum, OperationEnum, OperatorTypeJpEnum, StatementEnum } from "@/app/enum";
 import AddIcon from '@mui/icons-material/Add';
 import { useUpdateEffect } from './useUpdateEffect ';
 import { checkParenthesesBalance, enumsToObjects, getValueByKey } from "@/app/utilities";
+import { DroppableOperator } from "../DroppableOperator";
 
 type Props = {
     children?: ReactNode;
@@ -43,7 +44,7 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
         checkBraketPair();
     }, [termComponents]);
 
-    const draggableStringList = enumsToObjects([BraketSymbolEnum, LogicalOperationJpEnum]);
+    const draggableStringList = enumsToObjects([BraketSymbolEnum, OperatorTypeJpEnum]);
 
     const checkBraketPair = () => {
 
@@ -110,6 +111,26 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
                 i === Number(overIdSplitArray[1]) ? { ...item, [propertyName]: newArray } : item
             ));
     }
+
+    const setOperator = (id: string) => {
+        //(左辺または右辺)_(項のインデックス)_(項の左側または右側)という文字列を想定
+        const overIdSplitArray = id.split('_');
+        let propertyName = 'operator';
+        //プロパティに変数を使うときは[]をつける
+        setTermComponents((prevItems) =>
+            prevItems.map((item: DnclTextFieldProps, i: number) =>
+                i === Number(overIdSplitArray[1]) ? { ...item, [propertyName]: activeId } : item
+            ));
+    }
+    const removeOperator = (index: number) => {
+        let propertyName = 'operator';
+        //プロパティに変数を使うときは[]をつける
+        setTermComponents((prevItems) =>
+            prevItems.map((item: DnclTextFieldProps, i: number) =>
+                i === Number(index) ? { ...item, [propertyName]: null } : item
+            ));
+    }
+
     const addOneSideOfTerm = (id: string) => {
 
         //(左辺または右辺)_(項のインデックス)_(項の左側または右側)という文字列を想定
@@ -190,8 +211,9 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
                         )}
                     </FormHelperText>
                     <Stack direction="row" spacing={1}>
-                        <DraggableItem id={LogicalOperationEnum.And} value={LogicalOperationJpEnum.And} />
-                        <DraggableItem id={LogicalOperationEnum.Or} value={LogicalOperationJpEnum.Or} />
+                        <DraggableItem id={OperationEnum.Arithmetic} value={OperatorTypeJpEnum.Arithmetic} />
+                        <DraggableItem id={OperationEnum.Comparison} value={OperatorTypeJpEnum.Comparison} />
+                        <DraggableItem id={OperationEnum.Logical} value={OperatorTypeJpEnum.Logical} />
                     </Stack>
                 </DraggableOperatorsBox>
                     ;
@@ -205,9 +227,9 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
             case StatementEnum.Output:
                 return OperationEnum.JoinString;
             case StatementEnum.Condition:
-                return OperationEnum.Condition;
+                return OperationEnum.Comparison;
             default:
-                return OperationEnum.Operation;
+                return OperationEnum.Arithmetic;
         }
     }
     const getSwitchType = (type: StatementEnum | undefined): inputTypeEnum => {
@@ -237,8 +259,11 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
                     if (over == null) {
                         return;
                     }
-
-                    addOneSideOfTerm(over.id.toString());
+                    if (over.id.toString().includes(keyPrefixEnum.Operator)) {
+                        setOperator(over.id.toString())
+                    } else {
+                        addOneSideOfTerm(over.id.toString());
+                    }
 
                 }}
             >
@@ -264,8 +289,9 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
                     <Box>
                         {termComponents.map((component, index) => (
                             <Stack direction="row" spacing={0} key={`${component.name}_${index}`}>
-                                {index > 0 && <Operator name={`${component.name}`} parentIndex={index} type={getOperationType(statementType)}></Operator>}
+                                {(index != 0) && <DroppableOperator id={`${component.name}_${index}_${keyPrefixEnum.Operator}`} parentIndex={index} isDragging={isDragging} endOfArrayEvent={() => removeOperator(index)} type={component.operator}></DroppableOperator>}
                                 <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfTerm}`} isDragging={isDragging} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfTerm}`)} stringArray={component.leftOfTermValue}>{component.leftOfTermValue?.join('')}</Droppable>
+
                                 <DnclTextField name={`${component.name}`} index={index} inputType={getSwitchType(statementType)} />
                                 <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfTerm}`} isDragging={isDragging} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfTerm}`)} stringArray={component.rightOfTermValue}>{component.rightOfTermValue?.join('')}</Droppable>
                                 {(index != 0) && <Operator name={`${component.name}`} parentIndex={index} type={OperationEnum.Negation}></Operator>}
