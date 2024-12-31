@@ -19,44 +19,6 @@ interface Props {
     refrash: any
 }
 
-function convertStrToBool(str) {
-    if (typeof str != 'string') {
-        return Boolean(str);
-    }
-    try {
-        var obj = JSON.parse(str.toLowerCase());
-        return obj == true;
-    } catch (e) {
-        console.log(e)
-        return str != '';
-    }
-}
-
-function convertToJavaScript(str: string) {
-    // 置換規則を定義
-    const replacements = [
-        { regex: /\s*または\s*/g, replacement: ' || ' },
-        { regex: /\s*かつ\s*/g, replacement: ' && ' },
-        // { regex: /でない/g, replacement: '!' }
-    ];
-
-    // 置換を適用
-    replacements.forEach(({ regex, replacement }) => {
-        str = str.replace(regex, replacement);
-    });
-
-    return str;
-}
-
-function transformNegation(str: string) {
-    return str.replace(/\(([^()]+)\)でない/g, '!($1)').replace(/([^()]+)でない/g, '!($1)');
-}
-
-function convertDivision(str: string) {
-    // 「÷」記号を使った除算をMath.floorで包む式に変換 
-    return str.replace(/(\w+)\s*÷\s*(\w+)/g, 'Math.floor($1 / $2)');
-}
-
 const getOperator = (statementType: StatementEnum) => {
 
     switch (statementType) {
@@ -72,6 +34,31 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
     const [error, setError] = useState<string[]>([]);
 
     const checkStatement = (data: { [k: string]: string; }, statementType: StatementEnum, keywordPart: keyPrefixEnum): boolean => {
+
+        const convertToJavaScript = (targetString: string) => {
+            // 置換規則を定義
+            const replacements = [
+                { regex: /\s*または\s*/g, replacement: ' || ' },
+                { regex: /\s*かつ\s*/g, replacement: ' && ' },
+                // { regex: /でない/g, replacement: '!' }
+            ];
+
+            // 置換を適用
+            replacements.forEach(({ regex, replacement }) => {
+                targetString = targetString.replace(regex, replacement);
+            });
+
+            return targetString;
+        }
+
+        const transformNegation = (targetString: string) => {
+            return targetString.replace(/\(([^()]+)\)でない/g, '!($1)').replace(/([^()]+)でない/g, '!($1)');
+        }
+
+        const convertDivision = (targetString: string) => {
+            // 「÷」記号を使った除算をMath.floorで包む式に変換 
+            return targetString.replace(/(\w+)\s*÷\s*(\w+)/g, 'Math.floor($1 / $2)');
+        }
 
         const checkBraketPair = (targetString: string) => {
 
@@ -106,6 +93,7 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
             return true;
         }
 
+        //キーワードを含むオブジェクトを取得
         const obj = Object.fromEntries(Object.entries(data).filter(([key, value]) => key.includes(keywordPart)));
 
         //添字は前後に[]をつける
@@ -118,55 +106,34 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
             }
         }
 
+        //項の数を取得
         const maxRigthSideIndex = Object.keys(obj)
             .filter(key => key.startsWith(`${keywordPart}_`))
             .map(key => parseInt(key.split("_")[1], 10))
             .reduce((max, current) => (current > max ? current : max), -1);
 
-        const pushNotEmptyString = (array: string[], pushedString: string) => {
-            if (pushedString == "") return;
-            array.push(pushedString);
-        }
 
-        const cnvUndefinedToEmptyString = (targetString: string | undefined) => {
-            if (!(targetString)) return "";
-            //オブジェクト内のundefinedは文字列の'undefined'になっている
-            if (targetString == 'undefined') return "";
-            return targetString;
-        }
+        const sanitizeInput = (targetString: string) => {
+            // 許可された文字セット: アルファベット、数字、スペース、および一部の記号（.,!?<>!=&|）
+            const regex = /^[a-zA-Z0-9 \.,!?<>=!&|]*$/;
 
-        let tmp: string[] = [];
-        let result: boolean;
-        for (let i = 1; i <= maxRigthSideIndex; i++) {
-            result = existsOperator(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.Operator}`]);
-            if (!result) {
-                console.log("演算子がありません");
-                break;
+            console.log(targetString)
+            if (regex.test(targetString)) {
+                return targetString;
+            } else {
+                throw new Error("Invalid characters in input.");
             }
         }
-        for (let i = 0; i <= maxRigthSideIndex; i++) {
-            pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.Operator}`]));
-            pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.LeftOfTerm}`]));
-            pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}`]));
-            pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.Suffix}`]));
-            pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.RightOfTerm}`]));
-            pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.Negation}`]));
+
+        const escapeHtml = (unsafe: string) => {
+            return unsafe
+                // 単独の & をエスケープし、&& の前後にスペースがある場合はエスケープしない 
+                .replace(/(?<!&)&(?!&)/g, "&amp;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
         }
 
-        const statement = tmp.join(' ');
-        console.log(statement);
-        const convertedStr = convertToJavaScript(statement);
-        console.log(convertedStr);
-        result = checkBraketPair(convertedStr);
-        if (!result) {
-            console.log("括弧の位置に誤りがあります");
-        }
-        let dnclStatement = "";
-        dnclStatement = transformNegation(convertedStr);
-        dnclStatement = convertDivision(dnclStatement);
-        console.log(dnclStatement);
-
-        function isValidExpression(targetString: string) {
+        const isValidExpression = (targetString: string) => {
             try {
                 new Function(`return ${targetString}`);
                 return true;
@@ -175,7 +142,61 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
             }
         }
 
-        console.log(isValidExpression(dnclStatement));
+        //メイン処理はここから
+        let strArray: string[] = [];
+        let result: boolean;
+        for (let i = 1; i <= maxRigthSideIndex; i++) {
+            result = existsOperator(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.Operator}`]);
+            if (!result) {
+                console.log("演算子がありません");
+                break;
+            }
+        }
+
+        for (let i = 0; i <= maxRigthSideIndex; i++) {
+            const cnvUndefinedToEmptyString = (targetString: string | undefined) => {
+                if (!(targetString)) return "";
+                //オブジェクト内のundefinedは文字列の'undefined'になっている
+                if (targetString == 'undefined') return "";
+                return targetString;
+            }
+            const pushNotEmptyString = (array: string[], pushedString: string) => {
+                if (pushedString == "") return;
+                array.push(pushedString);
+            }
+            pushNotEmptyString(strArray, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.Operator}`]));
+            pushNotEmptyString(strArray, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.LeftOfTerm}`]));
+            pushNotEmptyString(strArray, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}`]));
+            pushNotEmptyString(strArray, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.Suffix}`]));
+            pushNotEmptyString(strArray, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.RightOfTerm}`]));
+            pushNotEmptyString(strArray, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.Negation}`]));
+        }
+
+        let statement = strArray.join(' ');
+        console.log(statement);
+        statement = convertToJavaScript(statement);
+        console.log(statement);
+
+        result = checkBraketPair(statement);
+        if (!result) {
+            console.log("括弧の位置に誤りがあります");
+        }
+
+        statement = transformNegation(statement);
+        statement = convertDivision(statement);
+
+        console.log(statement);
+
+        statement = escapeHtml(statement);
+        console.log(statement)
+        // 使用例
+        try {
+            statement = sanitizeInput(statement);
+        } catch (e: any) {
+            console.error(e.message);
+        }
+
+        console.log(isValidExpression(statement));
         // console.log(resutl);
     }
 
@@ -196,13 +217,10 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                 PaperProps={{
                     component: 'form',
                     onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
-
-
                         event.preventDefault();
                         const formData = new FormData(event.currentTarget);
                         const formJson = Object.fromEntries((formData as any).entries());
                         // const leftside = checkStatement(formJson, editor.type, keyPrefixEnum.LeftSide);
-                        console.log(formJson)
                         const rightside = checkStatement(formJson, editor.type, keyPrefixEnum.RigthSide);
                         // const leftside = refineStatement(formJson, editor.type, keyPrefixEnum.LeftSide);
                         // const rightside = refineStatement(formJson, editor.type, keyPrefixEnum.RigthSide);
