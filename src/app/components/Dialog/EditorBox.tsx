@@ -9,7 +9,7 @@ import { processEnum, keyPrefixEnum, inputTypeEnum } from "./Enum";
 import { NowrapText } from "./NowrapText";
 import { OperationEnum, StatementEnum } from "@/app/enum";
 import { Operation } from "./Operation";
-import { Divider } from "@mui/material";
+import { Divider, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
 import { getEnumIndex } from "@/app/utilities";
 import { CustomBox } from "./Droppable copy";
 type Props = {
@@ -20,8 +20,8 @@ export function EditorBox(params: Props) {
 
     const [statement, setStatement] = useState<ReactElement | null>(null);
 
-    const handleChange = (event: any, newValue: processTypes | null) => {
-        const index = getEnumIndex(processEnum, newValue?.title ?? processEnum.SetValueToVariableOrArrayElement);
+    const handleChange = (event: SelectChangeEvent) => {
+        const index = getEnumIndex(processEnum, event.target.value as processEnum ?? processEnum.SetValueToVariableOrArrayElement);
         setStatement(StatementEditor(index));
     }
     const StatementEditor: any = (index: number): ReactElement => {
@@ -29,10 +29,11 @@ export function EditorBox(params: Props) {
         const hdnInput = (index: number): ReactElement => {
             return (
                 <div>
-                    <input name="processIndex" type="hidden" value={index}></input>;
+                    <input name="processIndex" type="hidden" value={index}></input>
                 </div>
             )
         }
+
         switch (index) {
             case getEnumIndex(processEnum, processEnum.SetValueToVariableOrArrayElement):
                 return <>
@@ -106,7 +107,7 @@ export function EditorBox(params: Props) {
                     {hdnInput(index)}
                 </>
             default:
-                return <></>;
+                return <></>
         }
     }
 
@@ -117,16 +118,26 @@ export function EditorBox(params: Props) {
         getOptionLabel: (option: processTypes) => option.title,
     };
 
-    const ddl = <Autocomplete
-        {...defaultProps}
-        id="auto-select"
-        autoSelect
-        renderInput={(params) => (
-            <TextField {...params} label="文の内容" variant="standard" />
-        )}
-        onChange={handleChange}
-        defaultValue={result[0]}
-    />
+    // const ddl = <Autocomplete
+    //     {...defaultProps}
+    //     id="auto-select"
+    //     autoSelect
+    //     renderInput={(params) => (
+    //         <TextField {...params} label="文の内容" variant="standard" />
+    //     )}
+    //     onChange={handleChange}
+    //     defaultValue={result[0]}
+    // />
+    const ddl = <Box sx={{ minWidth: 120 }}>
+        <FormControl variant="standard" fullWidth>
+            <InputLabel id="simple-select-outlined-label">文の内容</InputLabel>
+            <Select labelId="simple-select-outlined-label" defaultValue={result[0].title} onChange={handleChange} label="文の内容" >
+                {result.map((item, index) => (
+                    <MenuItem key={index} value={item.title}> {item.title} </MenuItem>
+                ))}
+            </Select>
+        </FormControl>
+    </Box>
 
     switch (params.statementType) {
         case StatementEnum.Output:
@@ -134,21 +145,21 @@ export function EditorBox(params: Props) {
                 <CustomBox>
                     {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.Output))}
                 </CustomBox>
-            </>;
+            </>
         case StatementEnum.Input:
             return <>
                 {ddl}
                 <CustomBox>
                     {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.SetValueToVariableOrArrayElement))}
                 </CustomBox>
-            </>;
+            </>
         case StatementEnum.Condition:
             return <>
                 {ddl}
                 <CustomBox>
                     {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.If))}
                 </CustomBox>
-            </>;
+            </>
         default:
             break;
     }
@@ -185,5 +196,5 @@ const processNames = [
             { title: processEnum.EndIf },
         ]
     },
-];
+]
 
