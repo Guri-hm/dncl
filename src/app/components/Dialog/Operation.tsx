@@ -1,4 +1,4 @@
-import { closestCenter, defaultDropAnimationSideEffects, DndContext, DragOverlay } from "@dnd-kit/core";
+import { defaultDropAnimationSideEffects, DndContext, DragOverlay } from "@dnd-kit/core";
 import { FC, ReactNode, useState } from "react";
 import { Box, Button, Divider, FormHelperText, IconButton, Stack } from '@mui/material';
 import BackspaceIcon from '@mui/icons-material/Backspace';
@@ -7,11 +7,12 @@ import { DnclTextField, DnclTextFieldProps } from "./DnclTextField";
 import { Operator } from "./Operator";
 import { Droppable } from "../Droppable";
 import { bracketEnum, inputTypeEnum, keyPrefixEnum } from "./Enum";
-import { BraketSymbolEnum, LogicalOperationJpEnum, OperationEnum, OperatorTypeJpEnum, StatementEnum } from "@/app/enum";
+import { BraketSymbolEnum, OperationEnum, OperatorTypeJpEnum, StatementEnum } from "@/app/enum";
 import AddIcon from '@mui/icons-material/Add';
 import { useUpdateEffect } from './useUpdateEffect ';
 import { checkParenthesesBalance, enumsToObjects, getValueByKey } from "@/app/utilities";
 import { DroppableOperator } from "../DroppableOperator";
+import { ErrorMsgBox } from "./ErrorMsgBox";
 
 type Props = {
     children?: ReactNode;
@@ -55,7 +56,7 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
             tmpCode = [...tmpCode, ...(termComponents[i].rightOfTermValue ?? [])];
         }
 
-        const result: { isBalanced: boolean, isCorrectOrder: boolean, balance: number, hasEmptyParentheses: boolean } = (checkParenthesesBalance(tmpCode.join('')));
+        const result: { isBalanced: boolean, isCorrectOrder: boolean, balance: number, hasEmptyParentheses: boolean } = (checkParenthesesBalance(tmpCode));
 
         if (!result.isBalanced) {
             if (result.balance > 0) {
@@ -68,7 +69,7 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
             errorArray.push(`『 ${BraketSymbolEnum.RigthBraket} 』の前方には対になる『 ${BraketSymbolEnum.LeftBraket} 』が必要です`);
         }
         if (result.hasEmptyParentheses) {
-            // errorArray.push(`『 ${BraketSymbolEnum.LeftBraket} 』と『 ${BraketSymbolEnum.RigthBraket} 』の内側には要素が必要です`);
+            errorArray.push(`『 ${BraketSymbolEnum.LeftBraket} 』と『 ${BraketSymbolEnum.RigthBraket} 』の内側には要素が必要です`);
         }
         setBraketError(errorArray);
     }
@@ -158,11 +159,7 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
 
     const draggleItems = (statementType: StatementEnum | undefined): ReactNode => {
         const brakets: ReactNode = <>
-            <FormHelperText sx={{ display: 'flex', flexDirection: 'column' }} error >
-                {braketError.map((error, index) => (
-                    <span key={index}> {error} </span>)
-                )}
-            </FormHelperText>
+            <ErrorMsgBox sx={{ display: 'flex', flexDirection: 'column' }} errorArray={braketError}></ErrorMsgBox>
             <Stack direction="row" spacing={2}>
                 <DraggableItem id={bracketEnum.LeftBraket} value={BraketSymbolEnum.LeftBraket} />
                 <DraggableItem id={bracketEnum.RigthBraket} value={BraketSymbolEnum.RigthBraket} />

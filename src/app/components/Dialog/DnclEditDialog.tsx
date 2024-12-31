@@ -13,6 +13,7 @@ import { keyPrefixEnum, processEnum } from './Enum';
 import { ArithmeticOperatorSymbolArrayForDncl, ArithmeticOperatorSymbolArrayForJavascript, BraketSymbolEnum, ComparisonOperatorSymbolArrayForDncl, ComparisonOperatorSymbolArrayForJavascript, OperatorEnum, StatementEnum } from '@/app/enum';
 import { checkParenthesesBalance } from '@/app/utilities';
 import { getEnumIndex } from "@/app/utilities";
+import { ErrorMsgBox } from './ErrorMsgBox';
 
 interface Props {
     editor: DnclEditor;
@@ -108,7 +109,6 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
 
         const sanitizeInput = (targetString: string) => {
             // 許可された文字セット: アルファベット、数字、スペース、および一部の記号（.,!?<>=!&|+-/*()%! など）
-            console.log(targetString)
             const regex = /^[a-zA-Z0-9 \.,!?<>=!&|\+\-\*/\(\)%!]*$/;
 
             if (regex.test(targetString)) {
@@ -321,6 +321,7 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                     <DialogContentText>
                         <StatementDesc statementType={editor.type}></StatementDesc>
                     </DialogContentText>
+                    {/* <ErrorMsgBox sx={{ display: 'flex', flexDirection: 'column' }} errorArray={error}></ErrorMsgBox> */}
                     <EditorBox statementType={editor.type}></EditorBox>
                 </DialogContent>
                 <DialogActions>

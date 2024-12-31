@@ -27,9 +27,9 @@ export function EditorBox(params: Props) {
 
         const hdnInput = (index: number): ReactElement => {
             return (
-                <>
+                <div>
                     <input name="processIndex" type="hidden" value={index}></input>;
-                </>
+                </div>
             )
         }
         switch (index) {
@@ -39,7 +39,7 @@ export function EditorBox(params: Props) {
                         <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArray}></DnclTextField>
                         <Operator type={OperationEnum.SimpleAssignment}></Operator>
                     </Operation>
-                    {hdnInput}
+                    {hdnInput(index)}
                 </>
 
             case getEnumIndex(processEnum, processEnum.InitializeArray):
@@ -48,7 +48,7 @@ export function EditorBox(params: Props) {
                     <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.ArrayWithoutSuffix}></DnclTextField>
                     <Operator type={OperationEnum.SimpleAssignment}></Operator>
                     <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.InitializeArray} label=""></DnclTextField>
-                    {hdnInput}
+                    {hdnInput(index)}
                 </>
             case getEnumIndex(processEnum, processEnum.BulkAssignToArray):
                 return <>
@@ -56,7 +56,7 @@ export function EditorBox(params: Props) {
                     <NowrapText text={'のすべての要素に'}></NowrapText>
                     <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SwitchVariableOrNumberOrArray}></DnclTextField>
                     <NowrapText text={'を代入する'}></NowrapText>
-                    {hdnInput}
+                    {hdnInput(index)}
                 </>
             case getEnumIndex(processEnum, processEnum.Increment):
             case getEnumIndex(processEnum, processEnum.Decrement):
@@ -65,14 +65,14 @@ export function EditorBox(params: Props) {
                     <NowrapText text={'を'}></NowrapText>
                     <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SwitchVariableOrArray}></DnclTextField>
                     <NowrapText text={index == getEnumIndex(processEnum, processEnum.Increment) ? '増やす' : '減らす'}></NowrapText>
-                    {hdnInput}
+                    {hdnInput(index)}
                 </>
             case getEnumIndex(processEnum, processEnum.Output):
                 return <>
                     <Operation statementType={params.statementType}></Operation>
                     <Divider orientation="vertical" flexItem />
                     <NowrapText text={'を表示する'}></NowrapText>
-                    {hdnInput}
+                    {hdnInput(index)}
                 </>
             case getEnumIndex(processEnum, processEnum.If):
                 return <>
@@ -82,7 +82,7 @@ export function EditorBox(params: Props) {
                     </Operation>
                     <Divider sx={{ marginLeft: 1 }} orientation="vertical" flexItem />
                     <NowrapText text={'ならば'}></NowrapText>
-                    {hdnInput}
+                    {hdnInput(index)}
                 </>
             case getEnumIndex(processEnum, processEnum.ElseIf):
                 return <>
@@ -92,17 +92,17 @@ export function EditorBox(params: Props) {
                     </Operation>
                     <Divider sx={{ marginLeft: 1 }} orientation="vertical" flexItem />
                     <NowrapText text={'ならば'}></NowrapText>
-                    {hdnInput}
+                    {hdnInput(index)}
                 </>
             case getEnumIndex(processEnum, processEnum.Else):
                 return <>
                     <NowrapText text={'を実行し，そうでなければ'}></NowrapText>
-                    {hdnInput}
+                    {hdnInput(index)}
                 </>
             case getEnumIndex(processEnum, processEnum.EndIf):
                 return <>
                     <NowrapText text={'を実行する'}></NowrapText>
-                    {hdnInput}
+                    {hdnInput(index)}
                 </>
             default:
                 return <></>;
