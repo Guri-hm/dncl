@@ -261,3 +261,31 @@ export function searchEnumValue<T>(enumObj: T, key: string | null): T[keyof T] |
   const keys = getEnumKeys(enumObj as Object);
   return keys.includes(key as keyof Object) ? getEnumValueByKey(enumObj, key) : null;
 };
+
+export function checkParenthesesBalance(input: string): { isBalanced: boolean, isCorrectOrder: boolean, balance: number, hasEmptyParentheses: boolean } {
+  let balance = 0;
+  let isCorrectOrder = true;
+  let hasEmptyParentheses = false;
+
+  for (let i = 0; i < input.length; i++) {
+    const char = input[i];
+    if (char === '(') {
+      if (input[i + 1] === ')') {
+        hasEmptyParentheses = true;
+      }
+      balance++;
+    } else if (char === ')') {
+      if (balance === 0) {
+        isCorrectOrder = false;
+      }
+      balance--;
+    }
+  }
+
+  return {
+    isBalanced: balance === 0,
+    isCorrectOrder: isCorrectOrder,
+    balance: balance,
+    hasEmptyParentheses: hasEmptyParentheses
+  };
+}

@@ -20,12 +20,10 @@ function getEnumIndex<T extends Record<string, string | number>>(enumObj: T, val
 
 export function StatementEditor(params: Props) {
 
-    const [processIndex, setProcessIndex] = useState<number>(0);
     const [statement, setStatement] = useState<ReactElement | null>(null);
 
     const handleChange = (event: any, newValue: processTypes | null) => {
         const index = getEnumIndex(processEnum, newValue?.title ?? processEnum.SetValueToVariableOrArrayElement);
-        setProcessIndex(index);
         setStatement(getStatement(index));
     }
     const getStatement: any = (index: number): ReactElement => {

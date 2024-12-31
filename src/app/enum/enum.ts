@@ -25,7 +25,10 @@ export enum ComparisonOperatorSymbolArrayForJavascript {
   GreaterThanOrEqualToOperator = '>=',
   LessThanOperator = '<',
   LessThanOrEqualToOperator = '<=',
-  NullOperator = '',
+  NotUsed = '',
+  // And = '&&',
+  // Or = '||',
+  // Not = '!',
 }
 export enum ComparisonOperatorSymbolArrayForDncl {
   EqualToOperator = '=',

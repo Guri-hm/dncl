@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { Fragment, useState } from 'react';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -10,7 +10,8 @@ import { StatementName } from './StatementName';
 import { StatementDesc } from './StatementDesc';
 import { StatementEditor } from './StatementEditor';
 import { keyPrefixEnum } from './Enum';
-import { OperatorEnum, StatementEnum } from '@/app/enum';
+import { BraketSymbolEnum, OperatorEnum, StatementEnum } from '@/app/enum';
+import { checkParenthesesBalance } from '@/app/utilities';
 
 interface Props {
     editor: DnclEditor;
@@ -21,7 +22,7 @@ interface Props {
 function convertToJavaScript(str: string) {
     // 置換規則を定義
     const replacements = [
-        { regex: /\s*また\s*/g, replacement: ' || ' },
+        { regex: /\s*または\s*/g, replacement: ' || ' },
         { regex: /\s*かつ\s*/g, replacement: ' && ' },
         // { regex: /でない/g, replacement: '!' }
     ];
@@ -34,118 +35,8 @@ function convertToJavaScript(str: string) {
     return str;
 }
 
-// 使用例
-let input = "a < 1 または b = 1";
-let output = convertToJavaScript(input);
-
-console.log(output); // "a < 1 || b = 1"
-
-
-
-function convertJapaneseLogicalExpression(expression) {
-    return expression
-        .replace(/でない/g, '!')
-        .replace(/かつ/g, '&&')
-        .replace(/または/g, '||')
-        .replace(/がない/g, '=== false');
-}
-function replaceNegation(expression) {
-    return expression.replace(/\(([^)]+)\)!/g, '!($1)');
-}
-
-// テスト
-const testString = "(1 > 2)!";
-const replacedString = replaceNegation(testString);
-
-// console.log(replacedString); // 出力: !(1 > 2)
-
-function isValidLogicalExpression(expression) {
-    const validCharactersRegex = /^[\d\s()&|!><=]+$/;
-    const validLogicalExpressionRegex = /^(true|false|\d+|([!()&|><=\s])+)+$/;
-
-    const convertedExpression = convertJapaneseLogicalExpression(expression);
-
-    // 文字列に許可された文字のみが含まれているかチェック
-    if (!validCharactersRegex.test(convertedExpression)) {
-        return false;
-    }
-
-    // 論理演算子と値の整合性をチェック
-    if (!validLogicalExpressionRegex.test(convertedExpression)) {
-        return false;
-    }
-
-    // 括弧のバランスをチェック
-    let balance = 0;
-    for (let char of convertedExpression) {
-        if (char === '(') {
-            balance++;
-        } else if (char === ')') {
-            balance--;
-        }
-        if (balance < 0) {
-            return false;
-        }
-    }
-    return balance === 0;
-}
-
-// テスト
-const testExpression1 = "(1 > 2)でない かつ (3 <= 4)";
-const testExpression2 = "1 または false";
-const testExpression3 = "true かつ (false または !(true))";
-const testExpression4 = "invalid expression";
-const testExpression5 = "(1) かつ (2 > 3";
-
-// console.log(isValidLogicalExpression(testExpression1)); // 出力: true
-// console.log(isValidLogicalExpression(testExpression2)); // 出力: true
-// console.log(isValidLogicalExpression(testExpression3)); // 出力: true
-// console.log(isValidLogicalExpression(testExpression4)); // 出力: false
-// console.log(isValidLogicalExpression(testExpression5)); // 出力: false
-
-const refineStatement = (data: { [k: string]: string; }, statementType: StatementEnum, keywordPart: keyPrefixEnum) => {
-    const obj = Object.fromEntries(Object.entries(data).filter(([key, value]) => key.includes(keywordPart)));
-
-    //添字は前後に[]をつける
-    const updatedObj: { [k: string]: string; } = {};
-    for (const key in obj) {
-        if (key.includes(keyPrefixEnum.Suffix)) {
-            updatedObj[key] = `[${obj[key]}]`;
-        } else {
-            updatedObj[key] = obj[key];
-        }
-    }
-
-    const maxRigthSideIndex = Object.keys(obj)
-        .filter(key => key.startsWith(`${keywordPart}_`))
-        .map(key => parseInt(key.split("_")[1], 10))
-        .reduce((max, current) => (current > max ? current : max), -1);
-
-    const pushNotEmptyString = (array: string[], pushedString: string) => {
-        if (pushedString == "") return;
-        array.push(pushedString);
-    }
-
-    const cnvUndefinedToEmptyString = (targetString: string | undefined) => {
-        if (!(targetString)) return "";
-        //オブジェクト内のundefinedは文字列の'undefined'になっている
-        if (targetString == 'undefined') return "";
-        return targetString;
-    }
-
-    let tmp: string[] = [];
-    for (let i = 0; i <= maxRigthSideIndex; i++) {
-        pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.Operator}`]));
-        pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.LeftOfTerm}`]));
-        pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}`]));
-        pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.Suffix}`]));
-        pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.RightOfTerm}`]));
-    }
-
-    const statement = tmp.join(' ');
-    const convertedStr = convertToJavaScript(statement);
-    console.log(convertedStr);
-    return statement;
+function transformNegation(str: string) {
+    return str.replace(/\(([^()]+)\)でない/g, '!($1)').replace(/([^()]+)でない/g, '!($1)');
 }
 
 const getOperator = (statementType: StatementEnum) => {
@@ -160,6 +51,87 @@ const getOperator = (statementType: StatementEnum) => {
 
 export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) {
 
+    const [error, setError] = useState<string[]>([]);
+
+    const checkBraketPair = (targetString: string) => {
+
+        let errorArray: string[] = [];
+
+        const result: { isBalanced: boolean, isCorrectOrder: boolean, balance: number, hasEmptyParentheses: boolean } = (checkParenthesesBalance(targetString));
+
+        if (!result.isBalanced) {
+            if (result.balance > 0) {
+                errorArray.push(`『 ${BraketSymbolEnum.RigthBraket} 』を追加してください`);
+            } else {
+                errorArray.push(`『 ${BraketSymbolEnum.LeftBraket} 』を追加してください`);
+            }
+        }
+        if (!result.isCorrectOrder) {
+            errorArray.push(`『 ${BraketSymbolEnum.RigthBraket} 』の前方には対になる『 ${BraketSymbolEnum.LeftBraket} 』が必要です`);
+        }
+        if (result.hasEmptyParentheses) {
+            errorArray.push(`『 ${BraketSymbolEnum.LeftBraket} 』と『 ${BraketSymbolEnum.RigthBraket} 』の内側には要素が必要です`);
+        }
+        setError(errorArray);
+        if (errorArray.length > 0) {
+            return false;
+        }
+        return true;
+    }
+
+    const checkStatement = (data: { [k: string]: string; }, statementType: StatementEnum, keywordPart: keyPrefixEnum): boolean => {
+        const obj = Object.fromEntries(Object.entries(data).filter(([key, value]) => key.includes(keywordPart)));
+
+        //添字は前後に[]をつける
+        const updatedObj: { [k: string]: string; } = {};
+        for (const key in obj) {
+            if (key.includes(keyPrefixEnum.Suffix)) {
+                updatedObj[key] = `[${obj[key]}]`;
+            } else {
+                updatedObj[key] = obj[key];
+            }
+        }
+
+        const maxRigthSideIndex = Object.keys(obj)
+            .filter(key => key.startsWith(`${keywordPart}_`))
+            .map(key => parseInt(key.split("_")[1], 10))
+            .reduce((max, current) => (current > max ? current : max), -1);
+
+        const pushNotEmptyString = (array: string[], pushedString: string) => {
+            if (pushedString == "") return;
+            array.push(pushedString);
+        }
+
+        const cnvUndefinedToEmptyString = (targetString: string | undefined) => {
+            if (!(targetString)) return "";
+            //オブジェクト内のundefinedは文字列の'undefined'になっている
+            if (targetString == 'undefined') return "";
+            return targetString;
+        }
+
+        let tmp: string[] = [];
+        for (let i = 0; i <= maxRigthSideIndex; i++) {
+            pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.Operator}`]));
+            pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.LeftOfTerm}`]));
+            pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}`]));
+            pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.Suffix}`]));
+            pushNotEmptyString(tmp, cnvUndefinedToEmptyString(updatedObj[`${keywordPart}_${i}_${keyPrefixEnum.RightOfTerm}`]));
+        }
+
+        const statement = tmp.join(' ');
+        console.log(statement);
+        const convertedStr = convertToJavaScript(statement);
+        console.log(convertedStr);
+        let result = checkBraketPair(convertedStr);
+        if (!result) {
+            console.log("括弧の位置に誤りがあります");
+        }
+        const dnclStatement = transformNegation(convertedStr);
+        console.log(dnclStatement);
+
+        // console.log(resutl);
+    }
+
     const handleClickOpen = () => {
         setEditor((prevState: DnclEditor) => ({ ...prevState, open: true }));
     };
@@ -170,20 +142,25 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
     };
 
     return (
-        <React.Fragment>
+        <Fragment>
             <Dialog
                 open={editor.open}
                 onClose={handleClose}
                 PaperProps={{
                     component: 'form',
                     onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
+
+
                         event.preventDefault();
                         const formData = new FormData(event.currentTarget);
                         const formJson = Object.fromEntries((formData as any).entries());
-                        const leftside = refineStatement(formJson, editor.type, keyPrefixEnum.LeftSide);
-                        const rightside = refineStatement(formJson, editor.type, keyPrefixEnum.RigthSide);
+                        // const leftside = checkStatement(formJson, editor.type, keyPrefixEnum.LeftSide);
+                        const rightside = checkStatement(formJson, editor.type, keyPrefixEnum.RigthSide);
+                        // const leftside = refineStatement(formJson, editor.type, keyPrefixEnum.LeftSide);
+                        // const rightside = refineStatement(formJson, editor.type, keyPrefixEnum.RigthSide);
                         const operator = getOperator(editor.type);
 
+                        return;
                         switch (editor.type) {
                             case StatementEnum.Condition:
 
@@ -207,10 +184,11 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                     <StatementEditor statementType={editor.type}></StatementEditor>
                 </DialogContent>
                 <DialogActions>
+                    {error.join('')}
                     <Button onClick={handleClose}>キャンセル</Button>
                     <Button type="submit">挿入</Button>
                 </DialogActions>
             </Dialog>
-        </React.Fragment >
+        </Fragment >
     );
 }

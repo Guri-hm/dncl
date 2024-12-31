@@ -128,7 +128,7 @@ export function DnclTextField({ name, inputType, index = 0, ...params }: DnclTex
         //変数と配列を切り替え可能
         return (
           <>
-            <Grid container spacing={0} direction='column'>
+            <Grid container spacing={0} direction='column' sx={{ marginBottom: 1 }}>
               <Grid container direction='row'>
                 <Grid size='grow'>
                   <ValidatedTextField name={`${name}_${index}`} label={label} pattern={pattern}></ValidatedTextField>

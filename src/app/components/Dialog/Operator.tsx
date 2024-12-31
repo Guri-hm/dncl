@@ -108,21 +108,9 @@ function LessThanOrEqualToOperator(props: SvgIconProps) {
     </SvgIcon>
   );
 }
-function AAA(props: SvgIconProps) {
-  return (
-    <SvgIcon {...props} sx={{ width: '40px' }}>
-      <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg">
-        <text x="0" y="20" fontSize="20" fill="currentColor">または</text>
-      </svg>
 
-    </SvgIcon>
-  );
-}
-
-const TextIcon: React.FC<SvgIconProps & { text: string }> = ({ text, ...props }) => (
-  <SvgIcon {...props}>
-    <text x="0" y="20" fontSize="30">{text}</text>
-  </SvgIcon>
+const TextIcon: React.FC<any & { text: string }> = ({ text, ...props }) => (
+  <Typography noWrap {...props}>{text}</Typography>
 )
 
 type Props = {
@@ -142,16 +130,16 @@ const ArithmeticOperatorArray: React.FC<SvgIconProps>[] = [
 ];
 
 const ComparisonOperatorArray: React.FC<SvgIconProps>[] = [
-  AAA,
+
   EqualToOperator,
   NotEqualToOperator,
   GreaterThanOperator,
   GreaterThanOrEqualToOperator,
   LessThanOperator,
   LessThanOrEqualToOperator,
-  (props) => <NotInterestedIcon {...props} sx={{ color: 'gray', opacity: 0.5 }} />,
-  // (props) => <TextIcon {...props} text="または" />,
+  (props) => <NotInterestedIcon {...props} sx={{ color: 'gray', opacity: 0.2 }} />,
   // (props) => <TextIcon {...props} text="かつ" />,
+  // (props) => <TextIcon {...props} text="または" />,
   // (props) => <TextIcon {...props} text="でない" />
 ];
 

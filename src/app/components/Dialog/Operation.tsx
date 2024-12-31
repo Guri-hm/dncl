@@ -10,7 +10,7 @@ import { bracketEnum, inputTypeEnum, keyPrefixEnum, LogicalOperationEnum } from 
 import { BraketSymbolEnum, LogicalOperationJpEnum, OperationEnum, StatementEnum } from "@/app/enum";
 import AddIcon from '@mui/icons-material/Add';
 import { useUpdateEffect } from './useUpdateEffect ';
-import { enumsToObjects, getValueByKey } from "@/app/utilities";
+import { checkParenthesesBalance, enumsToObjects, getValueByKey } from "@/app/utilities";
 
 type Props = {
     children?: ReactNode;
@@ -36,7 +36,7 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
     const [termComponents, setTermComponents] = useState<DnclTextFieldProps[]>([{ name: keyPrefixEnum.RigthSide }]);
     const [activeId, setActiveId] = useState<string>("");
     const [braketError, setBraketError] = useState<string[]>([]);
-    const [logicalOperatorError, setLogicalOperatorError] = useState<string>("");
+    const [logicalOperatorError, setLogicalOperatorError] = useState<string[]>([]);
 
     //初回レンダリング時に実行しない
     useUpdateEffect(() => {
@@ -48,34 +48,6 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
     const checkBraketPair = () => {
 
         let errorArray: string[] = [];
-
-        function checkParenthesesBalance(input: string): { isBalanced: boolean, isCorrectOrder: boolean, balance: number, hasEmptyParentheses: boolean } {
-            let balance = 0;
-            let isCorrectOrder = true;
-            let hasEmptyParentheses = false;
-
-            for (let i = 0; i < input.length; i++) {
-                const char = input[i];
-                if (char === '(') {
-                    if (input[i + 1] === ')') {
-                        hasEmptyParentheses = true;
-                    }
-                    balance++;
-                } else if (char === ')') {
-                    if (balance === 0) {
-                        isCorrectOrder = false;
-                    }
-                    balance--;
-                }
-            }
-
-            return {
-                isBalanced: balance === 0,
-                isCorrectOrder: isCorrectOrder,
-                balance: balance,
-                hasEmptyParentheses: hasEmptyParentheses
-            };
-        }
 
         let tmpCode: string[] = [];
         for (let i = 0; i < termComponents.length; i++) {
@@ -149,16 +121,20 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
         let newArray: string[] = [];
         let propertyName = '';
         const draggingString = getValueByKey(draggableStringList, activeId);
-        setLogicalOperatorError("");
+        let errorArray: string[] = [];
+
+        if (overIdSplitArray[2] == keyPrefixEnum.LeftOfTerm && draggingString == LogicalOperationJpEnum.Not) {
+
+            //左側「でない」の論理演算子を禁止
+            errorArray.push(`「${LogicalOperationJpEnum.Not}」は左側で使用できません`);
+        }
         if (overIdSplitArray[2] == keyPrefixEnum.LeftOfTerm && Number(overIdSplitArray[1]) == 0) {
 
-            //先頭で「かつ」「または」「でない」の論理演算子を禁止
+            //先頭で「かつ」「または」の論理演算子を禁止
             switch (draggingString) {
                 case LogicalOperationJpEnum.And:
                 case LogicalOperationJpEnum.Or:
-                case LogicalOperationJpEnum.Not:
-                    setLogicalOperatorError(`「${LogicalOperationJpEnum.And}」「${LogicalOperationJpEnum.Or}」「${LogicalOperationJpEnum.Not}」は先頭で使用できません`);
-                    return;
+                    errorArray.push(`「${LogicalOperationJpEnum.And}」「${LogicalOperationJpEnum.Or}」「${LogicalOperationJpEnum.Not}」は先頭で使用できません`);
             }
         }
         if (overIdSplitArray[2] == keyPrefixEnum.RightOfTerm && Number(overIdSplitArray[1]) == termComponents.length - 1) {
@@ -166,11 +142,13 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
             switch (draggingString) {
                 case LogicalOperationJpEnum.And:
                 case LogicalOperationJpEnum.Or:
-                    setLogicalOperatorError(`「${LogicalOperationJpEnum.And}」「${LogicalOperationJpEnum.Or}」は末尾で使用できません`);
-                    return;
+                    errorArray.push(`「${LogicalOperationJpEnum.And}」「${LogicalOperationJpEnum.Or}」は末尾で使用できません`);
             }
         }
-
+        setLogicalOperatorError(errorArray);
+        if (errorArray.length > 0) {
+            return;
+        }
         if (overIdSplitArray[2] == keyPrefixEnum.LeftOfTerm) {
             newArray = (item.leftOfTermValue ?? []).concat(draggingString);
             propertyName = 'leftOfTermValue';
@@ -206,7 +184,11 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
             case StatementEnum.Condition:
                 return <DraggableOperatorsBox>
                     {brakets}
-                    <FormHelperText sx={{ display: 'flex', alignItems: 'center' }} error >{logicalOperatorError}</FormHelperText>
+                    <FormHelperText sx={{ display: 'flex', flexDirection: 'column' }} error >
+                        {logicalOperatorError.map((error, index) => (
+                            <span key={index}> {error} </span>)
+                        )}
+                    </FormHelperText>
                     <Stack direction="row" spacing={1}>
                         <DraggableItem id={LogicalOperationEnum.And} value={LogicalOperationJpEnum.And} />
                         <DraggableItem id={LogicalOperationEnum.Or} value={LogicalOperationJpEnum.Or} />
@@ -283,10 +265,10 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
                     <Box>
                         {termComponents.map((component, index) => (
                             <Stack direction="row" spacing={0} key={`${component.name}_${index}`}>
-                                <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfTerm}`} isDragging={isDragging} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfTerm}`)}>{component.leftOfTermValue?.join('')}</Droppable>
                                 {index > 0 && <Operator name={`${component.name}`} parentIndex={index} type={getOperationType(statementType)}></Operator>}
+                                <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfTerm}`} isDragging={isDragging} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfTerm}`)} stringArray={component.leftOfTermValue}>{component.leftOfTermValue?.join('')}</Droppable>
                                 <DnclTextField name={`${component.name}`} index={index} inputType={getSwitchType(statementType)} />
-                                <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfTerm}`} isDragging={isDragging} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfTerm}`)}>{component.rightOfTermValue?.join('')}</Droppable>
+                                <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfTerm}`} isDragging={isDragging} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfTerm}`)} stringArray={component.rightOfTermValue}>{component.rightOfTermValue?.join('')}</Droppable>
                                 {(index == termComponents.length - 1 && index != 0) && <IconButton aria-label="delete" onClick={() => removeTermComponent(index)}><BackspaceIcon /></IconButton>}
                             </Stack>
                         ))}

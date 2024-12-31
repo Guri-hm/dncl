@@ -8,10 +8,11 @@ type DroppableProp = {
     children: ReactNode;
     id: string
     isDragging: boolean;
-    onClick?: any
+    onClick?: any;
+    stringArray?: string[];
 };
 
-export const Droppable: FC<DroppableProp> = ({ children, id, isDragging, onClick }) => {
+export const Droppable: FC<DroppableProp> = ({ children, id, isDragging, onClick, stringArray = [] }) => {
     const {
         setNodeRef,
         isOver
@@ -32,7 +33,7 @@ export const Droppable: FC<DroppableProp> = ({ children, id, isDragging, onClick
             }}
         >
             <Button onClick={onClick} size="large" sx={{ paddingLeft: '5px', paddingRight: '5px', minWidth: 0, fontWeight: 700 }}>{children}</Button>
-            <input type="hidden" name={id} value={`${children}`} />
+            <input type="hidden" name={id} value={`${stringArray.join(' ')}`} />
         </Grid>
     )
 }
