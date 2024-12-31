@@ -15,14 +15,14 @@ type DroppableProp = {
     type?: OperationEnum
 };
 
-export const DroppableOperator: FC<DroppableProp> = ({ id, name, isDragging, endOfArrayEvent, type, parentIndex, }) => {
+export const DroppableOperator: FC<DroppableProp> = ({ id, name, isDragging, endOfArrayEvent, type, parentIndex, event }) => {
     const {
         setNodeRef,
         isOver
     } = useDroppable({
         id
     })
-    //Buttonコンポーネントはmin-widthが64pxに設定されているので明示的に0pxに再設定する
+
     return (
         <Grid size="auto"
             ref={setNodeRef}

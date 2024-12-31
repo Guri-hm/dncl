@@ -266,16 +266,12 @@ export function searchEnumValue<T>(enumObj: T, key: string | null): T[keyof T] |
   return keys.includes(key as keyof Object) ? getEnumValueByKey(enumObj, key) : null;
 };
 
-export const hasEmptyParentheses = (str: string) => {
-  const regex = /\(\s*\)/;
-  return regex.test(str);
-}
 export function checkParenthesesBalance(strArray: string[]): { isBalanced: boolean, isCorrectOrder: boolean, balance: number, hasEmptyParentheses: boolean } {
   let balance = 0;
   let isCorrectOrder = true;
   let hasEmptyParentheses = false;
 
-  const regex = /\(\s*\)/;
+  const regex = /\(\)/;
   for (let i = 0; i < strArray.length; i++) {
     if (regex.test(strArray[i])) {
       hasEmptyParentheses = true;
@@ -286,9 +282,6 @@ export function checkParenthesesBalance(strArray: string[]): { isBalanced: boole
   for (let i = 0; i < input.length; i++) {
     const char = input[i];
     if (char === '(') {
-      if (input[i + 1] === ')') {
-        hasEmptyParentheses = true;
-      }
       balance++;
     } else if (char === ')') {
       if (balance === 0) {

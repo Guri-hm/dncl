@@ -33,7 +33,7 @@ export const Droppable: FC<DroppableProp> = ({ children, id, isDragging, onClick
                 paddingRight: isDragging ? '10px' : 0,
             }}
         >
-            <Button onClick={onClick} size="large" sx={{ paddingLeft: '8px', paddingRight: '8px', minWidth: 0, fontWeight: 700 }}>{children}</Button>
+            <Button onClick={onClick} size="large" sx={{ paddingLeft: isDragging || stringArray.length > 0 ? '8px' : 0, paddingRight: isDragging || stringArray.length > 0 ? '8px' : 0, minWidth: 0, fontWeight: 700 }}>{children}</Button>
             <input type="hidden" name={id} value={`${stringArray.join(' ')}`} />
         </Grid>
     )

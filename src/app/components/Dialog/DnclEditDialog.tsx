@@ -101,17 +101,20 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
         //添字は前後に[]をつける
         const updatedObj = updateObjWithSquareBrackets(obj);
 
-        //項の数を取得
+        //オペランドの数を取得
         const termsMaxIndex = Object.keys(obj)
             .filter(key => key.startsWith(`${keywordPart}_`))
             .map(key => parseInt(key.split("_")[1], 10))
             .reduce((max, current) => (current > max ? current : max), -1);
 
         const sanitizeInput = (targetString: string) => {
-            // 許可された文字セット: アルファベット、数字、スペース、および一部の記号（.,!?<>=!&|+-/*()%! など）
-            const regex = /^[a-zA-Z0-9 \.,!?<>=!&|\+\-\*/\(\)%!]*$/;
+            // 許可された文字セット: アルファベット、数字、スペース、および一部の記号、日本語 
+            const regex = /^[a-zA-Z0-9 ぁ-んァ-ンｧ-ﾝﾞﾟ一-龠々 \.,!?<>=!&|\+\-\*/\(\)%!""\[\]]*$/;
 
-            if (regex.test(targetString)) {
+            // 制御文字（ASCII 0 - 31）を排除 
+            const controlChars = /[\x00-\x1F]/;
+
+            if (regex.test(targetString) && !controlChars.test(targetString)) {
                 return targetString;
             } else {
                 throw new Error("Invalid characters in input.");
@@ -122,15 +125,17 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
             return unsafe
                 // 単独の & をエスケープし、&& の前後にスペースがある場合はエスケープしない 
                 .replace(/(?<!&)&(?!&)/g, "&amp;")
-                .replace(/"/g, "&quot;")
+                // .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
         }
 
         const isValidExpression = (targetString: string) => {
+
             try {
                 new Function(`return ${targetString}`);
                 return true;
             } catch (e) {
+                setError(["不適切な構文です"]);
                 return false;
             }
         }
@@ -165,10 +170,17 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
         try {
             statement = sanitizeInput(statement);
         } catch (e: any) {
+            console.log(statement)
             setError(["不適切な文字が使用されています"]);
             return false;
         }
+        //表示文では「と」が入るので、Function関数が実行できない
+        //サニタイジング後に「と」は「&」に置換する
 
+        const replaceToWithAmpersand = (targetString: string) => {
+            return targetString.replace(/ と /g, ' & ')
+        };
+        statement = replaceToWithAmpersand(statement);
         //Function関数で実行し、エラーがあるかチェック
         return isValidExpression(statement);
     }
@@ -190,7 +202,12 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
             }
             pushNotEmptyString(strArray, cnvUndefinedToEmptyString(obj[`${keywordPart}_${i}_${keyPrefixEnum.Operator}`]));
             pushNotEmptyString(strArray, cnvUndefinedToEmptyString(obj[`${keywordPart}_${i}_${keyPrefixEnum.LeftOfTerm}`]));
-            pushNotEmptyString(strArray, cnvUndefinedToEmptyString(obj[`${keywordPart}_${i}`]));
+
+            if (cnvUndefinedToEmptyString(obj[`${keywordPart}_${i}_${keyPrefixEnum.String}`]) == 'true') {
+                pushNotEmptyString(strArray, `"${cnvUndefinedToEmptyString(obj[`${keywordPart}_${i}`])}"`);
+            } else {
+                pushNotEmptyString(strArray, cnvUndefinedToEmptyString(obj[`${keywordPart}_${i}`]));
+            };
             pushNotEmptyString(strArray, cnvUndefinedToEmptyString(obj[`${keywordPart}_${i}_${keyPrefixEnum.Suffix}`]));
             pushNotEmptyString(strArray, cnvUndefinedToEmptyString(obj[`${keywordPart}_${i}_${keyPrefixEnum.RightOfTerm}`]));
             pushNotEmptyString(strArray, cnvUndefinedToEmptyString(obj[`${keywordPart}_${i}_${keyPrefixEnum.Negation}`]));
@@ -218,7 +235,7 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
         //キーワードを含むオブジェクトを取得
         const obj = Object.fromEntries(Object.entries(data).filter(([key, value]) => key.includes(keywordPart)));
 
-        //項の数を取得
+        //オペランドの数を取得
         const termsMaxIndex = Object.keys(obj)
             .filter(key => key.startsWith(`${keywordPart}_`))
             .map(key => parseInt(key.split("_")[1], 10))
@@ -238,10 +255,6 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
 
         return strArray.join(' ')
     }
-
-    const handleClickOpen = () => {
-        setEditor((prevState: DnclEditor) => ({ ...prevState, open: true }));
-    };
 
     const handleClose = () => {
         setEditor((prevState: DnclEditor) => ({ ...prevState, open: false }));
@@ -269,9 +282,6 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                         let rightside = getDnclStatement(formJson, editor.type, keyPrefixEnum.RigthSide);
 
                         let processPhrase = "";
-                        console.log(leftside)
-                        console.log(rightside)
-
                         switch (Number(formJson.processIndex)) {
                             case getEnumIndex(processEnum, processEnum.SetValueToVariableOrArrayElement):
                                 processPhrase = `${leftside} ${operator} ${rightside}`;
@@ -290,6 +300,7 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                                 break;
 
                             case getEnumIndex(processEnum, processEnum.Output):
+                                processPhrase = `${rightside}を表示する`;
                                 break;
 
                             case getEnumIndex(processEnum, processEnum.If):

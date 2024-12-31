@@ -46,8 +46,13 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
 
     const draggableStringList = enumsToObjects([BraketSymbolEnum, OperatorTypeJpEnum]);
 
+    const checkOperator = (index: number) => {
+        setBraketError([...braketError, 'ドリアン'])
+    }
+
     const checkBraketPair = () => {
 
+        console.log(termComponents)
         let errorArray: string[] = [];
 
         let tmpCode: string[] = [];
@@ -89,7 +94,7 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
             return array;
         }
 
-        //(左辺または右辺)_(項のインデックス)_(項の左側または右側)という文字列を想定
+        //(左辺または右辺)_(オペランドのインデックス)_(オペランドの左側または右側)という文字列を想定
         const overIdSplitArray = id.split('_');
         const item: DnclTextFieldProps | undefined = termComponents.find((item: DnclTextFieldProps, i: number) =>
             i === Number(overIdSplitArray[1]
@@ -113,7 +118,7 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
     }
 
     const setOperator = (id: string) => {
-        //(左辺または右辺)_(項のインデックス)_(項の左側または右側)という文字列を想定
+        //(左辺または右辺)_(オペランドのインデックス)_(オペランドの左側または右側)という文字列を想定
         const overIdSplitArray = id.split('_');
         let propertyName = 'operator';
         //プロパティに変数を使うときは[]をつける
@@ -133,7 +138,7 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
 
     const addOneSideOfTerm = (id: string) => {
 
-        //(左辺または右辺)_(項のインデックス)_(項の左側または右側)という文字列を想定
+        //(左辺または右辺)_(オペランドのインデックス)_(オペランドの左側または右側)という文字列を想定
         const overIdSplitArray = id.split('_');
         const item: DnclTextFieldProps | undefined = termComponents.find((item: DnclTextFieldProps, i: number) =>
             i === Number(overIdSplitArray[1]
@@ -160,6 +165,11 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
     const draggleItems = (statementType: StatementEnum | undefined): ReactNode => {
         const brakets: ReactNode = <>
             <ErrorMsgBox sx={{ display: 'flex', flexDirection: 'column' }} errorArray={braketError}></ErrorMsgBox>
+            {termComponents.map((component, index) => (
+                !component.operator && index > 0 ?
+                    <ErrorMsgBox sx={{ display: 'flex', flexDirection: 'column' }} errorArray={[`${index}番目と${index + 1}番目のオペランドの間に演算子が必要です`]}></ErrorMsgBox>
+                    : null
+            ))}
             <Stack direction="row" spacing={2}>
                 <DraggableItem id={bracketEnum.LeftBraket} value={BraketSymbolEnum.LeftBraket} />
                 <DraggableItem id={bracketEnum.RigthBraket} value={BraketSymbolEnum.RigthBraket} />
@@ -169,8 +179,11 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
             case StatementEnum.Input:
                 return <DraggableOperatorsBox>
                     {brakets}
+                    <Stack direction="row" spacing={2} sx={{ marginTop: 1 }}>
+                        <DraggableItem id={OperationEnum.Arithmetic} value={OperatorTypeJpEnum.Arithmetic} />
+                    </Stack>
                 </DraggableOperatorsBox>
-                    ;
+
             case StatementEnum.Condition:
                 return <DraggableOperatorsBox>
                     {brakets}
@@ -180,7 +193,7 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
                         <DraggableItem id={OperationEnum.Logical} value={OperatorTypeJpEnum.Logical} />
                     </Stack>
                 </DraggableOperatorsBox>
-                    ;
+
             default:
                 return null;
         }
@@ -252,19 +265,24 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
                         {termComponents.map((component, index) => (
                             <Stack direction="row" spacing={0} key={`${component.name}_${index}`}>
                                 {(index != 0) && <DroppableOperator id={`${component.name}_${index}_${keyPrefixEnum.Operator}`} name={`${component.name}`} parentIndex={index} isDragging={isDragging && isActiveIdOperator(activeId)} endOfArrayEvent={() => removeOperator(index)} type={component.operator}></DroppableOperator>}
-
+                                {
+                                    (statementType == StatementEnum.Output && index > 0) &&
+                                    <Operator name={`${component.name}`} parentIndex={index} type={OperationEnum.JoinString}></Operator>
+                                }
                                 <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfTerm}`} isDragging={isDragging && isNotActiveIdOperator(activeId)} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfTerm}`)} stringArray={component.leftOfTermValue}>{component.leftOfTermValue?.join('')}</Droppable>
 
                                 <DnclTextField name={`${component.name}`} index={index} inputType={getSwitchType(statementType)} />
                                 <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfTerm}`} isDragging={isDragging && isNotActiveIdOperator(activeId)} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfTerm}`)} stringArray={component.rightOfTermValue}>{component.rightOfTermValue?.join('')}</Droppable>
-                                {(index != 0) && <Operator name={`${component.name}`} parentIndex={index} type={OperationEnum.Negation}></Operator>}
+
+                                {(statementType == StatementEnum.Condition && index != 0) && <Operator name={`${component.name}`} parentIndex={index} type={OperationEnum.Negation}></Operator>}
+
                                 {(index == termComponents.length - 1 && index != 0) && <IconButton aria-label="delete" onClick={() => removeTermComponent(index)}><BackspaceIcon /></IconButton>}
                             </Stack>
                         ))}
 
                         <Button variant="text" fullWidth size="small" startIcon={<AddIcon />}
                             onClick={addTermComponent}>
-                            項を追加する
+                            オペランドを追加する
                         </Button>
                     </Box>
                 </Stack >

@@ -72,7 +72,7 @@ export function EditorBox(params: Props) {
             case getEnumIndex(processEnum, processEnum.Output):
                 return <>
                     <Operation statementType={params.statementType}></Operation>
-                    <Divider orientation="vertical" flexItem />
+                    <Divider sx={{ marginLeft: 1 }} orientation="vertical" flexItem />
                     <NowrapText text={'を表示する'}></NowrapText>
                     {hdnInput(index)}
                 </>

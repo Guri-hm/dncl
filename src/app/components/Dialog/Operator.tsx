@@ -248,7 +248,7 @@ export function Operator({ type, name = "", parentIndex = 0, event, ...props }: 
     case OperationEnum.JoinString:
       elms = <>
         <Typography color="primary" fontWeight={700}>と</Typography>
-        <input type="hidden" name={`${name}_${parentIndex}_${keyPrefixEnum.Operator}`}></input>
+        <input type="hidden" name={`${name}_${parentIndex}_${keyPrefixEnum.Operator}`} value="と"></input>
       </>
       break;
     default:

@@ -182,6 +182,9 @@ export function DnclTextField({ name, inputType, index = 0, ...params }: DnclTex
               <Grid container direction='row'>
                 <Grid size='grow'>
                   <ValidatedTextField name={`${name}_${index}`} label={label} pattern={pattern} isIMEOn={radioValue == SwitchEnum.String ? true : false}></ValidatedTextField>
+                  {
+                    radioValue == SwitchEnum.String && <input type='hidden' name={`${name}_${index}_${keyPrefixEnum.String}`} value={`${radioValue == SwitchEnum.String}`}></input>
+                  }
                 </Grid>
                 {radioValue == SwitchEnum.Array &&
                   <Grid container size='grow'>
@@ -198,7 +201,6 @@ export function DnclTextField({ name, inputType, index = 0, ...params }: DnclTex
                 <RadioGroup
                   row
                   aria-labelledby="row-radio-buttons-group-label"
-                  name="row-radio-buttons-group"
                   onChange={handleChangeRadio}
                   defaultValue={SwitchEnum.VariableOrNumber}
                 >

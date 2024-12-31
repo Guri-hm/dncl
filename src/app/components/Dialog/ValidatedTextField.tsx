@@ -82,6 +82,7 @@ export function ValidatedTextField({ sx = [], name, label, pattern, isIMEOn = fa
       name={name}
       helperText={inputError && getMsgByValidationEnum(pattern)}
       onChange={handleChange}
+      onFocus={handleChange}
     />
   );
 }
