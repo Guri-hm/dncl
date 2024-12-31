@@ -260,6 +260,8 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                     component: 'form',
                     onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
                         event.preventDefault();
+                        setError([Math.random().toString()]);
+
                         const formData = new FormData(event.currentTarget);
                         const formJson = Object.fromEntries((formData as any).entries());
                         console.log(formJson)
@@ -327,11 +329,10 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                     <DialogContentText>
                         <StatementDesc statementType={editor.type}></StatementDesc>
                     </DialogContentText>
-                    {/* <ErrorMsgBox sx={{ display: 'flex', flexDirection: 'column' }} errorArray={error}></ErrorMsgBox> */}
+                    <ErrorMsgBox sx={{ display: 'flex', flexDirection: 'column' }} errorArray={error}></ErrorMsgBox>
                     <EditorBox statementType={editor.type}></EditorBox>
                 </DialogContent>
                 <DialogActions>
-                    {/* {error.join('')} */}
                     <Button onClick={handleClose}>キャンセル</Button>
                     <Button type="submit">挿入</Button>
                 </DialogActions>

@@ -2,7 +2,7 @@ import { useState } from "react";
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import { ReactElement } from "react";
-import Box, { BoxProps } from '@mui/material/Box';
+import Box from '@mui/material/Box';
 import { DnclTextField } from "./DnclTextField";
 import { Operator } from "./Operator";
 import { processEnum, keyPrefixEnum, inputTypeEnum } from "./Enum";
@@ -23,7 +23,7 @@ export function EditorBox(params: Props) {
         const index = getEnumIndex(processEnum, newValue?.title ?? processEnum.SetValueToVariableOrArrayElement);
         setStatement(StatementEditor(index));
     }
-    const StatementEditor = (index: number): ReactElement => {
+    const StatementEditor: any = (index: number): ReactElement => {
 
         const hdnInput = (index: number): ReactElement => {
             return (
@@ -127,44 +127,57 @@ export function EditorBox(params: Props) {
         defaultValue={result[0]}
     />
 
-    interface CustomBoxProps extends BoxProps { children: React.ReactNode; }
-
-    const CustomBox: React.FC<CustomBoxProps> = ({ children, sx, ...props }) => {
-        return (
-            <Box sx={{
-                display: 'flex',
-                flexDirection: 'row',
-                p: 1,
-                m: 1,
-                bgcolor: 'background.paper',
-                borderRadius: 1,
-                ...sx,
-            }} {...props} >
-                {children}
-            </Box>);
-    };
-
-    let statementEditor: any;
     switch (params.statementType) {
         case StatementEnum.Output:
-            statementEditor = StatementEditor(getEnumIndex(processEnum, processEnum.Output));
-            break;
+            return <>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        p: 1,
+                        m: 1,
+                        bgcolor: 'background.paper',
+                        borderRadius: 1,
+                    }}
+                >
+                    {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.Output))}
+                </Box>
+            </>;
         case StatementEnum.Input:
-            statementEditor = StatementEditor(getEnumIndex(processEnum, processEnum.SetValueToVariableOrArrayElement));
-            break;
+            return <>
+                {ddl}
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        p: 1,
+                        m: 1,
+                        bgcolor: 'background.paper',
+                        borderRadius: 1,
+                    }}
+                >
+                    {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.SetValueToVariableOrArrayElement))}
+                </Box>
+            </>;
         case StatementEnum.Condition:
-            statementEditor = StatementEditor(getEnumIndex(processEnum, processEnum.If));
-            break;
+            return <>
+                {ddl}
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        p: 1,
+                        m: 1,
+                        bgcolor: 'background.paper',
+                        borderRadius: 1,
+                    }}
+                >
+                    {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.If))}
+                </Box>
+            </>;
         default:
             break;
     }
-
-    return <>
-        {ddl}
-        <CustomBox>
-            {statement ?? statementEditor}
-        </CustomBox>
-    </>;
 }
 
 
