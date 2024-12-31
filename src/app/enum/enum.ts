@@ -57,9 +57,9 @@ export enum StatementJpEnum {
 }
 
 export enum OperationEnum {
-  JoinString = 'joinString',
-  SimpleAssignment = 'simpleAssignment',
-  Negation = ' negation',
+  JoinString = 'JoinString',
+  SimpleAssignment = 'SimpleAssignment',
+  Negation = ' Negation',
   Arithmetic = 'Arithmetic',
   Comparison = 'Comparison',
   Logical = 'Logical',

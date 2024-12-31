@@ -1,4 +1,4 @@
-import { defaultDropAnimationSideEffects, DndContext, DragOverlay } from "@dnd-kit/core";
+import { closestCenter, defaultDropAnimationSideEffects, DndContext, DragOverlay } from "@dnd-kit/core";
 import { FC, ReactNode, useState } from "react";
 import { Box, Button, Divider, FormHelperText, IconButton, Stack } from '@mui/material';
 import BackspaceIcon from '@mui/icons-material/Backspace';
@@ -222,15 +222,11 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
         }
     }
 
-    const getOperationType = (type: StatementEnum | undefined): OperationEnum => {
-        switch (type) {
-            case StatementEnum.Output:
-                return OperationEnum.JoinString;
-            case StatementEnum.Condition:
-                return OperationEnum.Comparison;
-            default:
-                return OperationEnum.Arithmetic;
-        }
+    const isActiveIdOperator = (activeId: string): boolean => {
+        return [OperationEnum.Arithmetic, OperationEnum.Comparison, OperationEnum.Logical].some(elm => elm == activeId);
+    }
+    const isNotActiveIdOperator = (activeId: string): boolean => {
+        return [OperationEnum.Arithmetic, OperationEnum.Comparison, OperationEnum.Logical].every(elm => elm !== activeId);
     }
     const getSwitchType = (type: StatementEnum | undefined): inputTypeEnum => {
         switch (type) {
@@ -244,6 +240,7 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
             <DndContext
+                collisionDetection={closestCenter}
                 onDragStart={(event) => {
                     const { active } = event;
                     if (active == null) {
@@ -260,8 +257,10 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
                         return;
                     }
                     if (over.id.toString().includes(keyPrefixEnum.Operator)) {
+                        if (isNotActiveIdOperator(activeId)) return;
                         setOperator(over.id.toString())
                     } else {
+                        if (isActiveIdOperator(activeId)) return;
                         addOneSideOfTerm(over.id.toString());
                     }
 
@@ -289,11 +288,12 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
                     <Box>
                         {termComponents.map((component, index) => (
                             <Stack direction="row" spacing={0} key={`${component.name}_${index}`}>
-                                {(index != 0) && <DroppableOperator id={`${component.name}_${index}_${keyPrefixEnum.Operator}`} parentIndex={index} isDragging={isDragging} endOfArrayEvent={() => removeOperator(index)} type={component.operator}></DroppableOperator>}
-                                <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfTerm}`} isDragging={isDragging} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfTerm}`)} stringArray={component.leftOfTermValue}>{component.leftOfTermValue?.join('')}</Droppable>
+                                {(index != 0) && <DroppableOperator id={`${component.name}_${index}_${keyPrefixEnum.Operator}`} parentIndex={index} isDragging={isDragging && isActiveIdOperator(activeId)} endOfArrayEvent={() => removeOperator(index)} type={component.operator}></DroppableOperator>}
+
+                                <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfTerm}`} isDragging={isDragging && isNotActiveIdOperator(activeId)} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfTerm}`)} stringArray={component.leftOfTermValue}>{component.leftOfTermValue?.join('')}</Droppable>
 
                                 <DnclTextField name={`${component.name}`} index={index} inputType={getSwitchType(statementType)} />
-                                <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfTerm}`} isDragging={isDragging} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfTerm}`)} stringArray={component.rightOfTermValue}>{component.rightOfTermValue?.join('')}</Droppable>
+                                <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfTerm}`} isDragging={isDragging && isNotActiveIdOperator(activeId)} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfTerm}`)} stringArray={component.rightOfTermValue}>{component.rightOfTermValue?.join('')}</Droppable>
                                 {(index != 0) && <Operator name={`${component.name}`} parentIndex={index} type={OperationEnum.Negation}></Operator>}
                                 {(index == termComponents.length - 1 && index != 0) && <IconButton aria-label="delete" onClick={() => removeTermComponent(index)}><BackspaceIcon /></IconButton>}
                             </Stack>

@@ -201,7 +201,7 @@ export function Operator({ type, name = "", parentIndex = 0, event, ...props }: 
       SvgIconButton = ArithmeticOperatorArray[newIndex];
       enumValues = Object.values(ArithmeticOperatorSymbolArray);
       elms = <>
-        <IconButton color="primary" aria-label="arithmetic-operation">
+        <IconButton sx={{ padding: 0 }} color="primary" aria-label="arithmetic-operation">
           <SvgIconButton onClick={handleOnClick}></SvgIconButton>
         </IconButton>
         <input type="hidden" name={`${name}_${parentIndex}_${keyPrefixEnum.Operator}`} value={enumValues[newIndex]}></input>
@@ -215,7 +215,7 @@ export function Operator({ type, name = "", parentIndex = 0, event, ...props }: 
       SvgIconButton = ComparisonOperatorArray[newIndex];
       enumValues = Object.values(ComparisonOperatorSymbolArrayForJavascript);
       elms = <>
-        <IconButton color="primary" aria-label="comparison-operation">
+        <IconButton sx={{ padding: 0 }} color="primary" aria-label="comparison-operation">
           <SvgIconButton onClick={handleOnClick}></SvgIconButton>
         </IconButton>
         <input type="hidden" name={`${name}_${parentIndex}_${keyPrefixEnum.Operator}`} value={enumValues[newIndex]}></input>
@@ -229,7 +229,7 @@ export function Operator({ type, name = "", parentIndex = 0, event, ...props }: 
       SvgIconButton = LogicalOperatorArray[newIndex];
       enumValues = Object.values(AndOrOperatorJpArrayForDncl);
       elms = <>
-        <IconButton color="primary" aria-label="comparison-operation">
+        <IconButton sx={{ padding: 0 }} color="primary" aria-label="comparison-operation">
           <SvgIconButton onClick={handleOnClick}></SvgIconButton>
         </IconButton>
         <input type="hidden" name={`${name}_${parentIndex}_${keyPrefixEnum.Operator}`} value={enumValues[newIndex]}></input>
@@ -262,7 +262,6 @@ export function Operator({ type, name = "", parentIndex = 0, event, ...props }: 
       alignItems: 'center',
       marginRight: '0px',
       marginLeft: '0px'
-
     }}>
       {elms}
     </Box>

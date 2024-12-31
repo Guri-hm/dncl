@@ -28,7 +28,7 @@ export const Droppable: FC<DroppableProp> = ({ children, id, isDragging, onClick
                 display: 'grid',
                 height: '40px',
                 alignItems: 'center',
-                backgroundColor: isOver ? blue[700] : (isDragging ? blue[100] : "")
+                backgroundColor: isOver && isDragging ? blue[700] : (isDragging ? blue[100] : "")
             }}
         >
             <Button onClick={onClick} size="large" sx={{ paddingLeft: '5px', paddingRight: '5px', minWidth: 0, fontWeight: 700 }}>{children}</Button>
