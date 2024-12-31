@@ -240,7 +240,6 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
             <DndContext
-                collisionDetection={closestCenter}
                 onDragStart={(event) => {
                     const { active } = event;
                     if (active == null) {

@@ -28,7 +28,8 @@ export const DroppableOperator: FC<DroppableProp> = ({ id, isDragging, endOfArra
             sx={{
                 height: '40px',
                 backgroundColor: isOver && isDragging ? blue[700] : (isDragging ? blue[100] : ""),
-                paddingLeft: !type ? '5px' : 0, paddingRight: !type ? '5px' : 0,
+                paddingLeft: isDragging ? '10px' : 0,
+                paddingRight: isDragging ? '10px' : 0,
             }}
         >
             {type &&
