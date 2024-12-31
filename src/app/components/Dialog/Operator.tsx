@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Box from '@mui/material/Box';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { ArithmeticOperatorSymbolArray, ComparisonOperatorSymbolArrayForJavascript, OperationEnum } from '@/app/enum';
+import { ArithmeticOperatorSymbolArray, ComparisonOperatorSymbolArrayForJavascript, NegationOperatorJpArray, OperationEnum } from '@/app/enum';
 import { ReactElement } from "react";
 import IconButton from '@mui/material/IconButton';
 import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon';
@@ -143,6 +143,12 @@ const ComparisonOperatorArray: React.FC<SvgIconProps>[] = [
   // (props) => <TextIcon {...props} text="でない" />
 ];
 
+const NegationOperatorArray: React.FC<SvgIconProps>[] = [
+
+  (props) => <TextIcon {...props} text="でない" />,
+  (props) => <NotInterestedIcon {...props} sx={{ color: 'gray', opacity: 0.2 }} />,
+];
+
 export function Operator({ type, name = "", parentIndex = 0, ...props }: Props) {
   const [operatorIndex, setOperatorIndex] = useState<number>(0);
 
@@ -160,34 +166,51 @@ export function Operator({ type, name = "", parentIndex = 0, ...props }: Props) 
           newIndex = 0;
         }
         break;
+      case OperationEnum.Negation:
+        if (operatorIndex == NegationOperatorArray.length - 1) {
+          newIndex = 0;
+        }
+        break;
       default:
         break;
     }
     setOperatorIndex(newIndex);
   }
 
+  let SvgIconButton: any;
+  let enumValues: any;
   switch (type) {
     case OperationEnum.SimpleAssignment:
       elms = <ArrowBackIcon></ArrowBackIcon>
       break;
     case OperationEnum.Operation:
-      const ArithmeticIcons = ArithmeticOperatorArray[operatorIndex];
-      const enumArithmeticValues = Object.values(ArithmeticOperatorSymbolArray);
+      SvgIconButton = ArithmeticOperatorArray[operatorIndex];
+      enumValues = Object.values(ArithmeticOperatorSymbolArray);
       elms = <>
         <IconButton color="primary" aria-label="arithmetic-operation">
-          <ArithmeticIcons onClick={handleOnClick}></ArithmeticIcons>
+          <SvgIconButton onClick={handleOnClick}></SvgIconButton>
         </IconButton>
-        <input type="hidden" name={`${name}_${parentIndex}_${keyPrefixEnum.Operator}`} value={enumArithmeticValues[operatorIndex]}></input>
+        <input type="hidden" name={`${name}_${parentIndex}_${keyPrefixEnum.Operator}`} value={enumValues[operatorIndex]}></input>
       </>
       break;
     case OperationEnum.Condition:
-      const ComparisonIcons = ComparisonOperatorArray[operatorIndex];
-      const enumComparisonValues = Object.values(ComparisonOperatorSymbolArrayForJavascript);
+      SvgIconButton = ComparisonOperatorArray[operatorIndex];
+      enumValues = Object.values(ComparisonOperatorSymbolArrayForJavascript);
       elms = <>
         <IconButton color="primary" aria-label="comparison-operation">
-          <ComparisonIcons onClick={handleOnClick}></ComparisonIcons>
+          <SvgIconButton onClick={handleOnClick}></SvgIconButton>
         </IconButton>
-        <input type="hidden" name={`${name}_${parentIndex}_${keyPrefixEnum.Operator}`} value={enumComparisonValues[operatorIndex]}></input>
+        <input type="hidden" name={`${name}_${parentIndex}_${keyPrefixEnum.Operator}`} value={enumValues[operatorIndex]}></input>
+      </>
+      break;
+    case OperationEnum.Negation:
+      SvgIconButton = NegationOperatorArray[operatorIndex];
+      enumValues = Object.values(NegationOperatorJpArray);
+      elms = <>
+        <IconButton sx={{ padding: 0 }} color="primary" aria-label="comparison-operation">
+          <SvgIconButton onClick={handleOnClick}></SvgIconButton>
+        </IconButton>
+        <input type="hidden" name={`${name}_${parentIndex}_${keyPrefixEnum.Negation}`} value={enumValues[operatorIndex]}></input>
       </>
       break;
     case OperationEnum.JoinString:
@@ -205,8 +228,8 @@ export function Operator({ type, name = "", parentIndex = 0, ...props }: Props) 
       display: 'grid',
       height: '40px',
       alignItems: 'center',
-      marginRight: '2px',
-      marginLeft: '2px'
+      marginRight: '0px',
+      marginLeft: '0px'
 
     }}>
       {elms}

@@ -29,6 +29,7 @@ export enum keyPrefixEnum {
   Operator = 'Operator',
   LeftOfTerm = 'LeftOfTerm',
   RightOfTerm = 'RightOfTerm',
+  Negation = 'Negation',
 }
 
 export enum inputTypeEnum {

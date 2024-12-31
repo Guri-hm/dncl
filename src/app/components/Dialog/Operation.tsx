@@ -192,7 +192,6 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
                     <Stack direction="row" spacing={1}>
                         <DraggableItem id={LogicalOperationEnum.And} value={LogicalOperationJpEnum.And} />
                         <DraggableItem id={LogicalOperationEnum.Or} value={LogicalOperationJpEnum.Or} />
-                        <DraggableItem id={LogicalOperationEnum.Not} value={LogicalOperationJpEnum.Not} />
                     </Stack>
                 </DraggableOperatorsBox>
                     ;
@@ -269,6 +268,7 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
                                 <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfTerm}`} isDragging={isDragging} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfTerm}`)} stringArray={component.leftOfTermValue}>{component.leftOfTermValue?.join('')}</Droppable>
                                 <DnclTextField name={`${component.name}`} index={index} inputType={getSwitchType(statementType)} />
                                 <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfTerm}`} isDragging={isDragging} onClick={() => removeOneSideOfTerm(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfTerm}`)} stringArray={component.rightOfTermValue}>{component.rightOfTermValue?.join('')}</Droppable>
+                                {(index != 0) && <Operator name={`${component.name}`} parentIndex={index} type={OperationEnum.Negation}></Operator>}
                                 {(index == termComponents.length - 1 && index != 0) && <IconButton aria-label="delete" onClick={() => removeTermComponent(index)}><BackspaceIcon /></IconButton>}
                             </Stack>
                         ))}

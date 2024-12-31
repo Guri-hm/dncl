@@ -30,6 +30,12 @@ export enum ComparisonOperatorSymbolArrayForJavascript {
   // Or = '||',
   // Not = '!',
 }
+
+export enum NegationOperatorJpArray {
+  NegationOperator = 'でない',
+  NullOperator = '',
+}
+
 export enum ComparisonOperatorSymbolArrayForDncl {
   EqualToOperator = '=',
   NotEqualToOperator = '≠',
@@ -55,7 +61,8 @@ export enum OperationEnum {
   Condition = 'condition',
   Operation = 'operation',
   JoinString = 'joinString',
-  SimpleAssignment = 'simpleAssignment'
+  SimpleAssignment = 'simpleAssignment',
+  Negation = ' negation',
 }
 
 export enum BraketSymbolEnum {
