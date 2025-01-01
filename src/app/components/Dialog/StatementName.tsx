@@ -27,8 +27,8 @@ export function StatementName(params: Props) {
         case StatementEnum.SequentialIteration:
             str = StatementJpEnum.SequentialIteration;
             break;
-        case StatementEnum.Predefinedfunction:
-            str = StatementJpEnum.Predefinedfunction;
+        case StatementEnum.UserDefinedfunction:
+            str = StatementJpEnum.UserDefinedfunction;
             break;
     }
 

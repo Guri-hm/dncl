@@ -215,6 +215,12 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                                 processPhrase = `${rightside}を${formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.InitialValue}`]}から${formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.EndValue}`]}まで${formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.Difference}`]}ずつ${Number(formJson.processIndex) == getEnumIndex(processEnum, processEnum.ForIncrement) ? "増やしながら，" : "減らしながら，"}`;
 
                                 break;
+                            case getEnumIndex(processEnum, processEnum.DefineFunction):
+                                processPhrase = `関数${rightside}を`;
+                                break;
+                            case getEnumIndex(processEnum, processEnum.Defined):
+                                processPhrase = `と定義する`;
+                                break;
                             default:
                                 break;
                         }

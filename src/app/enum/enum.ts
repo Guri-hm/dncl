@@ -25,13 +25,13 @@ export enum AndOrOperatorJpArrayForDncl {
   OrOperator = 'または',
 }
 export enum ReturnFuncDncl {
-  UserDefined = 'UserDefined',
   Square = 'Square',
   Exponentiation = 'Exponentiation',
   Random = 'Random',
   Odd = 'Odd',
 }
 export enum VoidFuncDncl {
+  UserDefined = 'UserDefined',
   Binary = 'Binary',
 }
 export enum ReturnFuncJpDncl {
@@ -63,13 +63,14 @@ export enum ArithmeticOperatorDncl {
 }
 
 export enum StatementEnum {
-  Output = 'output',
-  Input = 'input',
-  Condition = 'condition',
-  ConditionalLoopPreTest = 'conditionallooppretest',
-  ConditionalLoopPostTest = 'conditionalloopposttest',
-  SequentialIteration = 'sequentialIteration',
-  Predefinedfunction = 'predefinedfunction',
+  Output = 'Output',
+  Input = 'Input',
+  Condition = 'Condition',
+  ConditionalLoopPreTest = 'ConditionalLoopPreTest',
+  ConditionalLoopPostTest = 'ConditionalLoopPostTest',
+  SequentialIteration = 'SequentialIteration',
+  Predefinedfunction = 'Predefinedfunction',
+  UserDefinedfunction = 'UserDefinedfunction',
 }
 export enum StatementJpEnum {
   Output = '表示文',
@@ -78,7 +79,7 @@ export enum StatementJpEnum {
   ConditionalLoopPreTest = '条件繰返し文「前判定」',
   ConditionalLoopPostTest = '条件繰返し文「後判定」',
   SequentialIteration = '順次繰返し文',
-  Predefinedfunction = '用意された関数',
+  UserDefinedfunction = '新しい関数の定義',
 }
 
 export enum OperationEnum {

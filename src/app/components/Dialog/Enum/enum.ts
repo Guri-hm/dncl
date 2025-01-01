@@ -16,7 +16,8 @@ export enum processEnum {
   ForIncrement = '〈変数〉の値を増やしながら，',
   ForDecrement = '〈変数〉の値を減らしながら，',
   EndFor = 'を繰り返す',
-  Predefinedfunction = '用意された関数',
+  DefineFunction = '関数〈関数名〉(〈引数〉)を',
+  Defined = 'と定義する',
 }
 
 export enum bracketEnum {
@@ -44,6 +45,7 @@ export enum keyPrefixEnum {
   EndValue = 'EndValue',
   Difference = 'Difference',
   Function = 'Function',
+  UserDefinedfunction = 'UserDefinedfunction',
   FunctionName = 'FunctionName',
 }
 
@@ -63,6 +65,7 @@ export enum inputTypeEnum {
   Number = 'Number',
   String = 'String',
   ReturnFunction = 'ReturnFunction',
+  UserDefinedfunction = 'UserDefinedfunction',
   Void = 'Void',
 }
 

@@ -23,7 +23,7 @@ type Props = {
 }
 
 const ReturnFunctions = [
-  { name: ReturnFuncDncl.UserDefined, arguments: 0, desc: '「新しい関数の定義」で作成した関数を使用します。', icon: (props: SvgIconProps) => <NotInterestedIcon {...props} sx={{ color: 'gray', opacity: 0.2 }} /> },
+  { name: VoidFuncDncl.UserDefined, arguments: 0, desc: '「新しい関数の定義」で作成した関数を使用します。', icon: (props: SvgIconProps) => <NotInterestedIcon {...props} sx={{ color: 'gray', opacity: 0.2 }} /> },
   { name: ReturnFuncDncl.Square, arguments: 1, desc: '引数の値を二乗した値を返します。', icon: (props: SvgIconProps) => <TextIcon {...props} text="二乗" /> },
   { name: ReturnFuncDncl.Exponentiation, arguments: 2, desc: '「べき乗(m,n)」の場合，値mのn乗の値を返します。', icon: (props: SvgIconProps) => <TextIcon {...props} text="べき乗" /> },
   { name: ReturnFuncDncl.Random, arguments: 2, desc: '「乱数(m,n)」の場合，値m以上値n以下の整数をランダムに一つ返します。', icon: (props: SvgIconProps) => <TextIcon {...props} text="乱数" /> },
@@ -33,12 +33,24 @@ const ReturnFunctions = [
 const VoidFuncs = [
   { name: VoidFuncDncl.Binary, arguments: 1, desc: '引数の値を2進表現の値で返します。', icon: (props: SvgIconProps) => <TextIcon {...props} text="二進" /> },
 ]
+const UserDefine = [
+  { name: VoidFuncDncl.UserDefined, arguments: 0, desc: '複数の引数を指定する場合は，『，』で区切ります。', icon: null },]
 
 export function FunctionField({ name = "", parentIndex = 0, event, funcType, ...props }: Props) {
 
   const [operatorIndex, setOperatorIndex] = useState<number>(0);
 
-  const funcs = (funcType == inputTypeEnum.ReturnFunction) ? ReturnFunctions : VoidFuncs;
+  function getFuncs(funcType: inputTypeEnum) {
+    switch (funcType) {
+      case inputTypeEnum.ReturnFunction:
+        return ReturnFunctions;
+      case inputTypeEnum.Void:
+        return VoidFuncs;
+      default:
+        return UserDefine;
+    }
+  }
+  const funcs = getFuncs(funcType);
 
   const handleOnClick = () => {
     let newIndex: number = operatorIndex + 1;
@@ -84,10 +96,14 @@ export function FunctionField({ name = "", parentIndex = 0, event, funcType, ...
 
   let btns: ReactElement = <></>;
   btns = <>
-    <IconButton sx={{ padding: 0 }} color="primary" aria-label="comparison-operation">
-      <SvgIconButton onClick={handleOnClick}></SvgIconButton>
-    </IconButton>
-    <input type="hidden" name={`${name}_${parentIndex}_${keyPrefixEnum.Function}`} value={funcs.map(func => func.name)[newIndex] ?? ""}></input>
+    {SvgIconButton &&
+      <>
+        <IconButton sx={{ padding: 0 }} color="primary" aria-label="comparison-operation">
+          <SvgIconButton onClick={handleOnClick}></SvgIconButton>
+        </IconButton>
+        <input type="hidden" name={`${name}_${parentIndex}_${keyPrefixEnum.Function}`} value={funcs.map(func => func.name)[newIndex] ?? ""}></input>
+      </>
+    }
   </>
 
   return (
@@ -102,7 +118,7 @@ export function FunctionField({ name = "", parentIndex = 0, event, funcType, ...
         }}>
           {btns}
         </Box>
-        {funcs.map(func => func.icon)[newIndex].name == ReturnFuncDncl.UserDefined &&
+        {funcs.map(func => func.name)[newIndex] == VoidFuncDncl.UserDefined &&
           <Grid size="grow">
             <ValidatedTextField name={`${name}_${parentIndex}_${keyPrefixEnum.FunctionName}`} label={InputTypeJpEnum.Function} pattern={ValidationEnum.Variable}></ValidatedTextField>
           </Grid>

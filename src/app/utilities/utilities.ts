@@ -493,6 +493,7 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
   //オペランドの文字列のバリデーションパターン
   const regexForStringOperand = new RegExp(ValidationEnum.String);
   const regexForOperand = new RegExp(ValidationEnum.VariableOrNumber);
+  const regexForInitializeArray = new RegExp(ValidationEnum.InitializeArray);
   const regexForParentheses = new RegExp(ValidationEnum.Parentheses);
   //添字はカンマ区切りも許容(実際はダメだが一括代入の処理があるため許容)
   const regexForSuffix = new RegExp(ValidationEnum.InitializeArray);
@@ -569,7 +570,8 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
     //引数
     for (let j = 0; j < 2; j++) {
       if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}_${j}`]) != "") {
-        if (!regexForOperand.test(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}_${j}`])) {
+        //カンマ区切りを許容
+        if (!regexForInitializeArray.test(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}_${j}`])) {
           errorMsgArray.push(`${i + 1}番目のオペランドの関数に，不適切な引数が使用されています`);
         }
         if (isReservedWord(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}_${j}`])) {

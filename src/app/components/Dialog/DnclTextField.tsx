@@ -326,6 +326,10 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
         return <Grid size="grow">
           <ValidatedTextField name={`${name}_${index}_${suffixValue}`} label={label} pattern={ValidationEnum.Integer}></ValidatedTextField>
         </Grid>
+      case inputTypeEnum.UserDefinedfunction:
+        return <Grid size="grow">
+          <FunctionField name={`${name}`} parentIndex={index} funcType={inputTypeEnum.UserDefinedfunction}></FunctionField>
+        </Grid>
       default:
         return null;
 

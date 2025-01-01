@@ -131,12 +131,12 @@ const fragments: FragmentItems = [
   },
   {
     id: uuidv4(),
-    code: StatementJpEnum.Predefinedfunction,
+    code: StatementJpEnum.UserDefinedfunction,
     children: [],
     index: 0,
     parentId: null,
     depth: 0,
-    statementType: StatementEnum.Predefinedfunction
+    statementType: StatementEnum.UserDefinedfunction
   },
 ]
 

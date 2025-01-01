@@ -168,12 +168,18 @@ export function EditorBox(params: Props) {
                     <NowrapText text={'を繰り返す'}></NowrapText>
                     {hdnInput(index)}
                 </>
-            case getEnumIndex(processEnum, processEnum.Predefinedfunction):
+            case getEnumIndex(processEnum, processEnum.DefineFunction):
                 return <>
-                    <Operation statementType={params.statementType}>
-                        <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArray}></DnclTextField>
-                        <Operator type={OperationEnum.SimpleAssignment}></Operator>
-                    </Operation>
+                    <NowrapText text={'関数'}></NowrapText>
+                    <Divider sx={{ marginRight: 1 }} orientation="vertical" flexItem />
+                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.UserDefinedfunction}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.UserDefinedfunction} inputType={inputTypeEnum.UserDefinedfunction}></DnclTextField>
+                    <Divider sx={{ marginLeft: 1 }} orientation="vertical" flexItem />
+                    <NowrapText text={'を'}></NowrapText>
+                    {hdnInput(index)}
+                </>
+            case getEnumIndex(processEnum, processEnum.Defined):
+                return <>
+                    <NowrapText text={'と定義する'}></NowrapText>
                     {hdnInput(index)}
                 </>
             default:
@@ -241,11 +247,11 @@ export function EditorBox(params: Props) {
                     {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.ForIncrement))}
                 </CustomBox>
             </>
-        case StatementEnum.Predefinedfunction:
+        case StatementEnum.UserDefinedfunction:
             return <>
                 {ddl}
                 <CustomBox>
-                    {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.Predefinedfunction))}
+                    {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.DefineFunction))}
                 </CustomBox>
             </>
         default:
@@ -307,9 +313,10 @@ const processNames = [
         ]
     },
     {
-        statementType: StatementEnum.Predefinedfunction,
+        statementType: StatementEnum.UserDefinedfunction,
         names: [
-            { title: processEnum.Predefinedfunction },
+            { title: processEnum.DefineFunction },
+            { title: processEnum.Defined },
         ]
     },
 ];

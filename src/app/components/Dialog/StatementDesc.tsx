@@ -49,8 +49,10 @@ export function StatementDesc(params: Props) {
             3.〈処理〉を実行し，〈変数〉の値に〈差分〉を加え，手順2に戻ります。\n\
             ";
             break;
-        case StatementEnum.Predefinedfunction:
-            str = "あらかじめ用意された関数には，値を返すものと値を返さないものがあります。";
+        case StatementEnum.UserDefinedfunction:
+            str = "DNCLを用いて新しい関数を定義します。";
+            sub = "・値を返さない関数を作成できます。\n\
+            ";
             break;
     }
 
