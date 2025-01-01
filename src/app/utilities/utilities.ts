@@ -420,12 +420,8 @@ const toEmptyIfNull = (targetString: string | undefined) => {
 
 export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex: number, keyword: keyPrefixEnum): { errorMsgArray: string[]; hasError: boolean; } => {
 
-  // 正規表現を構築
-  const arithmeticOperators = Object.values(ArithmeticOperatorSymbolArrayForJavascript).join('|').replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-  const comparisonOperators = Object.values(ComparisonOperatorSymbolArrayForJavascript).join('|').replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-  const andOrOperators = Object.values(AndOrOperatorJpArrayForDncl).join('|').replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-  const additionalCharacter = 'と';
-  const regexForOperator = new RegExp(`^(${arithmeticOperators}|${comparisonOperators}|${andOrOperators}|${additionalCharacter})$`);
+  const regexForOperator = new RegExp(/^(\+|\-|\*|\/|÷|%|==|!=|>|>=|<|<=|かつ|または|と)$/);
+
   //オペランドの文字列のバリデーションパターン
   const regexForStringOperand = new RegExp(ValidationEnum.String);
   const regexForOperand = new RegExp(ValidationEnum.VariableOrNumber);
@@ -445,7 +441,8 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
         errorMsgArray.push(`${i}番目と${i + 1}番目のオペランドの間に演算子が必要です`);
       } else {
         if (!regexForOperator.test(obj[`${keyword}_${i}_${keyPrefixEnum.Operator}`])) {
-          errorMsgArray.push(`${i}番目と${i + 1}番目のオペランドの間に演算子に不適切な文字が使用されています`);
+          console.log(obj[`${keyword}_${i}_${keyPrefixEnum.Operator}`])
+          errorMsgArray.push(`${i}番目と${i + 1}番目のオペランドの間に不適切な演算子が使用されています`);
         }
       }
     }

@@ -34,6 +34,7 @@ export enum keyPrefixEnum {
   LeftSide = 'LeftSide',
   RigthSide = 'RigthSide',
   Suffix = 'Suffix',
+  Argument = 'Argument',
   Operator = 'Operator',
   LeftOfOperand = 'LeftOfOperand',
   RightOfOperand = 'RightOfOperand',
@@ -42,12 +43,15 @@ export enum keyPrefixEnum {
   InitialValue = 'InitialValue',
   EndValue = 'EndValue',
   Difference = 'Difference',
+  Function = 'Function',
+  FunctionName = 'FunctionName',
 }
 
 export enum inputTypeEnum {
   SwitchVariableOrNumberOrArray = 'SwitchVariableOrNumberOrArray',
   SwitchVariableOrArray = 'SwitchVariableOrArray',
-  Radio = 'Radio',
+  RadioWithString = 'RadioWithString',
+  RadioWithReturnFunction = 'RadioWithReturnFunction',
   ArrayWithoutSuffix = 'ArrayWithoutSuffix',
   Array = 'Array',
   SuffixOnly = 'SuffixOnly',

@@ -24,6 +24,13 @@ export enum AndOrOperatorJpArrayForDncl {
   AndOperator = 'かつ',
   OrOperator = 'または',
 }
+export enum ReturnFunctionArrayForDncl {
+  UserDefined = 'UserDefined',
+  Square = 'Square',
+  Exponentiation = 'Exponentiation',
+  Random = 'Random',
+  Binary = 'Binary',
+}
 export enum NegationOperatorJpArray {
   NullOperator = '',
   NegationOperator = 'でない',
@@ -84,4 +91,17 @@ export enum LogicalOperationJpEnum {
   And = 'かつ',
   Or = 'または',
   Not = 'でない',
+}
+
+export enum InputTypeJpEnum {
+  Switch = '変数名・配列名',
+  ArrayWithoutSuffix = '配列名',
+  Array = '配列名',
+  SuffixOnly = '添字',
+  SuffixWithBrackets = '添字',
+  VariableOnly = '変数名',
+  VariableOrNumber = '値・変数名',
+  String = '文字列',
+  Function = '関数名',
+  Argument = '引数',
 }

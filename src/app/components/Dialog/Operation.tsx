@@ -46,13 +46,8 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
 
     const draggableStringList = enumsToObjects([BraketSymbolEnum, OperatorTypeJpEnum]);
 
-    const checkOperator = (index: number) => {
-        setBraketError([...braketError, 'ドリアン'])
-    }
-
     const checkBraketPair = () => {
 
-        console.log(operandComponents)
         let errorArray: string[] = [];
 
         let tmpCode: string[] = [];
@@ -177,6 +172,7 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
         </>
         switch (statementType) {
             case StatementEnum.Input:
+            case StatementEnum.Predefinedfunction:
                 return <DraggableOperatorsBox>
                     {brakets}
                     <Stack direction="row" spacing={2} sx={{ marginTop: 1 }}>
@@ -214,7 +210,9 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
     const getSwitchType = (type: StatementEnum | undefined): inputTypeEnum => {
         switch (type) {
             case StatementEnum.Output:
-                return inputTypeEnum.Radio;
+                return inputTypeEnum.RadioWithString;
+            case StatementEnum.Input:
+                return inputTypeEnum.RadioWithReturnFunction;
             default:
                 return inputTypeEnum.SwitchVariableOrNumberOrArray;
         }
