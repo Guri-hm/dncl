@@ -167,7 +167,7 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
             <ErrorMsgBox sx={{ display: 'flex', flexDirection: 'column' }} errorArray={braketError}></ErrorMsgBox>
             {operandComponents.map((component, index) => (
                 !component.operator && index > 0 ?
-                    <ErrorMsgBox sx={{ display: 'flex', flexDirection: 'column' }} errorArray={[`${index}番目と${index + 1}番目のオペランドの間に演算子が必要です`]}></ErrorMsgBox>
+                    <ErrorMsgBox key={index} sx={{ display: 'flex', flexDirection: 'column' }} errorArray={[`${index}番目と${index + 1}番目のオペランドの間に演算子が必要です`]}></ErrorMsgBox>
                     : null
             ))}
             <Stack direction="row" spacing={2}>

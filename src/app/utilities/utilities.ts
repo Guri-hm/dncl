@@ -2,6 +2,8 @@ import { arrayMove } from '@dnd-kit/sortable';
 import { UniqueIdentifier } from "@dnd-kit/core";
 
 import type { FlattenedItem, TreeItem, TreeItems } from '../types';
+import { AndOrOperatorJpArrayForDncl, ArithmeticOperatorSymbolArrayForJavascript, BraketSymbolEnum, ComparisonOperatorSymbolArrayForJavascript } from '@/app/enum';
+import { keyPrefixEnum, processEnum, ValidationEnum } from '../components/Dialog/Enum';
 
 function getDragDepth(offset: number, indentationWidth: number) {
   return Math.round(offset / indentationWidth);
@@ -297,4 +299,243 @@ export function checkParenthesesBalance(strArray: string[]): { isBalanced: boole
     balance: balance,
     hasEmptyParentheses: hasEmptyParentheses
   };
+}
+
+//javascriptのオペランドに変換
+export const cnvAndOrToJsOperator = (targetString: string) => {
+  // 置換規則を定義
+  const replacements = [
+    { regex: /\s*または\s*/g, replacement: ' || ' },
+    { regex: /\s*かつ\s*/g, replacement: ' && ' },
+    // { regex: /でない/g, replacement: '!' }
+  ];
+
+  replacements.forEach(({ regex, replacement }) => {
+    targetString = targetString.replace(regex, replacement);
+  });
+
+  return targetString;
+}
+
+//否定演算子をjavascriptのオペランドに変換
+export const transformNegation = (targetString: string) => {
+  return targetString.replace(/\(([^()]+)\)でない/g, '!($1)').replace(/([^()]+)でない/g, '!($1)');
+}
+
+// 「÷」記号を使った除算をMath.floorで包む式に変換 
+export const cnvToDivision = (targetString: string) => {
+  return targetString.replace(/(\w+)\s*÷\s*(\w+)/g, 'Math.floor($1 / $2)');
+}
+
+export const checkBraketPair = (targetStringArray: string[]): { errorMsgArray: string[]; hasError: boolean; } => {
+
+  let errorMsgArray: string[] = [];
+
+  const result: { isBalanced: boolean, isCorrectOrder: boolean, balance: number, hasEmptyParentheses: boolean } = (checkParenthesesBalance(targetStringArray));
+
+  if (!result.isBalanced) {
+    if (result.balance > 0) {
+      errorMsgArray.push(`『 ${BraketSymbolEnum.RigthBraket} 』を追加してください`);
+    } else {
+      errorMsgArray.push(`『 ${BraketSymbolEnum.LeftBraket} 』を追加してください`);
+    }
+  }
+  if (!result.isCorrectOrder) {
+    errorMsgArray.push(`『 ${BraketSymbolEnum.RigthBraket} 』の前方には対になる『 ${BraketSymbolEnum.LeftBraket} 』が必要です`);
+  }
+  if (result.hasEmptyParentheses) {
+    errorMsgArray.push(`『 ${BraketSymbolEnum.LeftBraket} 』と『 ${BraketSymbolEnum.RigthBraket} 』の内側には要素が必要です`);
+  }
+  if (errorMsgArray.length > 0) {
+    return { errorMsgArray: errorMsgArray, hasError: true };
+  }
+  return { errorMsgArray: [], hasError: false };
+}
+
+export const updateToWithSquareBrackets = (obj: { [k: string]: string; }) => {
+
+  //添字は前後に[]をつける
+  const updatedObj: { [k: string]: string; } = {};
+  for (const key in obj) {
+    if (key.includes(keyPrefixEnum.Suffix)) {
+      updatedObj[key] = `[${obj[key]}]`;
+    } else {
+      updatedObj[key] = obj[key];
+    }
+  }
+  return updatedObj;
+}
+
+export const getOperandsMaxIndex = (obj: { [k: string]: string; }, keyword: keyPrefixEnum) => {
+  return Object.keys(obj)
+    .filter(key => key.startsWith(`${keyword}_`))
+    .map(key => parseInt(key.split("_")[1], 10))
+    .reduce((max, current) => (current > max ? current : max), -1);
+}
+
+export const sanitizeInput = (targetString: string) => {
+  // 許可された文字セット: アルファベット、数字、スペース、および一部の記号、日本語 
+  const regex = /^[a-zA-Z0-9 ぁ-んァ-ンｧ-ﾝﾞﾟ一-龠々 \.,!?<>=!&|\+\-\*/\(\)%!""\[\]]*$/;
+
+  // 制御文字（ASCII 0 - 31）を排除 
+  const controlChars = /[\x00-\x1F]/;
+
+  if (regex.test(targetString) && !controlChars.test(targetString)) {
+    return targetString;
+  } else {
+    return "";
+  }
+}
+
+export const escapeHtml = (unsafe: string) => {
+  return unsafe
+    // 単独の & をエスケープし、&& の前後にスペースがある場合はエスケープしない 
+    .replace(/(?<!&)&(?!&)/g, "&amp;")
+    // .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+export const isValidExpression = (targetString: string) => {
+
+  try {
+    new Function(`return ${targetString}`);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+//表示文では「と」が入るので、Function関数が実行できない
+//サニタイジング後に「と」は「&」に置換する
+export const replaceToAmpersand = (targetString: string) => {
+  return targetString.replace(/ と /g, ' & ')
+};
+
+const toEmptyIfNull = (targetString: string | undefined) => {
+  if (!(targetString)) return "";
+  //オブジェクト内のundefinedは文字列の'undefined'になっている
+  if (targetString == 'undefined') return "";
+  return targetString;
+}
+
+export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex: number, keyword: keyPrefixEnum): { errorMsgArray: string[]; hasError: boolean; } => {
+
+  // 正規表現を構築
+  const arithmeticOperators = Object.values(ArithmeticOperatorSymbolArrayForJavascript).join('|').replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  const comparisonOperators = Object.values(ComparisonOperatorSymbolArrayForJavascript).join('|').replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  const andOrOperators = Object.values(AndOrOperatorJpArrayForDncl).join('|').replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  const additionalCharacter = 'と';
+  const regexForOperator = new RegExp(`^(${arithmeticOperators}|${comparisonOperators}|${andOrOperators}|${additionalCharacter})$`);
+  //オペランドの文字列のバリデーションパターン
+  const regexForStringOperand = new RegExp(ValidationEnum.String);
+  const regexForOperand = new RegExp(ValidationEnum.VariableOrNumber);
+  const regexForParentheses = new RegExp(ValidationEnum.Parentheses);
+  //添字はカンマ区切りも許容(実際はダメだが一括代入の処理があるため許容)
+  const regexForSuffix = new RegExp(ValidationEnum.InitializeArray);
+  const regexForNegation = new RegExp(ValidationEnum.Negation);
+  const regexForInteger = new RegExp(ValidationEnum.Integer);
+
+  let errorMsgArray: string[] = [];
+
+  for (let i = 0; i <= operandsMaxIndex; i++) {
+
+    //演算子の確認
+    if (i == 1) {
+      if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Operator}`]) == "") {
+        errorMsgArray.push(`${i}番目と${i + 1}番目のオペランドの間に演算子が必要です`);
+      } else {
+        if (!regexForOperator.test(obj[`${keyword}_${i}_${keyPrefixEnum.Operator}`])) {
+          errorMsgArray.push(`${i}番目と${i + 1}番目のオペランドの間に演算子に不適切な文字が使用されています`);
+        }
+      }
+    }
+
+    if (toEmptyIfNull(obj[`${keyword}_${i}`]) == "") {
+      errorMsgArray.push(`${i + 1}番目のオペランドが入力されていません`);
+    } else {
+
+      //文字列チェック
+      if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.String}`]) == 'true') {
+        if (!regexForStringOperand.test(obj[`${keyword}`])) {
+          errorMsgArray.push(`${i + 1}番目のオペランドに不適切な値が使用されています`);
+        }
+      } else {
+        if (!regexForOperand.test(obj[`${keyword}`])) {
+          errorMsgArray.push(`${i + 1}番目のオペランドに不適切な値が使用されています`);
+        }
+      }
+    }
+
+    //括弧があれば値チェック
+    if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.LeftOfOperand}`]) != "") {
+      if (!regexForParentheses.test(obj[`${keyword}_${i}_${keyPrefixEnum.LeftOfOperand}`])) {
+        errorMsgArray.push(`${i + 1}番目のオペランドの左側で「(」「)」以外の文字が使用されています`);
+      }
+    }
+    if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.RightOfOperand}`]) != "") {
+      if (!regexForParentheses.test(obj[`${keyword}_${i}_${keyPrefixEnum.RightOfOperand}`])) {
+        errorMsgArray.push(`${i + 1}番目のオペランドの右側で「(」「)」以外の文字が使用されています`);
+      }
+    }
+    if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Suffix}`]) != "") {
+      if (!regexForSuffix.test(obj[`${keyword}_${i}_${keyPrefixEnum.Suffix}`])) {
+        errorMsgArray.push(`${i + 1}番目のオペランドの右側で「(」「)」以外の文字が使用されています`);
+      }
+    }
+    if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Negation}`]) != "") {
+      if (!regexForNegation.test(obj[`${keyword}_${i}_${keyPrefixEnum.Negation}`])) {
+        errorMsgArray.push(`${i + 1}番目のオペランドの右側の否定演算子に，「でない」以外の文字が使用されています`);
+      }
+    }
+    //For文の初期値
+    if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.InitialValue}`]) != "") {
+      if (!regexForInteger.test(obj[`${keyword}_${i}_${keyPrefixEnum.InitialValue}`])) {
+        errorMsgArray.push(`${i + 1}番目のオペランドの右側の否定演算子に，「でない」以外の文字が使用されています`);
+      }
+    }
+    //For文の終了値
+    if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.EndValue}`]) != "") {
+      if (!regexForInteger.test(obj[`${keyword}_${i}_${keyPrefixEnum.EndValue}`])) {
+        errorMsgArray.push(`${i + 1}番目のオペランドの右側の否定演算子に，「でない」以外の文字が使用されています`);
+      }
+    }
+    //For文の増減差分
+    if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Difference}`]) != "") {
+      if (!regexForInteger.test(obj[`${keyword}_${i}_${keyPrefixEnum.Difference}`])) {
+        errorMsgArray.push(`${i + 1}番目のオペランドの右側の否定演算子に，「でない」以外の文字が使用されています`);
+      }
+    }
+  }
+  if (errorMsgArray.length > 0) {
+    return { errorMsgArray: errorMsgArray, hasError: true };
+  }
+  return { errorMsgArray: [], hasError: false };
+}
+
+
+export const cnvObjToArray = (obj: { [k: string]: string; }, operandsMaxIndex: number, keyword: keyPrefixEnum): string[] => {
+
+  const pushIfNotEmpty = (array: string[], pushedString: string) => {
+    if (pushedString == "") return;
+    array.push(pushedString);
+  }
+
+  let strArray: string[] = [];
+
+  for (let i = 0; i <= operandsMaxIndex; i++) {
+
+    pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Operator}`]));
+    pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.LeftOfOperand}`]));
+
+    if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.String}`]) == 'true') {
+      pushIfNotEmpty(strArray, `"${toEmptyIfNull(obj[`${keyword}_${i}`])}"`);
+    } else {
+      pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}`]));
+    };
+    pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Suffix}`]));
+    pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.RightOfOperand}`]));
+    pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Negation}`]));
+  }
+
+  return strArray;
 }

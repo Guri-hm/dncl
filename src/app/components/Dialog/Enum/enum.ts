@@ -13,8 +13,10 @@ export enum processEnum {
   EndWhile = 'を繰り返す',
   DoWhile = '繰り返し，',
   EndDoWhile = 'を，〈条件〉になるまで実行する',
-  For = '〈変数〉を〈初期値〉から〈終了値〉まで〈差分〉ずつ増やしながら，',
+  ForIncrement = '〈変数〉の値を増やしながら，',
+  ForDecrement = '〈変数〉の値を減らしながら，',
   EndFor = 'を繰り返す',
+  Predefinedfunction = '用意された関数',
 }
 
 export enum bracketEnum {
@@ -57,6 +59,9 @@ export enum inputTypeEnum {
 }
 
 //\dがうまく解釈されないため、エスケープシーケンスを更にエスケープする必要がある
+
+
+
 export enum ValidationEnum {
   Variable = '^[a-zA-Z_$][a-zA-Z0-9_$]*$', //変数名のルール
   Integer = '^-?[\\d]+$', //整数
@@ -64,5 +69,7 @@ export enum ValidationEnum {
   InitializeArray = '^(?:(?:[a-zA-Z_$][a-zA-Z0-9_$]*|[0-9]+)(?:,(?:[a-zA-Z_$][a-zA-Z0-9_$]*|[0-9]+))*)$',//配列内のカンマ区切りの文字列
   Array = '^[a-zA-Z_$][a-zA-Z0-9_$]*$',//配列名のルール
   VariableOrArray = '^[a-zA-Z_$][a-zA-Z0-9_$]*$',//変数名・配列名のルール
-  String = "^[a-zA-Z0-9\u3040-\u30FF\u4E00-\u9FFF\uFF65-\uFF9F\uFF10-\uFF19\uFF21-\uFF3A\uFF41-\uFF5A]+$" //英数字と日本語（ひらがな、全角カタカナ、半角カタカナ）
+  String = "^[a-zA-Z0-9\u3040-\u30FF\u4E00-\u9FFF\uFF65-\uFF9F\uFF10-\uFF19\uFF21-\uFF3A\uFF41-\uFF5A]+$", //英数字と日本語（ひらがな、全角カタカナ、半角カタカナ）
+  Parentheses = '^[()]*$',
+  Negation = '^でない$',
 }

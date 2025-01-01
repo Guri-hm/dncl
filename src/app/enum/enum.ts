@@ -49,6 +49,7 @@ export enum StatementEnum {
   ConditionalLoopPreTest = 'conditionallooppretest',
   ConditionalLoopPostTest = 'conditionalloopposttest',
   SequentialIteration = 'sequentialIteration',
+  Predefinedfunction = 'predefinedfunction',
 }
 export enum StatementJpEnum {
   Output = '表示文',
@@ -57,6 +58,7 @@ export enum StatementJpEnum {
   ConditionalLoopPreTest = '条件繰返し文「前判定」',
   ConditionalLoopPostTest = '条件繰返し文「後判定」',
   SequentialIteration = '順次繰返し文',
+  Predefinedfunction = '用意された関数',
 }
 
 export enum OperationEnum {

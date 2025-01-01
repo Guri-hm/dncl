@@ -30,9 +30,9 @@ export function EditorBox(params: Props) {
 
         const hdnInput = (index: number): ReactElement => {
             return (
-                <div>
+                <>
                     <input name="processIndex" type="hidden" value={index}></input>
-                </div>
+                </>
             )
         }
 
@@ -136,7 +136,8 @@ export function EditorBox(params: Props) {
                     <NowrapText text={'になるまで実行する'}></NowrapText>
                     {hdnInput(index)}
                 </>
-            case getEnumIndex(processEnum, processEnum.For):
+            case getEnumIndex(processEnum, processEnum.ForIncrement):
+            case getEnumIndex(processEnum, processEnum.ForDecrement):
                 return <>
                     <Grid container spacing={1} direction='column'>
                         <Grid container direction='row'>
@@ -157,7 +158,7 @@ export function EditorBox(params: Props) {
                             <Grid size='grow'>
                                 <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.Difference}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.Difference} inputType={inputTypeEnum.Number} label={"差分"}></DnclTextField>
                             </Grid>
-                            <NowrapText text={'ずつ増やしながら，'}></NowrapText>
+                            <NowrapText text={index == getEnumIndex(processEnum, processEnum.ForIncrement) ? 'ずつ増やしながら，' : 'ずつ減らしながら，'}></NowrapText>
                         </Grid>
                     </Grid>
                     {hdnInput(index)}
@@ -167,6 +168,14 @@ export function EditorBox(params: Props) {
                     <NowrapText text={'を繰り返す'}></NowrapText>
                     {hdnInput(index)}
                 </>
+            case getEnumIndex(processEnum, processEnum.Predefinedfunction):
+                return <>
+                    <Operation statementType={params.statementType}>
+                        <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArray}></DnclTextField>
+                        <Operator type={OperationEnum.SimpleAssignment}></Operator>
+                    </Operation>
+                    {hdnInput(index)}
+                </>
             default:
                 return <></>
         }
@@ -174,10 +183,10 @@ export function EditorBox(params: Props) {
 
     const result = processNames.filter(item => item.statementType == params.statementType)
         .flatMap(item => item.names);
-    const defaultProps = {
-        options: result,
-        getOptionLabel: (option: processTypes) => option.title,
-    };
+    // const defaultProps = {
+    //     options: result,
+    //     getOptionLabel: (option: processTypes) => option.title,
+    // };
 
     const ddl = <Box sx={{ minWidth: 120 }}>
         <FormControl variant="standard" fullWidth>
@@ -229,7 +238,14 @@ export function EditorBox(params: Props) {
             return <>
                 {ddl}
                 <CustomBox>
-                    {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.For))}
+                    {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.ForIncrement))}
+                </CustomBox>
+            </>
+        case StatementEnum.Predefinedfunction:
+            return <>
+                {ddl}
+                <CustomBox>
+                    {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.Predefinedfunction))}
                 </CustomBox>
             </>
         default:
@@ -285,8 +301,15 @@ const processNames = [
     {
         statementType: StatementEnum.SequentialIteration,
         names: [
-            { title: processEnum.For },
+            { title: processEnum.ForIncrement },
+            { title: processEnum.ForDecrement },
             { title: processEnum.EndFor },
+        ]
+    },
+    {
+        statementType: StatementEnum.Predefinedfunction,
+        names: [
+            { title: processEnum.Predefinedfunction },
         ]
     },
 ];
