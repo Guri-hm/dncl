@@ -2,10 +2,8 @@ import { arrayMove } from '@dnd-kit/sortable';
 import { UniqueIdentifier } from "@dnd-kit/core";
 
 import type { FlattenedItem, TreeItem, TreeItems } from '../types';
-import { AndOrOperatorJpArrayForDncl, ArithmeticOperatorSymbolArrayForJavascript, BraketSymbolEnum, ComparisonOperatorSymbolArrayForJavascript, ReturnFunctionArrayForDncl } from '@/app/enum';
-import { keyPrefixEnum, processEnum, ValidationEnum } from '../components/Dialog/Enum';
-import { SwitchEnum } from '../components/Dialog/DnclTextField';
-import { deflate } from 'zlib';
+import { BraketSymbolEnum, ReturnFuncDncl, VoidFuncDncl } from '@/app/enum';
+import { inputTypeEnum, keyPrefixEnum, processEnum, ValidationEnum } from '../components/Dialog/Enum';
 
 function getDragDepth(offset: number, indentationWidth: number) {
   return Math.round(offset / indentationWidth);
@@ -278,6 +276,7 @@ export function checkParenthesesBalance(strArray: string[]): { isBalanced: boole
   const regex = /\(\)/;
   for (let i = 0; i < strArray.length; i++) {
     if (regex.test(strArray[i])) {
+      console.log(strArray)
       hasEmptyParentheses = true;
     }
   }
@@ -325,49 +324,75 @@ export const transformNegation = (targetString: string) => {
 }
 
 // 「÷」記号を使った除算をMath.floorで包む式に変換 
-export const cnvToDivision = (targetString: string) => {
+export const cnvToDivision = (targetString: string): string => {
   return targetString.replace(/(\w+)\s*÷\s*(\w+)/g, 'Math.floor($1 / $2)');
 }
-export const cnvToFunction = (targetString: string) => {
+
+export const tryParseToJsFunction = (targetString: string): { errorMsgArray: string[]; hasError: boolean; convertedStr: string } => {
+
+  let errorMsgArray: string[] = [];
+
+  // 文字列を二乗する形式に変換する関数
+  function squareString(str: string) {
+    // "Square" で始まる部分を見つけて置換
+    const result = str.replace(/Square\s*\(\s*([a-zA-Z0-9_]+)\s*\)/g, (match, num) => {
+      const number = parseInt(num, 10);
+      return `(${number} * ${number})`;
+    });
+    return result;
+  }
+
+  // "Random(m,n)" という文字列をJavaScriptの乱数生成コードに変換する関数
+  function convertRandomString(str: string): string {
+    // 正規表現を使って "Random(m,n)" の部分を検出
+    const result = str.replace(/Random\s*\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, (match, m, n) => {
+      const numM = parseInt(m, 10);
+      const numN = parseInt(n, 10);
+      if (numM > numN) {
+        errorMsgArray.push(`第1引数の値は第2引数の値よりも小さくしてください`);
+        return '';  // mがnより大きい場合は空文字を返す
+      }
+      return `Math.floor(Math.random() * (${numN} - ${numM} + 1)) + ${numM}`;
+    });
+    return result;
+  }
+
+  // 文字列を指数形式に変換する関数
+  function exponentiateString(str: string) {
+    // "Exponentiation" で始まる部分を見つけて置換
+    const result = str.replace(/Exponentiation\s*\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, (match, base, exponent) => {
+      return `(${base}**${exponent})`;
+    });
+    return result;
+  }
+
+  function replaceOddFunctions(str: string) {
+    return str.replace(/Odd\s*\(\s*([a-zA-Z0-9_]+)\s*\)/g, (match, variable) => {
+      // console.log(`Match: ${match}`);
+      // console.log(`Variable: ${variable}`);
+      return `${variable} % 2 !== 0`;
+    });
+  }
+
+  function convertBinaryFunctions(str: string) {
+    return str.replace(/Binary\s*\(\s*([a-zA-Z0-9_]+)\s*\)/g, (match, variable) => {
+      return `(${variable}).toString(2)`;
+    });
+  }
 
   targetString = squareString(targetString);
   targetString = exponentiateString(targetString);
   targetString = convertRandomString(targetString);
+  targetString = replaceOddFunctions(targetString);
+  targetString = convertBinaryFunctions(targetString);
 
-  return targetString;
-}
+  //異常値があれば空文字を返すようにしている
+  if (targetString == "") {
 
-// 文字列を二乗する形式に変換する関数
-function squareString(input: string) {
-  // "Square" で始まる部分を見つけて置換
-  const result = input.replace(/Square\s*\(\s*(\d+)\s*\)/g, (match, num) => {
-    const number = parseInt(num, 10);
-    return `(${number} * ${number})`;
-  });
-  return result;
-}
+    return { errorMsgArray: errorMsgArray, hasError: true, convertedStr: targetString };
+  }
+  return { errorMsgArray: [], hasError: false, convertedStr: targetString };
 
-// "Random(m,n)" という文字列をJavaScriptの乱数生成コードに変換する関数
-function convertRandomString(input: string): string {
-  // 正規表現を使って "Random(m,n)" の部分を検出
-  const result = input.replace(/Random\s*\(\s*(\d+)\s*,\s*(\d+)\s*\)/g, (match, m, n) => {
-    const numM = parseInt(m, 10);
-    const numN = parseInt(n, 10);
-    if (numM > numN) {
-      return '';  // mがnより大きい場合は空文字を返す
-    }
-    return `Math.floor(Math.random() * (${numN} - ${numM} + 1)) + ${numM}`;
-  });
-  return result;
-}
-
-// 文字列を指数形式に変換する関数
-function exponentiateString(input: string) {
-  // "Exponentiation" で始まる部分を見つけて置換
-  const result = input.replace(/Exponentiation\s*\(\s*(\d+)\s*,\s*(\d+)\s*\)/g, (match, base, exponent) => {
-    return `(${base}**${exponent})`;
-  });
-  return result;
 }
 
 export const checkBraketPair = (targetStringArray: string[]): { errorMsgArray: string[]; hasError: boolean; } => {
@@ -475,8 +500,9 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
   const regexForNegation = new RegExp(ValidationEnum.Negation);
   const regexForInteger = new RegExp(ValidationEnum.Integer);
 
-  function isEnumValue(value: string): value is ReturnFunctionArrayForDncl {
-    return Object.values(ReturnFunctionArrayForDncl).includes(value as ReturnFunctionArrayForDncl);
+  function isEnumValue(value: string): value is ReturnFuncDncl | VoidFuncDncl {
+    const combinedEnumValues: string[] = [...Object.values(ReturnFuncDncl), ...Object.values(VoidFuncDncl)];
+    return combinedEnumValues.includes(value);
   }
 
   let errorMsgArray: string[] = [];
@@ -495,53 +521,59 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
       }
     }
 
-    if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Type}`]) != "") {
 
-      switch (obj[`${keyword}_${i}_${keyPrefixEnum.Type}`]) {
-        case SwitchEnum.String:
-          if (operandsMaxIndex > 0) {
-            if (proceccType != processEnum.Output) {
-              errorMsgArray.push(`文字列が含まれる場合，演算子が使用できません`);
-            }
-          }
-          if (!regexForStringOperand.test(obj[`${keyword}_${i}`])) {
-            errorMsgArray.push(`${i + 1}番目のオペランドに不適切な値が使用されています`);
-          }
-
-          break;
-        case SwitchEnum.ReturnFunction:
-
-          //関数名
-          if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`]) != "") {
-            if (!regexForOperand.test(obj[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`])) {
-              errorMsgArray.push(`${i + 1}番目のオペランドに，不適切な関数名が使用されています`);
-            }
-          }
-          if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Function}`]) != "") {
-            if (!isEnumValue(obj[`${keyword}_${i}_${keyPrefixEnum.Function}`])) {
-              errorMsgArray.push(`${i + 1}番目のオペランドの関数に，用意された関数以外が使用されています`);
-            }
-          }
-          //引数
-          for (let j = 0; j < 2; j++) {
-            if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}_${j}`]) != "") {
-              if (!regexForOperand.test(obj[`${keyword}_${i}_${keyPrefixEnum.FunctionName}_${j}`])) {
-                errorMsgArray.push(`${i + 1}番目のオペランドの関数に，不適切な引数が使用されています`);
-              }
-            }
-          }
-
-          break;
-        default:
-          errorMsgArray.push(`${i + 1}番目のオペランドで異常値が検知されました`);
-          break;
-      }
-    } else {
-      if (toEmptyIfNull(obj[`${keyword}_${i}`]) == "") {
+    //オペランドがない場合はチェックをスキップ
+    if (!(obj[`${keyword}_${i}`])) {
+      if (toEmptyIfNull(obj[`${keyword}_${i}`]) != "") {
         errorMsgArray.push(`${i + 1}番目のオペランドが入力されていません`);
-      } else {
+      }
+    }
+
+    switch (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Type}`])) {
+      case inputTypeEnum.String:
+
+        if (operandsMaxIndex > 0) {
+          if (proceccType != processEnum.Output) {
+            errorMsgArray.push(`文字列が含まれる場合，演算子が使用できません`);
+          }
+        }
+        if (!regexForStringOperand.test(obj[`${keyword}_${i}`])) {
+          errorMsgArray.push(`${i + 1}番目のオペランドに不適切な値が使用されています`);
+        }
+        break;
+
+      default:
         if (!regexForOperand.test(obj[`${keyword}_${i}`])) {
           errorMsgArray.push(`${i + 1}番目のオペランドに不適切な値が使用されています`);
+        }
+        break;
+    }
+
+    if (isReservedWord(obj[`${keyword}_${i}`])) {
+      errorMsgArray.push(`${i + 1}番目のオペランドに予約語が使用されています`);
+    }
+    //関数名
+    if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`]) != "") {
+      if (!regexForOperand.test(obj[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`])) {
+        errorMsgArray.push(`${i + 1}番目のオペランドに，不適切な関数名が使用されています`);
+      }
+      if (isReservedWord(obj[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`])) {
+        errorMsgArray.push(`${i + 1}番目のオペランドに予約語が使用されています`);
+      }
+    }
+    if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Function}`]) != "") {
+      if (!isEnumValue(obj[`${keyword}_${i}_${keyPrefixEnum.Function}`])) {
+        errorMsgArray.push(`${i + 1}番目のオペランドの関数に，用意された関数以外が使用されています`);
+      }
+    }
+    //引数
+    for (let j = 0; j < 2; j++) {
+      if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}_${j}`]) != "") {
+        if (!regexForOperand.test(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}_${j}`])) {
+          errorMsgArray.push(`${i + 1}番目のオペランドの関数に，不適切な引数が使用されています`);
+        }
+        if (isReservedWord(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}_${j}`])) {
+          errorMsgArray.push(`${i + 1}番目のオペランドの関数の引数に，予約語が使用されています`);
         }
       }
     }
@@ -563,6 +595,9 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
         if (!regexForSuffixWithBrackets.test(obj[`${keyword}_${i}_${keyPrefixEnum.Suffix}`])) {
           errorMsgArray.push(`${i + 1}番目のオペランドの添字に不適切な文字が使用されています`);
         }
+        if (isReservedWord(obj[`${keyword}_${i}_${keyPrefixEnum.Suffix}`])) {
+          errorMsgArray.push(`${i + 1}番目のオペランドの添字に予約語が使用されています`);
+        }
       }
     }
     if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Negation}`]) != "") {
@@ -573,19 +608,19 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
     //For文の初期値
     if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.InitialValue}`]) != "") {
       if (!regexForInteger.test(obj[`${keyword}_${i}_${keyPrefixEnum.InitialValue}`])) {
-        errorMsgArray.push(`${i + 1}番目のオペランドの右側の否定演算子に，「でない」以外の文字が使用されています`);
+        errorMsgArray.push(`初期値に不適切な文字が使用されています`);
       }
     }
     //For文の終了値
     if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.EndValue}`]) != "") {
       if (!regexForInteger.test(obj[`${keyword}_${i}_${keyPrefixEnum.EndValue}`])) {
-        errorMsgArray.push(`${i + 1}番目のオペランドの右側の否定演算子に，「でない」以外の文字が使用されています`);
+        errorMsgArray.push(`終了値に不適切な文字が使用されています`);
       }
     }
     //For文の増減差分
     if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Difference}`]) != "") {
       if (!regexForInteger.test(obj[`${keyword}_${i}_${keyPrefixEnum.Difference}`])) {
-        errorMsgArray.push(`${i + 1}番目のオペランドの右側の否定演算子に，「でない」以外の文字が使用されています`);
+        errorMsgArray.push(`差分に不適切な文字が使用されています`);
       }
     }
 
@@ -604,41 +639,80 @@ export const cnvObjToArray = (obj: { [k: string]: string; }, operandsMaxIndex: n
     array.push(pushedString);
   }
 
-  let strArray: string[] = [];
+  // サニタイズ関数
+  function sanitizeString(str: string) {
+    return str.replace(/[&<>"']/g, function (char) {
+      switch (char) {
+        case '&':
+          return '&amp;';
+        case '<':
+          return '&lt;';
+        case '>':
+          return '&gt;';
+        case '"':
+          return '&quot;';
+        case "'":
+          return '&#39;';
+        default:
+          return char;
+      }
+    });
+  }
 
-  console.log(obj)
+  // 元のJSON構造を保持しつつ値をサニタイズして更新
+  function sanitizeJsonValues(obj: {
+    [k: string]: string;
+  }) {
+    const sanitizedData = { ...obj }; // 元のデータをコピー
+    Object.keys(sanitizedData).forEach(key => {
+      if (!key.includes(keyPrefixEnum.Operator)) {
+        sanitizedData[key] = sanitizeString(sanitizedData[key]);
+      }
+    });
+    return sanitizedData;
+  }
+
+  const sanitizedData = sanitizeJsonValues(obj);
+
+  let strArray: string[] = [];
+  //演算子以外はサニタイズされた値で処理していく
   for (let i = 0; i <= operandsMaxIndex; i++) {
 
-    pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Operator}`]));
-    pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.LeftOfOperand}`]));
+    pushIfNotEmpty(strArray, toEmptyIfNull(sanitizedData[`${keyword}_${i}_${keyPrefixEnum.Operator}`]));
+    pushIfNotEmpty(strArray, toEmptyIfNull(sanitizedData[`${keyword}_${i}_${keyPrefixEnum.LeftOfOperand}`]));
 
-    if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Type}`]) != "") {
-      switch (obj[`${keyword}_${i}_${keyPrefixEnum.Type}`]) {
-        case SwitchEnum.String:
-          pushIfNotEmpty(strArray, `"${toEmptyIfNull(obj[`${keyword}_${i}`])}"`);
-          break;
-        case SwitchEnum.ReturnFunction:
-          pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`]));
-          pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Function}`]));
-          //引数
-          let tmpArguments: string[] = [];
-          for (let j = 0; j < 2; j++) {
-            pushIfNotEmpty(tmpArguments, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}_${j}`]));
-          }
-          const joinedStr = tmpArguments.join(",");
-          pushIfNotEmpty(strArray, `(${joinedStr})`);
-          break;
-        default:
-          break;
-      }
-    } else {
-      pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}`]));
+    switch (sanitizedData[`${keyword}_${i}_${keyPrefixEnum.Type}`]) {
+      case inputTypeEnum.String:
+        pushIfNotEmpty(strArray, `"${toEmptyIfNull(sanitizedData[`${keyword}_${i}`])}"`);
+        break;
+      default:
+        pushIfNotEmpty(strArray, toEmptyIfNull(sanitizedData[`${keyword}_${i}`]));
+        break;
+
     }
 
-    pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Suffix}`]));
-    pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.RightOfOperand}`]));
-    pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Negation}`]));
+    pushIfNotEmpty(strArray, toEmptyIfNull(sanitizedData[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`]));
+    pushIfNotEmpty(strArray, toEmptyIfNull(sanitizedData[`${keyword}_${i}_${keyPrefixEnum.Function}`]));
+    //引数
+    let tmpArguments: string[] = [];
+    for (let j = 0; j < 2; j++) {
+      pushIfNotEmpty(tmpArguments, toEmptyIfNull(sanitizedData[`${keyword}_${i}_${keyPrefixEnum.Argument}_${j}`]));
+    }
+    const joinedStr = tmpArguments.join(",");
+    if (joinedStr.length > 0) {
+      pushIfNotEmpty(strArray, `(${joinedStr})`);
+    }
+
+    pushIfNotEmpty(strArray, toEmptyIfNull(sanitizedData[`${keyword}_${i}_${keyPrefixEnum.Suffix}`]));
+    pushIfNotEmpty(strArray, toEmptyIfNull(sanitizedData[`${keyword}_${i}_${keyPrefixEnum.RightOfOperand}`]));
+    pushIfNotEmpty(strArray, toEmptyIfNull(sanitizedData[`${keyword}_${i}_${keyPrefixEnum.Negation}`]));
   }
 
   return strArray;
+}
+
+const reservedWords = ["abstract", "await", "boolean", "break", "byte", "case", "catch", "char", "class", "const", "continue", "debugger", "default", "delete", "do", "double", "else", "enum", "export", "extends", "false", "final", "finally", "float", "for", "function", "goto", "if", "implements", "import", "in", "instanceof", "int", "interface", "let", "long", "native", "new", "null", "package", "private", "protected", "public", "return", "short", "static", "super", "switch", "synchronized", "this", "throw", "throws", "transient", "true", "try", "typeof", "var", "void", "volatile", "while", "with", "yield"];
+
+export function isReservedWord(str: string) {
+  return reservedWords.some(reserved => reserved === str);
 }

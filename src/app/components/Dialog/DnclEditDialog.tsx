@@ -10,8 +10,8 @@ import { StatementName } from './StatementName';
 import { StatementDesc } from './StatementDesc';
 import { EditorBox } from './EditorBox';
 import { keyPrefixEnum, processEnum } from './Enum';
-import { ArithmeticOperatorSymbolArrayForDncl, ArithmeticOperatorSymbolArrayForJavascript, ComparisonOperatorSymbolArrayForDncl, ComparisonOperatorSymbolArrayForJavascript, OperatorEnum, StatementEnum } from '@/app/enum';
-import { checkBraketPair, cnvAndOrToJsOperator, cnvObjToArray, cnvToDivision, cnvToFunction, escapeHtml, getOperandsMaxIndex, isValidExpression, replaceToAmpersand, sanitizeInput, transformNegation, updateToWithSquareBrackets, ValidateObjValue } from '@/app/utilities';
+import { ArithmeticOperatorDncl, ArithmeticOperatorJs, ComparisonOperatorDncl, ComparisonOperatorJs, OperatorEnum, ReturnFuncDncl, ReturnFuncJpDncl, StatementEnum, VoidFuncDncl, VoidFuncJpDncl } from '@/app/enum';
+import { checkBraketPair, cnvAndOrToJsOperator, cnvObjToArray, cnvToDivision, escapeHtml, getOperandsMaxIndex, isValidExpression, replaceToAmpersand, sanitizeInput, transformNegation, tryParseToJsFunction, updateToWithSquareBrackets, ValidateObjValue } from '@/app/utilities';
 import { getEnumIndex } from "@/app/utilities";
 import { ErrorMsgBox } from './ErrorMsgBox';
 
@@ -54,6 +54,7 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
         }
 
         let strArray: string[] = cnvObjToArray(updatedObj, operandsMaxIndex, keyword);
+        console.log(strArray)
 
         result = checkBraketPair(strArray);
         if (result.hasError) {
@@ -62,16 +63,22 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
         }
 
         let statement = strArray.join(' ');
+
         if (statement.trim().length == 0) return true;
 
         statement = cnvAndOrToJsOperator(statement);
         statement = transformNegation(statement);
         statement = cnvToDivision(statement);
-        statement = cnvToFunction(statement);
-        statement = escapeHtml(statement);
+        const cnvResult = tryParseToJsFunction(statement);
 
-        console.log(statement)
-        return false
+        console.log(cnvResult.convertedStr)
+        if (cnvResult.hasError) {
+            setError(cnvResult.errorMsgArray);
+            return false;
+        }
+
+        statement = escapeHtml(cnvResult.convertedStr);
+
         if (sanitizeInput(statement) == "") {
             setError(["不適切な文字が使用されています"]);
             return false;
@@ -97,11 +104,16 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
 
         for (let i = 0; i < strArray.length; i++) {
             strArray[i] = strArray[i]
-                .replace(ComparisonOperatorSymbolArrayForJavascript.EqualToOperator, ComparisonOperatorSymbolArrayForDncl.EqualToOperator)
-                .replace(ComparisonOperatorSymbolArrayForJavascript.NotEqualToOperator, ComparisonOperatorSymbolArrayForDncl.NotEqualToOperator)
-                .replace(ComparisonOperatorSymbolArrayForJavascript.GreaterThanOrEqualToOperator, ComparisonOperatorSymbolArrayForDncl.GreaterThanOrEqualToOperator)
-                .replace(ComparisonOperatorSymbolArrayForJavascript.LessThanOrEqualToOperator, ComparisonOperatorSymbolArrayForDncl.LessThanOrEqualToOperator)
-                .replace(ArithmeticOperatorSymbolArrayForJavascript.MultiplicationOperator, ArithmeticOperatorSymbolArrayForDncl.MultiplicationOperator)
+                .replace(ComparisonOperatorJs.EqualToOperator, ComparisonOperatorDncl.EqualToOperator)
+                .replace(ComparisonOperatorJs.NotEqualToOperator, ComparisonOperatorDncl.NotEqualToOperator)
+                .replace(ComparisonOperatorJs.GreaterThanOrEqualToOperator, ComparisonOperatorDncl.GreaterThanOrEqualToOperator)
+                .replace(ComparisonOperatorJs.LessThanOrEqualToOperator, ComparisonOperatorDncl.LessThanOrEqualToOperator)
+                .replace(ArithmeticOperatorJs.MultiplicationOperator, ArithmeticOperatorDncl.MultiplicationOperator)
+                .replace(ReturnFuncDncl.Square, ReturnFuncJpDncl.Square)
+                .replace(ReturnFuncDncl.Exponentiation, ReturnFuncJpDncl.Exponentiation)
+                .replace(ReturnFuncDncl.Random, ReturnFuncJpDncl.Random)
+                .replace(ReturnFuncDncl.Odd, ReturnFuncJpDncl.Odd)
+                .replace(VoidFuncDncl.Binary, VoidFuncJpDncl.Binary)
         }
 
         return strArray.join(' ')
@@ -141,8 +153,7 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                         if (processType == '') {
                             return;
                         }
-
-                        // if (!checkStatement(formJson, processType as processEnum, keyPrefixEnum.LeftSide)) return;
+                        if (!checkStatement(formJson, processType as processEnum, keyPrefixEnum.LeftSide)) return;
                         if (!checkStatement(formJson, processType as processEnum, keyPrefixEnum.RigthSide)) return;
 
                         setError([]);

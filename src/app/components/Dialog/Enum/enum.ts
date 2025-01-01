@@ -52,6 +52,7 @@ export enum inputTypeEnum {
   SwitchVariableOrArray = 'SwitchVariableOrArray',
   RadioWithString = 'RadioWithString',
   RadioWithReturnFunction = 'RadioWithReturnFunction',
+  RadioWithVoid = 'RadioWithVoid',
   ArrayWithoutSuffix = 'ArrayWithoutSuffix',
   Array = 'Array',
   SuffixOnly = 'SuffixOnly',
@@ -60,6 +61,9 @@ export enum inputTypeEnum {
   VariableOnly = 'VariableOnly',
   VariableOrNumber = 'VariableOrNumber',
   Number = 'Number',
+  String = 'String',
+  ReturnFunction = 'ReturnFunction',
+  Void = 'Void',
 }
 
 //\dがうまく解釈されないため、エスケープシーケンスを更にエスケープする必要がある

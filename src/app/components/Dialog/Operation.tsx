@@ -210,7 +210,7 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
     const getSwitchType = (type: StatementEnum | undefined): inputTypeEnum => {
         switch (type) {
             case StatementEnum.Output:
-                return inputTypeEnum.RadioWithString;
+                return inputTypeEnum.RadioWithVoid;
             case StatementEnum.Input:
                 return inputTypeEnum.RadioWithReturnFunction;
             default:

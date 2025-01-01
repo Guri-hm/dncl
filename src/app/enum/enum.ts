@@ -3,7 +3,7 @@ export enum OperatorEnum {
   SimpleAssignment = '←',
 }
 
-export enum ArithmeticOperatorSymbolArrayForJavascript {
+export enum ArithmeticOperatorJs {
   AdditionOperator = '+',
   SubtractionOperator = '-',
   MultiplicationOperator = '*',
@@ -11,7 +11,7 @@ export enum ArithmeticOperatorSymbolArrayForJavascript {
   DivisionOperatorQuotient = '÷',
   DivisionOperatorRemaining = '%',
 }
-export enum ComparisonOperatorSymbolArrayForJavascript {
+export enum ComparisonOperatorJs {
   EqualToOperator = '==',
   NotEqualToOperator = '!=',
   GreaterThanOperator = '>',
@@ -24,19 +24,32 @@ export enum AndOrOperatorJpArrayForDncl {
   AndOperator = 'かつ',
   OrOperator = 'または',
 }
-export enum ReturnFunctionArrayForDncl {
+export enum ReturnFuncDncl {
   UserDefined = 'UserDefined',
   Square = 'Square',
   Exponentiation = 'Exponentiation',
   Random = 'Random',
+  Odd = 'Odd',
+}
+export enum VoidFuncDncl {
   Binary = 'Binary',
+}
+export enum ReturnFuncJpDncl {
+  UserDefined = '関数',
+  Square = '二乗',
+  Exponentiation = 'べき乗',
+  Random = '乱数',
+  Odd = '奇数',
+}
+export enum VoidFuncJpDncl {
+  Binary = '二進',
 }
 export enum NegationOperatorJpArray {
   NullOperator = '',
   NegationOperator = 'でない',
 }
 
-export enum ComparisonOperatorSymbolArrayForDncl {
+export enum ComparisonOperatorDncl {
   EqualToOperator = '=',
   NotEqualToOperator = '≠',
   GreaterThanOperator = '≻',
@@ -45,7 +58,7 @@ export enum ComparisonOperatorSymbolArrayForDncl {
   LessThanOrEqualToOperator = '≦',
   NullOperator = '',
 }
-export enum ArithmeticOperatorSymbolArrayForDncl {
+export enum ArithmeticOperatorDncl {
   MultiplicationOperator = '×',
 }
 
