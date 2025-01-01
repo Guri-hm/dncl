@@ -8,7 +8,7 @@ import { keyPrefixEnum, inputTypeEnum, ValidationEnum } from "./Enum";
 import Grid from '@mui/material/Grid2';
 import { ValidatedTextField } from "./ValidatedTextField";
 import { FixedHeightGrid } from './FixedHeightGrid';
-import { FormControlLabel, Radio, RadioGroup } from '@mui/material';
+import { FormControlLabel, FormHelperText, Radio, RadioGroup } from '@mui/material';
 import { InputTypeJpEnum, OperationEnum } from '@/app/enum';
 import { FunctionField } from './FunctionField';
 
@@ -31,7 +31,7 @@ enum SwitchJpEnum {
   String = '文字列',
   Function = '関数',
 }
-enum SwitchEnum {
+export enum SwitchEnum {
   VariableOrNumber = 'VariableOrNumber',
   Array = 'Array',
   String = 'String',
@@ -175,10 +175,8 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
               <Grid container direction='row'>
                 <Grid size='grow'>
                   <ValidatedTextField name={`${name}_${index}`} label={tmpLabel} pattern={pattern} isIMEOn={radioValue == SwitchEnum.String ? true : false}></ValidatedTextField>
-                  {
-                    radioValue == SwitchEnum.String && <input type='hidden' name={`${name}_${index}_${keyPrefixEnum.String}`} value={`${radioValue == SwitchEnum.String}`}></input>
-                  }
                 </Grid>
+                <input type='hidden' name={`${name}_${index}_${keyPrefixEnum.Type}`} value={`${radioValue}`}></input>
                 {radioValue == SwitchEnum.Array &&
                   <Grid container size='grow'>
                     <FixedHeightGrid>[</FixedHeightGrid>
@@ -197,9 +195,9 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
                   onChange={handleChangeRadio}
                   defaultValue={SwitchEnum.VariableOrNumber}
                 >
-                  <FormControlLabel value={SwitchEnum.VariableOrNumber} control={<Radio size="small" />} label={SwitchJpEnum.VariableOrNumber} />
-                  <FormControlLabel value={SwitchEnum.Array} control={<Radio size="small" />} label={SwitchJpEnum.Array} />
-                  <FormControlLabel value={SwitchEnum.String} control={<Radio size="small" />} label={SwitchJpEnum.String} />
+                  <FormControlLabel sx={{ margin: 0, paddingBottom: 0 }} value={SwitchEnum.VariableOrNumber} control={<Radio size="small" />} label={SwitchJpEnum.VariableOrNumber} />
+                  <FormControlLabel sx={{ margin: 0, paddingBottom: 0 }} value={SwitchEnum.Array} control={<Radio size="small" />} label={SwitchJpEnum.Array} />
+                  <FormControlLabel sx={{ margin: 0, paddingBottom: 0 }} value={SwitchEnum.String} control={<Radio size="small" />} label={SwitchJpEnum.String} />
                 </RadioGroup>
               </Grid>
             </Grid>
@@ -238,15 +236,13 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
                   <>
                     <Grid size='grow'>
                       <ValidatedTextField name={`${name}_${index}`} label={tmpLabel} pattern={pattern} isIMEOn={radioValue == SwitchEnum.String ? true : false}></ValidatedTextField>
-                      {
-                        radioValue == SwitchEnum.String && <input type='hidden' name={`${name}_${index}_${keyPrefixEnum.String}`} value={`${radioValue == SwitchEnum.String}`}></input>
-                      }
                     </Grid>
                   </>
                 }
+                <input type='hidden' name={`${name}_${index}_${keyPrefixEnum.Type}`} value={`${radioValue}`}></input>
                 {radioValue == SwitchEnum.ReturnFunction &&
                   <>
-                    <FunctionField></FunctionField>
+                    <FunctionField name={`${name}`} parentIndex={index}></FunctionField>
                   </>
                 }
                 {radioValue == SwitchEnum.Array &&
@@ -267,10 +263,10 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
                   onChange={handleChangeRadio}
                   defaultValue={SwitchEnum.VariableOrNumber}
                 >
-                  <FormControlLabel value={SwitchEnum.VariableOrNumber} control={<Radio size="small" />} label={SwitchJpEnum.VariableOrNumber} />
-                  <FormControlLabel value={SwitchEnum.Array} control={<Radio size="small" />} label={SwitchJpEnum.Array} />
-                  <FormControlLabel value={SwitchEnum.String} control={<Radio size="small" />} label={SwitchJpEnum.String} />
-                  <FormControlLabel value={SwitchEnum.ReturnFunction} control={<Radio size="small" />} label={SwitchJpEnum.Function} />
+                  <FormControlLabel sx={{ margin: 0, paddingBottom: 0 }} value={SwitchEnum.VariableOrNumber} control={<Radio size="small" />} label={SwitchJpEnum.VariableOrNumber} />
+                  <FormControlLabel sx={{ margin: 0, paddingBottom: 0 }} value={SwitchEnum.Array} control={<Radio size="small" />} label={SwitchJpEnum.Array} />
+                  <FormControlLabel sx={{ margin: 0, paddingBottom: 0 }} value={SwitchEnum.String} control={<Radio size="small" />} label={SwitchJpEnum.String} />
+                  <FormControlLabel sx={{ margin: 0, paddingBottom: 0 }} value={SwitchEnum.ReturnFunction} control={<Radio size="small" />} label={SwitchJpEnum.Function} />
                 </RadioGroup>
               </Grid>
             </Grid>

@@ -11,7 +11,7 @@ import { StatementDesc } from './StatementDesc';
 import { EditorBox } from './EditorBox';
 import { keyPrefixEnum, processEnum } from './Enum';
 import { ArithmeticOperatorSymbolArrayForDncl, ArithmeticOperatorSymbolArrayForJavascript, ComparisonOperatorSymbolArrayForDncl, ComparisonOperatorSymbolArrayForJavascript, OperatorEnum, StatementEnum } from '@/app/enum';
-import { checkBraketPair, cnvAndOrToJsOperator, cnvObjToArray, cnvToDivision, escapeHtml, getOperandsMaxIndex, isValidExpression, replaceToAmpersand, sanitizeInput, transformNegation, updateToWithSquareBrackets, ValidateObjValue } from '@/app/utilities';
+import { checkBraketPair, cnvAndOrToJsOperator, cnvObjToArray, cnvToDivision, cnvToFunction, escapeHtml, getOperandsMaxIndex, isValidExpression, replaceToAmpersand, sanitizeInput, transformNegation, updateToWithSquareBrackets, ValidateObjValue } from '@/app/utilities';
 import { getEnumIndex } from "@/app/utilities";
 import { ErrorMsgBox } from './ErrorMsgBox';
 
@@ -35,7 +35,7 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
 
     const [error, setError] = useState<string[]>([]);
 
-    const checkStatement = (data: { [k: string]: string; }, keyword: keyPrefixEnum): boolean => {
+    const checkStatement = (data: { [k: string]: string; }, proceccType: processEnum, keyword: keyPrefixEnum): boolean => {
 
         //キーワードを含むオブジェクトを取得
         const obj = Object.fromEntries(Object.entries(data).filter(([key, value]) => key.includes(keyword)));
@@ -47,7 +47,7 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
         //メイン処理はここから
         let result: { errorMsgArray: string[]; hasError: boolean; };
 
-        result = ValidateObjValue(updatedObj, operandsMaxIndex, keyword)
+        result = ValidateObjValue(updatedObj, operandsMaxIndex, proceccType, keyword)
         if (result.hasError) {
             setError(result.errorMsgArray);
             return false;
@@ -67,8 +67,11 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
         statement = cnvAndOrToJsOperator(statement);
         statement = transformNegation(statement);
         statement = cnvToDivision(statement);
+        statement = cnvToFunction(statement);
         statement = escapeHtml(statement);
 
+        console.log(statement)
+        return false
         if (sanitizeInput(statement) == "") {
             setError(["不適切な文字が使用されています"]);
             return false;
@@ -105,6 +108,7 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
     }
 
     const handleClose = () => {
+        setError([]);
         setEditor((prevState: DnclEditor) => ({ ...prevState, open: false }));
         refrash();
     };
@@ -131,15 +135,17 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                             return processEnumArray[index];
                         }
 
-                        const proceccType = getValueByIndex(formJson.processIndex)
+                        const processType = getValueByIndex(formJson.processIndex)
 
                         //存在しない処理の場合は実行させない
-                        if (proceccType == '') {
+                        if (processType == '') {
                             return;
                         }
 
-                        if (!checkStatement(formJson, keyPrefixEnum.LeftSide)) return;
-                        if (!checkStatement(formJson, keyPrefixEnum.RigthSide)) return;
+                        // if (!checkStatement(formJson, processType as processEnum, keyPrefixEnum.LeftSide)) return;
+                        if (!checkStatement(formJson, processType as processEnum, keyPrefixEnum.RigthSide)) return;
+
+                        setError([]);
 
                         const operator = getOperator(editor.type);
                         const leftside = getDnclStatement(formJson, keyPrefixEnum.LeftSide);

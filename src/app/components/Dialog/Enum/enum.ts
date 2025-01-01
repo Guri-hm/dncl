@@ -39,7 +39,7 @@ export enum keyPrefixEnum {
   LeftOfOperand = 'LeftOfOperand',
   RightOfOperand = 'RightOfOperand',
   Negation = 'Negation',
-  String = 'String',
+  Type = 'Type',
   InitialValue = 'InitialValue',
   EndValue = 'EndValue',
   Difference = 'Difference',
@@ -63,9 +63,6 @@ export enum inputTypeEnum {
 }
 
 //\dがうまく解釈されないため、エスケープシーケンスを更にエスケープする必要がある
-
-
-
 export enum ValidationEnum {
   Variable = '^[a-zA-Z_$][a-zA-Z0-9_$]*$', //変数名のルール
   Integer = '^-?[\\d]+$', //整数

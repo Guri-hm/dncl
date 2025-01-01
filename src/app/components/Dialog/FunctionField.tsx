@@ -1,4 +1,4 @@
-import { ReactNode, useState } from "react";
+import React, { ReactNode, useState } from "react";
 import Box from '@mui/material/Box';
 import { InputTypeJpEnum, ReturnFunctionArrayForDncl } from '@/app/enum';
 import { ReactElement } from "react";
@@ -77,19 +77,18 @@ export function FunctionField({ name = "", parentIndex = 0, event, ...props }: P
 
   for (let i = 0; i < argumentsCount; i++) {
     ArgumentFields.push(
-      <>
-        {ArgumentFields.length > 0 && <Grid size="auto" key={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${i}_Comma`}><FixedHeightGrid>,</FixedHeightGrid></Grid>}
-        <Grid size="grow" key={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${i}_Field`}>
-          <ValidatedTextField key={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${i}`}
-            name={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${i}`} label={InputTypeJpEnum.Argument} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
+      <React.Fragment key={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${newIndex}_${i}_fragment`}>
+        {ArgumentFields.length > 0 && <Grid size="auto" key={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${newIndex}_${i}_comma`}><FixedHeightGrid>,</FixedHeightGrid></Grid>}
+        <Grid size="grow" key={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${newIndex}_${i}`}>
+          <ValidatedTextField name={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${i}`} label={InputTypeJpEnum.Argument} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
         </Grid>
-      </>
+      </React.Fragment>
     );
   }
 
   if (ArgumentFields.length == 0) {
     ArgumentFields.push(
-      <Grid size="grow" key={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${0}`}>
+      <Grid size="grow" key={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${newIndex}_${0}`}>
         <ValidatedTextField
           name={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${0}`} label={InputTypeJpEnum.Argument} pattern={ValidationEnum.InitializeArray}></ValidatedTextField>
       </Grid>
@@ -117,6 +116,7 @@ export function FunctionField({ name = "", parentIndex = 0, event, ...props }: P
       {newIndex == 0 &&
         <Grid size="grow">
           <ValidatedTextField name={`${name}_${parentIndex}_${keyPrefixEnum.FunctionName}`} label={InputTypeJpEnum.Function} pattern={ValidationEnum.Variable}></ValidatedTextField>
+
         </Grid>
       }
 

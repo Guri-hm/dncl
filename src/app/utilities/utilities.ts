@@ -2,8 +2,10 @@ import { arrayMove } from '@dnd-kit/sortable';
 import { UniqueIdentifier } from "@dnd-kit/core";
 
 import type { FlattenedItem, TreeItem, TreeItems } from '../types';
-import { AndOrOperatorJpArrayForDncl, ArithmeticOperatorSymbolArrayForJavascript, BraketSymbolEnum, ComparisonOperatorSymbolArrayForJavascript } from '@/app/enum';
+import { AndOrOperatorJpArrayForDncl, ArithmeticOperatorSymbolArrayForJavascript, BraketSymbolEnum, ComparisonOperatorSymbolArrayForJavascript, ReturnFunctionArrayForDncl } from '@/app/enum';
 import { keyPrefixEnum, processEnum, ValidationEnum } from '../components/Dialog/Enum';
+import { SwitchEnum } from '../components/Dialog/DnclTextField';
+import { deflate } from 'zlib';
 
 function getDragDepth(offset: number, indentationWidth: number) {
   return Math.round(offset / indentationWidth);
@@ -326,6 +328,47 @@ export const transformNegation = (targetString: string) => {
 export const cnvToDivision = (targetString: string) => {
   return targetString.replace(/(\w+)\s*÷\s*(\w+)/g, 'Math.floor($1 / $2)');
 }
+export const cnvToFunction = (targetString: string) => {
+
+  targetString = squareString(targetString);
+  targetString = exponentiateString(targetString);
+  targetString = convertRandomString(targetString);
+
+  return targetString;
+}
+
+// 文字列を二乗する形式に変換する関数
+function squareString(input: string) {
+  // "Square" で始まる部分を見つけて置換
+  const result = input.replace(/Square\s*\(\s*(\d+)\s*\)/g, (match, num) => {
+    const number = parseInt(num, 10);
+    return `(${number} * ${number})`;
+  });
+  return result;
+}
+
+// "Random(m,n)" という文字列をJavaScriptの乱数生成コードに変換する関数
+function convertRandomString(input: string): string {
+  // 正規表現を使って "Random(m,n)" の部分を検出
+  const result = input.replace(/Random\s*\(\s*(\d+)\s*,\s*(\d+)\s*\)/g, (match, m, n) => {
+    const numM = parseInt(m, 10);
+    const numN = parseInt(n, 10);
+    if (numM > numN) {
+      return '';  // mがnより大きい場合は空文字を返す
+    }
+    return `Math.floor(Math.random() * (${numN} - ${numM} + 1)) + ${numM}`;
+  });
+  return result;
+}
+
+// 文字列を指数形式に変換する関数
+function exponentiateString(input: string) {
+  // "Exponentiation" で始まる部分を見つけて置換
+  const result = input.replace(/Exponentiation\s*\(\s*(\d+)\s*,\s*(\d+)\s*\)/g, (match, base, exponent) => {
+    return `(${base}**${exponent})`;
+  });
+  return result;
+}
 
 export const checkBraketPair = (targetStringArray: string[]): { errorMsgArray: string[]; hasError: boolean; } => {
 
@@ -418,7 +461,7 @@ const toEmptyIfNull = (targetString: string | undefined) => {
   return targetString;
 }
 
-export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex: number, keyword: keyPrefixEnum): { errorMsgArray: string[]; hasError: boolean; } => {
+export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex: number, proceccType: processEnum, keyword: keyPrefixEnum): { errorMsgArray: string[]; hasError: boolean; } => {
 
   const regexForOperator = new RegExp(/^(\+|\-|\*|\/|÷|%|==|!=|>|>=|<|<=|かつ|または|と)$/);
 
@@ -431,6 +474,10 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
   const regexForSuffixWithBrackets = new RegExp(/^(?:(?:[a-zA-Z_$][a-zA-Z0-9_$]*|[0-9]+)(?:,(?:[a-zA-Z_$][a-zA-Z0-9_$]*|[0-9]+))*)|(?:\([^\)]*\))|(?:\[[^\]]*\])$/);
   const regexForNegation = new RegExp(ValidationEnum.Negation);
   const regexForInteger = new RegExp(ValidationEnum.Integer);
+
+  function isEnumValue(value: string): value is ReturnFunctionArrayForDncl {
+    return Object.values(ReturnFunctionArrayForDncl).includes(value as ReturnFunctionArrayForDncl);
+  }
 
   let errorMsgArray: string[] = [];
 
@@ -448,17 +495,52 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
       }
     }
 
-    if (toEmptyIfNull(obj[`${keyword}_${i}`]) == "") {
-      errorMsgArray.push(`${i + 1}番目のオペランドが入力されていません`);
-    } else {
+    if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Type}`]) != "") {
 
-      //文字列チェック
-      if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.String}`]) == 'true') {
-        if (!regexForStringOperand.test(obj[`${keyword}`])) {
-          errorMsgArray.push(`${i + 1}番目のオペランドに不適切な値が使用されています`);
-        }
+      switch (obj[`${keyword}_${i}_${keyPrefixEnum.Type}`]) {
+        case SwitchEnum.String:
+          if (operandsMaxIndex > 0) {
+            if (proceccType != processEnum.Output) {
+              errorMsgArray.push(`文字列が含まれる場合，演算子が使用できません`);
+            }
+          }
+          if (!regexForStringOperand.test(obj[`${keyword}_${i}`])) {
+            errorMsgArray.push(`${i + 1}番目のオペランドに不適切な値が使用されています`);
+          }
+
+          break;
+        case SwitchEnum.ReturnFunction:
+
+          //関数名
+          if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`]) != "") {
+            if (!regexForOperand.test(obj[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`])) {
+              errorMsgArray.push(`${i + 1}番目のオペランドに，不適切な関数名が使用されています`);
+            }
+          }
+          if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Function}`]) != "") {
+            if (!isEnumValue(obj[`${keyword}_${i}_${keyPrefixEnum.Function}`])) {
+              errorMsgArray.push(`${i + 1}番目のオペランドの関数に，用意された関数以外が使用されています`);
+            }
+          }
+          //引数
+          for (let j = 0; j < 2; j++) {
+            if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}_${j}`]) != "") {
+              if (!regexForOperand.test(obj[`${keyword}_${i}_${keyPrefixEnum.FunctionName}_${j}`])) {
+                errorMsgArray.push(`${i + 1}番目のオペランドの関数に，不適切な引数が使用されています`);
+              }
+            }
+          }
+
+          break;
+        default:
+          errorMsgArray.push(`${i + 1}番目のオペランドで異常値が検知されました`);
+          break;
+      }
+    } else {
+      if (toEmptyIfNull(obj[`${keyword}_${i}`]) == "") {
+        errorMsgArray.push(`${i + 1}番目のオペランドが入力されていません`);
       } else {
-        if (!regexForOperand.test(obj[`${keyword}`])) {
+        if (!regexForOperand.test(obj[`${keyword}_${i}`])) {
           errorMsgArray.push(`${i + 1}番目のオペランドに不適切な値が使用されています`);
         }
       }
@@ -506,6 +588,7 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
         errorMsgArray.push(`${i + 1}番目のオペランドの右側の否定演算子に，「でない」以外の文字が使用されています`);
       }
     }
+
   }
   if (errorMsgArray.length > 0) {
     return { errorMsgArray: errorMsgArray, hasError: true };
@@ -523,16 +606,35 @@ export const cnvObjToArray = (obj: { [k: string]: string; }, operandsMaxIndex: n
 
   let strArray: string[] = [];
 
+  console.log(obj)
   for (let i = 0; i <= operandsMaxIndex; i++) {
 
     pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Operator}`]));
     pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.LeftOfOperand}`]));
 
-    if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.String}`]) == 'true') {
-      pushIfNotEmpty(strArray, `"${toEmptyIfNull(obj[`${keyword}_${i}`])}"`);
+    if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Type}`]) != "") {
+      switch (obj[`${keyword}_${i}_${keyPrefixEnum.Type}`]) {
+        case SwitchEnum.String:
+          pushIfNotEmpty(strArray, `"${toEmptyIfNull(obj[`${keyword}_${i}`])}"`);
+          break;
+        case SwitchEnum.ReturnFunction:
+          pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`]));
+          pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Function}`]));
+          //引数
+          let tmpArguments: string[] = [];
+          for (let j = 0; j < 2; j++) {
+            pushIfNotEmpty(tmpArguments, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}_${j}`]));
+          }
+          const joinedStr = tmpArguments.join(",");
+          pushIfNotEmpty(strArray, `(${joinedStr})`);
+          break;
+        default:
+          break;
+      }
     } else {
       pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}`]));
-    };
+    }
+
     pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Suffix}`]));
     pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.RightOfOperand}`]));
     pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Negation}`]));
