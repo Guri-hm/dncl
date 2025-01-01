@@ -428,6 +428,7 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
   const regexForParentheses = new RegExp(ValidationEnum.Parentheses);
   //添字はカンマ区切りも許容(実際はダメだが一括代入の処理があるため許容)
   const regexForSuffix = new RegExp(ValidationEnum.InitializeArray);
+  const regexForSuffixWithBrackets = new RegExp(/^(?:(?:[a-zA-Z_$][a-zA-Z0-9_$]*|[0-9]+)(?:,(?:[a-zA-Z_$][a-zA-Z0-9_$]*|[0-9]+))*)|(?:\([^\)]*\))|(?:\[[^\]]*\])$/);
   const regexForNegation = new RegExp(ValidationEnum.Negation);
   const regexForInteger = new RegExp(ValidationEnum.Integer);
 
@@ -476,7 +477,10 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
     }
     if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Suffix}`]) != "") {
       if (!regexForSuffix.test(obj[`${keyword}_${i}_${keyPrefixEnum.Suffix}`])) {
-        errorMsgArray.push(`${i + 1}番目のオペランドの右側で「(」「)」以外の文字が使用されています`);
+        //()や[]などがついていた場合も想定
+        if (!regexForSuffixWithBrackets.test(obj[`${keyword}_${i}_${keyPrefixEnum.Suffix}`])) {
+          errorMsgArray.push(`${i + 1}番目のオペランドの添字に不適切な文字が使用されています`);
+        }
       }
     }
     if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Negation}`]) != "") {

@@ -149,10 +149,11 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                         switch (Number(formJson.processIndex)) {
                             case getEnumIndex(processEnum, processEnum.SetValueToVariableOrArrayElement):
                             case getEnumIndex(processEnum, processEnum.InitializeArray):
-                            case getEnumIndex(processEnum, processEnum.BulkAssignToArray):
                                 processPhrase = `${leftside} ${operator} ${rightside}`;
                                 break;
-
+                            case getEnumIndex(processEnum, processEnum.BulkAssignToArray):
+                                processPhrase = `${leftside}のすべての要素に${rightside}を代入する`;
+                                break;
                             case getEnumIndex(processEnum, processEnum.Increment):
                                 processPhrase = `${leftside}を${rightside}増やす`;
                                 break;

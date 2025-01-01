@@ -79,7 +79,7 @@ export function FunctionField({ name = "", parentIndex = 0, event, ...props }: P
     ArgumentFields.push(
       <>
         {ArgumentFields.length > 0 && <Grid size="auto" key={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${i}_Comma`}><FixedHeightGrid>,</FixedHeightGrid></Grid>}
-        <Grid size="grow" key={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${i}`}>
+        <Grid size="grow" key={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${i}_Field`}>
           <ValidatedTextField key={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${i}`}
             name={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${i}`} label={InputTypeJpEnum.Argument} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
         </Grid>
@@ -89,7 +89,7 @@ export function FunctionField({ name = "", parentIndex = 0, event, ...props }: P
 
   if (ArgumentFields.length == 0) {
     ArgumentFields.push(
-      <Grid size="grow">
+      <Grid size="grow" key={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${0}`}>
         <ValidatedTextField
           name={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${0}`} label={InputTypeJpEnum.Argument} pattern={ValidationEnum.InitializeArray}></ValidatedTextField>
       </Grid>
