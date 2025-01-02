@@ -32,18 +32,21 @@ import {
   removeItem,
   removeChildrenOf,
   setProperty,
+  getEnumIndex,
 } from "../utilities";
-import { FlattenedItem, SensorContext, TreeItems, FragmentItems, FragmentItem, DnclEditor } from "../types";
+import { FlattenedItem, SensorContext, TreeItems, FragmentItems, FragmentItem, DnclEditorProps } from "@/app/types";
 import { SortableTreeItem, FragmentsListItem, DnclEditDialog } from "../components";
 import { v4 as uuidv4 } from "uuid";
 import { StatementEnum, StatementJpEnum } from "@/app/enum";
+import { processEnum } from "./Dialog/Enum";
 
 const initialItems: TreeItems = [
   {
     id: uuidv4(),
     code: "x ← 2",
     children: [
-    ]
+    ],
+    processIndex: getEnumIndex(processEnum, processEnum.SetValueToVariableOrArrayElement),
   },
   {
     id: uuidv4(),
@@ -52,28 +55,14 @@ const initialItems: TreeItems = [
       {
         id: uuidv4(),
         code: "x を表示する",
-        children: []
+        children: [],
+        processIndex: getEnumIndex(processEnum, processEnum.Output),
       }
-    ]
+    ],
+    processIndex: getEnumIndex(processEnum, processEnum.If),
   },
-  // {
-  //   id: uuidv4(),
-  //   code: "Course2",
-  //   children: [
-  //     {
-  //       id: uuidv4(),
-  //       code: "Module 2",
-  //       children: [
-  //         {
-  //           id: uuidv4(),
-  //           code: "Lesson 2",
-  //           children: [{ id: uuidv4(), code: "Learning Object 2", children: [] }]
-  //         }
-  //       ]
-  //     }
-  //   ]
-  // },
 ];
+
 const fragments: FragmentItems = [
   {
     id: uuidv4(),
@@ -177,7 +166,7 @@ export function SortableTree({
   const [activeCode, setActiveCode] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
-  const [editor, setEditor] = useState<DnclEditor>({ onSubmit: null, open: false, type: StatementEnum.Input, overIndex: 0 });
+  const [editor, setEditor] = useState<DnclEditorProps>({ onSubmit: null, open: false, type: StatementEnum.Input, overIndex: 0, treeItems: items, setItems: setItems });
 
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
@@ -275,7 +264,7 @@ export function SortableTree({
           >
             {visible ? "Hide" : "Show"}
           </button>
-          <DnclEditDialog editor={editor} setEditor={setEditor} refrash={refrash}></DnclEditDialog>
+          <DnclEditDialog {...editor}></DnclEditDialog>
 
         </Allotment.Pane>
         <Allotment.Pane visible={visible} snap>
@@ -376,10 +365,10 @@ export function SortableTree({
   function handleDragEnd({ active, over }: DragEndEvent) {
     resetState();
 
-    const addStatementToTree = (newItem: FlattenedItem, statementText: string, overIndex: number) => {
+    const addStatementToTree = (newItem: FlattenedItem, statementText: string, processIndex: number, overIndex: number) => {
       const clonedItems: FlattenedItem[] = structuredClone(flattenTree(items));
 
-      newItem = { ...newItem, code: statementText }
+      newItem = { ...newItem, code: statementText, processIndex: processIndex }
 
       clonedItems.push(newItem);
 
@@ -405,7 +394,7 @@ export function SortableTree({
         // clonedItems.push(clonedItem);
 
         clonedItem = { ...clonedItem, id: newId, depth: depth, parentId: parentId }
-        setEditor((prevState: DnclEditor) => ({ ...prevState, item: clonedItem, onSubmit: addStatementToTree, open: true, type: fragmentItem.statementType, overIndex: Number(over.id) }));
+        setEditor((prevState: DnclEditorProps) => ({ ...prevState, item: clonedItem, onSubmit: addStatementToTree, open: true, type: fragmentItem.statementType, overIndex: Number(over.id), treeItems: items, refresh: refrash, setEditor: setEditor }));
         return;
       }
       const overIndex = clonedItems.findIndex(({ id }) => id === over.id);

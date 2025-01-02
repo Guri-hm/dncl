@@ -10,12 +10,14 @@ import { NowrapText } from "./NowrapText";
 import { OperationEnum, StatementEnum } from "@/app/enum";
 import { Operation } from "./Operation";
 import { Divider, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
-import { getEnumIndex } from "@/app/utilities";
+import { getEnumIndex, getUserDefineFunctionNameArray } from "@/app/utilities";
 import { CustomBox } from "./CustomBox";
 import Grid from '@mui/material/Grid2';
+import { TreeItems } from "@/app/types";
 
 type Props = {
     statementType: StatementEnum
+    treeItems: TreeItems
 }
 
 export function EditorBox(params: Props) {
@@ -26,6 +28,7 @@ export function EditorBox(params: Props) {
         const index = getEnumIndex(processEnum, event.target.value as processEnum ?? processEnum.SetValueToVariableOrArrayElement);
         setStatement(StatementEditor(index));
     }
+
     const StatementEditor: any = (index: number): ReactElement => {
 
         const hdnInput = (index: number): ReactElement => {
@@ -39,7 +42,7 @@ export function EditorBox(params: Props) {
         switch (index) {
             case getEnumIndex(processEnum, processEnum.SetValueToVariableOrArrayElement):
                 return <>
-                    <Operation statementType={params.statementType}>
+                    <Operation statementType={params.statementType} treeItems={params.treeItems}>
                         <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArray}></DnclTextField>
                         <Operator type={OperationEnum.SimpleAssignment}></Operator>
                     </Operation>
@@ -73,7 +76,7 @@ export function EditorBox(params: Props) {
                 </>
             case getEnumIndex(processEnum, processEnum.Output):
                 return <>
-                    <Operation statementType={params.statementType}></Operation>
+                    <Operation statementType={params.statementType} treeItems={params.treeItems}></Operation>
                     <Divider sx={{ marginLeft: 1 }} orientation="vertical" flexItem />
                     <NowrapText text={'を表示する'}></NowrapText>
                     {hdnInput(index)}

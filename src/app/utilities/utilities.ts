@@ -2,7 +2,7 @@ import { arrayMove } from '@dnd-kit/sortable';
 import { UniqueIdentifier } from "@dnd-kit/core";
 
 import type { FlattenedItem, TreeItem, TreeItems } from '../types';
-import { BraketSymbolEnum, ReturnFuncDncl, VoidFuncDncl } from '@/app/enum';
+import { BraketSymbolEnum, ReturnFuncDncl, UserDefinedFuncDncl, VoidFuncDncl } from '@/app/enum';
 import { inputTypeEnum, keyPrefixEnum, processEnum, ValidationEnum } from '../components/Dialog/Enum';
 
 function getDragDepth(offset: number, indentationWidth: number) {
@@ -501,8 +501,8 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
   const regexForNegation = new RegExp(ValidationEnum.Negation);
   const regexForInteger = new RegExp(ValidationEnum.Integer);
 
-  function isEnumValue(value: string): value is ReturnFuncDncl | VoidFuncDncl {
-    const combinedEnumValues: string[] = [...Object.values(ReturnFuncDncl), ...Object.values(VoidFuncDncl)];
+  function isEnumValue(value: string): value is ReturnFuncDncl | VoidFuncDncl | UserDefinedFuncDncl {
+    const combinedEnumValues: string[] = [...Object.values(ReturnFuncDncl), ...Object.values(VoidFuncDncl), ...Object.values(UserDefinedFuncDncl)];
     return combinedEnumValues.includes(value);
   }
 
@@ -521,7 +521,6 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
         }
       }
     }
-
 
     //オペランドがない場合はチェックをスキップ
     if (!(obj[`${keyword}_${i}`])) {
@@ -555,7 +554,7 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
     }
     //関数名
     if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`]) != "") {
-      if (!regexForOperand.test(obj[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`])) {
+      if (!regexForStringOperand.test(obj[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`])) {
         errorMsgArray.push(`${i + 1}番目のオペランドに，不適切な関数名が使用されています`);
       }
       if (isReservedWord(obj[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`])) {
@@ -717,4 +716,52 @@ const reservedWords = ["abstract", "await", "boolean", "break", "byte", "case", 
 
 export function isReservedWord(str: string) {
   return reservedWords.some(reserved => reserved === str);
+}
+
+export function flattenTreeItems(treeItems: TreeItem[]): Statement[] {
+  const result: { id: string, code: string, processIndex: number }[] = [];
+
+  function flatten(treeItem: TreeItem) {
+    if (treeItem.id && treeItem.code && treeItem.processIndex !== undefined) {
+      result.push({
+        id: treeItem.id,
+        code: treeItem.code,
+        processIndex: treeItem.processIndex
+      });
+    }
+
+    if (treeItem.children && treeItem.children.length > 0) {
+      treeItem.children.forEach(child => flatten(child));
+    }
+  }
+
+  treeItems.forEach(treeItem => flatten(treeItem));
+  return result;
+}
+
+interface Statement {
+  id: string; code: string; processIndex: number;
+}
+function filterByProcessIndex(statements: Statement[], targetProcessIndex: number): Statement[] {
+  return statements.filter(statement => statement.processIndex === targetProcessIndex);
+}
+
+
+
+export function getUserDefineFunctionNameArray(treeItems: TreeItem[]) {
+
+  function extractSubstring(input: string): string | null {
+    const match = input.match(/関数(.*?)を/);
+    return match ? match[1].replace(/\([^)]*\)/g, '').trim() : null;
+  }
+
+  function extractAndReplace(statements: Statement[]): (string | null)[] {
+    return statements.map(statement => extractSubstring(statement.code));
+  }
+
+  const flattened: Statement[] = flattenTreeItems(treeItems);
+  const filtered: Statement[] = filterByProcessIndex(flattened, getEnumIndex(processEnum, processEnum.DefineFunction));
+
+  return extractAndReplace(filtered);
+
 }

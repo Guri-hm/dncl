@@ -6,6 +6,7 @@ export interface TreeItem {
   code: string;
   children: TreeItem[];
   collapsed?: boolean;
+  processIndex?: number;
 }
 
 export type TreeItems = TreeItem[];
@@ -13,7 +14,7 @@ export type TreeItems = TreeItem[];
 //?付与でオプション扱い(デフォルトはundefined)
 export interface FlattenedItem extends TreeItem {
   parentId: null | string;
-  depth?: number;
+  depth: number;
   index: number;
 }
 
@@ -29,10 +30,14 @@ export interface FragmentItem extends FlattenedItem {
 
 export type FragmentItems = FragmentItem[];
 
-export type DnclEditor = {
+export type DnclEditorProps = {
   item?: FlattenedItem,
+  treeItems: TreeItems,
+  setItems: any,
+  setEditor?: any,
   open: boolean,
   onSubmit: any,
   type: StatementEnum,
   overIndex: number,
+  refresh?: any,
 }

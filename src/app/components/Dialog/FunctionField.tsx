@@ -1,15 +1,17 @@
 import React, { ReactNode, useState } from "react";
 import Box from '@mui/material/Box';
-import { InputTypeJpEnum, ReturnFuncDncl, VoidFuncDncl } from '@/app/enum';
+import { InputTypeJpEnum, ReturnFuncDncl, UserDefinedFuncDncl, VoidFuncDncl } from '@/app/enum';
 import { ReactElement } from "react";
 import IconButton from '@mui/material/IconButton';
 import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon';
 import { inputTypeEnum, keyPrefixEnum, ValidationEnum } from "./Enum";
-import { FormHelperText, Typography } from "@mui/material";
+import { FormControl, FormHelperText, InputLabel, MenuItem, Select, Typography } from "@mui/material";
 import NotInterestedIcon from '@mui/icons-material/NotInterested';
 import Grid from '@mui/material/Grid2';
 import { FixedHeightGrid } from "./FixedHeightGrid";
 import { ValidatedTextField } from "./ValidatedTextField";
+import { TreeItems } from "@/app/types";
+import { getUserDefineFunctionNameArray } from "@/app/utilities";
 
 const TextIcon: React.FC<any & { text: string }> = ({ text, ...props }) => (
   <Typography noWrap {...props}>{text}</Typography>
@@ -20,10 +22,11 @@ type Props = {
   parentIndex?: number
   event?: any
   funcType: inputTypeEnum
+  treeItems?: TreeItems
 }
 
 const ReturnFunctions = [
-  { name: VoidFuncDncl.UserDefined, arguments: 0, desc: '「新しい関数の定義」で作成した関数を使用します。', icon: (props: SvgIconProps) => <NotInterestedIcon {...props} sx={{ color: 'gray', opacity: 0.2 }} /> },
+  { name: UserDefinedFuncDncl.UserDefined, arguments: 0, desc: '「新しい関数の定義」で作成した関数を使用します。', icon: (props: SvgIconProps) => <NotInterestedIcon {...props} sx={{ color: 'gray', opacity: 0.2 }} /> },
   { name: ReturnFuncDncl.Square, arguments: 1, desc: '引数の値を二乗した値を返します。', icon: (props: SvgIconProps) => <TextIcon {...props} text="二乗" /> },
   { name: ReturnFuncDncl.Exponentiation, arguments: 2, desc: '「べき乗(m,n)」の場合，値mのn乗の値を返します。', icon: (props: SvgIconProps) => <TextIcon {...props} text="べき乗" /> },
   { name: ReturnFuncDncl.Random, arguments: 2, desc: '「乱数(m,n)」の場合，値m以上値n以下の整数をランダムに一つ返します。', icon: (props: SvgIconProps) => <TextIcon {...props} text="乱数" /> },
@@ -34,9 +37,9 @@ const VoidFuncs = [
   { name: VoidFuncDncl.Binary, arguments: 1, desc: '引数の値を2進表現の値で返します。', icon: (props: SvgIconProps) => <TextIcon {...props} text="二進" /> },
 ]
 const UserDefine = [
-  { name: VoidFuncDncl.UserDefined, arguments: 0, desc: '複数の引数を指定する場合は，『，』で区切ります。', icon: null },]
+  { name: UserDefinedFuncDncl.UserDefined, arguments: 0, desc: '複数の引数を指定する場合は，『，』で区切ります。', icon: null },]
 
-export function FunctionField({ name = "", parentIndex = 0, event, funcType, ...props }: Props) {
+export function FunctionField({ name = "", parentIndex = 0, event, funcType, treeItems = [] }: Props) {
 
   const [operatorIndex, setOperatorIndex] = useState<number>(0);
 
@@ -73,6 +76,8 @@ export function FunctionField({ name = "", parentIndex = 0, event, funcType, ...
 
   const argumentsCount = funcs.map(func => func.arguments)[newIndex] ?? 0;
   const ArgumentFields: React.ReactNode[] = [];
+  const userDefinedFuncNameArray = getUserDefineFunctionNameArray(treeItems);
+  const isDisabled = (funcs.map(func => func.name)[newIndex] == UserDefinedFuncDncl.UserDefined) && (userDefinedFuncNameArray.length == 0);
 
   for (let i = 0; i < argumentsCount; i++) {
     ArgumentFields.push(
@@ -118,19 +123,40 @@ export function FunctionField({ name = "", parentIndex = 0, event, funcType, ...
         }}>
           {btns}
         </Box>
-        {funcs.map(func => func.name)[newIndex] == VoidFuncDncl.UserDefined &&
+        {funcs.map(func => func.name)[newIndex] == UserDefinedFuncDncl.UserDefined &&
           <Grid size="grow">
-            <ValidatedTextField name={`${name}_${parentIndex}_${keyPrefixEnum.FunctionName}`} label={InputTypeJpEnum.Function} pattern={ValidationEnum.Variable}></ValidatedTextField>
+            {/* <ValidatedTextField name={`${name}_${parentIndex}_${keyPrefixEnum.FunctionName}`} label={InputTypeJpEnum.Function} pattern={ValidationEnum.String}></ValidatedTextField> */}
+            {userDefinedFuncNameArray.length > 0 &&
+              <FormControl fullWidth size="small">
+                <InputLabel id="select-label">定義した関数</InputLabel>
+                <Select
+                  labelId="select-label"
+                  id="select"
+                  value={"0"}
+                  label="UserDefinedfunction"
+                  name={`${name}_${parentIndex}_${keyPrefixEnum.FunctionName}`}
+                >
+                  {userDefinedFuncNameArray.map((name, index) => (
+                    <MenuItem key={`${index}`} value={index}>{name}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            }
           </Grid>
         }
-
-        <Grid size='auto'>
-          <FixedHeightGrid>(</FixedHeightGrid>
-        </Grid>
-        {ArgumentFields}
-        <Grid size='auto'>
-          <FixedHeightGrid>)</FixedHeightGrid>
-        </Grid>
+        {isDisabled == true ?
+          <FixedHeightGrid>定義した関数なし</FixedHeightGrid>
+          :
+          <>
+            <Grid size='auto'>
+              <FixedHeightGrid>(</FixedHeightGrid>
+            </Grid>
+            {ArgumentFields}
+            <Grid size='auto'>
+              <FixedHeightGrid>)</FixedHeightGrid>
+            </Grid>
+          </>
+        }
       </Grid>
       <Grid>
         <FormHelperText sx={{ display: 'flex', alignItems: 'center' }}>{funcs.map(func => func.desc)[newIndex] ?? ""}</FormHelperText>

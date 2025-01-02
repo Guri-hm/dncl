@@ -11,17 +11,15 @@ import { FixedHeightGrid } from './FixedHeightGrid';
 import { FormControlLabel, FormHelperText, Radio, RadioGroup } from '@mui/material';
 import { InputTypeJpEnum, OperationEnum } from '@/app/enum';
 import { FunctionField } from './FunctionField';
+import { TreeItems } from '@/app/types';
 
 export interface DnclTextFieldProps {
   label?: string | inputTypeEnum
   name: string
-  index?: number
   inputType?: inputTypeEnum
-  value?: string
-  leftOfOperandValue?: string[]
-  rightOfOperandValue?: string[]
+  index?: number
   suffixValue?: string
-  operator?: OperationEnum
+  treeItems?: TreeItems
 }
 
 
@@ -80,7 +78,7 @@ const AntSwitch = styled(Switch)(({ theme }) => ({
 }));
 
 
-export function DnclTextField({ label, name, inputType, index = 0, suffixValue, ...params }: DnclTextFieldProps) {
+export function DnclTextField({ label, name, inputType, index = 0, suffixValue, treeItems }: DnclTextFieldProps) {
 
   const [checked, setChecked] = useState(false);
   const [radioValue, setRadioValue] = useState<inputTypeEnum>(inputTypeEnum.VariableOrNumber);

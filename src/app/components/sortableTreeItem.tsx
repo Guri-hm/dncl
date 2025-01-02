@@ -1,7 +1,7 @@
 import { CSS } from '@dnd-kit/utilities'
 import { AnimateLayoutChanges, useSortable } from '@dnd-kit/sortable'
 import { CSSProperties } from 'react'
-import { FlattenedItem } from '../type/treeItem'
+import { FlattenedItem } from "../types";
 
 type SortableTreeItemProps = {
   item: FlattenedItem
@@ -25,8 +25,8 @@ export const SortableTreeItem = ({
   clone,
   childrenCount
 }: SortableTreeItemProps) => {
-  
-  
+
+
   const {
     isDragging,
     setDroppableNodeRef,

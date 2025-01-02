@@ -31,8 +31,10 @@ export enum ReturnFuncDncl {
   Odd = 'Odd',
 }
 export enum VoidFuncDncl {
-  UserDefined = 'UserDefined',
   Binary = 'Binary',
+}
+export enum UserDefinedFuncDncl {
+  UserDefined = 'UserDefined',
 }
 export enum ReturnFuncJpDncl {
   UserDefined = '関数',

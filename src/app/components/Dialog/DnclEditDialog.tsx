@@ -5,21 +5,17 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import { DnclEditor } from "../../types";
+import { DnclEditorProps, TreeItems } from "../../types";
 import { StatementName } from './StatementName';
 import { StatementDesc } from './StatementDesc';
 import { EditorBox } from './EditorBox';
 import { keyPrefixEnum, processEnum } from './Enum';
 import { ArithmeticOperatorDncl, ArithmeticOperatorJs, ComparisonOperatorDncl, ComparisonOperatorJs, OperatorEnum, ReturnFuncDncl, ReturnFuncJpDncl, StatementEnum, VoidFuncDncl, VoidFuncJpDncl } from '@/app/enum';
-import { checkBraketPair, cnvAndOrToJsOperator, cnvObjToArray, cnvToDivision, escapeHtml, getOperandsMaxIndex, isValidExpression, replaceToAmpersand, sanitizeInput, transformNegation, tryParseToJsFunction, updateToWithSquareBrackets, ValidateObjValue } from '@/app/utilities';
+import { checkBraketPair, cnvAndOrToJsOperator, cnvObjToArray, cnvToDivision, escapeHtml, filterUserDefineFunc, flattenTreeItems, getOperandsMaxIndex, isValidExpression, replaceToAmpersand, sanitizeInput, transformNegation, tryParseToJsFunction, updateToWithSquareBrackets, ValidateObjValue } from '@/app/utilities';
 import { getEnumIndex } from "@/app/utilities";
 import { ErrorMsgBox } from './ErrorMsgBox';
 
-interface Props {
-    editor: DnclEditor;
-    setEditor: any;
-    refrash: any
-}
+interface Props extends DnclEditorProps { };
 
 const getOperator = (statementType: StatementEnum) => {
 
@@ -31,7 +27,7 @@ const getOperator = (statementType: StatementEnum) => {
     }
 }
 
-export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) {
+export function DnclEditDialog(params: Props) {
 
     const [error, setError] = useState<string[]>([]);
 
@@ -54,7 +50,6 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
         }
 
         let strArray: string[] = cnvObjToArray(updatedObj, operandsMaxIndex, keyword);
-        console.log(strArray)
 
         result = checkBraketPair(strArray);
         if (result.hasError) {
@@ -71,7 +66,6 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
         statement = cnvToDivision(statement);
         const cnvResult = tryParseToJsFunction(statement);
 
-        console.log(cnvResult.convertedStr)
         if (cnvResult.hasError) {
             setError(cnvResult.errorMsgArray);
             return false;
@@ -121,14 +115,14 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
 
     const handleClose = () => {
         setError([]);
-        setEditor((prevState: DnclEditor) => ({ ...prevState, open: false }));
-        refrash();
+        params.setEditor((prevState: DnclEditorProps) => ({ ...prevState, open: false }));
+        params.refresh();
     };
 
     return (
         <Fragment>
             <Dialog
-                open={editor.open}
+                open={params.open}
                 onClose={handleClose}
                 PaperProps={{
                     component: 'form',
@@ -158,7 +152,7 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
 
                         setError([]);
 
-                        const operator = getOperator(editor.type);
+                        const operator = getOperator(params.type);
                         const leftside = getDnclStatement(formJson, keyPrefixEnum.LeftSide);
                         const rightside = getDnclStatement(formJson, keyPrefixEnum.RigthSide);
 
@@ -225,19 +219,19 @@ export function DnclEditDialog({ editor, setEditor, refrash, ...props }: Props) 
                                 break;
                         }
 
-                        editor.onSubmit(editor.item, processPhrase, editor.overIndex);
+                        params.onSubmit(params.item, processPhrase, Number(formJson.processIndex), params.overIndex);
                         handleClose();
                     },
                 }}
             >
                 <DialogTitle>
-                    <StatementName statementType={editor.type}></StatementName>
+                    <StatementName statementType={params.type}></StatementName>
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        <StatementDesc statementType={editor.type}></StatementDesc>
+                        <StatementDesc statementType={params.type}></StatementDesc>
                     </DialogContentText>
-                    <EditorBox statementType={editor.type}></EditorBox>
+                    <EditorBox statementType={params.type} treeItems={params.treeItems}></EditorBox>
                 </DialogContent>
                 <DialogActions>
                     <ErrorMsgBox sx={{ display: 'flex', flexDirection: 'column' }} errorArray={error}></ErrorMsgBox>

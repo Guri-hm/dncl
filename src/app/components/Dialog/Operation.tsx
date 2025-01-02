@@ -13,10 +13,12 @@ import { useUpdateEffect } from './useUpdateEffect ';
 import { checkParenthesesBalance, enumsToObjects, getValueByKey } from "@/app/utilities";
 import { DroppableOperator } from "../DroppableOperator";
 import { ErrorMsgBox } from "./ErrorMsgBox";
+import { TreeItems } from "@/app/types";
 
 type Props = {
     children?: ReactNode;
     statementType?: StatementEnum
+    treeItems?: TreeItems
 };
 
 type DraggableOperatorsProps = {
