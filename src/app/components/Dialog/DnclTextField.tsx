@@ -240,7 +240,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
                 <input type='hidden' name={`${name}_${index}_${keyPrefixEnum.Type}`} value={`${radioValue}`}></input>
                 {(radioValue == inputTypeEnum.ReturnFunction || radioValue == inputTypeEnum.Void) &&
                   <>
-                    <FunctionField name={`${name}`} parentIndex={index} funcType={radioValue}></FunctionField>
+                    <FunctionField name={`${name}`} parentIndex={index} funcType={radioValue} treeItems={treeItems}></FunctionField>
                   </>
                 }
                 {radioValue == inputTypeEnum.Array &&

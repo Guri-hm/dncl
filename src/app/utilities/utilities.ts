@@ -276,7 +276,6 @@ export function checkParenthesesBalance(strArray: string[]): { isBalanced: boole
   const regex = /\(\)/;
   for (let i = 0; i < strArray.length; i++) {
     if (regex.test(strArray[i])) {
-      console.log(strArray)
       hasEmptyParentheses = true;
     }
   }
@@ -380,11 +379,16 @@ export const tryParseToJsFunction = (targetString: string): { errorMsgArray: str
     });
   }
 
+  function removeWord(str: string, removeWord: string) {
+    const regex = new RegExp(`\\b${removeWord}\\b`, 'g');
+    return str.replace(regex, '').trim();
+  }
   targetString = squareString(targetString);
   targetString = exponentiateString(targetString);
   targetString = convertRandomString(targetString);
   targetString = replaceOddFunctions(targetString);
   targetString = convertBinaryFunctions(targetString);
+  targetString = removeWord(targetString, UserDefinedFuncDncl.UserDefined);
 
   //異常値があれば空文字を返すようにしている
   if (targetString == "") {
@@ -486,7 +490,7 @@ const toEmptyIfNull = (targetString: string | undefined) => {
   return targetString;
 }
 
-export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex: number, proceccType: processEnum, keyword: keyPrefixEnum): { errorMsgArray: string[]; hasError: boolean; } => {
+export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex: number, proceccType: processEnum, keyword: keyPrefixEnum, treeItems: TreeItems): { errorMsgArray: string[]; hasError: boolean; } => {
 
   const regexForOperator = new RegExp(/^(\+|\-|\*|\/|÷|%|==|!=|>|>=|<|<=|かつ|または|と)$/);
 
@@ -508,6 +512,12 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
 
   let errorMsgArray: string[] = [];
 
+  const userDefinedFunctionInfoArray = getUserDefinedFunctionInfoArray(treeItems);
+
+  function getFunctionInfo(funcName: string): UserDefinedFunctionInfo | undefined {
+    return userDefinedFunctionInfoArray.find(func => func.funcName === funcName);
+  }
+
   for (let i = 0; i <= operandsMaxIndex; i++) {
 
     //演算子の確認
@@ -516,7 +526,6 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
         errorMsgArray.push(`${i}番目と${i + 1}番目のオペランドの間に演算子が必要です`);
       } else {
         if (!regexForOperator.test(obj[`${keyword}_${i}_${keyPrefixEnum.Operator}`])) {
-          console.log(obj[`${keyword}_${i}_${keyPrefixEnum.Operator}`])
           errorMsgArray.push(`${i}番目と${i + 1}番目のオペランドの間に不適切な演算子が使用されています`);
         }
       }
@@ -554,6 +563,14 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
     }
     //関数名
     if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`]) != "") {
+
+      //新しい関数の定義以外の場面では関数名の入力が必須
+      if (proceccType != processEnum.DefineFunction) {
+        if (!getFunctionInfo(obj[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`])) {
+          errorMsgArray.push(`${i + 1}番目のオペランドに，定義されていない関数が使用されています`);
+        }
+      };
+
       if (!regexForStringOperand.test(obj[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`])) {
         errorMsgArray.push(`${i + 1}番目のオペランドに，不適切な関数名が使用されています`);
       }
@@ -566,15 +583,17 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
         errorMsgArray.push(`${i + 1}番目のオペランドの関数に，用意された関数以外が使用されています`);
       }
     }
-    //引数
-    for (let j = 0; j < 2; j++) {
-      if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}_${j}`]) != "") {
-        //カンマ区切りを許容
-        if (!regexForInitializeArray.test(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}_${j}`])) {
-          errorMsgArray.push(`${i + 1}番目のオペランドの関数に，不適切な引数が使用されています`);
-        }
-        if (isReservedWord(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}_${j}`])) {
-          errorMsgArray.push(`${i + 1}番目のオペランドの関数の引数に，予約語が使用されています`);
+    //引数の有無
+    if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}`]) != "") {
+      for (let j = 0; j < Number(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}`]); j++) {
+        if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}_${j}`]) != "") {
+          //カンマ区切りを許容
+          if (!regexForInitializeArray.test(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}_${j}`])) {
+            errorMsgArray.push(`${i + 1}番目のオペランドの関数に，不適切な引数が使用されています`);
+          }
+          if (isReservedWord(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}_${j}`])) {
+            errorMsgArray.push(`${i + 1}番目のオペランドの関数の引数に，予約語が使用されています`);
+          }
         }
       }
     }
@@ -692,11 +711,11 @@ export const cnvObjToArray = (obj: { [k: string]: string; }, operandsMaxIndex: n
 
     }
 
-    pushIfNotEmpty(strArray, toEmptyIfNull(sanitizedData[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`]));
     pushIfNotEmpty(strArray, toEmptyIfNull(sanitizedData[`${keyword}_${i}_${keyPrefixEnum.Function}`]));
+    pushIfNotEmpty(strArray, toEmptyIfNull(sanitizedData[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`]));
     //引数
     let tmpArguments: string[] = [];
-    for (let j = 0; j < 2; j++) {
+    for (let j = 0; j < Number(toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}`])); j++) {
       pushIfNotEmpty(tmpArguments, toEmptyIfNull(sanitizedData[`${keyword}_${i}_${keyPrefixEnum.Argument}_${j}`]));
     }
     const joinedStr = tmpArguments.join(",");
@@ -742,26 +761,42 @@ export function flattenTreeItems(treeItems: TreeItem[]): Statement[] {
 interface Statement {
   id: string; code: string; processIndex: number;
 }
+
+export interface UserDefinedFunctionInfo {
+  funcName: string; argumentCount: number;
+}
+
 function filterByProcessIndex(statements: Statement[], targetProcessIndex: number): Statement[] {
   return statements.filter(statement => statement.processIndex === targetProcessIndex);
 }
 
+export function getUserDefinedFunctionInfoArray(treeItems: TreeItem[]): UserDefinedFunctionInfo[] {
 
-
-export function getUserDefineFunctionNameArray(treeItems: TreeItem[]) {
-
-  function extractSubstring(input: string): string | null {
+  function extractFuncName(input: string): string | null {
     const match = input.match(/関数(.*?)を/);
     return match ? match[1].replace(/\([^)]*\)/g, '').trim() : null;
   }
 
-  function extractAndReplace(statements: Statement[]): (string | null)[] {
-    return statements.map(statement => extractSubstring(statement.code));
+  function countArguments(input: string): number {
+    const match = input.match(/\(([^)]*)\)/);
+    if (match && match[1]) {
+      const argumentsInside = match[1].trim();
+      return argumentsInside ? argumentsInside.split(',').length : 0;
+    }
+    return 0;
+  }
+
+  function getUserDefinedFunctionInfoArray(statements: Statement[]): UserDefinedFunctionInfo[] {
+    return statements.map(statement => {
+      const funcName = extractFuncName(statement.code);
+      const argumentCount = countArguments(statement.code);
+      return { funcName: funcName || "", argumentCount: argumentCount };
+    });
   }
 
   const flattened: Statement[] = flattenTreeItems(treeItems);
   const filtered: Statement[] = filterByProcessIndex(flattened, getEnumIndex(processEnum, processEnum.DefineFunction));
 
-  return extractAndReplace(filtered);
+  return getUserDefinedFunctionInfoArray(filtered);
 
 }

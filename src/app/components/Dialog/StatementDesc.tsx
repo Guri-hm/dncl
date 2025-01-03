@@ -51,7 +51,8 @@ export function StatementDesc(params: Props) {
             break;
         case StatementEnum.UserDefinedfunction:
             str = "DNCLを用いて新しい関数を定義します。";
-            sub = "・値を返さない関数を作成できます。\n\
+            sub = "・関数が呼び出される時に引数として与えられる値は，引数列のところに書いた変数名で利用します。\n\
+            ・引数に数値を直接指定することはできません。\n\
             ";
             break;
         case StatementEnum.ExecuteUserDefinedFunction:

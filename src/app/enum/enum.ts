@@ -37,8 +37,10 @@ export enum UserDefinedFuncDncl {
   UserDefined = 'UserDefined',
   Define = 'Define',
 }
-export enum ReturnFuncJpDncl {
+export enum UserDefinedFuncJpDncl {
   UserDefined = '関数',
+}
+export enum ReturnFuncJpDncl {
   Square = '二乗',
   Exponentiation = 'べき乗',
   Random = '乱数',

@@ -10,7 +10,7 @@ import { StatementName } from './StatementName';
 import { StatementDesc } from './StatementDesc';
 import { EditorBox } from './EditorBox';
 import { keyPrefixEnum, processEnum } from './Enum';
-import { ArithmeticOperatorDncl, ArithmeticOperatorJs, ComparisonOperatorDncl, ComparisonOperatorJs, OperatorEnum, ReturnFuncDncl, ReturnFuncJpDncl, StatementEnum, VoidFuncDncl, VoidFuncJpDncl } from '@/app/enum';
+import { ArithmeticOperatorDncl, ArithmeticOperatorJs, ComparisonOperatorDncl, ComparisonOperatorJs, OperatorEnum, ReturnFuncDncl, ReturnFuncJpDncl, StatementEnum, UserDefinedFuncDncl, UserDefinedFuncJpDncl, VoidFuncDncl, VoidFuncJpDncl } from '@/app/enum';
 import { checkBraketPair, cnvAndOrToJsOperator, cnvObjToArray, cnvToDivision, escapeHtml, filterUserDefineFunc, flattenTreeItems, getOperandsMaxIndex, isValidExpression, replaceToAmpersand, sanitizeInput, transformNegation, tryParseToJsFunction, updateToWithSquareBrackets, ValidateObjValue } from '@/app/utilities';
 import { getEnumIndex } from "@/app/utilities";
 import { ErrorMsgBox } from './ErrorMsgBox';
@@ -31,7 +31,7 @@ export function DnclEditDialog(params: Props) {
 
     const [error, setError] = useState<string[]>([]);
 
-    const checkStatement = (data: { [k: string]: string; }, proceccType: processEnum, keyword: keyPrefixEnum): boolean => {
+    const checkStatement = (data: { [k: string]: string; }, proceccType: processEnum, keyword: keyPrefixEnum, treeItems: TreeItems): boolean => {
 
         //キーワードを含むオブジェクトを取得
         const obj = Object.fromEntries(Object.entries(data).filter(([key, value]) => key.includes(keyword)));
@@ -43,13 +43,15 @@ export function DnclEditDialog(params: Props) {
         //メイン処理はここから
         let result: { errorMsgArray: string[]; hasError: boolean; };
 
-        result = ValidateObjValue(updatedObj, operandsMaxIndex, proceccType, keyword)
+        result = ValidateObjValue(updatedObj, operandsMaxIndex, proceccType, keyword, treeItems)
         if (result.hasError) {
             setError(result.errorMsgArray);
             return false;
         }
 
         let strArray: string[] = cnvObjToArray(updatedObj, operandsMaxIndex, keyword);
+        console.log(updatedObj);
+        console.log(strArray);
 
         result = checkBraketPair(strArray);
         if (result.hasError) {
@@ -108,6 +110,7 @@ export function DnclEditDialog(params: Props) {
                 .replace(ReturnFuncDncl.Random, ReturnFuncJpDncl.Random)
                 .replace(ReturnFuncDncl.Odd, ReturnFuncJpDncl.Odd)
                 .replace(VoidFuncDncl.Binary, VoidFuncJpDncl.Binary)
+                .replace(UserDefinedFuncDncl.UserDefined, UserDefinedFuncJpDncl.UserDefined)
         }
 
         return strArray.join(' ')
@@ -131,7 +134,6 @@ export function DnclEditDialog(params: Props) {
 
                         const formData = new FormData(event.currentTarget);
                         const formJson = Object.fromEntries((formData as any).entries());
-
                         // Enumの値を配列に変換 
                         const processEnumArray = Object.values(processEnum);
                         const getValueByIndex = (index: number): string => {
@@ -147,8 +149,8 @@ export function DnclEditDialog(params: Props) {
                         if (processType == '') {
                             return;
                         }
-                        if (!checkStatement(formJson, processType as processEnum, keyPrefixEnum.LeftSide)) return;
-                        if (!checkStatement(formJson, processType as processEnum, keyPrefixEnum.RigthSide)) return;
+                        if (!checkStatement(formJson, processType as processEnum, keyPrefixEnum.LeftSide, params.treeItems)) return;
+                        if (!checkStatement(formJson, processType as processEnum, keyPrefixEnum.RigthSide, params.treeItems)) return;
 
                         setError([]);
 
@@ -210,10 +212,13 @@ export function DnclEditDialog(params: Props) {
 
                                 break;
                             case getEnumIndex(processEnum, processEnum.DefineFunction):
-                                processPhrase = `関数${rightside}を`;
+                                processPhrase = `関数 ${rightside}を`;
                                 break;
                             case getEnumIndex(processEnum, processEnum.Defined):
                                 processPhrase = `と定義する`;
+                                break;
+                            case getEnumIndex(processEnum, processEnum.ExecuteUserDefinedFunction):
+                                processPhrase = `関数 ${rightside}を実行する`;
                                 break;
                             default:
                                 break;

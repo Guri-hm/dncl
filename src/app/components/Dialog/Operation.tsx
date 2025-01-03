@@ -34,7 +34,7 @@ const DraggableOperatorsBox: FC<DraggableOperatorsProps> = ({ children }) => {
     );
 };
 
-export const Operation: FC<Props> = ({ children, statementType }) => {
+export const Operation: FC<Props> = ({ children, statementType, treeItems = [] }) => {
 
     const [isDragging, setIsDragging] = useState(false);
     const [operandComponents, setOperandComponents] = useState<DnclTextFieldProps[]>([{ name: keyPrefixEnum.RigthSide }]);
@@ -277,7 +277,7 @@ export const Operation: FC<Props> = ({ children, statementType }) => {
                                 }
                                 <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfOperand}`} isDragging={isDragging && isNotActiveIdOperator(activeId)} onClick={() => removeOneSideOfOperand(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfOperand}`)} stringArray={component.leftOfOperandValue}>{component.leftOfOperandValue?.join('')}</Droppable>
 
-                                <DnclTextField name={`${component.name}`} index={index} inputType={getSwitchType(statementType)} />
+                                <DnclTextField name={`${component.name}`} index={index} inputType={getSwitchType(statementType)} treeItems={treeItems} />
                                 <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfOperand}`} isDragging={isDragging && isNotActiveIdOperator(activeId)} onClick={() => removeOneSideOfOperand(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfOperand}`)} stringArray={component.rightOfOperandValue}>{component.rightOfOperandValue?.join('')}</Droppable>
 
                                 {(statementType == StatementEnum.Condition && index != 0) && <Operator name={`${component.name}`} parentIndex={index} type={OperationEnum.Negation}></Operator>}
