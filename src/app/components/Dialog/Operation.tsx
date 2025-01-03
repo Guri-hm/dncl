@@ -214,7 +214,10 @@ export const Operation: FC<Props> = ({ children, statementType, treeItems = [] }
             case StatementEnum.Output:
                 return inputTypeEnum.RadioWithVoid;
             case StatementEnum.Input:
-                return inputTypeEnum.RadioWithReturnFunction;
+            case StatementEnum.Condition:
+            case StatementEnum.ConditionalLoopPreTest:
+            case StatementEnum.ConditionalLoopPostTest:
+                return inputTypeEnum.All;
             default:
                 return inputTypeEnum.SwitchVariableOrNumberOrArray;
         }

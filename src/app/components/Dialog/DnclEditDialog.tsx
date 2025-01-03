@@ -10,7 +10,7 @@ import { StatementName } from './StatementName';
 import { StatementDesc } from './StatementDesc';
 import { EditorBox } from './EditorBox';
 import { keyPrefixEnum, processEnum } from './Enum';
-import { ArithmeticOperatorDncl, ArithmeticOperatorJs, ComparisonOperatorDncl, ComparisonOperatorJs, OperatorEnum, ReturnFuncDncl, ReturnFuncJpDncl, StatementEnum, UserDefinedFuncDncl, UserDefinedFuncJpDncl, VoidFuncDncl, VoidFuncJpDncl } from '@/app/enum';
+import { ArithmeticOperatorDncl, ArithmeticOperatorJs, BooleanDncl, BooleanJpDncl, ComparisonOperatorDncl, ComparisonOperatorJs, OperatorEnum, ReturnFuncDncl, ReturnFuncJpDncl, StatementEnum, UserDefinedFuncDncl, UserDefinedFuncJpDncl, VoidFuncDncl, VoidFuncJpDncl } from '@/app/enum';
 import { checkBraketPair, cnvAndOrToJsOperator, cnvObjToArray, cnvToDivision, escapeHtml, filterUserDefineFunc, flattenTreeItems, getOperandsMaxIndex, isValidExpression, replaceToAmpersand, sanitizeInput, transformNegation, tryParseToJsFunction, updateToWithSquareBrackets, ValidateObjValue } from '@/app/utilities';
 import { getEnumIndex } from "@/app/utilities";
 import { ErrorMsgBox } from './ErrorMsgBox';
@@ -111,6 +111,8 @@ export function DnclEditDialog(params: Props) {
                 .replace(ReturnFuncDncl.Odd, ReturnFuncJpDncl.Odd)
                 .replace(VoidFuncDncl.Binary, VoidFuncJpDncl.Binary)
                 .replace(UserDefinedFuncDncl.UserDefined, UserDefinedFuncJpDncl.UserDefined)
+                .replace(BooleanDncl.True, BooleanJpDncl.True)
+                .replace(BooleanDncl.False, BooleanJpDncl.False)
         }
 
         return strArray.join(' ')

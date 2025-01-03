@@ -14,6 +14,7 @@ import { getEnumIndex, getUserDefineFunctionNameArray } from "@/app/utilities";
 import { CustomBox } from "./CustomBox";
 import Grid from '@mui/material/Grid2';
 import { TreeItems } from "@/app/types";
+import { WrapText } from "./WrapText";
 
 type Props = {
     statementType: StatementEnum
@@ -85,7 +86,7 @@ export function EditorBox(params: Props) {
                 return <>
                     <NowrapText text={'もし'}></NowrapText>
                     <Divider sx={{ marginRight: 1 }} orientation="vertical" flexItem />
-                    <Operation statementType={params.statementType}>
+                    <Operation statementType={params.statementType} treeItems={params.treeItems}>
                     </Operation>
                     <Divider sx={{ marginLeft: 1 }} orientation="vertical" flexItem />
                     <NowrapText text={'ならば'}></NowrapText>
@@ -93,9 +94,9 @@ export function EditorBox(params: Props) {
                 </>
             case getEnumIndex(processEnum, processEnum.ElseIf):
                 return <>
-                    <NowrapText text={'を実行し，そうでなくもし'}></NowrapText>
+                    <WrapText text={'を実行し，そうでなくもし'}></WrapText>
                     <Divider sx={{ marginRight: 1 }} orientation="vertical" flexItem />
-                    <Operation statementType={params.statementType}>
+                    <Operation statementType={params.statementType} treeItems={params.treeItems}>
                     </Operation>
                     <Divider sx={{ marginLeft: 1 }} orientation="vertical" flexItem />
                     <NowrapText text={'ならば'}></NowrapText>
@@ -113,7 +114,7 @@ export function EditorBox(params: Props) {
                 </>
             case getEnumIndex(processEnum, processEnum.While):
                 return <>
-                    <Operation statementType={params.statementType}>
+                    <Operation statementType={params.statementType} treeItems={params.treeItems}>
                     </Operation>
                     <Divider sx={{ marginLeft: 1 }} orientation="vertical" flexItem />
                     <NowrapText text={'の間，'}></NowrapText>

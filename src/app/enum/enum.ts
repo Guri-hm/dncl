@@ -33,6 +33,10 @@ export enum ReturnFuncDncl {
 export enum VoidFuncDncl {
   Binary = 'Binary',
 }
+export enum BooleanDncl {
+  True = 'true',
+  False = 'false',
+}
 export enum UserDefinedFuncDncl {
   UserDefined = 'UserDefined',
   Define = 'Define',
@@ -48,6 +52,10 @@ export enum ReturnFuncJpDncl {
 }
 export enum VoidFuncJpDncl {
   Binary = '二進',
+}
+export enum BooleanJpDncl {
+  True = '真',
+  False = '偽',
 }
 export enum NegationOperatorJpArray {
   NullOperator = '',

@@ -559,7 +559,16 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
     }
 
     if (isReservedWord(obj[`${keyword}_${i}`])) {
-      errorMsgArray.push(`${i + 1}番目のオペランドに予約語が使用されています`);
+
+      switch (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Type}`])) {
+        case inputTypeEnum.Boolean:
+          if (obj[`${keyword}_${i}`] == 'true' || obj[`${keyword}_${i}`] == 'false') {
+            break;
+          }
+        default:
+          errorMsgArray.push(`${i + 1}番目のオペランドに予約語が使用されています`);
+          break;
+      }
     }
     //関数名
     if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`]) != "") {
@@ -575,7 +584,7 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
         errorMsgArray.push(`${i + 1}番目のオペランドに，不適切な関数名が使用されています`);
       }
       if (isReservedWord(obj[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`])) {
-        errorMsgArray.push(`${i + 1}番目のオペランドに予約語が使用されています`);
+        errorMsgArray.push(`${i + 1}番目のオペランドの関数に，予約語が使用されています`);
       }
     }
     if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Function}`]) != "") {
