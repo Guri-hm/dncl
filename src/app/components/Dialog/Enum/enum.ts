@@ -18,6 +18,7 @@ export enum processEnum {
   EndFor = 'を繰り返す',
   DefineFunction = '関数〈関数名〉(〈引数〉)を',
   Defined = 'と定義する',
+  ExecuteUserDefinedFunction = '関数を実行する',
 }
 
 export enum bracketEnum {
@@ -66,6 +67,7 @@ export enum inputTypeEnum {
   String = 'String',
   ReturnFunction = 'ReturnFunction',
   UserDefinedfunction = 'UserDefinedfunction',
+  ExecuteUserDefinedFunction = 'ExecuteUserDefinedFunction',
   Void = 'Void',
 }
 

@@ -30,6 +30,9 @@ export function StatementName(params: Props) {
         case StatementEnum.UserDefinedfunction:
             str = StatementJpEnum.UserDefinedfunction;
             break;
+        case StatementEnum.ExecuteUserDefinedFunction:
+            str = StatementJpEnum.ExecuteUserDefinedFunction;
+            break;
     }
 
 

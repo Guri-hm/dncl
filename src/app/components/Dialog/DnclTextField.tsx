@@ -20,6 +20,10 @@ export interface DnclTextFieldProps {
   index?: number
   suffixValue?: string
   treeItems?: TreeItems
+  leftOfOperandValue?: string[]
+  rightOfOperandValue?: string[]
+  operator?: OperationEnum
+  value?: string
 }
 
 
@@ -326,7 +330,11 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
         </Grid>
       case inputTypeEnum.UserDefinedfunction:
         return <Grid size="grow">
-          <FunctionField name={`${name}`} parentIndex={index} funcType={inputTypeEnum.UserDefinedfunction}></FunctionField>
+          <FunctionField name={`${name}`} parentIndex={index} funcType={inputTypeEnum.UserDefinedfunction} treeItems={treeItems}></FunctionField>
+        </Grid>
+      case inputTypeEnum.ExecuteUserDefinedFunction:
+        return <Grid size="grow">
+          <FunctionField name={`${name}`} parentIndex={index} funcType={inputTypeEnum.ExecuteUserDefinedFunction} treeItems={treeItems}></FunctionField>
         </Grid>
       default:
         return null;

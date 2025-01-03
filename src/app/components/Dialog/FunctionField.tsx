@@ -37,7 +37,10 @@ const VoidFuncs = [
   { name: VoidFuncDncl.Binary, arguments: 1, desc: '引数の値を2進表現の値で返します。', icon: (props: SvgIconProps) => <TextIcon {...props} text="二進" /> },
 ]
 const UserDefine = [
-  { name: UserDefinedFuncDncl.UserDefined, arguments: 0, desc: '複数の引数を指定する場合は，『，』で区切ります。', icon: null },]
+  { name: UserDefinedFuncDncl.Define, arguments: 0, desc: '複数の引数を指定する場合は，『，』で区切ります。', icon: null },]
+
+const ExecuteUserDefinedFunc = [
+  { name: UserDefinedFuncDncl.UserDefined, arguments: 0, desc: '「新しい関数の定義」で作成した関数を使用します。', icon: null },]
 
 export function FunctionField({ name = "", parentIndex = 0, event, funcType, treeItems = [] }: Props) {
 
@@ -49,6 +52,8 @@ export function FunctionField({ name = "", parentIndex = 0, event, funcType, tre
         return ReturnFunctions;
       case inputTypeEnum.Void:
         return VoidFuncs;
+      case inputTypeEnum.ExecuteUserDefinedFunction:
+        return ExecuteUserDefinedFunc;
       default:
         return UserDefine;
     }
@@ -77,7 +82,8 @@ export function FunctionField({ name = "", parentIndex = 0, event, funcType, tre
   const argumentsCount = funcs.map(func => func.arguments)[newIndex] ?? 0;
   const ArgumentFields: React.ReactNode[] = [];
   const userDefinedFuncNameArray = getUserDefineFunctionNameArray(treeItems);
-  const isDisabled = (funcs.map(func => func.name)[newIndex] == UserDefinedFuncDncl.UserDefined) && (userDefinedFuncNameArray.length == 0);
+  //「新しい関数の定義」以外の場合、定義した関数がなければユーザ定義関数のリストを表示するエリアに空の内容を返す
+  const isDisabledUserDefined = (funcs.map(func => func.name)[newIndex] == UserDefinedFuncDncl.UserDefined) && (userDefinedFuncNameArray.length == 0);
 
   for (let i = 0; i < argumentsCount; i++) {
     ArgumentFields.push(
@@ -123,9 +129,14 @@ export function FunctionField({ name = "", parentIndex = 0, event, funcType, tre
         }}>
           {btns}
         </Box>
+
+        {funcs.map(func => func.name)[newIndex] == UserDefinedFuncDncl.Define &&
+          <Grid size="grow">
+            <ValidatedTextField name={`${name}_${parentIndex}_${keyPrefixEnum.FunctionName}`} label={InputTypeJpEnum.Function} pattern={ValidationEnum.String}></ValidatedTextField>
+          </Grid>
+        }
         {funcs.map(func => func.name)[newIndex] == UserDefinedFuncDncl.UserDefined &&
           <Grid size="grow">
-            {/* <ValidatedTextField name={`${name}_${parentIndex}_${keyPrefixEnum.FunctionName}`} label={InputTypeJpEnum.Function} pattern={ValidationEnum.String}></ValidatedTextField> */}
             {userDefinedFuncNameArray.length > 0 &&
               <FormControl fullWidth size="small">
                 <InputLabel id="select-label">定義した関数</InputLabel>
@@ -144,7 +155,7 @@ export function FunctionField({ name = "", parentIndex = 0, event, funcType, tre
             }
           </Grid>
         }
-        {isDisabled == true ?
+        {isDisabledUserDefined == true ?
           <FixedHeightGrid>定義した関数なし</FixedHeightGrid>
           :
           <>

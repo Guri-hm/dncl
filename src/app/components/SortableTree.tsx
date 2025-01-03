@@ -127,6 +127,15 @@ const fragments: FragmentItems = [
     depth: 0,
     statementType: StatementEnum.UserDefinedfunction
   },
+  {
+    id: uuidv4(),
+    code: StatementJpEnum.ExecuteUserDefinedFunction,
+    children: [],
+    index: 0,
+    parentId: null,
+    depth: 0,
+    statementType: StatementEnum.ExecuteUserDefinedFunction
+  },
 ]
 
 const measuring = {

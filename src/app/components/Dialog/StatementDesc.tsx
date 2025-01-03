@@ -54,6 +54,12 @@ export function StatementDesc(params: Props) {
             sub = "・値を返さない関数を作成できます。\n\
             ";
             break;
+        case StatementEnum.ExecuteUserDefinedFunction:
+            str = "定義した関数を実行します。";
+            sub = "・「新しい関数の定義」で作成した関数を実行できます。\n\
+            ・値を返す関数は「代入文」「表示文」などで実行してください。\n\
+            ";
+            break;
     }
 
 

@@ -185,6 +185,11 @@ export function EditorBox(params: Props) {
                     <NowrapText text={'と定義する'}></NowrapText>
                     {hdnInput(index)}
                 </>
+            case getEnumIndex(processEnum, processEnum.ExecuteUserDefinedFunction):
+                return <>
+                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.UserDefinedfunction}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.UserDefinedfunction} inputType={inputTypeEnum.ExecuteUserDefinedFunction} treeItems={params.treeItems}></DnclTextField>
+                    {hdnInput(index)}
+                </>
             default:
                 return <></>
         }
@@ -257,6 +262,13 @@ export function EditorBox(params: Props) {
                     {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.DefineFunction))}
                 </CustomBox>
             </>
+        case StatementEnum.ExecuteUserDefinedFunction:
+            return <>
+                {ddl}
+                <CustomBox>
+                    {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.ExecuteUserDefinedFunction))}
+                </CustomBox>
+            </>
         default:
             break;
     }
@@ -320,6 +332,12 @@ const processNames = [
         names: [
             { title: processEnum.DefineFunction },
             { title: processEnum.Defined },
+        ]
+    },
+    {
+        statementType: StatementEnum.ExecuteUserDefinedFunction,
+        names: [
+            { title: processEnum.ExecuteUserDefinedFunction },
         ]
     },
 ];

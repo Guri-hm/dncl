@@ -35,6 +35,7 @@ export enum VoidFuncDncl {
 }
 export enum UserDefinedFuncDncl {
   UserDefined = 'UserDefined',
+  Define = 'Define',
 }
 export enum ReturnFuncJpDncl {
   UserDefined = '関数',
@@ -73,6 +74,7 @@ export enum StatementEnum {
   SequentialIteration = 'SequentialIteration',
   Predefinedfunction = 'Predefinedfunction',
   UserDefinedfunction = 'UserDefinedfunction',
+  ExecuteUserDefinedFunction = 'ExecuteUserDefinedFunction',
 }
 export enum StatementJpEnum {
   Output = '表示文',
@@ -82,6 +84,7 @@ export enum StatementJpEnum {
   ConditionalLoopPostTest = '条件繰返し文「後判定」',
   SequentialIteration = '順次繰返し文',
   UserDefinedfunction = '新しい関数の定義',
+  ExecuteUserDefinedFunction = '定義した関数の実行',
 }
 
 export enum OperationEnum {
