@@ -39,8 +39,9 @@ import { SortableTreeItem, FragmentsListItem, DnclEditDialog } from "../componen
 import { v4 as uuidv4 } from "uuid";
 import { StatementEnum, StatementJpEnum } from "@/app/enum";
 import { processEnum } from "./Dialog/Enum";
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import styles from './alloment-custom.module.css'
+import { ArrowButton } from "./ArrowButton";
 
 const initialItems: TreeItems = [
   {
@@ -265,19 +266,7 @@ export function SortableTree({
         setVisible(value);
       }}>
         <Allotment.Pane maxSize={50} minSize={50} className={`bg-slate-300`}>
-          <div onClick={() => {
-            setVisible((visible) => !visible);
-          }} style={{ cursor: 'pointer', height: '100%', userSelect: 'none' }}>
-            <Box sx={{ padding: '10px', height: '100%', display: 'flex', alignItems: 'center' }}>
-              <input type="checkbox" id="animation2" checked={visible} className={`${styles.animation2}`} style={{ display: 'none' }} onChange={() => {
-                setVisible((visible) => !visible);
-              }} />
-              <label className={`${styles.customlabel}`} htmlFor="animation2">
-                <div className={`${styles.arrow} ${styles.animation2}`}></div>
-              </label>
-
-            </Box>
-          </div>
+          <ArrowButton setVisible={setVisible} visible={visible}></ArrowButton>
         </Allotment.Pane>
         <Allotment.Pane maxSize={300} visible={visible} className={`${styles.leftPane} bg-slate-300`} snap>
           <Box sx={{ padding: '10px' }}>
