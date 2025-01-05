@@ -73,7 +73,7 @@ export function FunctionField({ name = "", parentIndex = 0, event, funcType, tre
         }
         return funcs.map(func => func.arguments)[newIndex] ?? 0;
       case inputTypeEnum.ExecuteUserDefinedFunction:
-        return userDefinedFunctionInfoArray[Number(selectedValue)].argumentCount ?? 0;
+        return userDefinedFunctionInfoArray[Number(selectedValue)]?.argumentCount ?? 0;
       default:
         return 1;
     }

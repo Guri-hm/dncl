@@ -39,6 +39,8 @@ import { SortableTreeItem, FragmentsListItem, DnclEditDialog } from "../componen
 import { v4 as uuidv4 } from "uuid";
 import { StatementEnum, StatementJpEnum } from "@/app/enum";
 import { processEnum } from "./Dialog/Enum";
+import { Box, Typography } from "@mui/material";
+import styles from './alloment-custom.module.css'
 
 const initialItems: TreeItems = [
   {
@@ -258,36 +260,39 @@ export function SortableTree({
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <Allotment onVisibleChange={(_index, value) => {
-        setVisible(value);
-      }} separator={false}>
-        <Allotment.Pane className="p-1" maxSize={50}>
+      <DnclEditDialog {...editor}></DnclEditDialog>
+
+      <Allotment.Pane>
+        <Box sx={{ padding: '10px' }}>
           <button
             type="button"
             onClick={() => {
               setVisible((visible) => !visible);
-              if (visible) {
-
-              }
             }}
           >
             {visible ? "Hide" : "Show"}
           </button>
-          <DnclEditDialog {...editor}></DnclEditDialog>
+        </Box>
+      </Allotment.Pane>
 
-        </Allotment.Pane>
-        <Allotment.Pane visible={visible} snap>
-          <div className="text-lg font-bold">一覧</div>
-          {fragments.map(({ id, code }) => (
-            <FragmentsListItem
-              key={id}
-              id={id}
-              value={code}
-            />
-          ))}
 
+      <Allotment defaultSizes={[100, 100]} className={styles.splitViewContainer} onVisibleChange={(_index, value) => {
+        setVisible(value);
+      }}>
+        <div className="bg-amber-300 h-10"></div>
+        <Allotment.Pane maxSize={300} visible={visible} className={`${styles.leftPane} bg-slate-300`} snap>
+          <Box sx={{ padding: '10px' }}>
+            <div className="text-lg font-bold">ドラッグして行を追加</div>
+            {fragments.map(({ id, code }) => (
+              <FragmentsListItem
+                key={id}
+                id={id}
+                value={code}
+              />
+            ))}
+          </Box>
         </Allotment.Pane>
-        <Allotment.Pane minSize={200}>
+        <Allotment.Pane className={`${styles.rightPane}`} >
           <div className="relative z-10 col-span-3 bg-slate-800 rounded-xl shadow-lg xl:ml-0 dark:shadow-none dark:ring-1 dark:ring-inset dark:ring-white/10">
             <div className="relative flex text-slate-400 text-xs leading-6">
               <div className="mt-2 flex-none text-sky-300 border-t border-b border-t-transparent border-b-sky-300 px-4 py-1 flex items-center">DNCL</div>
@@ -341,6 +346,27 @@ export function SortableTree({
             </DragOverlay>,
             document.body
           )}
+        </Allotment.Pane>
+
+
+        <Allotment.Pane>
+          <div className="relative z-10 col-span-3 bg-slate-800 rounded-xl shadow-lg xl:ml-0 dark:shadow-none dark:ring-1 dark:ring-inset dark:ring-white/10">
+            <div className="relative flex text-slate-400 text-xs leading-6">
+              <div className="mt-2 flex-none text-sky-300 border-t border-b border-t-transparent border-b-sky-300 px-4 py-1 flex items-center">Python</div>
+              <div className="flex-auto flex pt-2 rounded-tr-xl overflow-hidden">
+                <div className="flex-auto -mr-px bg-slate-700/50 border border-slate-500/30 rounded-tl"></div>
+              </div>
+              <div className="absolute top-2 right-0 h-8 flex items-center pr-4"><div className="relative flex -mr-2">
+                <button type="button" className="text-slate-500 hover:text-slate-400">
+                  <svg fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="w-8 h-8"><path d="M13 10.75h-1.25a2 2 0 0 0-2 2v8.5a2 2 0 0 0 2 2h8.5a2 2 0 0 0 2-2v-8.5a2 2 0 0 0-2-2H19"></path><path d="M18 12.25h-4a1 1 0 0 1-1-1v-1.5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1.5a1 1 0 0 1-1 1ZM13.75 16.25h4.5M13.75 19.25h4.5"></path></svg>
+                </button>
+              </div>
+              </div>
+            </div>
+            <div className="relative text-white">
+
+            </div>
+          </div>
         </Allotment.Pane>
       </Allotment>
     </DndContext>

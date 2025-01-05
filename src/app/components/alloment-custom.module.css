@@ -1,0 +1,13 @@
+/* Allomentのリポジトリ内から */
+.leftPane,
+.rightPane {
+    transition: all 0.15s ease-in-out;
+    will-change: width;
+}
+
+/* これがないとドラッグで幅調節した時の挙動がおかしくなる */
+.splitViewContainer:global(.split-view-sash-dragging) .leftPane,
+.splitViewContainer:global(.split-view-sash-dragging) .rightPane {
+    /* disable animation while sash dragging */
+    transition: none;
+}
