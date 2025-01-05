@@ -261,25 +261,24 @@ export function SortableTree({
       onDragCancel={handleDragCancel}
     >
       <DnclEditDialog {...editor}></DnclEditDialog>
-
-      <Allotment.Pane>
-        <Box sx={{ padding: '10px' }}>
-          <button
-            type="button"
-            onClick={() => {
-              setVisible((visible) => !visible);
-            }}
-          >
-            {visible ? "Hide" : "Show"}
-          </button>
-        </Box>
-      </Allotment.Pane>
-
-
-      <Allotment defaultSizes={[100, 100]} className={styles.splitViewContainer} onVisibleChange={(_index, value) => {
+      <Allotment separator={false} defaultSizes={[100, 100]} className={styles.splitViewContainer} onVisibleChange={(_index, value) => {
         setVisible(value);
       }}>
-        <div className="bg-amber-300 h-10"></div>
+        <Allotment.Pane maxSize={50} minSize={50} className={`bg-slate-300`}>
+          <div onClick={() => {
+            setVisible((visible) => !visible);
+          }} style={{ cursor: 'pointer', height: '100%', userSelect: 'none' }}>
+            <Box sx={{ padding: '10px', height: '100%', display: 'flex', alignItems: 'center' }}>
+              <input type="checkbox" id="animation2" checked={visible} className={`${styles.animation2}`} style={{ display: 'none' }} onChange={() => {
+                setVisible((visible) => !visible);
+              }} />
+              <label className={`${styles.customlabel}`} htmlFor="animation2">
+                <div className={`${styles.arrow} ${styles.animation2}`}></div>
+              </label>
+
+            </Box>
+          </div>
+        </Allotment.Pane>
         <Allotment.Pane maxSize={300} visible={visible} className={`${styles.leftPane} bg-slate-300`} snap>
           <Box sx={{ padding: '10px' }}>
             <div className="text-lg font-bold">ドラッグして行を追加</div>
