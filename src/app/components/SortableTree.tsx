@@ -44,6 +44,7 @@ import styles from './alloment-custom.module.css'
 import { ArrowButton } from "./ArrowButton";
 import "./alloment-custom.css";
 import TabsBox from "./TabsBox";
+import ScopeBox from "./ScopeBox";
 
 const initialItems: TreeItems = [
   {
@@ -307,6 +308,19 @@ export function SortableTree({
                   />
                 ))}
               </SortableContext>
+              <Box>
+                <ScopeBox>
+                  <div>関数和を表示する(n)を</div>
+                  <div>a←0</div>
+                  <ScopeBox nested={true}>
+                    <div> iを1からnまで1ずつ増やしながら，</div>
+                    <div>wa←wa＋＋＋i</div>
+                    <div>を繰り返す</div>
+                  </ScopeBox>
+                  <div>waを表示する</div>
+                  <div>と定義する</div>
+                </ScopeBox>
+              </Box>
             </TabsBox>
 
             {createPortal(
