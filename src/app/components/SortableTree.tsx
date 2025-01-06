@@ -264,7 +264,7 @@ export function SortableTree({
       onDragCancel={handleDragCancel}
     >
       <DnclEditDialog {...editor}></DnclEditDialog>
-      <Allotment separator={false} defaultSizes={[50, 100, 100]} className={styles.splitViewContainer} onVisibleChange={(_index, value) => {
+      <Allotment separator={false} defaultSizes={[50, 50, 100, 100]} className={styles.splitViewContainer} onVisibleChange={(_index, value) => {
         setVisible(value);
       }}>
         <Allotment.Pane maxSize={50} minSize={50} className={`${styles.paneBg}`}>
