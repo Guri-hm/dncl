@@ -3,3 +3,25 @@
     --sash-size: 20px;
     --sash-hover-size: 20px;
 }
+
+.sash-hover:after {
+    content: "ドラッグで調整可能";
+    /* 位置 */
+    position: absolute;
+    left: 0;
+    top: 32px;
+    z-index: 1;
+
+    /* 文字 */
+    font-weight: normal;
+    color: black;
+    white-space: nowrap;
+
+    /* 背景 */
+    background-color: white;
+    padding: 3px;
+    border: 1px silver solid;
+    border-radius: 3px;
+    box-shadow: 1px 1px 3px silver;
+
+}

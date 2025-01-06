@@ -1,0 +1,7 @@
+.bgSlate800 {
+    background-color: var(--slate-800);
+}
+
+.bgSlate900 {
+    background-color: var(bg-slate-900);
+}
