@@ -1,0 +1,13 @@
+.tabSelected {
+    color: var(--sky-300) !important;
+    background-color: rgb(30 41 59 / var(--bg-opacity, 1)) !important;
+}
+
+.tab {
+    color: var(--slate-500) !important;
+    background-color: rgb(51 65 85 / 0.5) !important;
+
+    &:hover {
+        color: #fff !important;
+    }
+}

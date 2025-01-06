@@ -11,3 +11,12 @@
     /* disable animation while sash dragging */
     transition: none;
 }
+
+
+.paneBg {
+    background-color: var(--slate-300);
+}
+
+.hFull {
+    height: 100%;
+}
