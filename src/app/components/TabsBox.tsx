@@ -3,9 +3,10 @@ import Tabs from '@mui/material/Tabs';
 import Tab, { TabProps } from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import styles from './tabs-box.module.css'
-import { BoxProps, styled } from '@mui/system';
-import { IconButton } from '@mui/material';
+import { BoxProps, createTheme, styled, ThemeProvider } from '@mui/system';
+import { CssBaseline, IconButton } from '@mui/material';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+
 interface TabPanelProps {
     children?: React.ReactNode;
     index: number;
@@ -41,13 +42,19 @@ function CustomTabPanel(props: TabPanelProps) {
 
     return (
         <div
+            style={{ height: '100%' }}
             role="tabpanel"
             hidden={value !== index}
             id={`simple-tabpanel-${index}`}
             aria-labelledby={`simple-tab-${index}`}
             {...other}
         >
-            {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+
+            {value === index &&
+
+                <Box sx={{ p: 3, height: '100%' }}>{children}</Box>
+
+            }
         </div>
     );
 }
@@ -101,6 +108,7 @@ const StyledBox = styled((props: BoxProps) => (
 const ContentBox = styled((props: BoxProps) => (
     <Box {...props} />
 ))(({ theme }) => ({
+    height: '100%',
     display: 'respoinsive',
     color: 'white',
 }));

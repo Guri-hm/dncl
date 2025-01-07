@@ -50,8 +50,8 @@ export function DnclEditDialog(params: Props) {
         }
 
         let strArray: string[] = cnvObjToArray(updatedObj, operandsMaxIndex, keyword);
-        console.log(updatedObj);
-        console.log(strArray);
+        // console.log(updatedObj);
+        // console.log(strArray);
 
         result = checkBraketPair(strArray);
         if (result.hasError) {
