@@ -1,25 +1,4 @@
-export enum processEnum {
-  Output = '表示',
-  SetValToVariableOrArray = '変数または配列の要素への代入',
-  InitializeArray = '配列の初期化',
-  BulkAssignToArray = '配列への一括代入',
-  Increment = '加算を伴う代入',
-  Decrement = '減算を伴う代入',
-  If = 'もし〈条件〉ならば',
-  ElseIf = 'を実行し，そうでなくもし〈条件〉ならば',
-  Else = 'を実行し，そうでなければ',
-  EndIf = 'を実行する',
-  While = '〈条件〉の間',
-  EndWhile = 'を繰り返す',
-  DoWhile = '繰り返し，',
-  EndDoWhile = 'を，〈条件〉になるまで実行する',
-  ForIncrement = '〈変数〉の値を増やしながら，',
-  ForDecrement = '〈変数〉の値を減らしながら，',
-  EndFor = 'を繰り返す',
-  DefineFunction = '関数〈関数名〉(〈引数列〉)を',
-  Defined = 'と定義する',
-  ExecuteUserDefinedFunction = '関数を実行する',
-}
+
 
 export enum bracketEnum {
   LeftBraket = 'LeftBraket',

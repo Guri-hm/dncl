@@ -9,6 +9,7 @@ npm install @mui/material @emotion/react @emotion/styled --legacy-peer-deps
 npm install @mui/icons-material @mui/material @emotion/styled @emotion/react --legacy-peer-deps
 npm i allotment --legacy-peer-deps
 npm i wanakana --legacy-peer-deps 
+npm i kuromoji --legacy-peer-deps
 
 *allotmentのバージョンが古く、「 --legacy-peer-deps」を付与してインストールした
 ⇒他のライブラリのインストール時にもこのオプション付与を要求されるようになった

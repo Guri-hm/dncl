@@ -3,7 +3,7 @@ import { UniqueIdentifier } from "@dnd-kit/core";
 
 import type { FlattenedItem, TreeItem, TreeItems } from '../types';
 import { BraketSymbolEnum, ReturnFuncDncl, UserDefinedFuncDncl, VoidFuncDncl } from '@/app/enum';
-import { inputTypeEnum, keyPrefixEnum, processEnum, ValidationEnum } from '../components/Dialog/Enum';
+import { inputTypeEnum, keyPrefixEnum, ProcessEnum, ValidationEnum } from '../components/Dialog/Enum';
 
 function getDragDepth(offset: number, indentationWidth: number) {
   return Math.round(offset / indentationWidth);
@@ -490,7 +490,7 @@ const toEmptyIfNull = (targetString: string | undefined) => {
   return targetString;
 }
 
-export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex: number, proceccType: processEnum, keyword: keyPrefixEnum, treeItems: TreeItems): { errorMsgArray: string[]; hasError: boolean; } => {
+export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex: number, proceccType: ProcessEnum, keyword: keyPrefixEnum, treeItems: TreeItems): { errorMsgArray: string[]; hasError: boolean; } => {
 
   const regexForOperator = new RegExp(/^(\+|\-|\*|\/|÷|%|==|!=|>|>=|<|<=|かつ|または|と)$/);
 
@@ -541,7 +541,7 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
       case inputTypeEnum.String:
 
         if (operandsMaxIndex > 0) {
-          if (proceccType != processEnum.Output) {
+          if (proceccType != ProcessEnum.Output) {
             errorMsgArray.push(`文字列が含まれる場合，演算子が使用できません`);
           }
         }
@@ -573,7 +573,7 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
     if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`]) != "") {
 
       //新しい関数の定義以外の場面では関数名の入力が必須
-      if (proceccType != processEnum.DefineFunction) {
+      if (proceccType != ProcessEnum.DefineFunction) {
         if (!getFunctionInfo(obj[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`])) {
           errorMsgArray.push(`${i + 1}番目のオペランドに，定義されていない関数が使用されています`);
         }
@@ -803,7 +803,7 @@ export function getUserDefinedFunctionInfoArray(treeItems: TreeItem[]): UserDefi
   }
 
   const flattened: Statement[] = flattenTreeItems(treeItems);
-  const filtered: Statement[] = filterByProcessIndex(flattened, getEnumIndex(processEnum, processEnum.DefineFunction));
+  const filtered: Statement[] = filterByProcessIndex(flattened, getEnumIndex(ProcessEnum, ProcessEnum.DefineFunction));
 
   return getUserDefinedFunctionInfoArray(filtered);
 

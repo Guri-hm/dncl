@@ -3,9 +3,9 @@ import { ReactElement } from "react";
 import Box from '@mui/material/Box';
 import { DnclTextField } from "./DnclTextField";
 import { Operator } from "./Operator";
-import { processEnum, keyPrefixEnum, inputTypeEnum } from "./Enum";
+import { keyPrefixEnum, inputTypeEnum } from "./Enum";
 import { NowrapText } from "./NowrapText";
-import { OperationEnum, StatementEnum } from "@/app/enum";
+import { OperationEnum, StatementEnum, ProcessEnum } from "@/app/enum";
 import { Operation } from "./Operation";
 import { Divider, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
 import { getEnumIndex } from "@/app/utilities";
@@ -24,7 +24,7 @@ export function EditorBox(params: Props) {
     const [statement, setStatement] = useState<ReactElement | null>(null);
 
     const handleChange = (event: SelectChangeEvent) => {
-        const index = getEnumIndex(processEnum, event.target.value as processEnum ?? processEnum.SetValToVariableOrArray);
+        const index = getEnumIndex(ProcessEnum, event.target.value as ProcessEnum ?? ProcessEnum.SetValToVariableOrArray);
         setStatement(StatementEditor(index));
     }
 
@@ -39,7 +39,7 @@ export function EditorBox(params: Props) {
         }
 
         switch (index) {
-            case getEnumIndex(processEnum, processEnum.SetValToVariableOrArray):
+            case getEnumIndex(ProcessEnum, ProcessEnum.SetValToVariableOrArray):
                 return <>
                     <Operation statementType={params.statementType} treeItems={params.treeItems}>
                         <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArray}></DnclTextField>
@@ -48,7 +48,7 @@ export function EditorBox(params: Props) {
                     {hdnInput(index)}
                 </>
 
-            case getEnumIndex(processEnum, processEnum.InitializeArray):
+            case getEnumIndex(ProcessEnum, ProcessEnum.InitializeArray):
                 //配列の初期化
                 return <>
                     <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.ArrayWithoutSuffix}></DnclTextField>
@@ -56,7 +56,7 @@ export function EditorBox(params: Props) {
                     <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.InitializeArray} label=""></DnclTextField>
                     {hdnInput(index)}
                 </>
-            case getEnumIndex(processEnum, processEnum.BulkAssignToArray):
+            case getEnumIndex(ProcessEnum, ProcessEnum.BulkAssignToArray):
                 return <>
                     <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.ArrayWithoutSuffix}></DnclTextField>
                     <NowrapText text={'のすべての要素に'}></NowrapText>
@@ -64,23 +64,23 @@ export function EditorBox(params: Props) {
                     <NowrapText text={'を代入する'}></NowrapText>
                     {hdnInput(index)}
                 </>
-            case getEnumIndex(processEnum, processEnum.Increment):
-            case getEnumIndex(processEnum, processEnum.Decrement):
+            case getEnumIndex(ProcessEnum, ProcessEnum.Increment):
+            case getEnumIndex(ProcessEnum, ProcessEnum.Decrement):
                 return <>
                     <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArray}></DnclTextField>
                     <NowrapText text={'を'}></NowrapText>
                     <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SwitchVariableOrNumberOrArray}></DnclTextField>
-                    <NowrapText text={index == getEnumIndex(processEnum, processEnum.Increment) ? '増やす' : '減らす'}></NowrapText>
+                    <NowrapText text={index == getEnumIndex(ProcessEnum, ProcessEnum.Increment) ? '増やす' : '減らす'}></NowrapText>
                     {hdnInput(index)}
                 </>
-            case getEnumIndex(processEnum, processEnum.Output):
+            case getEnumIndex(ProcessEnum, ProcessEnum.Output):
                 return <>
                     <Operation statementType={params.statementType} treeItems={params.treeItems}></Operation>
                     <Divider sx={{ marginLeft: 1 }} orientation="vertical" flexItem />
                     <NowrapText text={'を表示する'}></NowrapText>
                     {hdnInput(index)}
                 </>
-            case getEnumIndex(processEnum, processEnum.If):
+            case getEnumIndex(ProcessEnum, ProcessEnum.If):
                 return <>
                     <NowrapText text={'もし'}></NowrapText>
                     <Divider sx={{ marginRight: 1 }} orientation="vertical" flexItem />
@@ -90,7 +90,7 @@ export function EditorBox(params: Props) {
                     <NowrapText text={'ならば'}></NowrapText>
                     {hdnInput(index)}
                 </>
-            case getEnumIndex(processEnum, processEnum.ElseIf):
+            case getEnumIndex(ProcessEnum, ProcessEnum.ElseIf):
                 return <>
                     <WrapText text={'を実行し，そうでなくもし'}></WrapText>
                     <Divider sx={{ marginRight: 1 }} orientation="vertical" flexItem />
@@ -100,17 +100,17 @@ export function EditorBox(params: Props) {
                     <NowrapText text={'ならば'}></NowrapText>
                     {hdnInput(index)}
                 </>
-            case getEnumIndex(processEnum, processEnum.Else):
+            case getEnumIndex(ProcessEnum, ProcessEnum.Else):
                 return <>
                     <NowrapText text={'を実行し，そうでなければ'}></NowrapText>
                     {hdnInput(index)}
                 </>
-            case getEnumIndex(processEnum, processEnum.EndIf):
+            case getEnumIndex(ProcessEnum, ProcessEnum.EndIf):
                 return <>
                     <NowrapText text={'を実行する'}></NowrapText>
                     {hdnInput(index)}
                 </>
-            case getEnumIndex(processEnum, processEnum.While):
+            case getEnumIndex(ProcessEnum, ProcessEnum.While):
                 return <>
                     <Operation statementType={params.statementType} treeItems={params.treeItems}>
                     </Operation>
@@ -118,17 +118,17 @@ export function EditorBox(params: Props) {
                     <NowrapText text={'の間，'}></NowrapText>
                     {hdnInput(index)}
                 </>
-            case getEnumIndex(processEnum, processEnum.EndWhile):
+            case getEnumIndex(ProcessEnum, ProcessEnum.EndWhile):
                 return <>
                     <NowrapText text={'を繰り返す'}></NowrapText>
                     {hdnInput(index)}
                 </>
-            case getEnumIndex(processEnum, processEnum.DoWhile):
+            case getEnumIndex(ProcessEnum, ProcessEnum.DoWhile):
                 return <>
                     <NowrapText text={'繰り返し，'}></NowrapText>
                     {hdnInput(index)}
                 </>
-            case getEnumIndex(processEnum, processEnum.EndDoWhile):
+            case getEnumIndex(ProcessEnum, ProcessEnum.EndDoWhile):
                 return <>
                     <NowrapText text={'を，'}></NowrapText>
                     <Divider sx={{ marginRight: 1 }} orientation="vertical" flexItem />
@@ -138,8 +138,8 @@ export function EditorBox(params: Props) {
                     <NowrapText text={'になるまで実行する'}></NowrapText>
                     {hdnInput(index)}
                 </>
-            case getEnumIndex(processEnum, processEnum.ForIncrement):
-            case getEnumIndex(processEnum, processEnum.ForDecrement):
+            case getEnumIndex(ProcessEnum, ProcessEnum.ForIncrement):
+            case getEnumIndex(ProcessEnum, ProcessEnum.ForDecrement):
                 return <>
                     <Grid container spacing={1} direction='column'>
                         <Grid container direction='row'>
@@ -160,17 +160,17 @@ export function EditorBox(params: Props) {
                             <Grid size='grow'>
                                 <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.Difference}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.Difference} inputType={inputTypeEnum.VariableOrNumber} label={"差分"}></DnclTextField>
                             </Grid>
-                            <NowrapText text={index == getEnumIndex(processEnum, processEnum.ForIncrement) ? 'ずつ増やしながら，' : 'ずつ減らしながら，'}></NowrapText>
+                            <NowrapText text={index == getEnumIndex(ProcessEnum, ProcessEnum.ForIncrement) ? 'ずつ増やしながら，' : 'ずつ減らしながら，'}></NowrapText>
                         </Grid>
                     </Grid>
                     {hdnInput(index)}
                 </>
-            case getEnumIndex(processEnum, processEnum.EndFor):
+            case getEnumIndex(ProcessEnum, ProcessEnum.EndFor):
                 return <>
                     <NowrapText text={'を繰り返す'}></NowrapText>
                     {hdnInput(index)}
                 </>
-            case getEnumIndex(processEnum, processEnum.DefineFunction):
+            case getEnumIndex(ProcessEnum, ProcessEnum.DefineFunction):
                 return <>
                     <NowrapText text={'関数'}></NowrapText>
                     <Divider sx={{ marginRight: 1 }} orientation="vertical" flexItem />
@@ -179,12 +179,12 @@ export function EditorBox(params: Props) {
                     <NowrapText text={'を'}></NowrapText>
                     {hdnInput(index)}
                 </>
-            case getEnumIndex(processEnum, processEnum.Defined):
+            case getEnumIndex(ProcessEnum, ProcessEnum.Defined):
                 return <>
                     <NowrapText text={'と定義する'}></NowrapText>
                     {hdnInput(index)}
                 </>
-            case getEnumIndex(processEnum, processEnum.ExecuteUserDefinedFunction):
+            case getEnumIndex(ProcessEnum, ProcessEnum.ExecuteUserDefinedFunction):
                 return <>
                     <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.UserDefinedfunction}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.UserDefinedfunction} inputType={inputTypeEnum.ExecuteUserDefinedFunction} treeItems={params.treeItems}></DnclTextField>
                     {hdnInput(index)}
@@ -216,56 +216,56 @@ export function EditorBox(params: Props) {
         case StatementEnum.Output:
             return <>
                 <CustomBox>
-                    {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.Output))}
+                    {statement ?? StatementEditor(getEnumIndex(ProcessEnum, ProcessEnum.Output))}
                 </CustomBox>
             </>
         case StatementEnum.Input:
             return <>
                 {ddl}
                 <CustomBox>
-                    {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.SetValToVariableOrArray))}
+                    {statement ?? StatementEditor(getEnumIndex(ProcessEnum, ProcessEnum.SetValToVariableOrArray))}
                 </CustomBox>
             </>
         case StatementEnum.Condition:
             return <>
                 {ddl}
                 <CustomBox>
-                    {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.If))}
+                    {statement ?? StatementEditor(getEnumIndex(ProcessEnum, ProcessEnum.If))}
                 </CustomBox>
             </>
         case StatementEnum.ConditionalLoopPreTest:
             return <>
                 {ddl}
                 <CustomBox>
-                    {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.While))}
+                    {statement ?? StatementEditor(getEnumIndex(ProcessEnum, ProcessEnum.While))}
                 </CustomBox>
             </>
         case StatementEnum.ConditionalLoopPostTest:
             return <>
                 {ddl}
                 <CustomBox>
-                    {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.DoWhile))}
+                    {statement ?? StatementEditor(getEnumIndex(ProcessEnum, ProcessEnum.DoWhile))}
                 </CustomBox>
             </>
         case StatementEnum.SequentialIteration:
             return <>
                 {ddl}
                 <CustomBox>
-                    {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.ForIncrement))}
+                    {statement ?? StatementEditor(getEnumIndex(ProcessEnum, ProcessEnum.ForIncrement))}
                 </CustomBox>
             </>
         case StatementEnum.UserDefinedfunction:
             return <>
                 {ddl}
                 <CustomBox>
-                    {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.DefineFunction))}
+                    {statement ?? StatementEditor(getEnumIndex(ProcessEnum, ProcessEnum.DefineFunction))}
                 </CustomBox>
             </>
         case StatementEnum.ExecuteUserDefinedFunction:
             return <>
                 {ddl}
                 <CustomBox>
-                    {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.ExecuteUserDefinedFunction))}
+                    {statement ?? StatementEditor(getEnumIndex(ProcessEnum, ProcessEnum.ExecuteUserDefinedFunction))}
                 </CustomBox>
             </>
         default:
@@ -275,68 +275,68 @@ export function EditorBox(params: Props) {
 
 
 interface processTypes {
-    title: processEnum;
+    title: ProcessEnum;
 }
 
 const processNames = [
     {
         statementType: StatementEnum.Output,
         names: [
-            { title: processEnum.Output },
+            { title: ProcessEnum.Output },
         ]
     },
     {
         statementType: StatementEnum.Input,
         names: [
-            { title: processEnum.SetValToVariableOrArray },
-            { title: processEnum.InitializeArray },
-            { title: processEnum.BulkAssignToArray },
-            { title: processEnum.Increment },
-            { title: processEnum.Decrement },
+            { title: ProcessEnum.SetValToVariableOrArray },
+            { title: ProcessEnum.InitializeArray },
+            { title: ProcessEnum.BulkAssignToArray },
+            { title: ProcessEnum.Increment },
+            { title: ProcessEnum.Decrement },
         ]
     },
     {
         statementType: StatementEnum.Condition,
         names: [
-            { title: processEnum.If },
-            { title: processEnum.Else },
-            { title: processEnum.ElseIf },
-            { title: processEnum.EndIf },
+            { title: ProcessEnum.If },
+            { title: ProcessEnum.Else },
+            { title: ProcessEnum.ElseIf },
+            { title: ProcessEnum.EndIf },
         ]
     },
     {
         statementType: StatementEnum.ConditionalLoopPreTest,
         names: [
-            { title: processEnum.While },
-            { title: processEnum.EndWhile },
+            { title: ProcessEnum.While },
+            { title: ProcessEnum.EndWhile },
         ]
     },
     {
         statementType: StatementEnum.ConditionalLoopPostTest,
         names: [
-            { title: processEnum.DoWhile },
-            { title: processEnum.EndDoWhile },
+            { title: ProcessEnum.DoWhile },
+            { title: ProcessEnum.EndDoWhile },
         ]
     },
     {
         statementType: StatementEnum.SequentialIteration,
         names: [
-            { title: processEnum.ForIncrement },
-            { title: processEnum.ForDecrement },
-            { title: processEnum.EndFor },
+            { title: ProcessEnum.ForIncrement },
+            { title: ProcessEnum.ForDecrement },
+            { title: ProcessEnum.EndFor },
         ]
     },
     {
         statementType: StatementEnum.UserDefinedfunction,
         names: [
-            { title: processEnum.DefineFunction },
-            { title: processEnum.Defined },
+            { title: ProcessEnum.DefineFunction },
+            { title: ProcessEnum.Defined },
         ]
     },
     {
         statementType: StatementEnum.ExecuteUserDefinedFunction,
         names: [
-            { title: processEnum.ExecuteUserDefinedFunction },
+            { title: ProcessEnum.ExecuteUserDefinedFunction },
         ]
     },
 ];

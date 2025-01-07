@@ -9,9 +9,9 @@ import { DnclEditorProps, TreeItems } from "../../types";
 import { StatementName } from './StatementName';
 import { StatementDesc } from './StatementDesc';
 import { EditorBox } from './EditorBox';
-import { keyPrefixEnum, processEnum } from './Enum';
-import { ArithmeticOperatorDncl, ArithmeticOperatorJs, BooleanDncl, BooleanJpDncl, ComparisonOperatorDncl, ComparisonOperatorJs, OperatorEnum, ReturnFuncDncl, ReturnFuncJpDncl, StatementEnum, UserDefinedFuncDncl, UserDefinedFuncJpDncl, VoidFuncDncl, VoidFuncJpDncl } from '@/app/enum';
-import { checkBraketPair, cnvAndOrToJsOperator, cnvObjToArray, cnvToDivision, escapeHtml, filterUserDefineFunc, flattenTreeItems, getOperandsMaxIndex, isValidExpression, replaceToAmpersand, sanitizeInput, transformNegation, tryParseToJsFunction, updateToWithSquareBrackets, ValidateObjValue } from '@/app/utilities';
+import { keyPrefixEnum } from './Enum';
+import { ArithmeticOperatorDncl, ArithmeticOperatorJs, BooleanDncl, BooleanJpDncl, ComparisonOperatorDncl, ComparisonOperatorJs, OperatorEnum, ReturnFuncDncl, ReturnFuncJpDncl, StatementEnum, UserDefinedFuncDncl, UserDefinedFuncJpDncl, VoidFuncDncl, VoidFuncJpDncl, ProcessEnum } from '@/app/enum';
+import { checkBraketPair, cnvAndOrToJsOperator, cnvObjToArray, cnvToDivision, escapeHtml, getOperandsMaxIndex, isValidExpression, replaceToAmpersand, sanitizeInput, transformNegation, tryParseToJsFunction, updateToWithSquareBrackets, ValidateObjValue } from '@/app/utilities';
 import { getEnumIndex } from "@/app/utilities";
 import { ErrorMsgBox } from './ErrorMsgBox';
 
@@ -31,7 +31,7 @@ export function DnclEditDialog(params: Props) {
 
     const [error, setError] = useState<string[]>([]);
 
-    const checkStatement = (data: { [k: string]: string; }, proceccType: processEnum, keyword: keyPrefixEnum, treeItems: TreeItems): boolean => {
+    const checkStatement = (data: { [k: string]: string; }, proceccType: ProcessEnum, keyword: keyPrefixEnum, treeItems: TreeItems): boolean => {
 
         //キーワードを含むオブジェクトを取得
         const obj = Object.fromEntries(Object.entries(data).filter(([key, value]) => key.includes(keyword)));
@@ -137,12 +137,12 @@ export function DnclEditDialog(params: Props) {
                         const formData = new FormData(event.currentTarget);
                         const formJson = Object.fromEntries((formData as any).entries());
                         // Enumの値を配列に変換 
-                        const processEnumArray = Object.values(processEnum);
+                        const ProcessEnumArray = Object.values(ProcessEnum);
                         const getValueByIndex = (index: number): string => {
-                            if (index < 0 || index >= processEnumArray.length) {
+                            if (index < 0 || index >= ProcessEnumArray.length) {
                                 return '';
                             }
-                            return processEnumArray[index];
+                            return ProcessEnumArray[index];
                         }
 
                         const processType = getValueByIndex(formJson.processIndex)
@@ -151,8 +151,8 @@ export function DnclEditDialog(params: Props) {
                         if (processType == '') {
                             return;
                         }
-                        if (!checkStatement(formJson, processType as processEnum, keyPrefixEnum.LeftSide, params.treeItems)) return;
-                        if (!checkStatement(formJson, processType as processEnum, keyPrefixEnum.RigthSide, params.treeItems)) return;
+                        if (!checkStatement(formJson, processType as ProcessEnum, keyPrefixEnum.LeftSide, params.treeItems)) return;
+                        if (!checkStatement(formJson, processType as ProcessEnum, keyPrefixEnum.RigthSide, params.treeItems)) return;
 
                         setError([]);
 
@@ -162,64 +162,64 @@ export function DnclEditDialog(params: Props) {
 
                         let processPhrase = "";
                         switch (Number(formJson.processIndex)) {
-                            case getEnumIndex(processEnum, processEnum.SetValToVariableOrArray):
-                            case getEnumIndex(processEnum, processEnum.InitializeArray):
+                            case getEnumIndex(ProcessEnum, ProcessEnum.SetValToVariableOrArray):
+                            case getEnumIndex(ProcessEnum, ProcessEnum.InitializeArray):
                                 processPhrase = `${leftside} ${operator} ${rightside}`;
                                 break;
-                            case getEnumIndex(processEnum, processEnum.BulkAssignToArray):
+                            case getEnumIndex(ProcessEnum, ProcessEnum.BulkAssignToArray):
                                 processPhrase = `${leftside}のすべての要素に${rightside}を代入する`;
                                 break;
-                            case getEnumIndex(processEnum, processEnum.Increment):
+                            case getEnumIndex(ProcessEnum, ProcessEnum.Increment):
                                 processPhrase = `${leftside}を${rightside}増やす`;
                                 break;
 
-                            case getEnumIndex(processEnum, processEnum.Decrement):
+                            case getEnumIndex(ProcessEnum, ProcessEnum.Decrement):
                                 processPhrase = `${leftside}を${rightside}減らす`;
                                 break;
 
-                            case getEnumIndex(processEnum, processEnum.Output):
+                            case getEnumIndex(ProcessEnum, ProcessEnum.Output):
                                 processPhrase = `${rightside}を表示する`;
                                 break;
 
-                            case getEnumIndex(processEnum, processEnum.If):
+                            case getEnumIndex(ProcessEnum, ProcessEnum.If):
                                 processPhrase = `もし${rightside}ならば`;
                                 break;
-                            case getEnumIndex(processEnum, processEnum.ElseIf):
+                            case getEnumIndex(ProcessEnum, ProcessEnum.ElseIf):
                                 processPhrase = `を実行し，そうでなくもし${rightside}ならば`;
                                 break;
 
-                            case getEnumIndex(processEnum, processEnum.Else):
+                            case getEnumIndex(ProcessEnum, ProcessEnum.Else):
                                 processPhrase = `を実行し，そうでなければ`;
                                 break;
 
-                            case getEnumIndex(processEnum, processEnum.EndIf):
+                            case getEnumIndex(ProcessEnum, ProcessEnum.EndIf):
                                 processPhrase = `を実行する`;
                                 break;
-                            case getEnumIndex(processEnum, processEnum.While):
+                            case getEnumIndex(ProcessEnum, ProcessEnum.While):
                                 processPhrase = `${rightside}の間，`;
                                 break;
-                            case getEnumIndex(processEnum, processEnum.EndWhile):
-                            case getEnumIndex(processEnum, processEnum.EndFor):
+                            case getEnumIndex(ProcessEnum, ProcessEnum.EndWhile):
+                            case getEnumIndex(ProcessEnum, ProcessEnum.EndFor):
                                 processPhrase = `を繰り返す`;
                                 break;
-                            case getEnumIndex(processEnum, processEnum.DoWhile):
+                            case getEnumIndex(ProcessEnum, ProcessEnum.DoWhile):
                                 processPhrase = `繰り返し，`;
                                 break;
-                            case getEnumIndex(processEnum, processEnum.EndDoWhile):
+                            case getEnumIndex(ProcessEnum, ProcessEnum.EndDoWhile):
                                 processPhrase = `を，${rightside}になるまで実行する`;
                                 break;
-                            case getEnumIndex(processEnum, processEnum.ForIncrement):
-                            case getEnumIndex(processEnum, processEnum.ForDecrement):
-                                processPhrase = `${rightside}を${formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.InitialValue}`]}から${formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.EndValue}`]}まで${formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.Difference}`]}ずつ${Number(formJson.processIndex) == getEnumIndex(processEnum, processEnum.ForIncrement) ? "増やしながら，" : "減らしながら，"}`;
+                            case getEnumIndex(ProcessEnum, ProcessEnum.ForIncrement):
+                            case getEnumIndex(ProcessEnum, ProcessEnum.ForDecrement):
+                                processPhrase = `${rightside}を${formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.InitialValue}`]}から${formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.EndValue}`]}まで${formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.Difference}`]}ずつ${Number(formJson.processIndex) == getEnumIndex(ProcessEnum, ProcessEnum.ForIncrement) ? "増やしながら，" : "減らしながら，"}`;
 
                                 break;
-                            case getEnumIndex(processEnum, processEnum.DefineFunction):
+                            case getEnumIndex(ProcessEnum, ProcessEnum.DefineFunction):
                                 processPhrase = `関数 ${rightside}を`;
                                 break;
-                            case getEnumIndex(processEnum, processEnum.Defined):
+                            case getEnumIndex(ProcessEnum, ProcessEnum.Defined):
                                 processPhrase = `と定義する`;
                                 break;
-                            case getEnumIndex(processEnum, processEnum.ExecuteUserDefinedFunction):
+                            case getEnumIndex(ProcessEnum, ProcessEnum.ExecuteUserDefinedFunction):
                                 processPhrase = `関数 ${rightside}を実行する`;
                                 break;
                             default:
