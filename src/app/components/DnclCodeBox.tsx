@@ -3,9 +3,6 @@ import React from 'react';
 import Box from '@mui/material/Box';
 import { TreeItems } from '../types';
 import ScopeBox from './ScopeBox';
-import { grey } from "@mui/material/colors";
-import { createTheme, CssBaseline } from '@mui/material';
-import { ThemeProvider } from '@emotion/react';
 
 
 interface Props {
@@ -15,7 +12,7 @@ interface Props {
 const renderNodes = (nodes: TreeItems): React.ReactNode => {
     return nodes.map((node) => (
         <React.Fragment key={node.id}>
-            <div>{node.code}</div>
+            <Box>{node.code}</Box>
             {node.children.length > 0 && (
                 <ScopeBox nested={true}>
                     {renderNodes(node.children)}
@@ -26,10 +23,9 @@ const renderNodes = (nodes: TreeItems): React.ReactNode => {
 }
 
 const DnclCodeBox: React.FC<Props> = ({ items }: Props) => {
-    console.log(items)
-    return <ScopeBox>
+    return <Box sx={{ fontSize: '1rem', lineHeight: 1.5 }}>
         {renderNodes(items)}
-    </ScopeBox>
+    </Box>
 };
 
 export default DnclCodeBox;

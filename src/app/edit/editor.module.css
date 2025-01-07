@@ -3,5 +3,13 @@
 }
 
 .bgSlate900 {
-    background-color: var(bg-slate-900);
+    background-color: var(--slate-900);
+}
+
+.bgStone50 {
+    background-color: var(--stone-50);
+}
+
+.marginTop16 {
+    margin-top: 16px;
 }

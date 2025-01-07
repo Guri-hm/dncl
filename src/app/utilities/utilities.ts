@@ -496,14 +496,13 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
 
   //オペランドの文字列のバリデーションパターン
   const regexForStringOperand = new RegExp(ValidationEnum.String);
-  const regexForOperand = new RegExp(ValidationEnum.VariableOrNumber);
+  const regexForVariableOrNumber = new RegExp(ValidationEnum.VariableOrNumber);
   const regexForInitializeArray = new RegExp(ValidationEnum.InitializeArray);
   const regexForParentheses = new RegExp(ValidationEnum.Parentheses);
   //添字はカンマ区切りも許容(実際はダメだが一括代入の処理があるため許容)
   const regexForSuffix = new RegExp(ValidationEnum.InitializeArray);
   const regexForSuffixWithBrackets = new RegExp(/^(?:(?:[a-zA-Z_$][a-zA-Z0-9_$]*|[0-9]+)(?:,(?:[a-zA-Z_$][a-zA-Z0-9_$]*|[0-9]+))*)|(?:\([^\)]*\))|(?:\[[^\]]*\])$/);
   const regexForNegation = new RegExp(ValidationEnum.Negation);
-  const regexForInteger = new RegExp(ValidationEnum.Integer);
 
   function isEnumValue(value: string): value is ReturnFuncDncl | VoidFuncDncl | UserDefinedFuncDncl {
     const combinedEnumValues: string[] = [...Object.values(ReturnFuncDncl), ...Object.values(VoidFuncDncl), ...Object.values(UserDefinedFuncDncl)];
@@ -552,7 +551,7 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
         break;
 
       default:
-        if (!regexForOperand.test(obj[`${keyword}_${i}`])) {
+        if (!regexForVariableOrNumber.test(obj[`${keyword}_${i}`])) {
           errorMsgArray.push(`${i + 1}番目のオペランドに不適切な値が使用されています`);
         }
         break;
@@ -636,19 +635,19 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
     }
     //For文の初期値
     if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.InitialValue}`]) != "") {
-      if (!regexForInteger.test(obj[`${keyword}_${i}_${keyPrefixEnum.InitialValue}`])) {
+      if (!regexForVariableOrNumber.test(obj[`${keyword}_${i}_${keyPrefixEnum.InitialValue}`])) {
         errorMsgArray.push(`初期値に不適切な文字が使用されています`);
       }
     }
     //For文の終了値
     if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.EndValue}`]) != "") {
-      if (!regexForInteger.test(obj[`${keyword}_${i}_${keyPrefixEnum.EndValue}`])) {
+      if (!regexForVariableOrNumber.test(obj[`${keyword}_${i}_${keyPrefixEnum.EndValue}`])) {
         errorMsgArray.push(`終了値に不適切な文字が使用されています`);
       }
     }
     //For文の増減差分
     if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Difference}`]) != "") {
-      if (!regexForInteger.test(obj[`${keyword}_${i}_${keyPrefixEnum.Difference}`])) {
+      if (!regexForVariableOrNumber.test(obj[`${keyword}_${i}_${keyPrefixEnum.Difference}`])) {
         errorMsgArray.push(`差分に不適切な文字が使用されています`);
       }
     }

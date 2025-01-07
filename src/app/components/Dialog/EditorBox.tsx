@@ -1,6 +1,4 @@
 import { useState } from "react";
-import TextField from '@mui/material/TextField';
-import Autocomplete from '@mui/material/Autocomplete';
 import { ReactElement } from "react";
 import Box from '@mui/material/Box';
 import { DnclTextField } from "./DnclTextField";
@@ -10,7 +8,7 @@ import { NowrapText } from "./NowrapText";
 import { OperationEnum, StatementEnum } from "@/app/enum";
 import { Operation } from "./Operation";
 import { Divider, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
-import { getEnumIndex, getUserDefineFunctionNameArray } from "@/app/utilities";
+import { getEnumIndex } from "@/app/utilities";
 import { CustomBox } from "./CustomBox";
 import Grid from '@mui/material/Grid2';
 import { TreeItems } from "@/app/types";

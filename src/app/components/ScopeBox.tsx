@@ -12,14 +12,13 @@ const StyledDiv = styled(Box, {
     shouldForwardProp: (prop) => prop !== 'nested',
 })<ScopeBoxProps>(({ nested }) => ({
     position: 'relative',
-    paddingLeft: nested ? '20px' : '0px',
+    // paddingLeft: nested ? '20px' : '0px',
     '& > div': {
-        paddingBottom: '0px',
+        borderLeft: '2px solid white',
+        paddingLeft: '1.5rem',
+        marginLeft: '0.5rem'
     },
     '& > div:not(:first-of-type):not(:last-of-type)': {
-        borderLeft: '2px solid white',
-        paddingLeft: '20px',
-        marginLeft: '0.5rem'
     },
 }));
 

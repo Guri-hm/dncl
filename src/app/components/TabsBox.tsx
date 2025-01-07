@@ -37,10 +37,11 @@ const StyledTabs = styled((props: StyledTabsProps) => {
     );
 })(({ theme }) => ({})); // 必要に応じてスタイルを追加
 
-function CustomTabPanel(props: TabPanelProps) {
+function TabPanel(props: TabPanelProps) {
     const { children, value, index, ...other } = props;
     const StyledBox = styled(Box)({
         overflow: 'hidden', // 初期状態ではスクロールバーを非表示
+        // overflow: 'auto', // 初期状態ではスクロールバーを非表示
         '&:hover': {
             overflow: 'auto', // ホバー時にスクロールバーを表示
         },
@@ -65,11 +66,10 @@ function CustomTabPanel(props: TabPanelProps) {
             {value === index &&
 
                 <StyledBox sx={{
-                    overflowY: 'auto',
                     wordBreak: 'break-all',
                     flex: 1,
-                    display: 'respoinsive',
                     color: 'white',
+                    margin: '15px'
                 }} role="tabpanel"
                     hidden={value !== index}
                     id={`simple-tabpanel-${index}`}
@@ -187,7 +187,7 @@ export default function TabsBox({ children, tabLabels, ...props }: Props) {
                 </TabFillerContainer>
             </Header>
             {React.Children.map(children, (child, index) => (
-                <CustomTabPanel value={value} index={index} key={index}> {child} </CustomTabPanel>
+                <TabPanel value={value} index={index} key={index}> {child} </TabPanel>
             ))}
         </StyledBox>
     );

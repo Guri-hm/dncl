@@ -32,64 +32,19 @@ import {
   removeItem,
   removeChildrenOf,
   setProperty,
-  getEnumIndex,
 } from "../utilities";
 import { FlattenedItem, SensorContext, TreeItems, FragmentItems, FragmentItem, DnclEditorProps } from "@/app/types";
 import { SortableTreeItem, FragmentsListItem, DnclEditDialog } from "../components";
 import { v4 as uuidv4 } from "uuid";
 import { StatementEnum, StatementJpEnum } from "@/app/enum";
-import { processEnum } from "./Dialog/Enum";
 import { Box } from "@mui/material";
 import styles from './alloment-custom.module.css'
 import { ArrowButton } from "./ArrowButton";
 import "./alloment-custom.css";
 import TabsBox from "./TabsBox";
 import DnclCodeBox from "./DnclCodeBox";
+import { JavascriptBox } from "./JavascriptBox";
 
-const initialItems: TreeItems = [
-  {
-    id: "8b5c6537-316a-4ceb-805d-9be78119cf9f",
-    code: "関数 和 (n)を",
-    children: [
-      {
-        id: "a71d23f6-6b6c-4c92-98e1-4a3924becf31",
-        code: "wa ← 0",
-        children: [],
-      },
-      {
-        id: "19cbcd83-88b8-4f57-8c37-e5fa13b71dff",
-        code: "i を1からnまで1ずつ増やしながら，",
-        children: [
-          {
-            id: "39cd38d7-994d-4ef5-861f-113008fbbf0b",
-            code: "wa ← wa + 1",
-            children: [],
-          }
-        ],
-      },
-      {
-        id: "7622a456-9e1b-4eb0-9487-38964d88ae01",
-        code: "を繰り返す",
-        children: [],
-      },
-      {
-        id: "b68327e6-ab0b-4756-b7d6-e933a56366d4",
-        code: "waを表示する",
-        children: [],
-      }
-    ],
-  },
-  {
-    id: "e523d1a8-eaf7-4d47-81f0-2719da92b514",
-    code: "と定義する",
-    children: [],
-  },
-  {
-    id: "d87e4fb7-0b0e-40e2-9961-c825db8bb3f0",
-    code: "関数 和 (10)を実行する",
-    children: [],
-  }
-]
 
 const fragments: FragmentItems = [
   {
@@ -185,7 +140,8 @@ const dropAnimation: DropAnimation = {
 
 interface Props {
   collapsible?: boolean;
-  defaultItems?: TreeItems;
+  treeItems: TreeItems;
+  setTreeItems: any;
   indentationWidth?: number;
   indicator?: boolean;
   removable?: boolean;
@@ -193,17 +149,17 @@ interface Props {
 
 export function SortableTree({
   collapsible,
-  defaultItems = initialItems,
+  treeItems,
+  setTreeItems,
   indicator,
   indentationWidth = 20,
   removable
 }: Props) {
-  const [items, setItems] = useState(() => defaultItems);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeCode, setActiveCode] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
-  const [editor, setEditor] = useState<DnclEditorProps>({ onSubmit: null, open: false, type: StatementEnum.Input, overIndex: 0, treeItems: items, setItems: setItems });
+  const [editor, setEditor] = useState<DnclEditorProps>({ onSubmit: null, open: false, type: StatementEnum.Input, overIndex: 0, treeItems: treeItems, setItems: setTreeItems });
 
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
@@ -212,7 +168,7 @@ export function SortableTree({
 
 
   const flattenedItems = useMemo(() => {
-    const flattenedTree = flattenTree(items);
+    const flattenedTree = flattenTree(treeItems);
     const collapsedItems = flattenedTree.reduce<string[]>(
       (acc, { children, collapsed, id }) =>
         collapsed && children.length ? [...acc, id] : acc,
@@ -229,7 +185,7 @@ export function SortableTree({
       flattenedTree,
       activeId ? [activeId, ...collapsedItems] : collapsedItems
     );
-  }, [activeId, items]);
+  }, [activeId, treeItems]);
 
   const projected =
     activeId && overId
@@ -330,7 +286,7 @@ export function SortableTree({
                   />
                 ))}
               </SortableContext>
-              <DnclCodeBox items={items}></DnclCodeBox>
+              <DnclCodeBox items={treeItems}></DnclCodeBox>
             </TabsBox>
 
             {createPortal(
@@ -343,7 +299,7 @@ export function SortableTree({
                     id={activeId}
                     depth={activeItem.depth}
                     clone
-                    childCount={getChildCount(items, activeId) + 1}
+                    childCount={getChildCount(treeItems, activeId) + 1}
                     value={activeCode ? activeCode : ""}
                     indentationWidth={indentationWidth}
                   />
@@ -359,8 +315,11 @@ export function SortableTree({
 
           <Allotment.Pane className={`${styles.hFull}`}>
             <TabsBox tabLabels={['javascript', 'Python', 'VBA']}>
-              <>ここにjavascriptのコードaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccdd
-              </>
+              <JavascriptBox treeItems={treeItems}>
+                <>
+                  javascript
+                </>
+              </JavascriptBox>
               <div>ここにPythonのコード</div>
               <div>ここにVBAのコード</div>
             </TabsBox>
@@ -400,7 +359,7 @@ export function SortableTree({
     resetState();
 
     const addStatementToTree = (newItem: FlattenedItem, statementText: string, processIndex: number, overIndex: number) => {
-      const clonedItems: FlattenedItem[] = structuredClone(flattenTree(items));
+      const clonedItems: FlattenedItem[] = structuredClone(flattenTree(treeItems));
 
       newItem = { ...newItem, code: statementText, processIndex: processIndex }
 
@@ -409,13 +368,13 @@ export function SortableTree({
       const sortedItems = arrayMove(clonedItems, Number(newItem.id), overIndex);
       const newItems = buildTree(sortedItems);
 
-      setItems(newItems);
+      setTreeItems(newItems);
       refrash();
     }
 
     if (projected && over) {
       const { depth, parentId } = projected;
-      const clonedItems: FlattenedItem[] = structuredClone(flattenTree(items));
+      const clonedItems: FlattenedItem[] = structuredClone(flattenTree(treeItems));
       const fragmentItem: FragmentItem | undefined = fragments.find(({ id }) => id === active.id);
       // const additionItem: FlattenedItem | undefined = fragments.find(({ id }) => id === active.id);
 
@@ -428,7 +387,7 @@ export function SortableTree({
         // clonedItems.push(clonedItem);
 
         clonedItem = { ...clonedItem, id: newId, depth: depth, parentId: parentId }
-        setEditor((prevState: DnclEditorProps) => ({ ...prevState, item: clonedItem, onSubmit: addStatementToTree, open: true, type: fragmentItem.statementType, overIndex: Number(over.id), treeItems: items, refresh: refrash, setEditor: setEditor }));
+        setEditor((prevState: DnclEditorProps) => ({ ...prevState, item: clonedItem, onSubmit: addStatementToTree, open: true, type: fragmentItem.statementType, overIndex: Number(over.id), treeItems: treeItems, refresh: refrash, setEditor: setEditor }));
         return;
       }
       const overIndex = clonedItems.findIndex(({ id }) => id === over.id);
@@ -440,7 +399,7 @@ export function SortableTree({
       const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
       const newItems = buildTree(sortedItems);
 
-      setItems(newItems);
+      setTreeItems(newItems);
     }
 
     refrash();
@@ -459,7 +418,7 @@ export function SortableTree({
   }
 
   function handleRemove(id: string) {
-    setItems((items) => removeItem(items, id));
+    setTreeItems((items: TreeItems) => removeItem(items, id));
   }
 
   function handleCollapse(id: string) {
@@ -470,8 +429,8 @@ export function SortableTree({
     //         return !value;
     //     })
     // );
-    const newItems = setProperty(items, id, "collapsed", (item) => !item)
-    setItems(newItems)
+    const newItems = setProperty(treeItems, id, "collapsed", (item) => !item)
+    setTreeItems(newItems)
   }
 }
 

@@ -7,6 +7,53 @@ import { SortableTree } from "../components/SortableTree";
 import styles from './editor.module.css';
 import { styled } from '@mui/system';
 import Box from '@mui/material/Box';
+import { TreeItems } from "../types";
+
+
+const initialItems: TreeItems = [
+  {
+    id: "8b5c6537-316a-4ceb-805d-9be78119cf9f",
+    code: "関数 和 (n)を",
+    children: [
+      {
+        id: "a71d23f6-6b6c-4c92-98e1-4a3924becf31",
+        code: "wa ← 0",
+        children: [],
+      },
+      {
+        id: "19cbcd83-88b8-4f57-8c37-e5fa13b71dff",
+        code: "i を1からnまで1ずつ増やしながら，",
+        children: [
+          {
+            id: "39cd38d7-994d-4ef5-861f-113008fbbf0b",
+            code: "wa ← wa + 1",
+            children: [],
+          }
+        ],
+      },
+      {
+        id: "7622a456-9e1b-4eb0-9487-38964d88ae01",
+        code: "を繰り返す",
+        children: [],
+      },
+      {
+        id: "b68327e6-ab0b-4756-b7d6-e933a56366d4",
+        code: "waを表示する",
+        children: [],
+      }
+    ],
+  },
+  {
+    id: "e523d1a8-eaf7-4d47-81f0-2719da92b514",
+    code: "と定義する",
+    children: [],
+  },
+  {
+    id: "d87e4fb7-0b0e-40e2-9961-c825db8bb3f0",
+    code: "関数 和 (10)を実行する",
+    children: [],
+  }
+]
 
 const StyledDiv = styled(Box)(({ theme }) => ({
   width: '100%', // w-full
@@ -37,19 +84,21 @@ const HeaderItem = styled(Box)(({ theme }) => ({
 
 export default function Home() {
 
+  const [items, setItems] = React.useState(() => initialItems);
+
   return (
-    <StyledDiv className={`${styles.bgSlate800}`}>
+    <StyledDiv className={`${styles.bgSlate900}`}>
       <StyledHeader>
         <HeaderItem>
           でーえぬしーえる
         </HeaderItem>
       </StyledHeader>
-      <Allotment className={`${styles.bgSlate900}`} vertical defaultSizes={[200, 100]}>
+      <Allotment vertical defaultSizes={[200, 100]}>
         <Allotment.Pane>
-          <SortableTree collapsible indicator removable ></SortableTree>
+          <SortableTree treeItems={items} setTreeItems={setItems} collapsible indicator removable ></SortableTree>
         </Allotment.Pane>
-        <Allotment.Pane>
-          <>ここにコードの結果を出力する</>
+        <Allotment.Pane className={`${styles.bgStone50} ${styles.marginTop16}`}>
+          <Box sx={{ margin: '8px' }}>ここにコードの結果を出力する</Box>
         </Allotment.Pane>
       </Allotment >
     </StyledDiv >

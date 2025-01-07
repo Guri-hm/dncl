@@ -319,7 +319,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
         </Grid>
       case inputTypeEnum.SuffixOnly:
         return <Grid size="grow">
-          <ValidatedTextField name={`${name}_${index}_${keyPrefixEnum.Suffix}`} label={InputTypeJpEnum.VariableOrNumber} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
+          <ValidatedTextField name={`${name}_${index}_${suffixValue}`} label={InputTypeJpEnum.VariableOrNumber} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
         </Grid>
       case inputTypeEnum.ArrayWithoutSuffix:
         return <Grid size="grow">
@@ -337,7 +337,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
               <ValidatedTextField sx={() => ({
                 width: '100px',
               })}
-                name={`${name}_${index}_${keyPrefixEnum.Suffix}`} label={InputTypeJpEnum.SuffixOnly} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
+                name={`${name}_${index}_${suffixValue}`} label={InputTypeJpEnum.SuffixOnly} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
             </Grid>
             <FixedHeightGrid>]</FixedHeightGrid>
           </Grid>
@@ -346,7 +346,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
         return <Grid container size='auto'>
           <FixedHeightGrid>[</FixedHeightGrid>
           <Grid size="grow">
-            <ValidatedTextField name={`${name}_${index}_${keyPrefixEnum.Suffix}`} label={label} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
+            <ValidatedTextField name={`${name}_${index}_${suffixValue}`} label={label} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
           </Grid>
           <FixedHeightGrid>]</FixedHeightGrid>
         </Grid>;
@@ -354,13 +354,13 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
         return <Grid container size='auto'>
           <FixedHeightGrid>[</FixedHeightGrid>
           <Grid size="grow">
-            <ValidatedTextField name={`${name}_${index}_${keyPrefixEnum.Suffix}`} label={label} pattern={ValidationEnum.InitializeArray}></ValidatedTextField>
+            <ValidatedTextField name={`${name}_${index}_${suffixValue}`} label={label} pattern={ValidationEnum.InitializeArray}></ValidatedTextField>
           </Grid>
           <FixedHeightGrid>]</FixedHeightGrid>
         </Grid>;
       case inputTypeEnum.VariableOrNumber:
         return <Grid size="grow">
-          <ValidatedTextField name={`${name}_${index}_${keyPrefixEnum.Suffix}`} label={InputTypeJpEnum.VariableOrNumber} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
+          <ValidatedTextField name={`${name}_${index}_${suffixValue}`} label={InputTypeJpEnum.VariableOrNumber} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
         </Grid>
       case inputTypeEnum.Number:
         return <Grid size="grow">
