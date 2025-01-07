@@ -19,20 +19,6 @@ export default function Home() {
         </Box>
         <Box sx={{ flex: 1, backgroundColor: 'lightcoral', overflow: 'auto' }}>
           要素3の内容が多い場合にスクロールバーが表示されます。
-          <div>aaaaaaaaaaaaaaaaa</div>
-          <div>aaaaaaaaaaaaaaaaa</div>
-          <div>aaaaaaaaaaaaaaaaa</div>
-          <div>aaaaaaaaaaaaaaaaa</div>
-          <div>aaaaaaaaaaaaaaaaa</div>
-          <div>aaaaaaaaaaaaaaaaa</div>
-          <div>aaaaaaaaaaaaaaaaa</div>
-          <div>aaaaaaaaaaaaaaaaa</div>
-          <div>aaaaaaaaaaaaaaaaa</div>
-          <div>aaaaaaaaaaaaaaaaa</div>
-          <div>aaaaaaaaaaaaaaaaa</div>
-          <div>aaaaaaaaaaaaaaaaa</div>
-          <div>aaaaaaaaaaaaaaaaa</div>
-          <div>bbbbbbbbbbbbbbbbbb</div>
         </Box>
       </Box>
     </Box>

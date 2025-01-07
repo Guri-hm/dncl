@@ -24,7 +24,7 @@ export function EditorBox(params: Props) {
     const [statement, setStatement] = useState<ReactElement | null>(null);
 
     const handleChange = (event: SelectChangeEvent) => {
-        const index = getEnumIndex(processEnum, event.target.value as processEnum ?? processEnum.SetValueToVariableOrArrayElement);
+        const index = getEnumIndex(processEnum, event.target.value as processEnum ?? processEnum.SetValToVariableOrArray);
         setStatement(StatementEditor(index));
     }
 
@@ -39,7 +39,7 @@ export function EditorBox(params: Props) {
         }
 
         switch (index) {
-            case getEnumIndex(processEnum, processEnum.SetValueToVariableOrArrayElement):
+            case getEnumIndex(processEnum, processEnum.SetValToVariableOrArray):
                 return <>
                     <Operation statementType={params.statementType} treeItems={params.treeItems}>
                         <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArray}></DnclTextField>
@@ -223,7 +223,7 @@ export function EditorBox(params: Props) {
             return <>
                 {ddl}
                 <CustomBox>
-                    {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.SetValueToVariableOrArrayElement))}
+                    {statement ?? StatementEditor(getEnumIndex(processEnum, processEnum.SetValToVariableOrArray))}
                 </CustomBox>
             </>
         case StatementEnum.Condition:
@@ -288,7 +288,7 @@ const processNames = [
     {
         statementType: StatementEnum.Input,
         names: [
-            { title: processEnum.SetValueToVariableOrArrayElement },
+            { title: processEnum.SetValToVariableOrArray },
             { title: processEnum.InitializeArray },
             { title: processEnum.BulkAssignToArray },
             { title: processEnum.Increment },

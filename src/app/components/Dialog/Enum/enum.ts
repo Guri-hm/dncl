@@ -1,6 +1,6 @@
 export enum processEnum {
   Output = '表示',
-  SetValueToVariableOrArrayElement = '変数または配列の要素への代入',
+  SetValToVariableOrArray = '変数または配列の要素への代入',
   InitializeArray = '配列の初期化',
   BulkAssignToArray = '配列への一括代入',
   Increment = '加算を伴う代入',

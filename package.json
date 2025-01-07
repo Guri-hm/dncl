@@ -20,7 +20,8 @@
     "next": "15.0.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "uuid": "^11.0.3"
+    "uuid": "^11.0.3",
+    "wanakana": "^5.3.1"
   },
   "devDependencies": {
     "@types/node": "^20",
