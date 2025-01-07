@@ -39,23 +39,44 @@ const StyledTabs = styled((props: StyledTabsProps) => {
 
 function CustomTabPanel(props: TabPanelProps) {
     const { children, value, index, ...other } = props;
+    const StyledBox = styled(Box)({
+        overflow: 'hidden', // 初期状態ではスクロールバーを非表示
+        '&:hover': {
+            overflow: 'auto', // ホバー時にスクロールバーを表示
+        },
+        '&::-webkit-scrollbar': {
+            width: '8px',
+        },
+        '&::-webkit-scrollbar-track': {
+            background: '#f1f1f1',
+        },
+        '&::-webkit-scrollbar-thumb': {
+            background: '#888',
+            borderRadius: '10px',
+        },
+        '&::-webkit-scrollbar-thumb:hover': {
+            background: '#555',
+        },
+    });
 
     return (
-        <div
-            style={{ height: '100%' }}
-            role="tabpanel"
-            hidden={value !== index}
-            id={`simple-tabpanel-${index}`}
-            aria-labelledby={`simple-tab-${index}`}
-            {...other}
-        >
+        <>
 
             {value === index &&
 
-                <Box sx={{ p: 3, height: '100%' }}>{children}</Box>
+                <StyledBox sx={{
+                    overflowY: 'auto',
+                    wordBreak: 'break-all',
+                    flex: 1,
+                    display: 'respoinsive',
+                    color: 'white',
+                }} role="tabpanel"
+                    hidden={value !== index}
+                    id={`simple-tabpanel-${index}`}
+                    aria-labelledby={`simple-tab-${index}`}>{children}</StyledBox>
 
             }
-        </div>
+        </>
     );
 }
 
@@ -88,6 +109,8 @@ const StyledBox = styled((props: BoxProps) => (
     <Box {...props} />
 ))(({ theme }) => ({
     height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
     border: '1px solid #4b5563',
     position: 'relative',
     zIndex: 10,
@@ -105,18 +128,10 @@ const StyledBox = styled((props: BoxProps) => (
     },
 }));
 
-const ContentBox = styled((props: BoxProps) => (
-    <Box {...props} />
-))(({ theme }) => ({
-    height: '100%',
-    display: 'respoinsive',
-    color: 'white',
-}));
-
-
 const Header = styled((props: BoxProps) => (
     <Box {...props} />
 ))(({ theme }) => ({
+    flexBasis: '0%',
     position: 'relative',
     display: 'flex',
     color: '#94a3b8',
@@ -170,13 +185,10 @@ export default function TabsBox({ children, tabLabels, ...props }: Props) {
                         </IconButton>
                     </TabFillerInner>
                 </TabFillerContainer>
-
             </Header>
-            <ContentBox>
-                {React.Children.map(children, (child, index) => (
-                    <CustomTabPanel value={value} index={index} key={index}> {child} </CustomTabPanel>
-                ))}
-            </ContentBox>
+            {React.Children.map(children, (child, index) => (
+                <CustomTabPanel value={value} index={index} key={index}> {child} </CustomTabPanel>
+            ))}
         </StyledBox>
     );
 }
