@@ -2,8 +2,8 @@ import { arrayMove } from '@dnd-kit/sortable';
 import { UniqueIdentifier } from "@dnd-kit/core";
 
 import type { FlattenedItem, TreeItem, TreeItems } from '../types';
-import { BraketSymbolEnum, ReturnFuncDncl, UserDefinedFuncDncl, VoidFuncDncl } from '@/app/enum';
-import { inputTypeEnum, keyPrefixEnum, ProcessEnum, ValidationEnum } from '../components/Dialog/Enum';
+import { BraketSymbolEnum, ReturnFuncDncl, ProcessEnum, UserDefinedFuncDncl, VoidFuncDncl } from '@/app/enum';
+import { inputTypeEnum, keyPrefixEnum, ValidationEnum } from '../components/Dialog/Enum';
 
 function getDragDepth(offset: number, indentationWidth: number) {
   return Math.round(offset / indentationWidth);
