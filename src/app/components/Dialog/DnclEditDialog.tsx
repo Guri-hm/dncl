@@ -214,13 +214,13 @@ export function DnclEditDialog(params: Props) {
 
                                 break;
                             case getEnumIndex(ProcessEnum, ProcessEnum.DefineFunction):
-                                processPhrase = `関数 ${rightside}を`;
+                                processPhrase = `関数 ${rightside} を`;
                                 break;
                             case getEnumIndex(ProcessEnum, ProcessEnum.Defined):
                                 processPhrase = `と定義する`;
                                 break;
                             case getEnumIndex(ProcessEnum, ProcessEnum.ExecuteUserDefinedFunction):
-                                processPhrase = `関数 ${rightside}を実行する`;
+                                processPhrase = `${rightside}`;
                                 break;
                             default:
                                 break;

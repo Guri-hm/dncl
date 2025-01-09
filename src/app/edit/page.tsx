@@ -15,7 +15,7 @@ import { ProcessEnum } from "@/app/enum";
 const initialItems: TreeItems = [
   {
     id: "8b5c6537-316a-4ceb-805d-9be78119cf9f",
-    code: "関数 和 (n)を",
+    code: "関数 和 (n) を",
     processIndex: getEnumIndex(ProcessEnum, ProcessEnum.DefineFunction),
     children: [
       {
@@ -59,7 +59,7 @@ const initialItems: TreeItems = [
   },
   {
     id: "d87e4fb7-0b0e-40e2-9961-c825db8bb3f0",
-    code: "関数 和 (10)を実行する",
+    code: "和 (10)",
     children: [],
     processIndex: getEnumIndex(ProcessEnum, ProcessEnum.ExecuteUserDefinedFunction),
   }

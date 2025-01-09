@@ -808,3 +808,22 @@ export function getUserDefinedFunctionInfoArray(treeItems: TreeItem[]): UserDefi
   return getUserDefinedFunctionInfoArray(filtered);
 
 }
+
+import Kuroshiro from 'kuroshiro';
+import KuromojiAnalyzer from '@sglkc/kuroshiro-analyzer-kuromoji';
+
+export const cnvToRomaji = async (text = '') => {
+  const kuroshiro = new Kuroshiro();
+  await kuroshiro.init(new KuromojiAnalyzer({ dictPath: '/dict/' }));
+  const romaji = await kuroshiro.convert(text, { to: 'romaji' });
+  return romaji;
+};
+
+export const containsJapanese = (text: string): boolean => {
+  const kanjiRegex = /[\u4E00-\u9FFF]/; // 漢字
+  const hiraganaRegex = /[\u3040-\u309F]/; // ひらがな
+  const katakanaRegex = /[\u30A0-\u30FF]/; // 全角カタカナ
+  const halfWidthKatakanaRegex = /[\uFF65-\uFF9F]/; // 半角カタカナ
+
+  return kanjiRegex.test(text) || hiraganaRegex.test(text) || katakanaRegex.test(text) || halfWidthKatakanaRegex.test(text);
+};

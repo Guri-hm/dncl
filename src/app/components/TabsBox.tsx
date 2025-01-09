@@ -40,10 +40,10 @@ const StyledTabs = styled((props: StyledTabsProps) => {
 function TabPanel(props: TabPanelProps) {
     const { children, value, index, ...other } = props;
     const StyledBox = styled(Box)({
-        overflow: 'hidden', // 初期状態ではスクロールバーを非表示
+        overflow: 'auto', // 初期状態ではスクロールバーを非表示
         // overflow: 'auto', // 初期状態ではスクロールバーを非表示
         '&:hover': {
-            overflow: 'auto', // ホバー時にスクロールバーを表示
+            // overflow: 'auto', // ホバー時にスクロールバーを表示
         },
         '&::-webkit-scrollbar': {
             width: '8px',

@@ -9,9 +9,8 @@ npm install @mui/material @emotion/react @emotion/styled --legacy-peer-deps
 npm install @mui/icons-material @mui/material @emotion/styled @emotion/react --legacy-peer-deps
 npm i allotment --legacy-peer-deps
 npm i wanakana --legacy-peer-deps 
-npm i kuromoji --legacy-peer-deps
 npm install --save-dev @types/kuromoji --legacy-peer-deps
-npm install kuroshiro kuroshiro-analyzer-kuromoji --legacy-peer-deps
+npm install kuroshiro --legacy-peer-deps
 npm install @sglkc/kuroshiro-analyzer-kuromoji --legacy-peer-deps
 
 *allotmentのバージョンが古く、「 --legacy-peer-deps」を付与してインストールした

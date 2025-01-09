@@ -117,6 +117,8 @@ export enum OperatorTypeJpEnum {
 export enum BraketSymbolEnum {
   LeftBraket = '(',
   RigthBraket = ')',
+  OpenBrace = '{',
+  CloseBrace = '}',
 }
 
 export enum LogicalOperationJpEnum {

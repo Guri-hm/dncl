@@ -5,10 +5,13 @@ import React, { useEffect, useState } from 'react';
 import Kuroshiro from 'kuroshiro';
 import KuromojiAnalyzer from '@sglkc/kuroshiro-analyzer-kuromoji';
 
-export default function Home() {
+interface Props {
+  text: string;
+}
 
-  const [convertedText, setConvertedText] = useState('');
-  let text = "桜さく";
+export default function CnvToRomaji({ text }: Props): string {
+
+  const [convertedText, setConvertedText] = useState<string>(text);
 
   useEffect(() => {
     const convertText = async () => {
@@ -21,12 +24,7 @@ export default function Home() {
     convertText();
   }, [text]);
 
-  return (
-    <div>
-      <p>Original: {text}</p>
-      <p>Converted: {convertedText}</p>
-    </div>
-  );
+  return convertedText;
 }
 
 
