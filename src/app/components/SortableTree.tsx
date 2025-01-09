@@ -355,16 +355,21 @@ export function SortableTree({
     fragments.forEach(item => { item.id = uuidv4() });
   }
 
+
   function handleDragEnd({ active, over }: DragEndEvent) {
     resetState();
 
-    const addStatementToTree = (newItem: FlattenedItem, statementText: string, tokens: string[], processIndex: number, overIndex: number) => {
+    interface ItemsParams {
+      newItem: FlattenedItem; statementText: string; tokens: string[]; processIndex: number; overIndex: number;
+    }
+
+    const addStatementToTree = (itemsParams: ItemsParams) => {
       const clonedItems: FlattenedItem[] = structuredClone(flattenTree(treeItems));
-      newItem = { ...newItem, code: statementText, processIndex: processIndex }
+      itemsParams.newItem = { ...itemsParams.newItem, code: itemsParams.statementText, tokens: itemsParams.tokens, processIndex: itemsParams.processIndex }
 
-      clonedItems.push(newItem);
+      clonedItems.push(itemsParams.newItem);
 
-      const sortedItems = arrayMove(clonedItems, Number(newItem.id), overIndex);
+      const sortedItems = arrayMove(clonedItems, Number(itemsParams.newItem.id), itemsParams.overIndex);
       const newItems = buildTree(sortedItems);
 
       setTreeItems(newItems);

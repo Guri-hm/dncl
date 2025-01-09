@@ -244,7 +244,7 @@ export function DnclEditDialog(params: Props) {
                                 break;
                         }
 
-                        params.onSubmit(params.item, processPhrase, Number(formJson.processIndex), params.overIndex);
+                        params.onSubmit({ newItem: params.item, statementText: processPhrase, tokens: tokens, processIndex: Number(formJson.processIndex), overIndex: params.overIndex });
                         handleClose();
                     },
                 }}
