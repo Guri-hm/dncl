@@ -10,7 +10,7 @@ import { StatementName } from './StatementName';
 import { StatementDesc } from './StatementDesc';
 import { EditorBox } from './EditorBox';
 import { keyPrefixEnum } from './Enum';
-import { ArithmeticOperatorDncl, ArithmeticOperatorJs, BooleanDncl, BooleanJpDncl, ComparisonOperatorDncl, ComparisonOperatorJs, OperatorEnum, ReturnFuncDncl, ReturnFuncJpDncl, StatementEnum, UserDefinedFuncDncl, UserDefinedFuncJpDncl, VoidFuncDncl, VoidFuncJpDncl, ProcessEnum } from '@/app/enum';
+import { ArithmeticOperatorDncl, ArithmeticOperatorJs, BooleanDncl, BooleanJpDncl, ComparisonOperatorDncl, ComparisonOperatorJs, SimpleAssignmentOperator, ReturnFuncDncl, ReturnFuncJpDncl, StatementEnum, UserDefinedFuncDncl, UserDefinedFuncJpDncl, VoidFuncDncl, VoidFuncJpDncl, ProcessEnum } from '@/app/enum';
 import { checkBraketPair, cnvAndOrToJsOperator, cnvObjToArray, cnvToDivision, escapeHtml, getOperandsMaxIndex, isValidExpression, replaceToAmpersand, sanitizeInput, transformNegation, tryParseToJsFunction, updateToWithSquareBrackets, ValidateObjValue } from '@/app/utilities';
 import { getEnumIndex } from "@/app/utilities";
 import { ErrorMsgBox } from './ErrorMsgBox';
@@ -21,7 +21,7 @@ const getOperator = (statementType: StatementEnum) => {
 
     switch (statementType) {
         case StatementEnum.Input:
-            return OperatorEnum.SimpleAssignment;
+            return SimpleAssignmentOperator.Dncl;
         default:
             return "";
     }

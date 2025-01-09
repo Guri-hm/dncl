@@ -1,7 +1,7 @@
 import { Box, BoxProps } from "@mui/material";
 import { FC, useEffect, useState } from "react";
 import { TreeItem, TreeItems } from "../types";
-import { BraketSymbolEnum, ProcessEnum, UserDefinedFuncJpDncl, UserDefinedFuncJs } from "../enum";
+import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFuncJpDncl, UserDefinedFuncJs, OutputEnum } from "../enum";
 import { cnvToRomaji, containsJapanese, getEnumIndex } from "../utilities";
 import Kuroshiro from 'kuroshiro';
 import KuromojiAnalyzer from '@sglkc/kuroshiro-analyzer-kuromoji';
@@ -27,21 +27,30 @@ const cnvToJs = async (statement: { code: string, processIndex: number }) => {
 
     let tmpLineString: string = statement.code;
 
+
     switch (statement.processIndex) {
         case getEnumIndex(ProcessEnum, ProcessEnum.SetValToVariableOrArray):
-
-            break;
         case getEnumIndex(ProcessEnum, ProcessEnum.InitializeArray):
-            break;
-
         case getEnumIndex(ProcessEnum, ProcessEnum.BulkAssignToArray):
-            break;
-
         case getEnumIndex(ProcessEnum, ProcessEnum.Increment):
         case getEnumIndex(ProcessEnum, ProcessEnum.Decrement):
+            tmpLineString = tmpLineString.replace(SimpleAssignmentOperator.Dncl, SimpleAssignmentOperator.Other);
+            tmpLineString = tmpLineString + ';';
+
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.Output):
+
+            const regexOutput = new RegExp(`/(\w+)${OutputEnum.Dncl}/g`);
+
+            function replaceString(input: string): string {
+                return input.replace(/(\w+)を表示する/g, 'console.log($1)');
+            }
+
+            tmpLineString = replaceString(tmpLineString);
+
+            tmpLineString = tmpLineString + ';';
+
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.If):
@@ -82,7 +91,6 @@ const cnvToJs = async (statement: { code: string, processIndex: number }) => {
             tmpLineString = tmpLineString.replace(regexFirstWord, UserDefinedFuncJs.UserDefined);
             tmpLineString = tmpLineString.replace(/を$/, BraketSymbolEnum.OpenBrace);
             if (containsJapanese(tmpLineString)) {
-                console.log(tmpLineString)
                 tmpLineString = await cnvToRomaji(tmpLineString);
             }
             return tmpLineString;
@@ -110,23 +118,37 @@ export const JavascriptBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...
     // console.log(romajiFromHiragana)
 
     const [codeLines, setCodeLines] = useState<string[]>(['変換中']);
+    const [shouldRunEffect, setShouldRunEffect] = useState(false);
 
     useEffect(() => {
-        const convertCode = async () => {
-            if (dnclStatements) {
 
-                let jsCodeLines = [];
-                for (let i = 0; i < dnclStatements.length; i++) {
-                    const jsLine = await cnvToJs(dnclStatements[i])
-                    jsCodeLines.push(jsLine);
+        const timer = setTimeout(() => {
+            setShouldRunEffect(true);
+        }, 1000); // 1秒後に実行
 
-                }
-
-                setCodeLines(jsCodeLines);
-            }
-        };
-        convertCode();
+        return () => clearTimeout(timer); // クリーンアップ
     }, [dnclStatements]);
+
+    useEffect(() => {
+        if (shouldRunEffect) {
+            const convertCode = async () => {
+                if (dnclStatements) {
+
+                    let jsCodeLines = [];
+                    for (let i = 0; i < dnclStatements.length; i++) {
+                        const jsLine = await cnvToJs(dnclStatements[i])
+                        jsCodeLines.push(jsLine);
+
+                    }
+
+                    setCodeLines(jsCodeLines);
+                }
+            };
+            convertCode();
+            setShouldRunEffect(false); // フラグをリセット
+        }
+    }, [shouldRunEffect]);
+
 
 
     return (

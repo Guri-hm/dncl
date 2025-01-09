@@ -190,7 +190,7 @@ export function Operator({ type, name = "", parentIndex = 0, event, ...props }: 
   let enumValues: any;
   let newIndex: number = operatorIndex;
   switch (type) {
-    case OperationEnum.SimpleAssignment:
+    case OperationEnum.ForDncl:
       elms = <ArrowBackIcon></ArrowBackIcon>
       break;
     case OperationEnum.Arithmetic:

@@ -1,6 +1,7 @@
 
-export enum OperatorEnum {
-  SimpleAssignment = '←',
+export enum SimpleAssignmentOperator {
+  Dncl = '←',
+  Other = '=',
 }
 
 export enum ArithmeticOperatorJs {
@@ -24,6 +25,14 @@ export enum AndOrOperatorJpArrayForDncl {
   AndOperator = 'かつ',
   OrOperator = 'または',
 }
+
+export enum OutputEnum {
+  Dncl = "を表示する",
+  Js = "console.log",
+  Python = "print",
+  Vba = "Debug.Print"
+}
+
 export enum ReturnFuncDncl {
   Square = 'Square',
   Exponentiation = 'Exponentiation',
@@ -102,7 +111,7 @@ export enum StatementJpEnum {
 
 export enum OperationEnum {
   JoinString = 'JoinString',
-  SimpleAssignment = 'SimpleAssignment',
+  ForDncl = 'ForDncl',
   Negation = ' Negation',
   Arithmetic = 'Arithmetic',
   Comparison = 'Comparison',

@@ -43,7 +43,7 @@ export function EditorBox(params: Props) {
                 return <>
                     <Operation statementType={params.statementType} treeItems={params.treeItems}>
                         <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArray}></DnclTextField>
-                        <Operator type={OperationEnum.SimpleAssignment}></Operator>
+                        <Operator type={OperationEnum.ForDncl}></Operator>
                     </Operation>
                     {hdnInput(index)}
                 </>
@@ -52,7 +52,7 @@ export function EditorBox(params: Props) {
                 //配列の初期化
                 return <>
                     <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.ArrayWithoutSuffix}></DnclTextField>
-                    <Operator type={OperationEnum.SimpleAssignment}></Operator>
+                    <Operator type={OperationEnum.ForDncl}></Operator>
                     <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.InitializeArray} label=""></DnclTextField>
                     {hdnInput(index)}
                 </>
