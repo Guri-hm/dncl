@@ -49,7 +49,7 @@ import { JavascriptBox } from "./JavascriptBox";
 const fragments: FragmentItems = [
   {
     id: uuidv4(),
-    code: StatementJpEnum.Output,
+    line: StatementJpEnum.Output,
     children: [],
     index: 0,
     parentId: null,
@@ -58,7 +58,7 @@ const fragments: FragmentItems = [
   },
   {
     id: uuidv4(),
-    code: StatementJpEnum.Input,
+    line: StatementJpEnum.Input,
     children: [],
     index: 0,
     parentId: null,
@@ -67,7 +67,7 @@ const fragments: FragmentItems = [
   },
   {
     id: uuidv4(),
-    code: StatementJpEnum.Condition,
+    line: StatementJpEnum.Condition,
     children: [],
     index: 0,
     parentId: null,
@@ -76,7 +76,7 @@ const fragments: FragmentItems = [
   },
   {
     id: uuidv4(),
-    code: StatementJpEnum.ConditionalLoopPreTest,
+    line: StatementJpEnum.ConditionalLoopPreTest,
     children: [],
     index: 0,
     parentId: null,
@@ -85,7 +85,7 @@ const fragments: FragmentItems = [
   },
   {
     id: uuidv4(),
-    code: StatementJpEnum.ConditionalLoopPostTest,
+    line: StatementJpEnum.ConditionalLoopPostTest,
     children: [],
     index: 0,
     parentId: null,
@@ -94,7 +94,7 @@ const fragments: FragmentItems = [
   },
   {
     id: uuidv4(),
-    code: StatementJpEnum.SequentialIteration,
+    line: StatementJpEnum.SequentialIteration,
     children: [],
     index: 0,
     parentId: null,
@@ -103,7 +103,7 @@ const fragments: FragmentItems = [
   },
   {
     id: uuidv4(),
-    code: StatementJpEnum.UserDefinedfunction,
+    line: StatementJpEnum.UserDefinedfunction,
     children: [],
     index: 0,
     parentId: null,
@@ -112,7 +112,7 @@ const fragments: FragmentItems = [
   },
   {
     id: uuidv4(),
-    code: StatementJpEnum.ExecuteUserDefinedFunction,
+    line: StatementJpEnum.ExecuteUserDefinedFunction,
     children: [],
     index: 0,
     parentId: null,
@@ -252,11 +252,11 @@ export function SortableTree({
         <Allotment.Pane visible={visible} className={`${styles.leftPane} ${styles.paneBg}`} snap>
           <Box sx={{ padding: '10px' }}>
             <Box sx={{ fontSize: '1.125rem', fontWeight: 'bold', backgroundColor: '#cbd5e1' }}>ドラッグして行を追加</Box>
-            {fragments.map(({ id, code }) => (
+            {fragments.map(({ id, line }) => (
               <FragmentsListItem
                 key={id}
                 id={id}
-                value={code}
+                value={line}
               />
             ))}
           </Box>
@@ -267,11 +267,11 @@ export function SortableTree({
           <Allotment.Pane className={`${styles.rightPane} ${styles.hFull} ${styles.overflowAuto}`} >
 
             <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
-              {flattenedItems.map(({ id, children, collapsed, depth, code }) => (
+              {flattenedItems.map(({ id, children, collapsed, depth, line }) => (
                 <SortableTreeItem
                   key={id}
                   id={id}
-                  value={code}
+                  value={line}
                   depth={id === activeId && projected ? projected.depth : depth}
                   indentationWidth={indentationWidth}
                   indicator={indicator}
@@ -337,7 +337,7 @@ export function SortableTree({
     const activeItem = [...flattenedItems, ...fragments].find(({ id }) => id === activeId);
 
     if (activeItem) {
-      setActiveCode(activeItem?.code);
+      setActiveCode(activeItem?.line);
     }
     document.body.style.setProperty("cursor", "grabbing");
   }
@@ -365,7 +365,7 @@ export function SortableTree({
 
     const addStatementToTree = (itemsParams: ItemsParams) => {
       const clonedItems: FlattenedItem[] = structuredClone(flattenTree(treeItems));
-      itemsParams.newItem = { ...itemsParams.newItem, code: itemsParams.statementText, tokens: itemsParams.tokens, processIndex: itemsParams.processIndex }
+      itemsParams.newItem = { ...itemsParams.newItem, line: itemsParams.statementText, lineTokens: itemsParams.tokens, processIndex: itemsParams.processIndex }
 
       clonedItems.push(itemsParams.newItem);
 

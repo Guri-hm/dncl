@@ -15,7 +15,7 @@ const extractFromTreeItems = (treeItems: TreeItem[]): { code: string, processInd
     const result: { code: string, processIndex: number }[] = [];
 
     const traverse = (item: TreeItem) => {
-        result.push({ code: item.code, processIndex: item.processIndex ?? getEnumIndex(ProcessEnum, ProcessEnum.Unknown) });
+        result.push({ code: item.line, processIndex: item.processIndex ?? getEnumIndex(ProcessEnum, ProcessEnum.Unknown) });
         item.children.forEach(child => traverse(child));
     };
 
