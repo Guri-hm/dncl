@@ -100,7 +100,7 @@ export default function Home() {
     <StyledDiv className={`${styles.bgSlate900}`}>
       <StyledHeader>
         <HeaderItem>
-          でーえぬしーえる
+          疑似言語いじる子
         </HeaderItem>
       </StyledHeader>
       <Allotment vertical defaultSizes={[200, 100]}>

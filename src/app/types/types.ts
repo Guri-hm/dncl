@@ -4,6 +4,7 @@ import { StatementEnum } from "@/app/enum";
 export interface TreeItem {
   id: string;
   code: string;
+  tokens?: string[];
   children: TreeItem[];
   collapsed?: boolean;
   processIndex?: number;

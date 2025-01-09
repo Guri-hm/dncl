@@ -264,30 +264,29 @@ export function SortableTree({
 
         <div className={`${styles.hFull}`} style={{ marginLeft: '17px', marginRight: '5px' }}>
 
-          <Allotment.Pane className={`${styles.rightPane} ${styles.hFull}`} >
+          <Allotment.Pane className={`${styles.rightPane} ${styles.hFull} ${styles.overflowAuto}`} >
 
-            <TabsBox tabLabels={['DNCL(編集用)', 'DNCL']}>
-              <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
-                {flattenedItems.map(({ id, children, collapsed, depth, code }) => (
-                  <SortableTreeItem
-                    key={id}
-                    id={id}
-                    value={code}
-                    depth={id === activeId && projected ? projected.depth : depth}
-                    indentationWidth={indentationWidth}
-                    indicator={indicator}
-                    collapsed={Boolean(collapsed && children.length)}
-                    onCollapse={
-                      collapsible && children.length
-                        ? () => handleCollapse(id)
-                        : undefined
-                    }
-                    onRemove={removable ? () => handleRemove(id) : undefined}
-                  />
-                ))}
-              </SortableContext>
-              <DnclCodeBox items={treeItems}></DnclCodeBox>
-            </TabsBox>
+            <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
+              {flattenedItems.map(({ id, children, collapsed, depth, code }) => (
+                <SortableTreeItem
+                  key={id}
+                  id={id}
+                  value={code}
+                  depth={id === activeId && projected ? projected.depth : depth}
+                  indentationWidth={indentationWidth}
+                  indicator={indicator}
+                  collapsed={Boolean(collapsed && children.length)}
+                  onCollapse={
+                    collapsible && children.length
+                      ? () => handleCollapse(id)
+                      : undefined
+                  }
+                  onRemove={removable ? () => handleRemove(id) : undefined}
+                />
+              ))}
+            </SortableContext>
+            {/* <TabsBox tabLabels={['DNCL(編集用)', 'DNCL']}>
+            </TabsBox> */}
 
             {createPortal(
               <DragOverlay
@@ -314,7 +313,8 @@ export function SortableTree({
         <div className={`${styles.hFull}`} style={{ marginLeft: '17px' }}>
 
           <Allotment.Pane className={`${styles.hFull}`}>
-            <TabsBox tabLabels={['javascript', 'Python', 'VBA']}>
+            <TabsBox tabLabels={['DNCL', 'javascript', 'Python', 'VBA']}>
+              <DnclCodeBox items={treeItems}></DnclCodeBox>
               <JavascriptBox treeItems={treeItems}>
                 <>
                   javascript
@@ -358,9 +358,8 @@ export function SortableTree({
   function handleDragEnd({ active, over }: DragEndEvent) {
     resetState();
 
-    const addStatementToTree = (newItem: FlattenedItem, statementText: string, processIndex: number, overIndex: number) => {
+    const addStatementToTree = (newItem: FlattenedItem, statementText: string, tokens: string[], processIndex: number, overIndex: number) => {
       const clonedItems: FlattenedItem[] = structuredClone(flattenTree(treeItems));
-
       newItem = { ...newItem, code: statementText, processIndex: processIndex }
 
       clonedItems.push(newItem);
@@ -385,7 +384,6 @@ export function SortableTree({
         // clonedItem.id = newId;
         // active.id = newId;
         // clonedItems.push(clonedItem);
-
         clonedItem = { ...clonedItem, id: newId, depth: depth, parentId: parentId }
         setEditor((prevState: DnclEditorProps) => ({ ...prevState, item: clonedItem, onSubmit: addStatementToTree, open: true, type: fragmentItem.statementType, overIndex: Number(over.id), treeItems: treeItems, refresh: refrash, setEditor: setEditor }));
         return;
