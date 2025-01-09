@@ -14,56 +14,28 @@ import { ProcessEnum } from "@/app/enum";
 
 const initialItems: TreeItems = [
   {
-    id: "8b5c6537-316a-4ceb-805d-9be78119cf9f",
+    id: "e7ffd789-7b09-4e8d-861a-f5909313cba6",
     line: "関数 和 (n) を",
-    processIndex: getEnumIndex(ProcessEnum, ProcessEnum.DefineFunction),
     children: [
       {
-        id: "a71d23f6-6b6c-4c92-98e1-4a3924becf31",
+        id: "2a0a8f52-c215-4cd6-8e49-75e021067043",
         line: "wa ← 0",
         children: [],
-        processIndex: getEnumIndex(ProcessEnum, ProcessEnum.SetValToVariableOrArray),
-      },
-      {
-        id: "19cbcd83-88b8-4f57-8c37-e5fa13b71dff",
-        line: "i を1からnまで1ずつ増やしながら，",
-        children: [
-          {
-            id: "39cd38d7-994d-4ef5-861f-113008fbbf0b",
-            line: "wa ← wa + 1",
-            children: [],
-            processIndex: getEnumIndex(ProcessEnum, ProcessEnum.SetValToVariableOrArray),
-          }
+        lineTokens: [
+          "wa",
+          "←",
+          "0"
         ],
-        processIndex: getEnumIndex(ProcessEnum, ProcessEnum.ForDecrement),
-      },
-      {
-        id: "7622a456-9e1b-4eb0-9487-38964d88ae01",
-        line: "を繰り返す",
-        children: [],
-        processIndex: getEnumIndex(ProcessEnum, ProcessEnum.EndFor),
-      },
-      {
-        id: "b68327e6-ab0b-4756-b7d6-e933a56366d4",
-        line: "waを表示する",
-        children: [],
-        processIndex: getEnumIndex(ProcessEnum, ProcessEnum.Output),
+        processIndex: 1
       }
     ],
-  },
-  {
-    id: "e523d1a8-eaf7-4d47-81f0-2719da92b514",
-    line: "と定義する",
-    children: [],
-    processIndex: getEnumIndex(ProcessEnum, ProcessEnum.Defined),
-  },
-  {
-    id: "d87e4fb7-0b0e-40e2-9961-c825db8bb3f0",
-    line: "和 (10)",
-    children: [],
-    processIndex: getEnumIndex(ProcessEnum, ProcessEnum.ExecuteUserDefinedFunction),
+    lineTokens: [
+      "和 (n)"
+    ],
+    processIndex: 17
   }
 ]
+
 
 const StyledDiv = styled(Box)(({ theme }) => ({
   width: '100%', // w-full

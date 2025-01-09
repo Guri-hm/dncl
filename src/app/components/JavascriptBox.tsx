@@ -11,11 +11,11 @@ interface CustomBoxProps extends BoxProps {
     treeItems: TreeItems;
 }
 
-const extractFromTreeItems = (treeItems: TreeItem[]): { code: string, processIndex: number }[] => {
-    const result: { code: string, processIndex: number }[] = [];
+const extractFromTreeItems = (treeItems: TreeItem[]): { lineTokens: string[], processIndex: number }[] => {
+    const result: { lineTokens: string[], processIndex: number }[] = [];
 
     const traverse = (item: TreeItem) => {
-        result.push({ code: item.line, processIndex: item.processIndex ?? getEnumIndex(ProcessEnum, ProcessEnum.Unknown) });
+        result.push({ lineTokens: item.lineTokens ?? [], processIndex: item.processIndex ?? getEnumIndex(ProcessEnum, ProcessEnum.Unknown) });
         item.children.forEach(child => traverse(child));
     };
 
@@ -23,9 +23,10 @@ const extractFromTreeItems = (treeItems: TreeItem[]): { code: string, processInd
     return result;
 };
 
-const cnvToJs = async (statement: { code: string, processIndex: number }) => {
+const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }) => {
 
-    let tmpLineString: string = statement.code;
+    const lineTokens: string[] = statement.lineTokens;
+    let tmpLine: string = '';
 
 
     switch (statement.processIndex) {
@@ -34,22 +35,13 @@ const cnvToJs = async (statement: { code: string, processIndex: number }) => {
         case getEnumIndex(ProcessEnum, ProcessEnum.BulkAssignToArray):
         case getEnumIndex(ProcessEnum, ProcessEnum.Increment):
         case getEnumIndex(ProcessEnum, ProcessEnum.Decrement):
-            tmpLineString = tmpLineString.replace(SimpleAssignmentOperator.Dncl, SimpleAssignmentOperator.Other);
-            tmpLineString = tmpLineString + ';';
 
+            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[2]};`
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.Output):
 
-            const regexOutput = new RegExp(`/(\w+)${OutputEnum.Dncl}/g`);
-
-            function replaceString(input: string): string {
-                return input.replace(/(\w+)を表示する/g, 'console.log($1)');
-            }
-
-            tmpLineString = replaceString(tmpLineString);
-
-            tmpLineString = tmpLineString + ';';
+            tmpLine = `${OutputEnum.Js}(${lineTokens[0]});`
 
             break;
 
@@ -86,14 +78,11 @@ const cnvToJs = async (statement: { code: string, processIndex: number }) => {
 
         case getEnumIndex(ProcessEnum, ProcessEnum.DefineFunction):
 
-            //「関数」の文字列を置換
-            const regexFirstWord = new RegExp(`^${UserDefinedFuncJpDncl.UserDefined}`);
-            tmpLineString = tmpLineString.replace(regexFirstWord, UserDefinedFuncJs.UserDefined);
-            tmpLineString = tmpLineString.replace(/を$/, BraketSymbolEnum.OpenBrace);
-            if (containsJapanese(tmpLineString)) {
-                tmpLineString = await cnvToRomaji(tmpLineString);
+            tmpLine = `${UserDefinedFuncJs.UserDefined} ${lineTokens[0]}${BraketSymbolEnum.OpenBrace}`
+            if (containsJapanese(tmpLine)) {
+                tmpLine = await cnvToRomaji(tmpLine);
             }
-            return tmpLineString;
+            break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.Defined):
             break;
@@ -106,7 +95,7 @@ const cnvToJs = async (statement: { code: string, processIndex: number }) => {
 
     }
 
-    return tmpLineString;
+    return tmpLine;
 }
 
 export const JavascriptBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }) => {
@@ -121,16 +110,18 @@ export const JavascriptBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...
     const [shouldRunEffect, setShouldRunEffect] = useState(false);
 
     useEffect(() => {
-
-        const timer = setTimeout(() => {
-            setShouldRunEffect(true);
-        }, 1000); // 1秒後に実行
-
-        return () => clearTimeout(timer); // クリーンアップ
-    }, [dnclStatements]);
+        if (dnclStatements.length > 0) {
+            console.log(treeItems)
+            const timer = setTimeout(() => {
+                setShouldRunEffect(true);
+            }, 1000); // 1秒後に実行
+            return () => clearTimeout(timer); // クリーンアップ
+        }
+    }, [treeItems]);
 
     useEffect(() => {
         if (shouldRunEffect) {
+            console.log(treeItems)
             const convertCode = async () => {
                 if (dnclStatements) {
 
@@ -144,8 +135,8 @@ export const JavascriptBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...
                     setCodeLines(jsCodeLines);
                 }
             };
-            convertCode();
             setShouldRunEffect(false); // フラグをリセット
+            convertCode();
         }
     }, [shouldRunEffect]);
 
