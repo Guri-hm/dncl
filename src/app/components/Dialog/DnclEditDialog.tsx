@@ -162,42 +162,35 @@ export function DnclEditDialog(params: Props) {
 
                         let processPhrase = "";
                         let tokens: string[] = [];
+                        tokens.push(leftside);
+                        tokens.push(operator);
+                        tokens.push(rightside);
+
                         switch (Number(formJson.processIndex)) {
                             case getEnumIndex(ProcessEnum, ProcessEnum.SetValToVariableOrArray):
                             case getEnumIndex(ProcessEnum, ProcessEnum.InitializeArray):
                                 processPhrase = `${leftside} ${operator} ${rightside}`;
-                                tokens.push(leftside);
-                                tokens.push(operator);
-                                tokens.push(rightside);
                                 break;
                             case getEnumIndex(ProcessEnum, ProcessEnum.BulkAssignToArray):
                                 processPhrase = `${leftside}のすべての要素に${rightside}を代入する`;
-                                tokens.push(rightside);
                                 break;
                             case getEnumIndex(ProcessEnum, ProcessEnum.Increment):
                                 processPhrase = `${leftside}を${rightside}増やす`;
-                                tokens.push(leftside);
-                                tokens.push(rightside);
                                 break;
 
                             case getEnumIndex(ProcessEnum, ProcessEnum.Decrement):
                                 processPhrase = `${leftside}を${rightside}減らす`;
-                                tokens.push(leftside);
-                                tokens.push(rightside);
                                 break;
 
                             case getEnumIndex(ProcessEnum, ProcessEnum.Output):
                                 processPhrase = `${rightside}を表示する`;
-                                tokens.push(rightside);
                                 break;
 
                             case getEnumIndex(ProcessEnum, ProcessEnum.If):
                                 processPhrase = `もし${rightside}ならば`;
-                                tokens.push(rightside);
                                 break;
                             case getEnumIndex(ProcessEnum, ProcessEnum.ElseIf):
                                 processPhrase = `を実行し，そうでなくもし${rightside}ならば`;
-                                tokens.push(rightside);
                                 break;
 
                             case getEnumIndex(ProcessEnum, ProcessEnum.Else):
@@ -223,7 +216,6 @@ export function DnclEditDialog(params: Props) {
                             case getEnumIndex(ProcessEnum, ProcessEnum.ForIncrement):
                             case getEnumIndex(ProcessEnum, ProcessEnum.ForDecrement):
                                 processPhrase = `${rightside}を${formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.InitialValue}`]}から${formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.EndValue}`]}まで${formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.Difference}`]}ずつ${Number(formJson.processIndex) == getEnumIndex(ProcessEnum, ProcessEnum.ForIncrement) ? "増やしながら，" : "減らしながら，"}`;
-                                tokens.push(rightside);
                                 tokens.push(formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.InitialValue}`]);
                                 tokens.push(formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.EndValue}`]);
                                 tokens.push(formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.Difference}`]);
@@ -231,14 +223,12 @@ export function DnclEditDialog(params: Props) {
                                 break;
                             case getEnumIndex(ProcessEnum, ProcessEnum.DefineFunction):
                                 processPhrase = `関数 ${rightside} を`;
-                                tokens.push(rightside);
                                 break;
                             case getEnumIndex(ProcessEnum, ProcessEnum.Defined):
                                 processPhrase = `と定義する`;
                                 break;
                             case getEnumIndex(ProcessEnum, ProcessEnum.ExecuteUserDefinedFunction):
                                 processPhrase = `${rightside}`;
-                                tokens.push(rightside);
                                 break;
                             default:
                                 break;
