@@ -5,6 +5,7 @@ import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFun
 import { cnvToRomaji, containsJapanese, getEnumIndex } from "../utilities";
 import Kuroshiro from 'kuroshiro';
 import KuromojiAnalyzer from '@sglkc/kuroshiro-analyzer-kuromoji';
+import ScopeBox from "./ScopeBox";
 
 interface CustomBoxProps extends BoxProps {
     children: React.ReactNode;
@@ -117,6 +118,7 @@ export const JavascriptBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...
 
     const [codeLines, setCodeLines] = useState<string[]>(['変換中']);
     const [shouldRunEffect, setShouldRunEffect] = useState(false);
+    const [nodes, setNodes] = useState<React.ReactNode>(false);
 
     useEffect(() => {
         if (dnclStatements.length > 0) {
@@ -133,15 +135,15 @@ export const JavascriptBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...
             console.log(treeItems)
             const convertCode = async () => {
                 if (dnclStatements) {
+                    setNodes(renderNodes(treeItems));
+                    // let jsCodeLines = [];
+                    // for (let i = 0; i < dnclStatements.length; i++) {
+                    //     const jsLine = await cnvToJs(dnclStatements[i])
+                    //     jsCodeLines.push(jsLine);
 
-                    let jsCodeLines = [];
-                    for (let i = 0; i < dnclStatements.length; i++) {
-                        const jsLine = await cnvToJs(dnclStatements[i])
-                        jsCodeLines.push(jsLine);
+                    // }
 
-                    }
-
-                    setCodeLines(jsCodeLines);
+                    // setCodeLines(jsCodeLines);
                 }
             };
             setShouldRunEffect(false); // フラグをリセット
@@ -149,28 +151,29 @@ export const JavascriptBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...
         }
     }, [shouldRunEffect]);
 
-    // const renderNodes = (nodes: TreeItems): React.ReactNode => {
-    //     return nodes.map((node) => (
-    //         <Fragment key={node.id}>
-    //             <Box>{node.line}</Box>
-    //             {node.children.length > 0 && (
-    //                 <ScopeBox nested={true}>
-    //                     {renderNodes(node.children)}
-    //                 </ScopeBox>
-    //             )}
-    //         </Fragment>
-    //     ))
-    // }
+    const renderNodes = (nodes: TreeItems): React.ReactNode => {
+        return nodes.map((node) => (
+            <Fragment key={node.id}>
+                <Box>{node.line}</Box>
+                {node.children.length > 0 && (
+                    <ScopeBox nested={true}>
+                        {renderNodes(node.children)}
+                    </ScopeBox>
+                )}
+            </Fragment>
+        ))
+    }
 
     return (
         <Box sx={{
             ...sx,
         }} {...props} >
-            {codeLines.map((line: string, index: number) => (
+            {nodes}
+            {/* {codeLines.map((line: string, index: number) => (
 
                 <div key={index}>{line}</div>
 
-            ))}
+            ))} */}
         </Box>
     );
 };
