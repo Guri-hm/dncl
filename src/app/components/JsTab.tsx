@@ -1,28 +1,16 @@
 import { Box, BoxProps } from "@mui/material";
 import { FC, useEffect, useState, Fragment } from "react";
 import { TreeItem, TreeItems } from "../types";
-import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFuncJpDncl, UserDefinedFuncJs, OutputEnum, ConditionEnum, ComparisonOperatorJs, ComparisonOperatorDncl } from "../enum";
+import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFuncJpDncl, UserDefinedFuncJs, OutputEnum, ConditionEnum, ComparisonOperatorJs, ComparisonOperatorDncl, LoopEnum, ArithmeticOperatorJs } from "../enum";
 import { cnvToRomaji, containsJapanese, getEnumIndex } from "../utilities";
 import Kuroshiro from 'kuroshiro';
 import KuromojiAnalyzer from '@sglkc/kuroshiro-analyzer-kuromoji';
-import ScopeBox from "./ScopeBox";
+import JsScopeBox from "./JsScopeBox";
 
 interface CustomBoxProps extends BoxProps {
     children: React.ReactNode;
     treeItems: TreeItems;
 }
-
-const extractFromTreeItems = (treeItems: TreeItem[]): { lineTokens: string[], processIndex: number }[] => {
-    const result: { lineTokens: string[], processIndex: number }[] = [];
-
-    const traverse = (item: TreeItem) => {
-        result.push({ lineTokens: item.lineTokens ?? [], processIndex: item.processIndex ?? getEnumIndex(ProcessEnum, ProcessEnum.Unknown) });
-        item.children.forEach(child => traverse(child));
-    };
-
-    treeItems.forEach(item => traverse(item));
-    return result;
-};
 
 const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }) => {
 
@@ -46,7 +34,7 @@ const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.If):
-            tmpLine = `${ConditionEnum.JsIf}${BraketSymbolEnum.LeftBraket}${lineTokens[0].replace(ComparisonOperatorDncl.EqualToOperator, ComparisonOperatorJs.EqualToOperator)}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
+            tmpLine = `${ConditionEnum.JsIf} ${BraketSymbolEnum.LeftBraket}${lineTokens[0].replace(ComparisonOperatorDncl.EqualToOperator, ComparisonOperatorJs.EqualToOperator)}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.ElseIf):
@@ -60,47 +48,53 @@ const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.EndIf):
-            tmpLine = `${BraketSymbolEnum.CloseBrace};`
+            tmpLine = `${BraketSymbolEnum.CloseBrace}`
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.While):
-            tmpLine = `${ConditionEnum.JsWhile}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
+            tmpLine = `${LoopEnum.JsWhile}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.EndWhile):
-            tmpLine = `${BraketSymbolEnum.CloseBrace};`
+        case getEnumIndex(ProcessEnum, ProcessEnum.EndFor):
+        case getEnumIndex(ProcessEnum, ProcessEnum.Defined):
+            tmpLine = `${BraketSymbolEnum.CloseBrace}`
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.DoWhile):
-            tmpLine = `${ConditionEnum.JsDoWhile}${BraketSymbolEnum.OpenBrace}`
+            tmpLine = `${LoopEnum.JsDoWhile}${BraketSymbolEnum.OpenBrace}`;
+
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.EndDoWhile):
-            tmpLine = `${BraketSymbolEnum.CloseBrace}${ConditionEnum.JsWhile}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
+            tmpLine = `${BraketSymbolEnum.CloseBrace}${LoopEnum.JsWhile}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`;
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.ForIncrement):
         case getEnumIndex(ProcessEnum, ProcessEnum.ForDecrement):
-            break;
-
-        case getEnumIndex(ProcessEnum, ProcessEnum.EndFor):
+            tmpLine = `${LoopEnum.JsFor} ${BraketSymbolEnum.LeftBraket}
+            ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]}; 
+            ${lineTokens[0]} ${ComparisonOperatorJs.LessThanOrEqualToOperator} ${lineTokens[2]}; 
+            ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[0]} ${statement.processIndex == getEnumIndex(ProcessEnum, ProcessEnum.ForIncrement) ? ArithmeticOperatorJs.AdditionOperator : ArithmeticOperatorJs.SubtractionOperator} ${lineTokens[3]}${BraketSymbolEnum.RigthBraket} ${BraketSymbolEnum.OpenBrace}`;
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.DefineFunction):
 
-            tmpLine = `${UserDefinedFuncJs.UserDefined} ${lineTokens[0]}${BraketSymbolEnum.OpenBrace}`
+            tmpLine = `${UserDefinedFuncJs.UserDefined} ${lineTokens[0].replace(' ', '')} ${BraketSymbolEnum.OpenBrace}`
             if (containsJapanese(tmpLine)) {
                 tmpLine = await cnvToRomaji(tmpLine);
             }
             break;
 
-        case getEnumIndex(ProcessEnum, ProcessEnum.Defined):
-            break;
-
         case getEnumIndex(ProcessEnum, ProcessEnum.ExecuteUserDefinedFunction):
+            tmpLine = `${lineTokens[0].replace(' ', '')};`
+            if (containsJapanese(tmpLine)) {
+                tmpLine = await cnvToRomaji(tmpLine);
+            }
             break;
 
         default:
+            tmpLine = '';
             break;
 
     }
@@ -108,43 +102,22 @@ const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }
     return tmpLine;
 }
 
-export const JavascriptBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }) => {
-    // console.log(treeItems)
-    const dnclStatements = extractFromTreeItems(treeItems);
-    // console.log(codeValues)
-    // const romajiFromHiragana = wanakana.toRomaji("あいうえお");
-    // const aaa = wanakana.toRomaji("apple()");
-    // console.log(romajiFromHiragana)
+export const JsTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }) => {
 
-    const [codeLines, setCodeLines] = useState<string[]>(['変換中']);
     const [shouldRunEffect, setShouldRunEffect] = useState(false);
-    const [nodes, setNodes] = useState<React.ReactNode>(false);
+    const [nodes, setNodes] = useState<React.ReactNode>(children);
 
     useEffect(() => {
-        if (dnclStatements.length > 0) {
-            console.log(treeItems)
-            const timer = setTimeout(() => {
-                setShouldRunEffect(true);
-            }, 1000); // 1秒後に実行
-            return () => clearTimeout(timer); // クリーンアップ
-        }
+        const timer = setTimeout(() => {
+            setShouldRunEffect(true);
+        }, 1000); // 1秒後に実行
+        return () => clearTimeout(timer); // クリーンアップ
     }, [treeItems]);
 
     useEffect(() => {
         if (shouldRunEffect) {
-            console.log(treeItems)
             const convertCode = async () => {
-                if (dnclStatements) {
-                    setNodes(renderNodes(treeItems));
-                    // let jsCodeLines = [];
-                    // for (let i = 0; i < dnclStatements.length; i++) {
-                    //     const jsLine = await cnvToJs(dnclStatements[i])
-                    //     jsCodeLines.push(jsLine);
-
-                    // }
-
-                    // setCodeLines(jsCodeLines);
-                }
+                setNodes(renderNodes(treeItems));
             };
             setShouldRunEffect(false); // フラグをリセット
             convertCode();
@@ -154,11 +127,11 @@ export const JavascriptBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...
     const renderNodes = (nodes: TreeItems): React.ReactNode => {
         return nodes.map((node) => (
             <Fragment key={node.id}>
-                <Box>{node.line}</Box>
+                <Box>{cnvToJs({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) })}</Box>
                 {node.children.length > 0 && (
-                    <ScopeBox nested={true}>
+                    <JsScopeBox nested={true}>
                         {renderNodes(node.children)}
-                    </ScopeBox>
+                    </JsScopeBox>
                 )}
             </Fragment>
         ))
@@ -167,13 +140,9 @@ export const JavascriptBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...
     return (
         <Box sx={{
             ...sx,
+            fontSize: '1rem', lineHeight: 1.5
         }} {...props} >
             {nodes}
-            {/* {codeLines.map((line: string, index: number) => (
-
-                <div key={index}>{line}</div>
-
-            ))} */}
         </Box>
     );
 };

@@ -43,7 +43,8 @@ import { ArrowButton } from "./ArrowButton";
 import "./alloment-custom.css";
 import TabsBox from "./TabsBox";
 import DnclCodeBox from "./DnclCodeBox";
-import { JavascriptBox } from "./JavascriptBox";
+import { JsTab } from "./JsTab";
+import DnclTab from "./DnclCodeBox";
 
 
 const fragments: FragmentItems = [
@@ -313,13 +314,20 @@ export function SortableTree({
         <div className={`${styles.hFull}`} style={{ marginLeft: '17px' }}>
 
           <Allotment.Pane className={`${styles.hFull}`}>
-            <TabsBox tabLabels={['DNCL', 'javascript', 'Python', 'VBA']}>
-              <DnclCodeBox items={treeItems}></DnclCodeBox>
-              <JavascriptBox treeItems={treeItems}>
+            <TabsBox tabLabels={['DNCL']}>
+              <DnclTab items={treeItems}></DnclTab>
+            </TabsBox>
+          </Allotment.Pane>
+        </div>
+        <div className={`${styles.hFull}`} style={{ marginLeft: '17px' }}>
+
+          <Allotment.Pane className={`${styles.hFull}`}>
+            <TabsBox tabLabels={['javascript', 'Python', 'VBA']}>
+              <JsTab treeItems={treeItems}>
                 <>
-                  javascript
+                  変換中
                 </>
-              </JavascriptBox>
+              </JsTab>
               <div>ここにPythonのコード</div>
               <div>ここにVBAのコード</div>
             </TabsBox>

@@ -42,8 +42,6 @@ const initialItems: TreeItems = [
           }
         ],
         lineTokens: [
-          "",
-          "",
           "i",
           "1",
           "n",
@@ -57,9 +55,6 @@ const initialItems: TreeItems = [
         line: "を繰り返す",
         children: [],
         lineTokens: [
-          "",
-          "",
-          ""
         ],
         processIndex: 11
       },
@@ -83,9 +78,6 @@ const initialItems: TreeItems = [
     line: "と定義する",
     children: [],
     lineTokens: [
-      "",
-      "",
-      ""
     ],
     processIndex: 18
   },
@@ -94,8 +86,6 @@ const initialItems: TreeItems = [
     line: "和 (10)",
     children: [],
     lineTokens: [
-      "",
-      "",
       "和 (10)"
     ],
     processIndex: 19

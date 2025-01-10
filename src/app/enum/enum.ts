@@ -53,8 +53,13 @@ export enum ConditionEnum {
   VbaStart = "If",
   VbaEnd = "End If",
   VbaThen = "Then",
+}
+
+export enum LoopEnum {
   JsWhile = "while",
   JsDoWhile = "do",
+  JsFor = "for",
+
 }
 
 export enum ReturnFuncDncl {

@@ -11,10 +11,10 @@ interface ScopeBoxProps {
 const StyledDiv = styled(Box, {
     shouldForwardProp: (prop) => prop !== 'nested',
 })<ScopeBoxProps>(({ nested }) => ({
-    // position: 'relative',
+    position: 'relative',
     // paddingLeft: nested ? '20px' : '0px',
     '& > div': {
-        borderLeft: '2px solid white',
+        // borderLeft: '2px solid white',
         paddingLeft: '1.5rem',
         marginLeft: '0.5rem'
     },
@@ -22,8 +22,8 @@ const StyledDiv = styled(Box, {
     },
 }));
 
-const ScopeBox: React.FC<ScopeBoxProps> = ({ children, nested = false }) => {
+const JsScopeBox: React.FC<ScopeBoxProps> = ({ children, nested = false }) => {
     return <StyledDiv nested={nested}>{children}</StyledDiv>;
 };
 
-export default ScopeBox;
+export default JsScopeBox;
