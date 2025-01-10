@@ -12,7 +12,7 @@ interface Props {
 const renderNodes = (nodes: TreeItems): React.ReactNode => {
     return nodes.map((node) => (
         <React.Fragment key={node.id}>
-            <Box>{node.code}</Box>
+            <Box>{node.line}</Box>
             {node.children.length > 0 && (
                 <ScopeBox nested={true}>
                     {renderNodes(node.children)}

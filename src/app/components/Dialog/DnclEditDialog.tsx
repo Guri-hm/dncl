@@ -216,6 +216,7 @@ export function DnclEditDialog(params: Props) {
                             case getEnumIndex(ProcessEnum, ProcessEnum.ForIncrement):
                             case getEnumIndex(ProcessEnum, ProcessEnum.ForDecrement):
                                 processPhrase = `${rightside}を${formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.InitialValue}`]}から${formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.EndValue}`]}まで${formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.Difference}`]}ずつ${Number(formJson.processIndex) == getEnumIndex(ProcessEnum, ProcessEnum.ForIncrement) ? "増やしながら，" : "減らしながら，"}`;
+
                                 tokens.push(formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.InitialValue}`]);
                                 tokens.push(formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.EndValue}`]);
                                 tokens.push(formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.Difference}`]);
@@ -233,6 +234,8 @@ export function DnclEditDialog(params: Props) {
                             default:
                                 break;
                         }
+
+                        tokens = tokens.filter(token => token != '');
 
                         params.onSubmit({ newItem: params.item, statementText: processPhrase, tokens: tokens, processIndex: Number(formJson.processIndex), overIndex: params.overIndex });
                         handleClose();

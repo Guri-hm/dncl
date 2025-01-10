@@ -1,7 +1,7 @@
 import { Box, BoxProps } from "@mui/material";
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState, Fragment } from "react";
 import { TreeItem, TreeItems } from "../types";
-import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFuncJpDncl, UserDefinedFuncJs, OutputEnum } from "../enum";
+import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFuncJpDncl, UserDefinedFuncJs, OutputEnum, ConditionEnum, ComparisonOperatorJs, ComparisonOperatorDncl } from "../enum";
 import { cnvToRomaji, containsJapanese, getEnumIndex } from "../utilities";
 import Kuroshiro from 'kuroshiro';
 import KuromojiAnalyzer from '@sglkc/kuroshiro-analyzer-kuromoji';
@@ -42,31 +42,40 @@ const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }
         case getEnumIndex(ProcessEnum, ProcessEnum.Output):
 
             tmpLine = `${OutputEnum.Js}(${lineTokens[0]});`
-
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.If):
+            tmpLine = `${ConditionEnum.JsIf}${BraketSymbolEnum.LeftBraket}${lineTokens[0].replace(ComparisonOperatorDncl.EqualToOperator, ComparisonOperatorJs.EqualToOperator)}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.ElseIf):
+            tmpLine = `${BraketSymbolEnum.CloseBrace}${ConditionEnum.JsElseIf}${BraketSymbolEnum.LeftBraket}${lineTokens[0].replace(ComparisonOperatorDncl.EqualToOperator, ComparisonOperatorJs.EqualToOperator)}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
+
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.Else):
+            tmpLine = `${BraketSymbolEnum.CloseBrace}${ConditionEnum.JsElse}${BraketSymbolEnum.OpenBrace}`
+
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.EndIf):
+            tmpLine = `${BraketSymbolEnum.CloseBrace};`
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.While):
+            tmpLine = `${ConditionEnum.JsWhile}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.EndWhile):
+            tmpLine = `${BraketSymbolEnum.CloseBrace};`
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.DoWhile):
+            tmpLine = `${ConditionEnum.JsDoWhile}${BraketSymbolEnum.OpenBrace}`
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.EndDoWhile):
+            tmpLine = `${BraketSymbolEnum.CloseBrace}${ConditionEnum.JsWhile}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.ForIncrement):
@@ -140,7 +149,18 @@ export const JavascriptBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...
         }
     }, [shouldRunEffect]);
 
-
+    // const renderNodes = (nodes: TreeItems): React.ReactNode => {
+    //     return nodes.map((node) => (
+    //         <Fragment key={node.id}>
+    //             <Box>{node.line}</Box>
+    //             {node.children.length > 0 && (
+    //                 <ScopeBox nested={true}>
+    //                     {renderNodes(node.children)}
+    //                 </ScopeBox>
+    //             )}
+    //         </Fragment>
+    //     ))
+    // }
 
     return (
         <Box sx={{

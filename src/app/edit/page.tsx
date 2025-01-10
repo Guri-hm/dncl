@@ -8,9 +8,6 @@ import styles from './editor.module.css';
 import { styled } from '@mui/system';
 import Box from '@mui/material/Box';
 import { TreeItems } from "../types";
-import { getEnumIndex } from "../utilities";
-import { ProcessEnum } from "@/app/enum";
-
 
 const initialItems: TreeItems = [
   {
@@ -27,12 +24,81 @@ const initialItems: TreeItems = [
           "0"
         ],
         processIndex: 1
+      },
+      {
+        id: "804447e3-e7da-4b59-bbaf-07fac45bb665",
+        line: "iを1からnまで1ずつ増やしながら，",
+        children: [
+          {
+            id: "fc46a1d1-859e-41d3-aa4b-bb7e7598e597",
+            line: "wa ← wa + 1",
+            children: [],
+            lineTokens: [
+              "wa",
+              "←",
+              "wa + 1"
+            ],
+            processIndex: 1
+          }
+        ],
+        lineTokens: [
+          "",
+          "",
+          "i",
+          "1",
+          "n",
+          "1"
+        ],
+        processIndex: 14,
+        collapsed: false
+      },
+      {
+        id: "fd2586af-5c4b-471d-9db4-6443544b6e35",
+        line: "を繰り返す",
+        children: [],
+        lineTokens: [
+          "",
+          "",
+          ""
+        ],
+        processIndex: 11
+      },
+      {
+        id: "a37c97e2-b605-40bb-acef-3ce352d30953",
+        line: "waを表示する",
+        children: [],
+        lineTokens: [
+          "wa"
+        ],
+        processIndex: 0
       }
     ],
     lineTokens: [
       "和 (n)"
     ],
     processIndex: 17
+  },
+  {
+    id: "bf8a371f-7366-4e32-9811-0b3e64d987a5",
+    line: "と定義する",
+    children: [],
+    lineTokens: [
+      "",
+      "",
+      ""
+    ],
+    processIndex: 18
+  },
+  {
+    id: "8ce90945-0ee4-4fc5-a8b7-e974fb4c84d5",
+    line: "和 (10)",
+    children: [],
+    lineTokens: [
+      "",
+      "",
+      "和 (10)"
+    ],
+    processIndex: 19
   }
 ]
 

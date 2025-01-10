@@ -12,6 +12,9 @@ export enum ArithmeticOperatorJs {
   DivisionOperatorQuotient = '÷',
   DivisionOperatorRemaining = '%',
 }
+export enum ArithmeticOperatorDncl {
+  MultiplicationOperator = '×',
+}
 export enum ComparisonOperatorJs {
   EqualToOperator = '==',
   NotEqualToOperator = '!=',
@@ -19,6 +22,15 @@ export enum ComparisonOperatorJs {
   GreaterThanOrEqualToOperator = '>=',
   LessThanOperator = '<',
   LessThanOrEqualToOperator = '<=',
+}
+export enum ComparisonOperatorDncl {
+  EqualToOperator = '=',
+  NotEqualToOperator = '≠',
+  GreaterThanOperator = '>',
+  GreaterThanOrEqualToOperator = '≧',
+  LessThanOperator = '<',
+  LessThanOrEqualToOperator = '≦',
+  NullOperator = '',
 }
 
 export enum AndOrOperatorJpArrayForDncl {
@@ -31,6 +43,18 @@ export enum OutputEnum {
   Js = "console.log",
   Python = "print",
   Vba = "Debug.Print"
+}
+export enum ConditionEnum {
+  DnclIf = "もし",
+  JsIf = "if",
+  JsElseIf = "else if",
+  JsElse = "else",
+  Python = "if",
+  VbaStart = "If",
+  VbaEnd = "End If",
+  VbaThen = "Then",
+  JsWhile = "while",
+  JsDoWhile = "do",
 }
 
 export enum ReturnFuncDncl {
@@ -74,18 +98,7 @@ export enum NegationOperatorJpArray {
   NegationOperator = 'でない',
 }
 
-export enum ComparisonOperatorDncl {
-  EqualToOperator = '=',
-  NotEqualToOperator = '≠',
-  GreaterThanOperator = '≻',
-  GreaterThanOrEqualToOperator = '≧',
-  LessThanOperator = '≺',
-  LessThanOrEqualToOperator = '≦',
-  NullOperator = '',
-}
-export enum ArithmeticOperatorDncl {
-  MultiplicationOperator = '×',
-}
+
 
 export enum StatementEnum {
   Output = 'Output',
