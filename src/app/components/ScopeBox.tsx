@@ -1,29 +1,41 @@
 // components/ScopeBox.tsx
 import React from 'react';
 import Box from '@mui/material/Box';
-import { styled } from '@mui/system';
+import { fontStyle, fontWeight, styled } from '@mui/system';
 
 interface ScopeBoxProps {
     children: React.ReactNode;
     nested?: boolean;
+    depth: number;
 }
 
 const StyledDiv = styled(Box, {
     shouldForwardProp: (prop) => prop !== 'nested',
-})<ScopeBoxProps>(({ nested }) => ({
+})<ScopeBoxProps>(({ nested, depth }) => ({
+    '::before': {
+        left: '-1.5rem',
+        // left: `-${depth * 20}px !important`,
+    },
     // position: 'relative',
     // paddingLeft: nested ? '20px' : '0px',
     '& > div': {
         borderLeft: '2px solid white',
         paddingLeft: '1.5rem',
-        marginLeft: '0.5rem'
+        // paddingLeft: '1.5rem',
+        // marginLeft: '0.5rem'
+    },
+    '& > div::before': {
+        left: `-${depth * 1.5}rem`,
+        marginLeft: `-${depth * 2}px`,
+        //左側の線の太さと数に合わせる
     },
     '& > div:not(:first-of-type):not(:last-of-type)': {
     },
+
 }));
 
-const ScopeBox: React.FC<ScopeBoxProps> = ({ children, nested = false }) => {
-    return <StyledDiv nested={nested}>{children}</StyledDiv>;
+const ScopeBox: React.FC<ScopeBoxProps> = ({ children, nested = false, depth }) => {
+    return <StyledDiv nested={nested} depth={depth}>{children}</StyledDiv>;
 };
 
 export default ScopeBox;
