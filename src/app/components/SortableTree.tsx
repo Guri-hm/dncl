@@ -43,6 +43,7 @@ import { ArrowButton } from "./ArrowButton";
 import "./alloment-custom.css";
 import TabsBox from "./TabsBox";
 import { JsTab } from "./JsTab";
+import { PythonTab } from "./PythonTab";
 import DnclTab from "./DnclTab";
 
 
@@ -327,7 +328,11 @@ export function SortableTree({
                   変換中
                 </>
               </JsTab>
-              <div>ここにPythonのコード</div>
+              <PythonTab treeItems={treeItems}>
+                <>
+                  変換中
+                </>
+              </PythonTab>
               <div>ここにVBAのコード</div>
             </TabsBox>
           </Allotment.Pane>

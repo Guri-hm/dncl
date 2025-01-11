@@ -46,20 +46,22 @@ export enum OutputEnum {
 }
 export enum ConditionEnum {
   DnclIf = "もし",
-  JsIf = "if",
+  JsPythonIf = "if",
   JsElseIf = "else if",
-  JsElse = "else",
-  Python = "if",
+  PythonElseIf = "elif",
+  JsPythonElse = "else",
   VbaStart = "If",
   VbaEnd = "End If",
   VbaThen = "Then",
 }
 
 export enum LoopEnum {
-  JsWhile = "while",
+  JsPythonWhile = "while",
   JsDoWhile = "do",
-  JsFor = "for",
-
+  PythonDoWhile = "while True",
+  JsPythonFor = "for",
+  PythonIn = "in",
+  PythonRange = "range",
 }
 
 export enum ReturnFuncDncl {
@@ -67,6 +69,9 @@ export enum ReturnFuncDncl {
   Exponentiation = 'Exponentiation',
   Random = 'Random',
   Odd = 'Odd',
+}
+export enum BreakEnum {
+  Break = 'break',
 }
 export enum VoidFuncDncl {
   Binary = 'Binary',
@@ -82,8 +87,9 @@ export enum UserDefinedFuncDncl {
 export enum UserDefinedFuncJpDncl {
   UserDefined = '関数',
 }
-export enum UserDefinedFuncJs {
-  UserDefined = 'function',
+export enum UserDefinedFunc {
+  Js = 'function',
+  Python = 'def',
 }
 export enum ReturnFuncJpDncl {
   Square = '二乗',
@@ -189,5 +195,6 @@ export enum ProcessEnum {
   Defined = 'と定義する',
   ExecuteUserDefinedFunction = '関数を実行する',
   Unknown = '不明',
+  Break = '中断',
   // EndPhase = '区切り',
 }

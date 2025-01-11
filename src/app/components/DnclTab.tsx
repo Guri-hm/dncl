@@ -2,7 +2,7 @@
 import React from 'react';
 import Box from '@mui/material/Box';
 import { TreeItems } from '../types';
-import ScopeBox from './ScopeBox';
+import ScopeBox from './DnclScopeBox';
 import styles from './tab.module.css';
 
 interface Props {

@@ -1,9 +1,9 @@
 import { Box, BoxProps } from "@mui/material";
 import { FC, useEffect, useState, Fragment } from "react";
 import { TreeItems } from "../types";
-import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFuncJs, OutputEnum, ConditionEnum, ComparisonOperatorJs, ComparisonOperatorDncl, LoopEnum, ArithmeticOperatorJs } from "../enum";
+import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperatorJs, ComparisonOperatorDncl, LoopEnum, ArithmeticOperatorJs } from "../enum";
 import { cnvToRomaji, containsJapanese, getEnumIndex } from "../utilities";
-import JsScopeBox from "./JsScopeBox";
+import ScopeBox from "./ScopeBox";
 import styles from './tab.module.css';
 
 interface CustomBoxProps extends BoxProps {
@@ -29,11 +29,11 @@ const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }
 
         case getEnumIndex(ProcessEnum, ProcessEnum.Output):
 
-            tmpLine = `${OutputEnum.Js}(${lineTokens[0]});`
+            tmpLine = `${OutputEnum.Js}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket};`
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.If):
-            tmpLine = `${ConditionEnum.JsIf} ${BraketSymbolEnum.LeftBraket}${lineTokens[0].replace(ComparisonOperatorDncl.EqualToOperator, ComparisonOperatorJs.EqualToOperator)}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
+            tmpLine = `${ConditionEnum.JsPythonIf} ${BraketSymbolEnum.LeftBraket}${lineTokens[0].replace(ComparisonOperatorDncl.EqualToOperator, ComparisonOperatorJs.EqualToOperator)}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.ElseIf):
@@ -42,7 +42,7 @@ const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.Else):
-            tmpLine = `${BraketSymbolEnum.CloseBrace}${ConditionEnum.JsElse}${BraketSymbolEnum.OpenBrace}`
+            tmpLine = `${BraketSymbolEnum.CloseBrace}${ConditionEnum.JsPythonElse}${BraketSymbolEnum.OpenBrace}`
 
             break;
 
@@ -51,7 +51,7 @@ const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.While):
-            tmpLine = `${LoopEnum.JsWhile}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
+            tmpLine = `${LoopEnum.JsPythonWhile}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.EndWhile):
@@ -66,12 +66,12 @@ const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.EndDoWhile):
-            tmpLine = `${BraketSymbolEnum.CloseBrace}${LoopEnum.JsWhile}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`;
+            tmpLine = `${BraketSymbolEnum.CloseBrace}${LoopEnum.JsPythonWhile}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket};`;
             break;
 
         case getEnumIndex(ProcessEnum, ProcessEnum.ForIncrement):
         case getEnumIndex(ProcessEnum, ProcessEnum.ForDecrement):
-            tmpLine = `${LoopEnum.JsFor} ${BraketSymbolEnum.LeftBraket}
+            tmpLine = `${LoopEnum.JsPythonFor} ${BraketSymbolEnum.LeftBraket}
             ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]}; 
             ${lineTokens[0]} ${ComparisonOperatorJs.LessThanOrEqualToOperator} ${lineTokens[2]}; 
             ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[0]} ${statement.processIndex == getEnumIndex(ProcessEnum, ProcessEnum.ForIncrement) ? ArithmeticOperatorJs.AdditionOperator : ArithmeticOperatorJs.SubtractionOperator} ${lineTokens[3]}${BraketSymbolEnum.RigthBraket} ${BraketSymbolEnum.OpenBrace}`;
@@ -79,7 +79,7 @@ const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }
 
         case getEnumIndex(ProcessEnum, ProcessEnum.DefineFunction):
 
-            tmpLine = `${UserDefinedFuncJs.UserDefined} ${lineTokens[0].replace(' ', '')} ${BraketSymbolEnum.OpenBrace}`
+            tmpLine = `${UserDefinedFunc.Js} ${lineTokens[0].replace(' ', '')} ${BraketSymbolEnum.OpenBrace}`
             if (containsJapanese(tmpLine)) {
                 tmpLine = await cnvToRomaji(tmpLine);
             }
@@ -128,9 +128,9 @@ export const JsTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props })
             <Fragment key={node.id}>
                 <Box className={(index == 0 && depth != 0) ? styles.noCounter : ""}>{cnvToJs({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) })}</Box>
                 {node.children.length > 0 && (
-                    <JsScopeBox nested={true} depth={depth + 1}>
+                    <ScopeBox nested={true} depth={depth + 1}>
                         {renderNodes(node.children, depth + 1)}
-                    </JsScopeBox>
+                    </ScopeBox>
                 )}
             </Fragment>
         ))
