@@ -6,24 +6,23 @@ import { styled } from '@mui/system';
 interface ScopeBoxProps {
     children: React.ReactNode;
     nested?: boolean;
+    depth: number;
 }
 
 const StyledDiv = styled(Box, {
     shouldForwardProp: (prop) => prop !== 'nested',
-})<ScopeBoxProps>(({ nested }) => ({
-    position: 'relative',
-    // paddingLeft: nested ? '20px' : '0px',
+})<ScopeBoxProps>(({ nested, depth }) => ({
     '& > div': {
-        // borderLeft: '2px solid white',
         paddingLeft: '1.5rem',
         marginLeft: '0.5rem'
     },
-    '& > div:not(:first-of-type):not(:last-of-type)': {
+    '& > div::before': {
+        left: `-${depth * 2}rem`,
     },
 }));
 
-const JsScopeBox: React.FC<ScopeBoxProps> = ({ children, nested = false }) => {
-    return <StyledDiv nested={nested}>{children}</StyledDiv>;
+const JsScopeBox: React.FC<ScopeBoxProps> = ({ children, nested = false, depth }) => {
+    return <StyledDiv nested={nested} depth={depth}>{children}</StyledDiv>;
 };
 
 export default JsScopeBox;

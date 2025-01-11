@@ -14,22 +14,16 @@ const StyledDiv = styled(Box, {
 })<ScopeBoxProps>(({ nested, depth }) => ({
     '::before': {
         left: '-1.5rem',
-        // left: `-${depth * 20}px !important`,
     },
-    // position: 'relative',
     // paddingLeft: nested ? '20px' : '0px',
     '& > div': {
         borderLeft: '2px solid white',
         paddingLeft: '1.5rem',
-        // paddingLeft: '1.5rem',
-        // marginLeft: '0.5rem'
     },
     '& > div::before': {
         left: `-${depth * 1.5}rem`,
         marginLeft: `-${depth * 2}px`,
         //左側の線の太さと数に合わせる
-    },
-    '& > div:not(:first-of-type):not(:last-of-type)': {
     },
 
 }));

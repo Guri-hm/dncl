@@ -42,9 +42,8 @@ import styles from './alloment-custom.module.css'
 import { ArrowButton } from "./ArrowButton";
 import "./alloment-custom.css";
 import TabsBox from "./TabsBox";
-import DnclCodeBox from "./DnclCodeBox";
 import { JsTab } from "./JsTab";
-import DnclTab from "./DnclCodeBox";
+import DnclTab from "./DnclTab";
 
 
 const fragments: FragmentItems = [

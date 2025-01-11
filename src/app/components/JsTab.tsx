@@ -1,11 +1,10 @@
 import { Box, BoxProps } from "@mui/material";
 import { FC, useEffect, useState, Fragment } from "react";
-import { TreeItem, TreeItems } from "../types";
-import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFuncJpDncl, UserDefinedFuncJs, OutputEnum, ConditionEnum, ComparisonOperatorJs, ComparisonOperatorDncl, LoopEnum, ArithmeticOperatorJs } from "../enum";
+import { TreeItems } from "../types";
+import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFuncJs, OutputEnum, ConditionEnum, ComparisonOperatorJs, ComparisonOperatorDncl, LoopEnum, ArithmeticOperatorJs } from "../enum";
 import { cnvToRomaji, containsJapanese, getEnumIndex } from "../utilities";
-import Kuroshiro from 'kuroshiro';
-import KuromojiAnalyzer from '@sglkc/kuroshiro-analyzer-kuromoji';
 import JsScopeBox from "./JsScopeBox";
+import styles from './tab.module.css';
 
 interface CustomBoxProps extends BoxProps {
     children: React.ReactNode;
@@ -117,20 +116,20 @@ export const JsTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props })
     useEffect(() => {
         if (shouldRunEffect) {
             const convertCode = async () => {
-                setNodes(renderNodes(treeItems));
+                setNodes(renderNodes(treeItems, 0));
             };
             setShouldRunEffect(false); // フラグをリセット
             convertCode();
         }
     }, [shouldRunEffect]);
 
-    const renderNodes = (nodes: TreeItems): React.ReactNode => {
-        return nodes.map((node) => (
+    const renderNodes = (nodes: TreeItems, depth: number): React.ReactNode => {
+        return nodes.map((node, index) => (
             <Fragment key={node.id}>
-                <Box>{cnvToJs({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) })}</Box>
+                <Box className={(index == 0 && depth != 0) ? styles.noCounter : ""}>{cnvToJs({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) })}</Box>
                 {node.children.length > 0 && (
-                    <JsScopeBox nested={true}>
-                        {renderNodes(node.children)}
+                    <JsScopeBox nested={true} depth={depth + 1}>
+                        {renderNodes(node.children, depth + 1)}
                     </JsScopeBox>
                 )}
             </Fragment>
@@ -138,7 +137,7 @@ export const JsTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props })
     }
 
     return (
-        <Box sx={{
+        <Box className={styles.codeContainer} sx={{
             ...sx,
             fontSize: '1rem', lineHeight: 1.5
         }} {...props} >
