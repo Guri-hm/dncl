@@ -1,6 +1,5 @@
 .codeContainer {
     counter-reset: linenumber;
-    position: relative;
     padding-left: 2.5em;
     /* 行番号のスペースを確保 */
 }
@@ -15,11 +14,10 @@
 .codeContainer div:not(.noCounter)::before {
     content: counter(linenumber);
     position: absolute;
-    left: 0;
+    left: -1.5em;
     /* 行番号を親要素の左端に揃える */
     transform: translateX(-100%);
     width: 2em;
-    margin-right: 0.5em;
     text-align: right;
     color: grey;
 }
@@ -27,5 +25,11 @@
 .codeContainer div>div {
     position: relative;
     padding-left: 2em;
+    /* 入れ子部分のスペースを確保 */
+}
+
+.codeContainer div>div::before {
+    position: relative;
+    left: -2em !important;
     /* 入れ子部分のスペースを確保 */
 }
