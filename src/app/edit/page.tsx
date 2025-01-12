@@ -9,6 +9,7 @@ import { styled } from '@mui/system';
 import Box from '@mui/material/Box';
 import { TreeItems } from "../types";
 import Image from "next/image";
+import Typography from '@mui/material/Typography';
 
 const initialItems: TreeItems = [
   {
@@ -32,12 +33,12 @@ const initialItems: TreeItems = [
         children: [
           {
             id: "fc46a1d1-859e-41d3-aa4b-bb7e7598e597",
-            line: "wa ← wa + 1",
+            line: "wa ← wa + i",
             children: [],
             lineTokens: [
               "wa",
               "←",
-              "wa + 1"
+              "wa + i"
             ],
             processIndex: 1
           }
@@ -112,11 +113,8 @@ const StyledHeader = styled(Box)(({ theme }) => ({
 }));
 
 const HeaderItem = styled(Box)(({ theme }) => ({
-  marginTop: '0.5rem', // mt-2
+  padding: '0.5rem', // mt-2
   flex: 'none', // flex-none
-  color: '#38bdf8', // text-sky-300
-  paddingX: '1rem', // px-4
-  paddingY: '0.25rem', // py-1
   display: 'flex', // flex
   alignItems: 'center', // items-center
 }));
@@ -126,17 +124,18 @@ export default function Home() {
   const [items, setItems] = React.useState(() => initialItems);
 
   return (
-    <StyledDiv className={`${styles.bgSlate900}`}>
+    <StyledDiv className={`${styles.bgSlate900}`} >
       <StyledHeader>
         <HeaderItem>
-          疑似言語いじる子
           <Image
             aria-hidden
-            src="/icon.webp"
+            src="/logo.svg"
             alt="logo"
             width={50}
             height={50}
           />
+          <Typography variant="h1" sx={{ fontSize: '1.5rem', color: 'white' }}>ぎじげんごいじる子</Typography>
+
         </HeaderItem>
       </StyledHeader>
       <Allotment vertical defaultSizes={[200, 100]}>
