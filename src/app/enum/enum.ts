@@ -104,6 +104,7 @@ export enum UserDefinedFunc {
   VbaEndFunction = 'End Function',
   VbaCall = 'Call',
   VbaSub = 'Sub',
+  VbaEndSub = 'End Sub',
 }
 export enum ReturnFuncJpDncl {
   Square = '二乗',
@@ -235,5 +236,6 @@ export enum ProcessEnum {
   Unknown,
   Break,
   Sub,
+  EndSub,
   // EndPhase = '区切り',
 }

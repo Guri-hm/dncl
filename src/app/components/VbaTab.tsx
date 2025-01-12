@@ -89,7 +89,10 @@ const cnvToVba = async (statement: { lineTokens: string[], processIndex: number 
             tmpLine = `${lineTokens[0].replace(' ', '')}`
             break;
         case ProcessEnum.Sub:
-            tmpLine = `${UserDefinedFunc.VbaSub}()`
+            tmpLine = `${UserDefinedFunc.VbaSub}${BraketSymbolEnum.LeftBraket}${BraketSymbolEnum.RigthBraket}`
+            break;
+        case ProcessEnum.EndSub:
+            tmpLine = `${UserDefinedFunc.VbaEndSub}`
             break;
 
         default:
@@ -127,22 +130,16 @@ export const VbaTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }
     const renderNodes = (nodes: TreeItems, depth: number): React.ReactNode => {
 
         const reactNodes = nodes.map((node, index) => {
-
-            if (!isStartedSub && depth == 0 && Number(node.processIndex) != ProcessEnum.DefineFunction) {
+            [ProcessEnum.DefineFunction, ProcessEnum.Defined]
+            if (!isStartedSub && depth == 0 && ![ProcessEnum.DefineFunction, ProcessEnum.Defined].includes(Number(node.processIndex))) {
                 isStartedSub = true;
-                const item: TreeItem =
-                {
-                    id: node.id, children: [], line: '', lineTokens: node.lineTokens, processIndex: ProcessEnum.Sub
-                };
                 return (
-
                     <Fragment key={node.id}>
-                        <Box className={(index == 0 && depth != 0) ? styles.noCounter : ""}>{cnvToVba({ lineTokens: item.lineTokens ?? [], processIndex: Number(item.processIndex) })}</Box>
-                        {node.children.length > 0 && (
-                            <ScopeBox nested={true} depth={depth + 1}>
-                                {renderNodes(nodes, depth + 1)}
-                            </ScopeBox>
-                        )}
+                        <Box className={(index == 0 && depth != 0) ? styles.noCounter : ""}>{cnvToVba({ lineTokens: [], processIndex: ProcessEnum.Sub })}</Box>
+                        <ScopeBox nested={true} depth={depth + 1}>
+                            {renderNodes([node], depth + 1)}
+                        </ScopeBox>
+                        <Box>{cnvToVba({ lineTokens: [], processIndex: ProcessEnum.EndSub })}</Box>
                     </Fragment>
                 )
             }
