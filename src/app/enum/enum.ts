@@ -50,16 +50,26 @@ export enum ConditionEnum {
   JsElseIf = "else if",
   PythonElseIf = "elif",
   JsPythonElse = "else",
-  VbaStart = "If",
-  VbaEnd = "End If",
+  VbaIf = "If",
+  VbaElse = "Else",
+  VbaElseIf = "Else If",
+  VbaEndIf = "End If",
   VbaThen = "Then",
 }
 
 export enum LoopEnum {
   JsPythonWhile = "while",
+  VbaWhile = "Do While",
+  VbaEndWhile = "Loop",
   JsDoWhile = "do",
+  VbaDoWhile = "Do",
+  VbaEndDoWhile = "Loop While",
   PythonDoWhile = "while True",
   JsPythonFor = "for",
+  VbaFor = "For",
+  VbaTo = "To",
+  VbaStep = "Step",
+  VbaNext = "Next",
   PythonIn = "in",
   PythonRange = "range",
 }
@@ -90,6 +100,9 @@ export enum UserDefinedFuncJpDncl {
 export enum UserDefinedFunc {
   Js = 'function',
   Python = 'def',
+  VbaFunction = 'Function',
+  VbaEndFunction = 'End Function',
+  VbaCall = 'Call',
 }
 export enum ReturnFuncJpDncl {
   Square = '二乗',

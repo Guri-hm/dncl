@@ -45,6 +45,7 @@ import TabsBox from "./TabsBox";
 import { JsTab } from "./JsTab";
 import { PythonTab } from "./PythonTab";
 import DnclTab from "./DnclTab";
+import { VbaTab } from "./VbaTab";
 
 
 const fragments: FragmentItems = [
@@ -333,7 +334,11 @@ export function SortableTree({
                   変換中
                 </>
               </PythonTab>
-              <div>ここにVBAのコード</div>
+              <VbaTab treeItems={treeItems}>
+                <>
+                  変換中
+                </>
+              </VbaTab>
             </TabsBox>
           </Allotment.Pane>
         </div>

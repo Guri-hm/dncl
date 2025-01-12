@@ -1,7 +1,7 @@
 // components/ScopeBox.tsx
 import React from 'react';
 import Box from '@mui/material/Box';
-import { fontStyle, fontWeight, styled } from '@mui/system';
+import { fontStyle, fontWeight, margin, styled } from '@mui/system';
 
 interface ScopeBoxProps {
     children: React.ReactNode;
@@ -19,10 +19,11 @@ const StyledDiv = styled(Box, {
     '& > div': {
         borderLeft: '2px solid white',
         paddingLeft: '1.5rem',
+        marginLeft: '0.5rem'
     },
     '& > div::before': {
         left: `-${depth * 1.5}rem`,
-        marginLeft: `-${depth * 2}px`,
+        marginLeft: `-${depth * 2 + 8}px`,
         //左側の線の太さと数に合わせる
     },
 
