@@ -134,7 +134,13 @@ export default function Home() {
             width={50}
             height={50}
           />
-          <Typography variant="h1" sx={{ fontSize: '1.5rem', color: 'white' }}>ぎじげんごいじる子</Typography>
+          <Typography variant="h1" sx={{ fontSize: '1.5rem', color: 'white' }}>
+            <ruby style={{ rubyAlign: 'space-around' }}>
+              ぎじげんご
+              <rp>（</rp><rt>DNCL</rt><rp>）</rp>
+            </ruby>
+            いじる子
+          </Typography>
 
         </HeaderItem>
       </StyledHeader>
