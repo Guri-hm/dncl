@@ -803,7 +803,7 @@ export function getUserDefinedFunctionInfoArray(treeItems: TreeItem[]): UserDefi
   }
 
   const flattened: Statement[] = flattenTreeItems(treeItems);
-  const filtered: Statement[] = filterByProcessIndex(flattened, getEnumIndex(ProcessEnum, ProcessEnum.DefineFunction));
+  const filtered: Statement[] = filterByProcessIndex(flattened, ProcessEnum.DefineFunction);
 
   return getUserDefinedFunctionInfoArray(filtered);
 
@@ -827,3 +827,12 @@ export const containsJapanese = (text: string): boolean => {
 
   return kanjiRegex.test(text) || hiraganaRegex.test(text) || katakanaRegex.test(text) || halfWidthKatakanaRegex.test(text);
 };
+
+export function enumToKeyIndexObject<T extends object>(enumObj: T): { [key: string]: number } {
+  return Object.keys(enumObj)
+    .filter((key) => isNaN(Number(key))) // Filtering out numeric keys
+    .reduce((acc, key, index) => {
+      acc[key] = index;
+      return acc;
+    }, {} as { [key: string]: number });
+}

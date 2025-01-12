@@ -1,6 +1,6 @@
 import { Box, BoxProps } from "@mui/material";
 import { FC, useEffect, useState, Fragment } from "react";
-import { TreeItems } from "../types";
+import { TreeItem, TreeItems } from "../types";
 import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperatorJs, ComparisonOperatorDncl, LoopEnum, ArithmeticOperatorJs } from "../enum";
 import { cnvToRomaji, containsJapanese, getEnumIndex } from "../utilities";
 import ScopeBox from "./ScopeBox";
@@ -18,75 +18,78 @@ const cnvToVba = async (statement: { lineTokens: string[], processIndex: number 
 
 
     switch (statement.processIndex) {
-        case getEnumIndex(ProcessEnum, ProcessEnum.SetValToVariableOrArray):
-        case getEnumIndex(ProcessEnum, ProcessEnum.InitializeArray):
-        case getEnumIndex(ProcessEnum, ProcessEnum.BulkAssignToArray):
-        case getEnumIndex(ProcessEnum, ProcessEnum.Increment):
-        case getEnumIndex(ProcessEnum, ProcessEnum.Decrement):
+        case ProcessEnum.SetValToVariableOrArray:
+        case ProcessEnum.InitializeArray:
+        case ProcessEnum.BulkAssignToArray:
+        case ProcessEnum.Increment:
+        case ProcessEnum.Decrement:
 
             tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[2]}`
             break;
 
-        case getEnumIndex(ProcessEnum, ProcessEnum.Output):
+        case ProcessEnum.Output:
 
             tmpLine = `${OutputEnum.Vba}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket}`
             break;
 
-        case getEnumIndex(ProcessEnum, ProcessEnum.If):
+        case ProcessEnum.If:
             tmpLine = `${ConditionEnum.VbaIf} ${lineTokens[0].replace(ComparisonOperatorDncl.EqualToOperator, ComparisonOperatorJs.EqualToOperator)} ${ConditionEnum.VbaThen}`
             break;
 
-        case getEnumIndex(ProcessEnum, ProcessEnum.ElseIf):
+        case ProcessEnum.ElseIf:
             tmpLine = `${ConditionEnum.VbaElseIf} ${lineTokens[0].replace(ComparisonOperatorDncl.EqualToOperator, ComparisonOperatorJs.EqualToOperator)} ${ConditionEnum.VbaThen}`
 
             break;
 
-        case getEnumIndex(ProcessEnum, ProcessEnum.Else):
+        case ProcessEnum.Else:
             tmpLine = `${ConditionEnum.VbaElse}`
 
             break;
 
-        case getEnumIndex(ProcessEnum, ProcessEnum.EndIf):
+        case ProcessEnum.EndIf:
             tmpLine = `${ConditionEnum.VbaEndIf}`
             break;
 
-        case getEnumIndex(ProcessEnum, ProcessEnum.While):
+        case ProcessEnum.While:
             tmpLine = `${LoopEnum.VbaWhile} ${lineTokens[0]}`
             break;
 
-        case getEnumIndex(ProcessEnum, ProcessEnum.EndWhile):
+        case ProcessEnum.EndWhile:
             tmpLine = `${LoopEnum.VbaEndWhile}`
             break;
 
-        case getEnumIndex(ProcessEnum, ProcessEnum.DoWhile):
+        case ProcessEnum.DoWhile:
             tmpLine = `${LoopEnum.VbaDoWhile}`;
 
             break;
 
-        case getEnumIndex(ProcessEnum, ProcessEnum.EndDoWhile):
+        case ProcessEnum.EndDoWhile:
             tmpLine = `${LoopEnum.VbaEndDoWhile} ${lineTokens[0]}`;
             break;
 
-        case getEnumIndex(ProcessEnum, ProcessEnum.ForIncrement):
-        case getEnumIndex(ProcessEnum, ProcessEnum.ForDecrement):
+        case ProcessEnum.ForIncrement:
+        case ProcessEnum.ForDecrement:
             tmpLine = `${LoopEnum.VbaFor} ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]} ${LoopEnum.VbaTo} ${lineTokens[2]}
-                    ${LoopEnum.VbaStep} ${statement.processIndex == getEnumIndex(ProcessEnum, ProcessEnum.ForIncrement) ? '' : ArithmeticOperatorJs.SubtractionOperator}${lineTokens[3]}`;
+                    ${LoopEnum.VbaStep} ${statement.processIndex == ProcessEnum.ForIncrement ? '' : ArithmeticOperatorJs.SubtractionOperator}${lineTokens[3]}`;
             break;
 
-        case getEnumIndex(ProcessEnum, ProcessEnum.EndFor):
+        case ProcessEnum.EndFor:
             tmpLine = `${LoopEnum.VbaNext}`;
             break;
-        case getEnumIndex(ProcessEnum, ProcessEnum.Defined):
+        case ProcessEnum.Defined:
             tmpLine = `${UserDefinedFunc.VbaEndFunction}`
             break;
 
-        case getEnumIndex(ProcessEnum, ProcessEnum.DefineFunction):
+        case ProcessEnum.DefineFunction:
 
             tmpLine = `${UserDefinedFunc.VbaFunction} ${lineTokens[0].replace(' ', '')}`
             break;
 
-        case getEnumIndex(ProcessEnum, ProcessEnum.ExecuteUserDefinedFunction):
-            tmpLine = `${UserDefinedFunc.VbaCall} ${lineTokens[0].replace(' ', '')}`
+        case ProcessEnum.ExecuteUserDefinedFunction:
+            tmpLine = `${lineTokens[0].replace(' ', '')}`
+            break;
+        case ProcessEnum.Sub:
+            tmpLine = `${UserDefinedFunc.VbaSub}()`
             break;
 
         default:
@@ -120,17 +123,45 @@ export const VbaTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }
         }
     }, [shouldRunEffect]);
 
+    let isStartedSub: boolean = false;
     const renderNodes = (nodes: TreeItems, depth: number): React.ReactNode => {
-        return nodes.map((node, index) => (
-            <Fragment key={node.id}>
-                <Box className={(index == 0 && depth != 0) ? styles.noCounter : ""}>{cnvToVba({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) })}</Box>
-                {node.children.length > 0 && (
-                    <ScopeBox nested={true} depth={depth + 1}>
-                        {renderNodes(node.children, depth + 1)}
-                    </ScopeBox>
-                )}
-            </Fragment>
-        ))
+
+        const reactNodes = nodes.map((node, index) => {
+
+            if (!isStartedSub && depth == 0 && Number(node.processIndex) != ProcessEnum.DefineFunction) {
+                isStartedSub = true;
+                const item: TreeItem =
+                {
+                    id: node.id, children: [], line: '', lineTokens: node.lineTokens, processIndex: ProcessEnum.Sub
+                };
+                return (
+
+                    <Fragment key={node.id}>
+                        <Box className={(index == 0 && depth != 0) ? styles.noCounter : ""}>{cnvToVba({ lineTokens: item.lineTokens ?? [], processIndex: Number(item.processIndex) })}</Box>
+                        {node.children.length > 0 && (
+                            <ScopeBox nested={true} depth={depth + 1}>
+                                {renderNodes(nodes, depth + 1)}
+                            </ScopeBox>
+                        )}
+                    </Fragment>
+                )
+            }
+
+            return (
+
+                <Fragment key={node.id}>
+                    <Box className={(index == 0 && depth != 0) ? styles.noCounter : ""}>{cnvToVba({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) })}</Box>
+                    {node.children.length > 0 && (
+                        <ScopeBox nested={true} depth={depth + 1}>
+                            {renderNodes(node.children, depth + 1)}
+                        </ScopeBox>
+                    )}
+                </Fragment>
+            )
+
+        })
+
+        return reactNodes;
     }
 
     return (

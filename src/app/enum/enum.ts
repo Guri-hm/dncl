@@ -103,6 +103,7 @@ export enum UserDefinedFunc {
   VbaFunction = 'Function',
   VbaEndFunction = 'End Function',
   VbaCall = 'Call',
+  VbaSub = 'Sub',
 }
 export enum ReturnFuncJpDncl {
   Square = '二乗',
@@ -121,8 +122,6 @@ export enum NegationOperatorJpArray {
   NullOperator = '',
   NegationOperator = 'でない',
 }
-
-
 
 export enum StatementEnum {
   Output = 'Output',
@@ -186,7 +185,7 @@ export enum InputTypeJpEnum {
   Argument = '引数',
 }
 
-export enum ProcessEnum {
+export enum DnclStatement {
   Output = '表示',
   SetValToVariableOrArray = '変数または配列の要素への代入',
   InitializeArray = '配列の初期化',
@@ -209,5 +208,32 @@ export enum ProcessEnum {
   ExecuteUserDefinedFunction = '関数を実行する',
   Unknown = '不明',
   Break = '中断',
+  Sub = 'プロシージャ開始',
+}
+
+export enum ProcessEnum {
+  Output,
+  SetValToVariableOrArray,
+  InitializeArray,
+  BulkAssignToArray,
+  Increment,
+  Decrement,
+  If,
+  ElseIf,
+  Else,
+  EndIf,
+  While,
+  EndWhile,
+  DoWhile,
+  EndDoWhile,
+  ForIncrement,
+  ForDecrement,
+  EndFor,
+  DefineFunction,
+  Defined,
+  ExecuteUserDefinedFunction,
+  Unknown,
+  Break,
+  Sub,
   // EndPhase = '区切り',
 }

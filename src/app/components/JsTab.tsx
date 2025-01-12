@@ -18,66 +18,66 @@ const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }
 
 
     switch (statement.processIndex) {
-        case getEnumIndex(ProcessEnum, ProcessEnum.SetValToVariableOrArray):
-        case getEnumIndex(ProcessEnum, ProcessEnum.InitializeArray):
-        case getEnumIndex(ProcessEnum, ProcessEnum.BulkAssignToArray):
-        case getEnumIndex(ProcessEnum, ProcessEnum.Increment):
-        case getEnumIndex(ProcessEnum, ProcessEnum.Decrement):
+        case ProcessEnum.SetValToVariableOrArray:
+        case ProcessEnum.InitializeArray:
+        case ProcessEnum.BulkAssignToArray:
+        case ProcessEnum.Increment:
+        case ProcessEnum.Decrement:
 
             tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[2]};`
             break;
 
-        case getEnumIndex(ProcessEnum, ProcessEnum.Output):
+        case ProcessEnum.Output:
 
             tmpLine = `${OutputEnum.Js}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket};`
             break;
 
-        case getEnumIndex(ProcessEnum, ProcessEnum.If):
+        case ProcessEnum.If:
             tmpLine = `${ConditionEnum.JsPythonIf} ${BraketSymbolEnum.LeftBraket}${lineTokens[0].replace(ComparisonOperatorDncl.EqualToOperator, ComparisonOperatorJs.EqualToOperator)}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
             break;
 
-        case getEnumIndex(ProcessEnum, ProcessEnum.ElseIf):
+        case ProcessEnum.ElseIf:
             tmpLine = `${BraketSymbolEnum.CloseBrace}${ConditionEnum.JsElseIf}${BraketSymbolEnum.LeftBraket}${lineTokens[0].replace(ComparisonOperatorDncl.EqualToOperator, ComparisonOperatorJs.EqualToOperator)}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
 
             break;
 
-        case getEnumIndex(ProcessEnum, ProcessEnum.Else):
+        case ProcessEnum.Else:
             tmpLine = `${BraketSymbolEnum.CloseBrace}${ConditionEnum.JsPythonElse}${BraketSymbolEnum.OpenBrace}`
 
             break;
 
-        case getEnumIndex(ProcessEnum, ProcessEnum.EndIf):
+        case ProcessEnum.EndIf:
             tmpLine = `${BraketSymbolEnum.CloseBrace}`
             break;
 
-        case getEnumIndex(ProcessEnum, ProcessEnum.While):
+        case ProcessEnum.While:
             tmpLine = `${LoopEnum.JsPythonWhile}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
             break;
 
-        case getEnumIndex(ProcessEnum, ProcessEnum.EndWhile):
-        case getEnumIndex(ProcessEnum, ProcessEnum.EndFor):
-        case getEnumIndex(ProcessEnum, ProcessEnum.Defined):
+        case ProcessEnum.EndWhile:
+        case ProcessEnum.EndFor:
+        case ProcessEnum.Defined:
             tmpLine = `${BraketSymbolEnum.CloseBrace}`
             break;
 
-        case getEnumIndex(ProcessEnum, ProcessEnum.DoWhile):
+        case ProcessEnum.DoWhile:
             tmpLine = `${LoopEnum.JsDoWhile}${BraketSymbolEnum.OpenBrace}`;
 
             break;
 
-        case getEnumIndex(ProcessEnum, ProcessEnum.EndDoWhile):
+        case ProcessEnum.EndDoWhile:
             tmpLine = `${BraketSymbolEnum.CloseBrace}${LoopEnum.JsPythonWhile}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket};`;
             break;
 
-        case getEnumIndex(ProcessEnum, ProcessEnum.ForIncrement):
-        case getEnumIndex(ProcessEnum, ProcessEnum.ForDecrement):
+        case ProcessEnum.ForIncrement:
+        case ProcessEnum.ForDecrement:
             tmpLine = `${LoopEnum.JsPythonFor} ${BraketSymbolEnum.LeftBraket}
             ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]}; 
             ${lineTokens[0]} ${ComparisonOperatorJs.LessThanOrEqualToOperator} ${lineTokens[2]}; 
-            ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[0]} ${statement.processIndex == getEnumIndex(ProcessEnum, ProcessEnum.ForIncrement) ? ArithmeticOperatorJs.AdditionOperator : ArithmeticOperatorJs.SubtractionOperator} ${lineTokens[3]}${BraketSymbolEnum.RigthBraket} ${BraketSymbolEnum.OpenBrace}`;
+            ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[0]} ${statement.processIndex == ProcessEnum.ForIncrement ? ArithmeticOperatorJs.AdditionOperator : ArithmeticOperatorJs.SubtractionOperator} ${lineTokens[3]}${BraketSymbolEnum.RigthBraket} ${BraketSymbolEnum.OpenBrace}`;
             break;
 
-        case getEnumIndex(ProcessEnum, ProcessEnum.DefineFunction):
+        case ProcessEnum.DefineFunction:
 
             tmpLine = `${UserDefinedFunc.Js} ${lineTokens[0].replace(' ', '')} ${BraketSymbolEnum.OpenBrace}`
             if (containsJapanese(tmpLine)) {
@@ -85,7 +85,7 @@ const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }
             }
             break;
 
-        case getEnumIndex(ProcessEnum, ProcessEnum.ExecuteUserDefinedFunction):
+        case ProcessEnum.ExecuteUserDefinedFunction:
             tmpLine = `${lineTokens[0].replace(' ', '')};`
             if (containsJapanese(tmpLine)) {
                 tmpLine = await cnvToRomaji(tmpLine);
