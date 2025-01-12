@@ -8,6 +8,7 @@ import styles from './editor.module.css';
 import { styled } from '@mui/system';
 import Box from '@mui/material/Box';
 import { TreeItems } from "../types";
+import Image from "next/image";
 
 const initialItems: TreeItems = [
   {
@@ -129,6 +130,13 @@ export default function Home() {
       <StyledHeader>
         <HeaderItem>
           疑似言語いじる子
+          <Image
+            aria-hidden
+            src="/icon.webp"
+            alt="logo"
+            width={50}
+            height={50}
+          />
         </HeaderItem>
       </StyledHeader>
       <Allotment vertical defaultSizes={[200, 100]}>
