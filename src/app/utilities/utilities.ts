@@ -934,6 +934,7 @@ export const cnvToRomaji = async (text = '') => {
   const romaji = await kuroshiro.convert(text, { to: 'romaji' });
   return romaji;
 };
+
 // export const getESLintResult = async (text = '') => {
 //   const { ESLint } = await import('eslint');
 //   const eslint = new ESLint();

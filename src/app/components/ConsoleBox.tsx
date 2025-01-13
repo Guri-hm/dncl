@@ -2,7 +2,7 @@ import { Box, BoxProps } from "@mui/material";
 import { FC, useEffect, useState, Fragment } from "react";
 import { TreeItems } from "../types";
 import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, LoopEnum, ArithmeticOperator } from "../enum";
-import { cnvToDivision, cnvToRomaji, containsJapanese, getEnumIndex, tryParseToJsFunction } from "../utilities";
+import { cnvToDivision, cnvToRomaji, containsJapanese, flattenTree, getEnumIndex, tryParseToJsFunction } from "../utilities";
 import ScopeBox from "./ScopeBox";
 import styles from './tab.module.css';
 import { SxProps, Theme } from '@mui/material';
@@ -113,6 +113,23 @@ export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...pro
     const [shouldRunEffect, setShouldRunEffect] = useState(false);
     const [nodes, setNodes] = useState<React.ReactNode>(children);
 
+    const [lintResults, setLintResults] = useState<string>('');
+
+    useEffect(() => {
+        const fetchLintResults = async () => {
+            try {
+                const res = await fetch('/api/lint');
+                const data = await res.json();
+                console.log(data);
+                setLintResults(data.resultText);
+            } catch (error) {
+                console.error('Error fetching lint results:', error);
+            }
+        };
+
+        fetchLintResults();
+    }, []);
+
     useEffect(() => {
         const timer = setTimeout(() => {
             setShouldRunEffect(true);
@@ -133,19 +150,21 @@ export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...pro
 
     const renderNodes = async (nodes: TreeItems): Promise<string> => {
 
-        const renderedNodes = await Promise.all(nodes.map(async (node, index) => {
-            const content = await cnvToJs({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) });
+        const flatten = flattenTree(nodes);
 
+        const renderedNodes = await Promise.all(flatten.map(async (node, index) => {
+
+            const content = await cnvToJs({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) });
             return content
         }));
 
         return renderedNodes.join('');
     }
-
     return (
         <Box sx={{
             ...sx
         }} {...props} >
+            {lintResults}
             {nodes}
         </Box>
     );
