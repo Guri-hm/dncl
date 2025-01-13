@@ -47,81 +47,38 @@ import { PythonTab } from "./PythonTab";
 import { DnclTab } from "./DnclTab";
 import { VbaTab } from "./VbaTab";
 
+const statementEnumMap = {
+  [StatementJpEnum.Output]: StatementEnum.Output,
+  [StatementJpEnum.Input]: StatementEnum.Input,
+  [StatementJpEnum.Condition]: StatementEnum.Condition,
+  [StatementJpEnum.ConditionalLoopPreTest]: StatementEnum.ConditionalLoopPreTest,
+  [StatementJpEnum.ConditionalLoopPostTest]: StatementEnum.ConditionalLoopPostTest,
+  [StatementJpEnum.SequentialIteration]: StatementEnum.SequentialIteration,
+  [StatementJpEnum.UserDefinedfunction]: StatementEnum.UserDefinedfunction,
+  [StatementJpEnum.ExecuteUserDefinedFunction]: StatementEnum.ExecuteUserDefinedFunction,
+};
 
-const fragments: FragmentItems = [
-  {
+
+const statementItems: (keyof typeof statementEnumMap)[] = [
+  StatementJpEnum.Output,
+  StatementJpEnum.Input,
+  StatementJpEnum.Condition,
+  StatementJpEnum.ConditionalLoopPreTest,
+  StatementJpEnum.ConditionalLoopPostTest,
+  StatementJpEnum.SequentialIteration,
+  StatementJpEnum.UserDefinedfunction,
+  StatementJpEnum.ExecuteUserDefinedFunction,
+];
+
+const fragments: FragmentItems = statementItems.map((item, index) => ({
     id: uuidv4(),
-    line: StatementJpEnum.Output,
+  line: item,
     children: [],
     index: 0,
     parentId: null,
     depth: 0,
-    statementType: StatementEnum.Output
-  },
-  {
-    id: uuidv4(),
-    line: StatementJpEnum.Input,
-    children: [],
-    index: 0,
-    parentId: null,
-    depth: 0,
-    statementType: StatementEnum.Input
-  },
-  {
-    id: uuidv4(),
-    line: StatementJpEnum.Condition,
-    children: [],
-    index: 0,
-    parentId: null,
-    depth: 0,
-    statementType: StatementEnum.Condition
-  },
-  {
-    id: uuidv4(),
-    line: StatementJpEnum.ConditionalLoopPreTest,
-    children: [],
-    index: 0,
-    parentId: null,
-    depth: 0,
-    statementType: StatementEnum.ConditionalLoopPreTest
-  },
-  {
-    id: uuidv4(),
-    line: StatementJpEnum.ConditionalLoopPostTest,
-    children: [],
-    index: 0,
-    parentId: null,
-    depth: 0,
-    statementType: StatementEnum.ConditionalLoopPostTest
-  },
-  {
-    id: uuidv4(),
-    line: StatementJpEnum.SequentialIteration,
-    children: [],
-    index: 0,
-    parentId: null,
-    depth: 0,
-    statementType: StatementEnum.SequentialIteration
-  },
-  {
-    id: uuidv4(),
-    line: StatementJpEnum.UserDefinedfunction,
-    children: [],
-    index: 0,
-    parentId: null,
-    depth: 0,
-    statementType: StatementEnum.UserDefinedfunction
-  },
-  {
-    id: uuidv4(),
-    line: StatementJpEnum.ExecuteUserDefinedFunction,
-    children: [],
-    index: 0,
-    parentId: null,
-    depth: 0,
-    statementType: StatementEnum.ExecuteUserDefinedFunction
-  },
-]
+  statementType: statementEnumMap[item]
+}));
 
 const measuring = {
   droppable: {
