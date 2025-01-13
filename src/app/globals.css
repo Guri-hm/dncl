@@ -20,10 +20,12 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Noto Sans JP', Arial, Helvetica, sans-serif;
 }
 
-html, body, #__next {
+html,
+body,
+#__next {
   margin: 0;
   padding: 0;
   overflow: hidden;

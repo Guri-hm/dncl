@@ -134,7 +134,7 @@ export default function Home() {
             width={50}
             height={50}
           />
-          <Typography variant="h1" sx={{ fontSize: '1.5rem', color: 'white' }}>
+          <Typography variant="h1" sx={{ fontSize: '1.5rem', color: 'white', fontWeight: 800, padding: 1 }}>
             <ruby style={{ rubyAlign: 'space-around' }}>
               ぎじげんご
               <rp>（</rp><rt>DNCL</rt><rp>）</rp>

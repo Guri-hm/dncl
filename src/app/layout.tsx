@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Head } from 'next/document';
 import localFont from "next/font/local";
 import "./globals.css";
 
@@ -25,6 +26,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
+      <head>
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet" />
+
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
