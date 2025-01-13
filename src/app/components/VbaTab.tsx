@@ -170,7 +170,6 @@ export const VbaTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }
                 return sub;
             }
             if (isStartedSub && depth == 0 && ![ProcessEnum.DefineFunction, ProcessEnum.Defined].includes(Number(node.processIndex)) && nodes[index + 1] == null) {
-                console.log(node.lineTokens)
                 const sub = <Fragment key={node.id}>
                     <ScopeBox nested={true} depth={depth + 1}>
                         <Box className={styles.noCounter}>{cnvToVba({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) })}</Box>
