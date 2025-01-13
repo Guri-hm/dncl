@@ -319,7 +319,8 @@ export const cnvAndOrOperator = (targetString: string) => {
 
 //否定演算子をjavascriptのオペランドに変換
 export const transformNegation = (targetString: string) => {
-  return targetString.replace(/\(([^()]+)\)でない/g, '!($1)').replace(/([^()]+)でない/g, '!($1)');
+
+  return targetString.replace(/\(([^()]+)\)\s*でない/g, '!($1)').replace(/([^()]+)s*でない/g, '!($1)');
 }
 
 // 「÷」記号を使った除算をMath.floorで包む式に変換 
@@ -511,13 +512,21 @@ export const escapeHtml = (unsafe: string) => {
     .replace(/'/g, "&#039;");
 }
 
-export const isValidExpression = (targetString: string) => {
+export const isValidExpression = (targetString: string): { errorMsgArray: string[], hasError: boolean } => {
 
   try {
     new Function(`return ${targetString}`);
-    return true;
+    return { errorMsgArray: [], hasError: false };
   } catch (e) {
-    return false;
+    const error = e as any;
+    let errMsg = error.message;
+    if (errMsg.includes('Unexpected token')) {
+      const regex = /'([^']*)'/;
+      const match = errMsg.match(regex);
+      const extracted = match ? match[1] : null;
+      errMsg = `誤った位置に${extracted.replace('!', '「でない」')}が使われています`
+    }
+    return { errorMsgArray: [errMsg], hasError: true };
   }
 }
 
@@ -858,6 +867,7 @@ export function getUserDefinedFunctionInfoArray(treeItems: TreeItem[]): UserDefi
 
 import Kuroshiro from 'kuroshiro';
 import KuromojiAnalyzer from '@sglkc/kuroshiro-analyzer-kuromoji';
+import { error } from 'console';
 
 export const cnvToRomaji = async (text = '') => {
   const kuroshiro = new Kuroshiro();

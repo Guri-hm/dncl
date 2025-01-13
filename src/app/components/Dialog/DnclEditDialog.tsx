@@ -30,8 +30,6 @@ export function DnclEditDialog(params: Props) {
 
     const [error, setError] = useState<string[]>([]);
 
-    const keyIndexObject = enumToKeyIndexObject(ProcessEnum);
-
     const checkStatement = (data: { [k: string]: string; }, proceccType: ProcessEnum, keyword: keyPrefixEnum, treeItems: TreeItems): boolean => {
 
         //キーワードを含むオブジェクトを取得
@@ -64,6 +62,14 @@ export function DnclEditDialog(params: Props) {
 
         if (statement.trim().length == 0) return true;
 
+        function negateExpressions(input: string) {
+            while (input.includes('でない')) {
+                input = input.replace(/\(([^()]+)\)でない/g, '!($1)');
+                input = input.replace(/([^()]+)でない/g, '!($1)');
+            }
+            return input;
+        }
+
         statement = cnvAndOrOperator(statement);
         statement = transformNegation(statement);
         statement = cnvToDivision(statement);
@@ -85,7 +91,12 @@ export function DnclEditDialog(params: Props) {
         statement = replaceToAmpersand(statement);
 
         //Function関数で実行し、エラーがあるかチェック
-        return isValidExpression(statement);
+        result = isValidExpression(statement);
+        if (result.hasError) {
+            setError(result.errorMsgArray);
+            return false;
+        }
+        return true
     }
 
     const getDnclStatement = (data: { [k: string]: string; }, keyword: keyPrefixEnum): string => {
