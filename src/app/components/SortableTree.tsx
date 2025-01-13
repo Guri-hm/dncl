@@ -111,7 +111,7 @@ export function SortableTree({
   treeItems,
   setTreeItems,
   indicator,
-  indentationWidth = 20,
+  indentationWidth = 30, //ツリー子要素の左インデント
   removable
 }: Props) {
   const [activeId, setActiveId] = useState<string | null>(null);
