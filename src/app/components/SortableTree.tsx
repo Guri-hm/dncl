@@ -71,12 +71,12 @@ const statementItems: (keyof typeof statementEnumMap)[] = [
 ];
 
 const fragments: FragmentItems = statementItems.map((item, index) => ({
-    id: uuidv4(),
+  id: uuidv4(),
   line: item,
-    children: [],
-    index: 0,
-    parentId: null,
-    depth: 0,
+  children: [],
+  index: 0,
+  parentId: null,
+  depth: 0,
   statementType: statementEnumMap[item]
 }));
 
@@ -125,6 +125,8 @@ export function SortableTree({
     setIsClient(true);
   }, []);
 
+  //ツリー要素追加時はこの定数にアイテムが入る
+  const additionItem = fragments.find(({ id }) => id == activeId);
 
   const flattenedItems = useMemo(() => {
     const flattenedTree = flattenTree(treeItems);
@@ -133,7 +135,6 @@ export function SortableTree({
         collapsed && children.length ? [...acc, id] : acc,
       []
     );
-    const additionItem = fragments.find(({ id }) => id == activeId);
     if (additionItem) {
       //要素追加のためのドラッグと判定
       //ここで配列に入れた要素は位置移動とドロップ時の処理で消滅し、同じidをもつ要素がドラッグを受け付けなくなる
@@ -183,6 +184,7 @@ export function SortableTree({
   }, [flattenedItems, offsetLeft]);
 
   const [visible, setVisible] = useState(true);
+  const ref = useRef<any>(null);
 
   if (!isClient) {
     //documentオブジェクトはクライアントサイドでしか利用できないため、サーバサイドのエラーが発生する
@@ -222,8 +224,7 @@ export function SortableTree({
         </Allotment.Pane>
 
         <div className={`${styles.hFull}`} style={{ marginLeft: '17px', marginRight: '5px' }}>
-
-          <Allotment.Pane className={`${styles.rightPane} ${styles.hFull} ${styles.overflowAuto}`} >
+          <Allotment.Pane ref={ref} className={`${styles.rightPane} ${styles.hFull} ${styles.overflowAuto}`} >
 
             <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
               {flattenedItems.map(({ id, children, collapsed, depth, line }) => (
@@ -316,8 +317,18 @@ export function SortableTree({
     document.body.style.setProperty("cursor", "grabbing");
   }
 
-  function handleDragMove({ delta }: DragMoveEvent) {
-    setOffsetLeft(delta.x);
+  function handleDragMove({ delta, active }: DragMoveEvent) {
+    let adjustmentVal = 0;
+
+    //要素追加時のみドラッグ差分値を修正
+    if (ref.current && additionItem) {
+      const rect = ref.current.getBoundingClientRect();
+      adjustmentVal = rect.left;
+      // const x = active.rect.current.translated?.left ?? 0;
+      // adjustmentVal = rect.left - (x - 80);
+    }
+
+    setOffsetLeft(delta.x - adjustmentVal);
   }
 
   function handleDragOver({ over }: DragOverEvent) {
