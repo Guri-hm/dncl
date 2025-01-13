@@ -1,9 +1,9 @@
 // components/ScopeBox.tsx
 import React from 'react';
-import Box from '@mui/material/Box';
+import Box, { BoxProps } from '@mui/material/Box';
 import { styled } from '@mui/system';
 
-interface ScopeBoxProps {
+interface ScopeBoxProps extends BoxProps {
     children: React.ReactNode;
     nested?: boolean;
     depth: number;
