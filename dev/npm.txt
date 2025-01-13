@@ -12,6 +12,8 @@ npm i wanakana --legacy-peer-deps
 npm install --save-dev @types/kuromoji --legacy-peer-deps
 npm install kuroshiro --legacy-peer-deps
 npm install @sglkc/kuroshiro-analyzer-kuromoji --legacy-peer-deps
+npm install eslint --legacy-peer-deps
+npm install @types/eslint --legacy-peer-deps
 
 *allotmentのバージョンが古く、「 --legacy-peer-deps」を付与してインストールした
 ⇒他のライブラリのインストール時にもこのオプション付与を要求されるようになった

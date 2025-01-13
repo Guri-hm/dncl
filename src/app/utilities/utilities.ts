@@ -927,7 +927,6 @@ export function getUserDefinedFunctionInfoArray(treeItems: TreeItem[]): UserDefi
 
 import Kuroshiro from 'kuroshiro';
 import KuromojiAnalyzer from '@sglkc/kuroshiro-analyzer-kuromoji';
-import { error } from 'console';
 
 export const cnvToRomaji = async (text = '') => {
   const kuroshiro = new Kuroshiro();
@@ -935,6 +934,18 @@ export const cnvToRomaji = async (text = '') => {
   const romaji = await kuroshiro.convert(text, { to: 'romaji' });
   return romaji;
 };
+// export const getESLintResult = async (text = '') => {
+//   const { ESLint } = await import('eslint');
+//   const eslint = new ESLint();
+//   const results = await eslint.lintText(`${text}`);
+//   if (results.length > 0) {
+//     const formatter = await eslint.loadFormatter("stylish");
+//     const resultText = formatter.format(results, [] as any);
+//     console.log(resultText);
+//   } {
+//     console.log("No linting errors found.");
+//   }
+// };
 
 export const containsJapanese = (text: string): boolean => {
   const kanjiRegex = /[\u4E00-\u9FFF]/; // 漢字

@@ -10,6 +10,7 @@ import Box from '@mui/material/Box';
 import { TreeItems } from "../types";
 import Image from "next/image";
 import Typography from '@mui/material/Typography';
+import { ConsoleBox } from "../components/ConsoleBox";
 
 const initialItems: TreeItems = [
   {
@@ -149,7 +150,7 @@ export default function Home() {
           <SortableTree treeItems={items} setTreeItems={setItems} collapsible indicator removable ></SortableTree>
         </Allotment.Pane>
         <Allotment.Pane className={`${styles.bgStone50} ${styles.marginTop16}`}>
-          <Box sx={{ margin: '8px' }}>ここにコードの結果を出力する</Box>
+          <ConsoleBox treeItems={items} sx={{ margin: '8px' }}>ここにコードの結果を出力する</ConsoleBox>
         </Allotment.Pane>
       </Allotment >
     </StyledDiv >
