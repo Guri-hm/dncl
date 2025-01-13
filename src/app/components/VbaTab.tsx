@@ -1,8 +1,8 @@
 import { Box, BoxProps } from "@mui/material";
 import { FC, useEffect, useState, Fragment } from "react";
 import { TreeItem, TreeItems } from "../types";
-import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, ComparisonOperatorDncl, LoopEnum, ArithmeticOperator } from "../enum";
-import { cnvToRomaji, containsJapanese, getEnumIndex } from "../utilities";
+import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, ComparisonOperatorDncl, LoopEnum, ArithmeticOperator, ArithmeticOperatorPython, ArithmeticOperatorVba } from "../enum";
+import { tryParseToVbaFunc } from "../utilities";
 import ScopeBox from "./ScopeBox";
 import styles from './tab.module.css';
 
@@ -11,11 +11,36 @@ interface CustomBoxProps extends BoxProps {
     treeItems: TreeItems;
 }
 
+
+const cnvToken = (token: string): string => {
+    //VBAのオペランドに変換
+    const replaceTexts = (targetString: string) => {
+        // 置換規則を定義
+        const replacements = [
+            { regex: /\s*\|\|\s*/g, replacement: ' Or ' },
+            { regex: /\s*\&\&\s*/g, replacement: ' And ' },
+            { regex: /!\(/g, replacement: 'Not (' },
+            { regex: /!([^=])/g, replacement: 'Not $1' },
+            { regex: ArithmeticOperator.DivisionOperatorQuotient, replacement: ArithmeticOperatorVba.DivisionOperatorQuotient },
+            { regex: ComparisonOperator.EqualToOperator, replacement: SimpleAssignmentOperator.Other },
+            { regex: ArithmeticOperator.DivisionOperatorRemaining, replacement: ArithmeticOperatorVba.DivisionOperatorRemaining },
+        ];
+
+        replacements.forEach(({ regex, replacement }) => {
+            targetString = targetString.replace(regex, replacement);
+        });
+
+        return targetString;
+    }
+    token = replaceTexts(token);
+    const { convertedStr } = tryParseToVbaFunc(token);
+    return convertedStr;
+}
+
 const cnvToVba = async (statement: { lineTokens: string[], processIndex: number }) => {
 
-    const lineTokens: string[] = statement.lineTokens;
+    const lineTokens: string[] = statement.lineTokens.map(token => { return cnvToken(token) });
     let tmpLine: string = '';
-
 
     switch (statement.processIndex) {
         case ProcessEnum.SetValToVariableOrArray:
@@ -33,11 +58,11 @@ const cnvToVba = async (statement: { lineTokens: string[], processIndex: number 
             break;
 
         case ProcessEnum.If:
-            tmpLine = `${ConditionEnum.VbaIf} ${lineTokens[0].replace(ComparisonOperatorDncl.EqualToOperator, ComparisonOperator.EqualToOperator)} ${ConditionEnum.VbaThen}`
+            tmpLine = `${ConditionEnum.VbaIf} ${lineTokens[0]} ${ConditionEnum.VbaThen}`
             break;
 
         case ProcessEnum.ElseIf:
-            tmpLine = `${ConditionEnum.VbaElseIf} ${lineTokens[0].replace(ComparisonOperatorDncl.EqualToOperator, ComparisonOperator.EqualToOperator)} ${ConditionEnum.VbaThen}`
+            tmpLine = `${ConditionEnum.VbaElseIf} ${lineTokens[0]} ${ConditionEnum.VbaThen}`
 
             break;
 
@@ -82,11 +107,11 @@ const cnvToVba = async (statement: { lineTokens: string[], processIndex: number 
 
         case ProcessEnum.DefineFunction:
 
-            tmpLine = `${UserDefinedFunc.VbaFunction} ${lineTokens[0].replace(' ', '')}`
+            tmpLine = `${UserDefinedFunc.VbaFunction} ${lineTokens[0]}`
             break;
 
         case ProcessEnum.ExecuteUserDefinedFunction:
-            tmpLine = `${lineTokens[0].replace(' ', '')}`
+            tmpLine = `${lineTokens[0]}`
             break;
         case ProcessEnum.Sub:
             tmpLine = `${UserDefinedFunc.VbaSub}${BraketSymbolEnum.LeftBraket}${BraketSymbolEnum.RigthBraket}`

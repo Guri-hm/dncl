@@ -444,6 +444,66 @@ export const tryParseToPyFunc = (targetString: string): { errorMsgArray: string[
 
 }
 
+export const tryParseToVbaFunc = (targetString: string): { errorMsgArray: string[]; hasError: boolean; convertedStr: string } => {
+
+  let errorMsgArray: string[] = [];
+
+  // 文字列を指数形式に変換する関数
+  function exponentiateString(str: string) {
+    // "Exponentiation" で始まる部分を見つけて置換
+    const result = str.replace(/Exponentiation\s*\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, (match, base, exponent) => {
+      return `(${base}^${exponent})`;
+    });
+    return result;
+  }
+
+  function convertRandomString(str: string): string {
+    // 正規表現を使って "Random(m,n)" の部分を検出
+    const result = str.replace(/Random\s*\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, (match, m, n) => {
+      const numM = parseInt(m, 10);
+      const numN = parseInt(n, 10);
+      if (numM > numN) {
+        errorMsgArray.push(`第1引数の値は第2引数の値よりも小さくしてください`);
+        return '';  // mがnより大きい場合は空文字を返す
+      }
+      return `Int((${numN} - ${numM} + 1) * Rnd + ${numM})`;
+    });
+    return result;
+  }
+
+  //無理やりワンライナーで記述
+  function convertBinaryFunctions(str: string) {
+    return str.replace(/Binary\s*\(\s*([a-zA-Z0-9_]+)\s*\)/g, (match, variable) => {
+      return `IIf(${variable} = 0, "0", Mid(Application.WorksheetFunction.Dec2Bin(${variable}), 1))`;
+    });
+  }
+
+  function replaceOddFunctions(str: string) {
+    return str.replace(/Odd\s*\(\s*([a-zA-Z0-9_]+)\s*\)/g, (match, variable) => {
+      return `${variable} Mod 2 <> 0`;
+    });
+  }
+
+  function removeWord(str: string, removeWord: string) {
+    const regex = new RegExp(`\\b${removeWord}\\b`, 'g');
+    return str.replace(regex, '').trim();
+  }
+  targetString = squareString(targetString);
+  targetString = exponentiateString(targetString);
+  targetString = convertRandomString(targetString);
+  targetString = replaceOddFunctions(targetString);
+  targetString = convertBinaryFunctions(targetString);
+  targetString = removeWord(targetString, UserDefinedFuncDncl.UserDefined);
+
+  //異常値があれば空文字を返すようにしている
+  if (targetString == "") {
+
+    return { errorMsgArray: errorMsgArray, hasError: true, convertedStr: targetString };
+  }
+  return { errorMsgArray: [], hasError: false, convertedStr: targetString };
+
+}
+
 export const checkBraketPair = (targetStringArray: string[]): { errorMsgArray: string[]; hasError: boolean; } => {
 
   let errorMsgArray: string[] = [];

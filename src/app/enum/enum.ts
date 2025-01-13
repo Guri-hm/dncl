@@ -18,6 +18,10 @@ export enum ArithmeticOperatorDncl {
 export enum ArithmeticOperatorPython {
   DivisionOperatorQuotient = '//',
 }
+export enum ArithmeticOperatorVba {
+  DivisionOperatorQuotient = '\\',
+  DivisionOperatorRemaining = 'Mod',
+}
 export enum ComparisonOperator {
   EqualToOperator = '==',
   NotEqualToOperator = '!=',
