@@ -1,6 +1,8 @@
 .codeContainer {
     counter-reset: linenumber;
     padding-left: 2.5em;
+    font-size: 1rem;
+    line-height: 1.5;
     /* 行番号のスペースを確保 */
 }
 

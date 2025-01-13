@@ -302,7 +302,7 @@ export function checkParenthesesBalance(strArray: string[]): { isBalanced: boole
 }
 
 //javascriptのオペランドに変換
-export const cnvAndOrToJsOperator = (targetString: string) => {
+export const cnvAndOrOperator = (targetString: string) => {
   // 置換規則を定義
   const replacements = [
     { regex: /\s*または\s*/g, replacement: ' || ' },
@@ -327,19 +327,34 @@ export const cnvToDivision = (targetString: string): string => {
   return targetString.replace(/(\w+)\s*÷\s*(\w+)/g, 'Math.floor($1 / $2)');
 }
 
+// 文字列を二乗する形式に変換する関数
+function squareString(str: string) {
+  // "Square" で始まる部分を見つけて置換
+  const result = str.replace(/Square\s*\(\s*([a-zA-Z0-9_]+)\s*\)/g, (match, num) => {
+    const number = parseInt(num, 10);
+    return `(${number} * ${number})`;
+  });
+  return result;
+}
+// 文字列を指数形式に変換する関数
+function exponentiateString(str: string) {
+  // "Exponentiation" で始まる部分を見つけて置換
+  const result = str.replace(/Exponentiation\s*\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, (match, base, exponent) => {
+    return `(${base}**${exponent})`;
+  });
+  return result;
+}
+function replaceOddFunctions(str: string) {
+  return str.replace(/Odd\s*\(\s*([a-zA-Z0-9_]+)\s*\)/g, (match, variable) => {
+    // console.log(`Match: ${match}`);
+    // console.log(`Variable: ${variable}`);
+    return `${variable} % 2 !== 0`;
+  });
+}
+
 export const tryParseToJsFunction = (targetString: string): { errorMsgArray: string[]; hasError: boolean; convertedStr: string } => {
 
   let errorMsgArray: string[] = [];
-
-  // 文字列を二乗する形式に変換する関数
-  function squareString(str: string) {
-    // "Square" で始まる部分を見つけて置換
-    const result = str.replace(/Square\s*\(\s*([a-zA-Z0-9_]+)\s*\)/g, (match, num) => {
-      const number = parseInt(num, 10);
-      return `(${number} * ${number})`;
-    });
-    return result;
-  }
 
   // "Random(m,n)" という文字列をJavaScriptの乱数生成コードに変換する関数
   function convertRandomString(str: string): string {
@@ -356,26 +371,55 @@ export const tryParseToJsFunction = (targetString: string): { errorMsgArray: str
     return result;
   }
 
-  // 文字列を指数形式に変換する関数
-  function exponentiateString(str: string) {
-    // "Exponentiation" で始まる部分を見つけて置換
-    const result = str.replace(/Exponentiation\s*\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, (match, base, exponent) => {
-      return `(${base}**${exponent})`;
+  function convertBinaryFunctions(str: string) {
+    return str.replace(/Binary\s*\(\s*([a-zA-Z0-9_]+)\s*\)/g, (match, variable) => {
+      return `(${variable}).toString(2)`;
+    });
+  }
+
+  function removeWord(str: string, removeWord: string) {
+    const regex = new RegExp(`\\b${removeWord}\\b`, 'g');
+    return str.replace(regex, '').trim();
+  }
+  targetString = squareString(targetString);
+  targetString = exponentiateString(targetString);
+  targetString = convertRandomString(targetString);
+  targetString = replaceOddFunctions(targetString);
+  targetString = convertBinaryFunctions(targetString);
+  targetString = removeWord(targetString, UserDefinedFuncDncl.UserDefined);
+
+  //異常値があれば空文字を返すようにしている
+  if (targetString == "") {
+
+    return { errorMsgArray: errorMsgArray, hasError: true, convertedStr: targetString };
+  }
+  return { errorMsgArray: [], hasError: false, convertedStr: targetString };
+
+}
+
+export const tryParseToPyFunc = (targetString: string): { errorMsgArray: string[]; hasError: boolean; convertedStr: string } => {
+
+  let errorMsgArray: string[] = [];
+
+  // "Random(m,n)" という文字列をPythonの乱数生成コードに変換する関数
+  //randomモジューラのimportが必要
+  function convertRandomString(str: string): string {
+    // 正規表現を使って "Random(m,n)" の部分を検出
+    const result = str.replace(/Random\s*\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, (match, m, n) => {
+      const numM = parseInt(m, 10);
+      const numN = parseInt(n, 10);
+      if (numM > numN) {
+        errorMsgArray.push(`第1引数の値は第2引数の値よりも小さくしてください`);
+        return '';  // mがnより大きい場合は空文字を返す
+      }
+      return `random.randint(${numM}, ${numN}`;
     });
     return result;
   }
 
-  function replaceOddFunctions(str: string) {
-    return str.replace(/Odd\s*\(\s*([a-zA-Z0-9_]+)\s*\)/g, (match, variable) => {
-      // console.log(`Match: ${match}`);
-      // console.log(`Variable: ${variable}`);
-      return `${variable} % 2 !== 0`;
-    });
-  }
-
   function convertBinaryFunctions(str: string) {
     return str.replace(/Binary\s*\(\s*([a-zA-Z0-9_]+)\s*\)/g, (match, variable) => {
-      return `(${variable}).toString(2)`;
+      return `bin(${variable})`;
     });
   }
 
@@ -719,8 +763,9 @@ export const cnvObjToArray = (obj: { [k: string]: string; }, operandsMaxIndex: n
 
     }
 
-    pushIfNotEmpty(strArray, toEmptyIfNull(sanitizedData[`${keyword}_${i}_${keyPrefixEnum.Function}`]));
-    pushIfNotEmpty(strArray, toEmptyIfNull(sanitizedData[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`]));
+    //関数名
+    let functionName = `${toEmptyIfNull(sanitizedData[`${keyword}_${i}_${keyPrefixEnum.Function}`])}${toEmptyIfNull(sanitizedData[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`])}`
+
     //引数
     let tmpArguments: string[] = [];
     for (let j = 0; j < Number(toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}`])); j++) {
@@ -728,7 +773,9 @@ export const cnvObjToArray = (obj: { [k: string]: string; }, operandsMaxIndex: n
     }
     const joinedStr = tmpArguments.join(",");
     if (joinedStr.length > 0) {
-      pushIfNotEmpty(strArray, `(${joinedStr})`);
+      pushIfNotEmpty(strArray, `${functionName}(${joinedStr})`);
+    } else {
+      pushIfNotEmpty(strArray, `${functionName}`);
     }
 
     pushIfNotEmpty(strArray, toEmptyIfNull(sanitizedData[`${keyword}_${i}_${keyPrefixEnum.Suffix}`]));

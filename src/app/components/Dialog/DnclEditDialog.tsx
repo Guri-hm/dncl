@@ -10,8 +10,8 @@ import { StatementName } from './StatementName';
 import { StatementDesc } from './StatementDesc';
 import { EditorBox } from './EditorBox';
 import { keyPrefixEnum } from './Enum';
-import { ArithmeticOperatorDncl, ArithmeticOperatorJs, BooleanDncl, BooleanJpDncl, ComparisonOperatorDncl, ComparisonOperatorJs, SimpleAssignmentOperator, ReturnFuncDncl, ReturnFuncJpDncl, StatementEnum, UserDefinedFuncDncl, UserDefinedFuncJpDncl, VoidFuncDncl, VoidFuncJpDncl, ProcessEnum } from '@/app/enum';
-import { checkBraketPair, cnvAndOrToJsOperator, cnvObjToArray, cnvToDivision, enumToKeyIndexObject, escapeHtml, getOperandsMaxIndex, isValidExpression, replaceToAmpersand, sanitizeInput, transformNegation, tryParseToJsFunction, updateToWithSquareBrackets, ValidateObjValue } from '@/app/utilities';
+import { ArithmeticOperatorDncl, ArithmeticOperator, BooleanDncl, BooleanJpDncl, ComparisonOperatorDncl, ComparisonOperator, SimpleAssignmentOperator, ReturnFuncDncl, ReturnFuncJpDncl, StatementEnum, UserDefinedFuncDncl, UserDefinedFuncJpDncl, VoidFuncDncl, VoidFuncJpDncl, ProcessEnum } from '@/app/enum';
+import { checkBraketPair, cnvAndOrOperator, cnvObjToArray, cnvToDivision, enumToKeyIndexObject, escapeHtml, getOperandsMaxIndex, isValidExpression, replaceToAmpersand, sanitizeInput, transformNegation, tryParseToJsFunction, updateToWithSquareBrackets, ValidateObjValue } from '@/app/utilities';
 import { ErrorMsgBox } from './ErrorMsgBox';
 
 interface Props extends DnclEditorProps { };
@@ -64,7 +64,7 @@ export function DnclEditDialog(params: Props) {
 
         if (statement.trim().length == 0) return true;
 
-        statement = cnvAndOrToJsOperator(statement);
+        statement = cnvAndOrOperator(statement);
         statement = transformNegation(statement);
         statement = cnvToDivision(statement);
         const cnvResult = tryParseToJsFunction(statement);
@@ -101,11 +101,11 @@ export function DnclEditDialog(params: Props) {
 
         for (let i = 0; i < strArray.length; i++) {
             strArray[i] = strArray[i]
-                .replace(ComparisonOperatorJs.EqualToOperator, ComparisonOperatorDncl.EqualToOperator)
-                .replace(ComparisonOperatorJs.NotEqualToOperator, ComparisonOperatorDncl.NotEqualToOperator)
-                .replace(ComparisonOperatorJs.GreaterThanOrEqualToOperator, ComparisonOperatorDncl.GreaterThanOrEqualToOperator)
-                .replace(ComparisonOperatorJs.LessThanOrEqualToOperator, ComparisonOperatorDncl.LessThanOrEqualToOperator)
-                .replace(ArithmeticOperatorJs.MultiplicationOperator, ArithmeticOperatorDncl.MultiplicationOperator)
+                .replace(ComparisonOperator.EqualToOperator, ComparisonOperatorDncl.EqualToOperator)
+                .replace(ComparisonOperator.NotEqualToOperator, ComparisonOperatorDncl.NotEqualToOperator)
+                .replace(ComparisonOperator.GreaterThanOrEqualToOperator, ComparisonOperatorDncl.GreaterThanOrEqualToOperator)
+                .replace(ComparisonOperator.LessThanOrEqualToOperator, ComparisonOperatorDncl.LessThanOrEqualToOperator)
+                .replace(ArithmeticOperator.MultiplicationOperator, ArithmeticOperatorDncl.MultiplicationOperator)
                 .replace(ReturnFuncDncl.Square, ReturnFuncJpDncl.Square)
                 .replace(ReturnFuncDncl.Exponentiation, ReturnFuncJpDncl.Exponentiation)
                 .replace(ReturnFuncDncl.Random, ReturnFuncJpDncl.Random)
@@ -117,6 +117,24 @@ export function DnclEditDialog(params: Props) {
         }
 
         return strArray.join(' ')
+    }
+    const getTokens = (data: { [k: string]: string; }, keyword: keyPrefixEnum): string => {
+
+        //キーワードを含むオブジェクトを取得
+        const obj = Object.fromEntries(Object.entries(data).filter(([key, value]) => key.includes(keyword)));
+        //オペランドの数を取得
+        const operandsMaxIndex = getOperandsMaxIndex(obj, keyword)
+        //添字は前後に[]をつける
+        const updatedObj = updateToWithSquareBrackets(obj);
+
+        let strArray: string[] = cnvObjToArray(updatedObj, operandsMaxIndex, keyword);
+
+        let line = strArray.join(' ');
+
+        line = cnvAndOrOperator(line);
+        line = transformNegation(line);
+        //商と余りは言語ごとに処理が異なるので別途処理
+        return line;
     }
 
     const handleClose = () => {
@@ -163,9 +181,9 @@ export function DnclEditDialog(params: Props) {
 
                         let processPhrase = "";
                         let tokens: string[] = [];
-                        tokens.push(leftside);
-                        tokens.push(operator);
-                        tokens.push(rightside);
+                        tokens.push(getTokens(formJson, keyPrefixEnum.LeftSide));
+                        tokens.push(params.type == StatementEnum.Input ? SimpleAssignmentOperator.Other : '');
+                        tokens.push(getTokens(formJson, keyPrefixEnum.RigthSide));
 
                         switch (Number(formJson.processIndex)) {
                             case ProcessEnum.SetValToVariableOrArray:
@@ -236,7 +254,6 @@ export function DnclEditDialog(params: Props) {
                                 break;
                         }
                         tokens = tokens.filter(token => token != '');
-
                         params.onSubmit({ newItem: params.item, statementText: processPhrase, tokens: tokens, processIndex: Number(formJson.processIndex), overIndex: params.overIndex });
                         handleClose();
                     },

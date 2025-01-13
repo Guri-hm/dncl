@@ -1,7 +1,7 @@
 import { Box, BoxProps } from "@mui/material";
 import { FC, useEffect, useState, Fragment } from "react";
 import { TreeItem, TreeItems } from "../types";
-import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperatorJs, ComparisonOperatorDncl, LoopEnum, ArithmeticOperatorJs } from "../enum";
+import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, ComparisonOperatorDncl, LoopEnum, ArithmeticOperator } from "../enum";
 import { cnvToRomaji, containsJapanese, getEnumIndex } from "../utilities";
 import ScopeBox from "./ScopeBox";
 import styles from './tab.module.css';
@@ -33,11 +33,11 @@ const cnvToVba = async (statement: { lineTokens: string[], processIndex: number 
             break;
 
         case ProcessEnum.If:
-            tmpLine = `${ConditionEnum.VbaIf} ${lineTokens[0].replace(ComparisonOperatorDncl.EqualToOperator, ComparisonOperatorJs.EqualToOperator)} ${ConditionEnum.VbaThen}`
+            tmpLine = `${ConditionEnum.VbaIf} ${lineTokens[0].replace(ComparisonOperatorDncl.EqualToOperator, ComparisonOperator.EqualToOperator)} ${ConditionEnum.VbaThen}`
             break;
 
         case ProcessEnum.ElseIf:
-            tmpLine = `${ConditionEnum.VbaElseIf} ${lineTokens[0].replace(ComparisonOperatorDncl.EqualToOperator, ComparisonOperatorJs.EqualToOperator)} ${ConditionEnum.VbaThen}`
+            tmpLine = `${ConditionEnum.VbaElseIf} ${lineTokens[0].replace(ComparisonOperatorDncl.EqualToOperator, ComparisonOperator.EqualToOperator)} ${ConditionEnum.VbaThen}`
 
             break;
 
@@ -70,7 +70,7 @@ const cnvToVba = async (statement: { lineTokens: string[], processIndex: number 
         case ProcessEnum.ForIncrement:
         case ProcessEnum.ForDecrement:
             tmpLine = `${LoopEnum.VbaFor} ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]} ${LoopEnum.VbaTo} ${lineTokens[2]}
-                    ${LoopEnum.VbaStep} ${statement.processIndex == ProcessEnum.ForIncrement ? '' : ArithmeticOperatorJs.SubtractionOperator}${lineTokens[3]}`;
+                    ${LoopEnum.VbaStep} ${statement.processIndex == ProcessEnum.ForIncrement ? '' : ArithmeticOperator.SubtractionOperator}${lineTokens[3]}`;
             break;
 
         case ProcessEnum.EndFor:
@@ -131,17 +131,20 @@ export const VbaTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }
 
         const reactNodes = nodes.map((node, index) => {
             [ProcessEnum.DefineFunction, ProcessEnum.Defined]
+
+            //Subプロシージャの開始と終了を出力
             if (!isStartedSub && depth == 0 && ![ProcessEnum.DefineFunction, ProcessEnum.Defined].includes(Number(node.processIndex))) {
+                //再帰的に呼び出すときに分岐させる
                 isStartedSub = true;
-                return (
-                    <Fragment key={node.id}>
-                        <Box className={(index == 0 && depth != 0) ? styles.noCounter : ""}>{cnvToVba({ lineTokens: [], processIndex: ProcessEnum.Sub })}</Box>
-                        <ScopeBox nested={true} depth={depth + 1}>
-                            {renderNodes([node], depth + 1)}
-                        </ScopeBox>
-                        <Box>{cnvToVba({ lineTokens: [], processIndex: ProcessEnum.EndSub })}</Box>
-                    </Fragment>
-                )
+                const sub = <Fragment key={node.id}>
+                    <Box className={(index == 0 && depth != 0) ? styles.noCounter : ""}>{cnvToVba({ lineTokens: [], processIndex: ProcessEnum.Sub })}</Box>
+                    <ScopeBox nested={true} depth={depth + 1}>
+                        {renderNodes([node], depth + 1)}
+                    </ScopeBox>
+                    <Box>{cnvToVba({ lineTokens: [], processIndex: ProcessEnum.EndSub })}</Box>
+                </Fragment>
+                isStartedSub = false;
+                return sub;
             }
 
             return (
@@ -163,8 +166,7 @@ export const VbaTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }
 
     return (
         <Box className={styles.codeContainer} sx={{
-            ...sx,
-            fontSize: '1rem', lineHeight: 1.5
+            ...sx
         }} {...props} >
             {nodes}
         </Box>

@@ -1,8 +1,8 @@
 import { Box, BoxProps } from "@mui/material";
 import { FC, useEffect, useState, Fragment } from "react";
 import { TreeItems } from "../types";
-import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperatorJs, ComparisonOperatorDncl, LoopEnum, ArithmeticOperatorJs } from "../enum";
-import { cnvToRomaji, containsJapanese, getEnumIndex } from "../utilities";
+import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, LoopEnum, ArithmeticOperator } from "../enum";
+import { cnvToDivision, cnvToRomaji, containsJapanese, getEnumIndex, tryParseToJsFunction } from "../utilities";
 import ScopeBox from "./ScopeBox";
 import styles from './tab.module.css';
 
@@ -11,11 +11,16 @@ interface CustomBoxProps extends BoxProps {
     treeItems: TreeItems;
 }
 
+const cnvToken = (token: string): string => {
+    token = cnvToDivision(token);
+    const { convertedStr } = tryParseToJsFunction(token);
+    return convertedStr;
+}
+
 const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }) => {
 
-    const lineTokens: string[] = statement.lineTokens;
+    const lineTokens: string[] = statement.lineTokens.map(token => { return cnvToken(token) });
     let tmpLine: string = '';
-
 
     switch (statement.processIndex) {
         case ProcessEnum.SetValToVariableOrArray:
@@ -24,7 +29,7 @@ const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }
         case ProcessEnum.Increment:
         case ProcessEnum.Decrement:
 
-            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[2]};`
+            tmpLine = `${lineTokens[0]} ${lineTokens[1]} ${lineTokens[2]};`
             break;
 
         case ProcessEnum.Output:
@@ -33,11 +38,11 @@ const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }
             break;
 
         case ProcessEnum.If:
-            tmpLine = `${ConditionEnum.JsPythonIf} ${BraketSymbolEnum.LeftBraket}${lineTokens[0].replace(ComparisonOperatorDncl.EqualToOperator, ComparisonOperatorJs.EqualToOperator)}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
+            tmpLine = `${ConditionEnum.JsPythonIf} ${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
             break;
 
         case ProcessEnum.ElseIf:
-            tmpLine = `${BraketSymbolEnum.CloseBrace}${ConditionEnum.JsElseIf}${BraketSymbolEnum.LeftBraket}${lineTokens[0].replace(ComparisonOperatorDncl.EqualToOperator, ComparisonOperatorJs.EqualToOperator)}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
+            tmpLine = `${BraketSymbolEnum.CloseBrace}${ConditionEnum.JsElseIf}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
 
             break;
 
@@ -73,20 +78,20 @@ const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }
         case ProcessEnum.ForDecrement:
             tmpLine = `${LoopEnum.JsPythonFor} ${BraketSymbolEnum.LeftBraket}
             ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]}; 
-            ${lineTokens[0]} ${ComparisonOperatorJs.LessThanOrEqualToOperator} ${lineTokens[2]}; 
-            ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[0]} ${statement.processIndex == ProcessEnum.ForIncrement ? ArithmeticOperatorJs.AdditionOperator : ArithmeticOperatorJs.SubtractionOperator} ${lineTokens[3]}${BraketSymbolEnum.RigthBraket} ${BraketSymbolEnum.OpenBrace}`;
+            ${lineTokens[0]} ${ComparisonOperator.LessThanOrEqualToOperator} ${lineTokens[2]}; 
+            ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[0]} ${statement.processIndex == ProcessEnum.ForIncrement ? ArithmeticOperator.AdditionOperator : ArithmeticOperator.SubtractionOperator} ${lineTokens[3]}${BraketSymbolEnum.RigthBraket} ${BraketSymbolEnum.OpenBrace}`;
             break;
 
         case ProcessEnum.DefineFunction:
 
-            tmpLine = `${UserDefinedFunc.Js} ${lineTokens[0].replace(' ', '')} ${BraketSymbolEnum.OpenBrace}`
+            tmpLine = `${UserDefinedFunc.Js} ${lineTokens[0]} ${BraketSymbolEnum.OpenBrace}`
             if (containsJapanese(tmpLine)) {
                 tmpLine = await cnvToRomaji(tmpLine);
             }
             break;
 
         case ProcessEnum.ExecuteUserDefinedFunction:
-            tmpLine = `${lineTokens[0].replace(' ', '')};`
+            tmpLine = `${lineTokens[0]};`
             if (containsJapanese(tmpLine)) {
                 tmpLine = await cnvToRomaji(tmpLine);
             }
@@ -111,7 +116,7 @@ export const JsTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props })
             setShouldRunEffect(true);
         }, 1000); // 1秒後に実行
         return () => clearTimeout(timer); // クリーンアップ
-    }, [treeItems]);
+    }, []);
 
     useEffect(() => {
         if (shouldRunEffect) {
@@ -138,8 +143,7 @@ export const JsTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props })
 
     return (
         <Box className={styles.codeContainer} sx={{
-            ...sx,
-            fontSize: '1rem', lineHeight: 1.5
+            ...sx
         }} {...props} >
             {nodes}
         </Box>

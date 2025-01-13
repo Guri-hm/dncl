@@ -44,7 +44,7 @@ import "./alloment-custom.css";
 import TabsBox from "./TabsBox";
 import { JsTab } from "./JsTab";
 import { PythonTab } from "./PythonTab";
-import DnclTab from "./DnclTab";
+import { DnclTab } from "./DnclTab";
 import { VbaTab } from "./VbaTab";
 
 
@@ -316,7 +316,7 @@ export function SortableTree({
 
           <Allotment.Pane className={`${styles.hFull}`}>
             <TabsBox tabLabels={['DNCL']}>
-              <DnclTab items={treeItems}></DnclTab>
+              <DnclTab treeItems={treeItems}></DnclTab>
             </TabsBox>
           </Allotment.Pane>
         </div>

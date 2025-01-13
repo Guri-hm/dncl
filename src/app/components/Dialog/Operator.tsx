@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Box from '@mui/material/Box';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { AndOrOperatorJpArrayForDncl, ArithmeticOperatorJs, ComparisonOperatorJs, NegationOperatorJpArray, OperationEnum } from '@/app/enum';
+import { AndOrOperatorJpArrayForDncl, ArithmeticOperator, ComparisonOperator, NegationOperatorJpArray, OperationEnum } from '@/app/enum';
 import { ReactElement } from "react";
 import IconButton from '@mui/material/IconButton';
 import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon';
@@ -199,7 +199,7 @@ export function Operator({ type, name = "", parentIndex = 0, event, ...props }: 
         newIndex = 0;
       }
       SvgIconButton = ArithmeticOperatorArray[newIndex];
-      enumValues = Object.values(ArithmeticOperatorJs);
+      enumValues = Object.values(ArithmeticOperator);
       elms = <>
         <IconButton sx={{ padding: 0 }} color="primary" aria-label="arithmetic-operation">
           <SvgIconButton onClick={handleOnClick}></SvgIconButton>
@@ -213,7 +213,7 @@ export function Operator({ type, name = "", parentIndex = 0, event, ...props }: 
         newIndex = 0;
       }
       SvgIconButton = ComparisonOperatorArray[newIndex];
-      enumValues = Object.values(ComparisonOperatorJs);
+      enumValues = Object.values(ComparisonOperator);
       elms = <>
         <IconButton sx={{ padding: 0 }} color="primary" aria-label="comparison-operation">
           <SvgIconButton onClick={handleOnClick}></SvgIconButton>

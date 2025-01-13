@@ -4,7 +4,7 @@ export enum SimpleAssignmentOperator {
   Other = '=',
 }
 
-export enum ArithmeticOperatorJs {
+export enum ArithmeticOperator {
   AdditionOperator = '+',
   SubtractionOperator = '-',
   MultiplicationOperator = '*',
@@ -15,7 +15,10 @@ export enum ArithmeticOperatorJs {
 export enum ArithmeticOperatorDncl {
   MultiplicationOperator = '×',
 }
-export enum ComparisonOperatorJs {
+export enum ArithmeticOperatorPython {
+  DivisionOperatorQuotient = '//',
+}
+export enum ComparisonOperator {
   EqualToOperator = '==',
   NotEqualToOperator = '!=',
   GreaterThanOperator = '>',
