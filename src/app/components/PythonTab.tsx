@@ -11,8 +11,26 @@ interface CustomBoxProps extends BoxProps {
     treeItems: TreeItems;
 }
 
+//Pythonのオペランドに変換
+export const cnvLogicalOperators = (targetString: string) => {
+    // 置換規則を定義
+    const replacements = [
+        { regex: /\s*\|\|\s*/g, replacement: ' or ' },
+        { regex: /\s*\&\&\s*/g, replacement: ' and ' },
+        { regex: /!\(/g, replacement: 'not (' },
+        { regex: /!([^=])/g, replacement: 'not $1' }
+    ];
+
+    replacements.forEach(({ regex, replacement }) => {
+        targetString = targetString.replace(regex, replacement);
+    });
+
+    return targetString;
+}
+
 const cnvToken = (token: string): string => {
     token = token.replace(ArithmeticOperator.DivisionOperatorQuotient, ArithmeticOperatorPython.DivisionOperatorQuotient)
+    token = cnvLogicalOperators(token);
     const { convertedStr } = tryParseToPyFunc(token);
     return convertedStr;
 }
