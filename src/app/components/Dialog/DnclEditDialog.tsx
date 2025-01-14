@@ -13,6 +13,7 @@ import { keyPrefixEnum } from './Enum';
 import { ArithmeticOperatorDncl, ArithmeticOperator, BooleanDncl, BooleanJpDncl, ComparisonOperatorDncl, ComparisonOperator, SimpleAssignmentOperator, ReturnFuncDncl, ReturnFuncJpDncl, StatementEnum, UserDefinedFuncDncl, UserDefinedFuncJpDncl, VoidFuncDncl, VoidFuncJpDncl, ProcessEnum } from '@/app/enum';
 import { checkBraketPair, cnvAndOrOperator, cnvObjToArray, cnvToDivision, enumToKeyIndexObject, escapeHtml, getOperandsMaxIndex, isValidExpression, replaceToAmpersand, sanitizeInput, transformNegation, tryParseToJsFunction, updateToWithSquareBrackets, ValidateObjValue } from '@/app/utilities';
 import { ErrorMsgBox } from './ErrorMsgBox';
+import * as babelParser from '@babel/parser';
 
 interface Props extends DnclEditorProps { };
 
@@ -62,14 +63,6 @@ export function DnclEditDialog(params: Props) {
 
         if (statement.trim().length == 0) return true;
 
-        function negateExpressions(input: string) {
-            while (input.includes('でない')) {
-                input = input.replace(/\(([^()]+)\)でない/g, '!($1)');
-                input = input.replace(/([^()]+)でない/g, '!($1)');
-            }
-            return input;
-        }
-
         statement = cnvAndOrOperator(statement);
         statement = transformNegation(statement);
         statement = cnvToDivision(statement);
@@ -91,12 +84,33 @@ export function DnclEditDialog(params: Props) {
         statement = replaceToAmpersand(statement);
 
         //Function関数で実行し、エラーがあるかチェック
-        result = isValidExpression(statement);
-        if (result.hasError) {
+        // result = isValidExpression(statement);
+        // if (result.hasError) {
+        //     setError(result.errorMsgArray);
+        //     return false;
+        // }
+
+        //Functionはセキュリティ上安全ではない
+        // Babelを使ってコードをパース
+        try {
+            babelParser.parse(statement, {
+                sourceType: 'module',
+                plugins: ['jsx', 'typescript'],
+            });
+
+            return true;
+        } catch (err: any) {
+            let errMsg = err.message;
+            if (errMsg.includes('Unexpected token')) {
+                const matches = errMsg.match(/"([^"]*)"/g);
+                const extracted = matches ? matches[0] : null;
+                errMsg = `誤った位置に${extracted.replace('!', '「でない」')}が使われています`
+            }
+            result.errorMsgArray.push(errMsg);
             setError(result.errorMsgArray);
             return false;
         }
-        return true
+
     }
 
     const getDnclStatement = (data: { [k: string]: string; }, keyword: keyPrefixEnum): string => {

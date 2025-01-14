@@ -115,20 +115,20 @@ export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...pro
 
     const [lintResults, setLintResults] = useState<string>('');
 
-    useEffect(() => {
-        const fetchLintResults = async () => {
-            try {
-                const res = await fetch('/api/lint');
-                const data = await res.json();
-                console.log(data);
-                setLintResults(data.resultText);
-            } catch (error) {
-                console.error('Error fetching lint results:', error);
-            }
-        };
+    // useEffect(() => {
+    //     const fetchLintResults = async () => {
+    //         try {
+    //             const res = await fetch('/api/lint');
+    //             const data = await res.json();
+    //             console.log(data);
+    //             setLintResults(data.resultText);
+    //         } catch (error) {
+    //             console.error('Error fetching lint results:', error);
+    //         }
+    //     };
 
-        fetchLintResults();
-    }, []);
+    //     fetchLintResults();
+    // }, []);
 
     useEffect(() => {
         const timer = setTimeout(() => {
