@@ -1,6 +1,7 @@
 "use client"
 import React, { useEffect, useState } from 'react';
 import * as babelParser from '@babel/parser';
+import EvaluateComponent from '../components/EvaluateComponent';
 
 const errorTranslations: { [key: string]: string } = {
   "Unexpected token": "予期しないトークンが見つかりました",
@@ -85,6 +86,7 @@ export default function Home() {
       <br />
       <button onClick={handleCheckSyntax}>文法チェック</button>
       {error && <p style={{ color: 'red' }}>{error}</p>}
+      <EvaluateComponent></EvaluateComponent>
     </div>
   );
 }

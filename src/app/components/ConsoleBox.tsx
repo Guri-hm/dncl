@@ -112,8 +112,10 @@ export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...pro
 
     const [shouldRunEffect, setShouldRunEffect] = useState(false);
     const [nodes, setNodes] = useState<React.ReactNode>(children);
-
     const [lintResults, setLintResults] = useState<string>('');
+    const [code, setCode] = useState('');
+    const [result, setResult] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     // useEffect(() => {
     //     const fetchLintResults = async () => {
@@ -138,15 +140,46 @@ export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...pro
     }, [treeItems]);
 
     useEffect(() => {
+        handleExecute();
+    }, [code]);
+
+    useEffect(() => {
         if (shouldRunEffect) {
             const convertCode = async () => {
                 setNodes(await renderNodes(treeItems));
+                setCode(await renderNodes(treeItems));
             };
             setShouldRunEffect(false); // フラグをリセット
             convertCode();
         }
     }, [shouldRunEffect]);
 
+    const handleExecute = async () => {
+        setError(null);
+        setResult(null);
+
+        try {
+            // const response = await fetch('/api/lint', {
+            const response = await fetch('/api/evaluate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ code }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Something went wrong');
+            }
+
+            const data = await response.json();
+            console.log(data)
+            setResult(data.result);
+        } catch (err: any) {
+            setError(err.message);
+        }
+    };
 
     const renderNodes = async (nodes: TreeItems): Promise<string> => {
 
@@ -164,8 +197,11 @@ export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...pro
         <Box sx={{
             ...sx
         }} {...props} >
-            {lintResults}
             {nodes}
+            <div>
+                {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+                {result && <p>Result: {result}</p>}
+            </div>
         </Box>
     );
 };
