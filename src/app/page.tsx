@@ -12,16 +12,30 @@ export default function Home() {
   let text = "桜さく";
   const [code, setCode] = useState('');
   const [results, setLintResults] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false); // ローディング状態
 
   const fetchLintResults = async () => {
 
     try {
-      const res = await fetch('/api/lint');
-      const data = await res.json();
-      console.log(data);
+      const response = await fetch('/api/lint', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code }), // コードを送信
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Something went wrong');
+      }
+
+      const data = await response.json();
       setLintResults(data.resultText);
-    } catch (error) {
-      console.error('Error fetching lint results:', error);
+    } catch (err: any) {
+      setLintResults(err.message || 'An unexpected error occurred');
+    } finally {
+      setLoading(false);
     }
 
   };
@@ -46,7 +60,9 @@ export default function Home() {
         cols={50}
         placeholder="ここにコードを入力してください"
       />
-      <button onClick={fetchLintResults}>評価する</button>
+      <button onClick={fetchLintResults} disabled={loading}>
+        {loading ? 'Linting...' : 'Lint Code'}
+      </button>
       <div>
         <p>Original: {text}</p>
         <p>Converted: {convertedText}</p>
