@@ -29,7 +29,7 @@ const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }
         case ProcessEnum.Increment:
         case ProcessEnum.Decrement:
 
-            tmpLine = `${lineTokens[0]} ${lineTokens[1]} ${lineTokens[2]};`
+            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]};`
             break;
 
         case ProcessEnum.Output:

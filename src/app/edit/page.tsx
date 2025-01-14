@@ -23,7 +23,6 @@ const initialItems: TreeItems = [
         children: [],
         lineTokens: [
           "wa",
-          "←",
           "0"
         ],
         processIndex: 1
@@ -38,7 +37,6 @@ const initialItems: TreeItems = [
             children: [],
             lineTokens: [
               "wa",
-              "←",
               "wa + i"
             ],
             processIndex: 1

@@ -207,7 +207,6 @@ export function DnclEditDialog(params: Props) {
                         let processPhrase = "";
                         let tokens: string[] = [];
                         tokens.push(getTokens(formJson, keyPrefixEnum.LeftSide));
-                        tokens.push(params.type == StatementEnum.Input ? SimpleAssignmentOperator.Other : '');
                         tokens.push(getTokens(formJson, keyPrefixEnum.RigthSide));
 
                         switch (Number(formJson.processIndex)) {
