@@ -10,7 +10,7 @@ const EvaluateComponent = () => {
         setResult(null);
 
         try {
-            const response = await fetch('/api/evaluate', {
+            const response = await fetch('/api/execute', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
