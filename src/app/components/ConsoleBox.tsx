@@ -370,7 +370,7 @@ export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...pro
                 {error && <Box sx={{ padding: 1, color: 'red' }}>Error: {error}</Box>}
 
                 <Box sx={{ height: '100%' }}>
-                    <div style={{ height: 'calc(100% - 90px)', overflowY: 'auto' }}>
+                    <div style={{ height: 'calc(100% - 85px)', overflowY: 'auto' }}>
                         {runResults && renderResults(runResults)}
                     </div>
                 </Box>
