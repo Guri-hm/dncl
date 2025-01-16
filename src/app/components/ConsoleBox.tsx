@@ -369,26 +369,9 @@ export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...pro
                 {tmpMsg && <Box sx={{ padding: 1 }}> {tmpMsg}</Box>}
                 {error && <Box sx={{ padding: 1, color: 'red' }}>Error: {error}</Box>}
 
-                {/* <TabPanel>
-                    {runResults && renderResults(runResults)}
-                </TabPanel> */}
-                <Box sx={{ height: '100%', overflowY: 'auto' }}>
-                    <div style={{ height: '100%', overflowY: 'auto', paddingBottom: '10px' }}>
-                        <div style={{ height: 'auto' }}>55</div>
-                        <div style={{ height: 'auto' }}>55</div>
-                        <div style={{ height: 'auto' }}>55</div>
-                        <div style={{ height: 'auto' }}>55</div>
-                        <div style={{ height: 'auto' }}>55</div>
-                        <div style={{ height: 'auto' }}>55</div>
-                        <div style={{ height: 'auto' }}>55</div>
-                        <div style={{ height: 'auto' }}>55</div>
-                        <div style={{ height: 'auto' }}>55</div>
-                        <div style={{ height: 'auto' }}>55</div>
-                        <div style={{ height: 'auto' }}>55</div>
-                        <div style={{ height: 'auto' }}>55</div>
-                        <div style={{ height: 'auto' }}>55</div>
-                        <div style={{ height: 'auto' }}>55</div>
-                        <div style={{ height: 'auto' }}>100</div>
+                <Box sx={{ height: '100%' }}>
+                    <div style={{ height: 'calc(100% - 90px)', overflowY: 'auto' }}>
+                        {runResults && renderResults(runResults)}
                     </div>
                 </Box>
 
