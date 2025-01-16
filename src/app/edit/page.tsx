@@ -4,7 +4,7 @@ import { Allotment } from "allotment";
 import "allotment/dist/style.css";
 import "../components/alloment-custom.css";
 import { SortableTree } from "../components/SortableTree";
-import styles from './editor.module.css';
+import styles from '@/app/components/editor.module.css';
 import { styled } from '@mui/system';
 import Box from '@mui/material/Box';
 import { TreeItems } from "../types";
@@ -60,7 +60,52 @@ const initialItems: TreeItems = [
         processIndex: 16
       },
       {
-        id: "a37c97e2-b605-40bb-acef-3ce352d30953",
+        id: "a37c97e2-b605-40bb-acef-3ce352d30951",
+        line: "waを表示する",
+        children: [],
+        lineTokens: [
+          "wa"
+        ],
+        processIndex: 0
+      },
+      {
+        id: "a37c97e2-b605-40bb-acef-3ce352d30943",
+        line: "waを表示する",
+        children: [],
+        lineTokens: [
+          "wa"
+        ],
+        processIndex: 0
+      },
+      {
+        id: "a37c97e2-b605-40bb-acef-3ce352d30753",
+        line: "waを表示する",
+        children: [],
+        lineTokens: [
+          "wa"
+        ],
+        processIndex: 0
+      },
+      {
+        id: "a37c97e2-b605-40bb-acef-3ce352d3853",
+        line: "waを表示する",
+        children: [],
+        lineTokens: [
+          "wa"
+        ],
+        processIndex: 0
+      },
+      {
+        id: "a37c97e2-b605-40bb-acef-3ce352d39853",
+        line: "waを表示する",
+        children: [],
+        lineTokens: [
+          "wa"
+        ],
+        processIndex: 0
+      },
+      {
+        id: "a37c97e2-b605-40bb-acef-3ce352d55953",
         line: "waを表示する",
         children: [],
         lineTokens: [
@@ -148,7 +193,7 @@ export default function Home() {
           <SortableTree treeItems={items} setTreeItems={setItems} collapsible indicator removable ></SortableTree>
         </Allotment.Pane>
         <Allotment.Pane className={`${styles.bgStone50} ${styles.marginTop16}`}>
-          <ConsoleBox treeItems={items} sx={{ margin: '8px' }}>ここにコードの結果を出力する</ConsoleBox>
+          <ConsoleBox treeItems={items}>ここにコードの結果を出力する</ConsoleBox>
         </Allotment.Pane>
       </Allotment >
     </StyledDiv >

@@ -39,6 +39,7 @@ import { v4 as uuidv4 } from "uuid";
 import { StatementEnum, StatementJpEnum } from "@/app/enum";
 import { Box } from "@mui/material";
 import styles from './alloment-custom.module.css'
+import editorStyles from './editor.module.css'
 import { ArrowButton } from "./ArrowButton";
 import "./alloment-custom.css";
 import TabsBox from "./TabsBox";
@@ -224,7 +225,7 @@ export function SortableTree({
         </Allotment.Pane>
 
         <div className={`${styles.hFull}`} style={{ marginLeft: '17px', marginRight: '5px' }}>
-          <Allotment.Pane ref={ref} className={`${styles.rightPane} ${styles.hFull} ${styles.overflowAuto}`} >
+          <Allotment.Pane ref={ref} className={`${styles.rightPane} ${styles.hFull} ${editorStyles.overflowAuto}`} >
 
             <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
               {flattenedItems.map(({ id, children, collapsed, depth, line }) => (

@@ -42,3 +42,8 @@ export type DnclEditorProps = {
   overIndex: number,
   refresh?: any,
 }
+
+export type ErrObj = {
+  hasError: boolean,
+  errors: string[]
+}

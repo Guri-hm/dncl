@@ -18,12 +18,25 @@ export async function POST(req: NextRequest) {
         };
         const resultText = await formatter.format(results, lintResultData);
 
+
         //ESLint のフォーマッタが出力する結果に ANSI エスケープコード（色やスタイルをつけるための制御文字）が含まる
         //ANSI コードを適切に処理しないと文字化けのように見える
         const cleanResultText = stripAnsi(resultText);
 
+        console.log(cleanResultText)
+
+        // 不要な部分を削除し、必要な情報のみを整形
+        const formattedResults = cleanResultText.split('\n')
+            .filter(line => !line.startsWith('<text>') && !line.startsWith('✖'))
+            .filter(line => line.trim().length > 0) // 空行を除去
+            .map(line => {
+                // 先頭の行番号とerror、@以降の部分を削除
+                const cleanedLine = line.replace(/^\s*(\d)+:\d+\s+error\s*/, '$1行目:').replace(/\s*@.*$/, '');
+                return cleanedLine.trim();
+            });
+
         return NextResponse.json(
-            { resultText: cleanResultText },
+            { resultText: formattedResults.join('\n') },
             {
                 headers: {
                     'Content-Type': 'application/json; charset=utf-8',
