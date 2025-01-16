@@ -160,7 +160,7 @@ export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...pro
 
         try {
             // const response = await fetch('/api/lint', {
-            const response = await fetch('/api/evaluate', {
+            const response = await fetch('/api/execute', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -200,7 +200,7 @@ export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...pro
             {nodes}
             <div>
                 {error && <p style={{ color: 'red' }}>Error: {error}</p>}
-                {result && <p>Result: {result}</p>}
+                {result && <p>出力: {result}</p>}
             </div>
         </Box>
     );
