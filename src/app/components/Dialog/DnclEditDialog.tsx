@@ -189,14 +189,14 @@ export function DnclEditDialog(params: Props) {
                             return Number(ProcessEnumArray[index]);
                         }
 
-                        const processType = getValueByIndex(formJson.processIndex)
+                        const processType = formJson.processIndex as ProcessEnum;
 
                         //存在しない処理の場合は実行させない
                         if (processType == null) {
                             return;
                         }
-                        if (!checkStatement(formJson, processType as ProcessEnum, keyPrefixEnum.LeftSide, params.treeItems)) return;
-                        if (!checkStatement(formJson, processType as ProcessEnum, keyPrefixEnum.RigthSide, params.treeItems)) return;
+                        if (!checkStatement(formJson, processType, keyPrefixEnum.LeftSide, params.treeItems)) return;
+                        if (!checkStatement(formJson, processType, keyPrefixEnum.RigthSide, params.treeItems)) return;
 
                         setError([]);
 

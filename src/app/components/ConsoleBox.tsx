@@ -217,11 +217,23 @@ const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedItem, line
                 result = { errors: [`${lineNum}行目:対応する「と定義する」がないか，インデントに誤りがあります`], hasError: true };
             }
 
-
             break;
         }
         case ProcessEnum.ExecuteUserDefinedFunction:
 
+            //定義済みでなければならない
+            //引数の括弧を除去して関数名のみ取得
+            const funcName = targetItem.lineTokens ? targetItem.lineTokens[0].replace(/^([^()]+).*/, '$1') : '';
+            if (funcName == '') {
+                result = { errors: [`${lineNum}行目:行を削除し，追加しなおしてください`], hasError: true };
+                break;
+            }
+
+            const hasFuncItems = items.some(item => item.processIndex == ProcessEnum.DefineFunction && item.lineTokens ? item.lineTokens[0].replace(/^([^()]+).*/, '$1') : '' == funcName);
+
+            if (!hasFuncItems) {
+                result = { errors: [`${lineNum}行目:実行する関数を定義してください`], hasError: true };
+            }
 
             break;
 

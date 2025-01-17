@@ -15,7 +15,7 @@ import { ConsoleBox } from "../components/ConsoleBox";
 const initialItems: TreeItems = [
   {
     id: "e7ffd789-7b09-4e8d-861a-f5909313cba6",
-    line: "関数 和 (n) を",
+    line: "関数 和(n) を",
     children: [
       {
         id: "2a0a8f52-c215-4cd6-8e49-75e021067043",
@@ -115,7 +115,7 @@ const initialItems: TreeItems = [
       }
     ],
     lineTokens: [
-      "和 (n)"
+      "和(n)"
     ],
     processIndex: 17
   },
@@ -129,10 +129,10 @@ const initialItems: TreeItems = [
   },
   {
     id: "8ce90945-0ee4-4fc5-a8b7-e974fb4c84d5",
-    line: "和 (10)",
+    line: "和(10)",
     children: [],
     lineTokens: [
-      "和 (10)"
+      "和(10)"
     ],
     processIndex: 19
   }
