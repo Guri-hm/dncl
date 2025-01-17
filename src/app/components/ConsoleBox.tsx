@@ -115,7 +115,9 @@ const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedItem, line
 
     const processIndex = targetItem.processIndex;
     const sameParentItems = items.filter(item => item.parentId == targetItem.parentId);
-    const nextItem = sameParentItems[sameParentItems.findIndex(item => item.id == targetItem.id) + 1];
+    const targetIndex = sameParentItems.findIndex(item => item.id == targetItem.id);
+    const nextItem = targetIndex == sameParentItems.length ? null : sameParentItems[targetIndex + 1];
+    const prevItem = targetIndex > 0 ? sameParentItems[targetIndex - 1] : null;
     let result: ErrObj = { errors: [], hasError: false };
 
     switch (processIndex) {
@@ -131,152 +133,134 @@ const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedItem, line
             //処理なし
             break;
         case ProcessEnum.BulkAssignToArray:
-        case ProcessEnum.Increment:
-        case ProcessEnum.Decrement:
-
             break;
 
-
-        case ProcessEnum.If:
+        case ProcessEnum.If: {
+            //接続する要素が同じ深度・同じ親IDで次の要素
+            const hasItem = nextItem?.processIndex == ProcessEnum.ElseIf || nextItem?.processIndex == ProcessEnum.Else || nextItem?.processIndex == ProcessEnum.EndIf;
+            if (!hasItem || !nextItem) {
+                result = { errors: [`${lineNum}行目:後続処理に「を実行し，そうでなければ」「を実行し，そうでなくもし<条件>ならば」「実行する」のいずれかを配置してください`], hasError: true };
+            }
             break;
+        }
 
-        case ProcessEnum.ElseIf:
-
+        case ProcessEnum.ElseIf: {
+            //開始要素が同じ深度・同じ親IDで前の要素
+            let hasItem = prevItem?.processIndex == ProcessEnum.If || nextItem?.processIndex == ProcessEnum.ElseIf;;
+            if (!hasItem || !prevItem) {
+                result = { errors: [`${lineNum}行目:先行処理に「もし<条件>ならば」「を実行し，そうでなくもし<条件>ならば」のいずれかを配置してください`], hasError: true };
+            }
+            //接続する要素が同じ深度・同じ親IDで次の要素
+            hasItem = nextItem?.processIndex == ProcessEnum.ElseIf || nextItem?.processIndex == ProcessEnum.Else || nextItem?.processIndex == ProcessEnum.EndIf;
+            if (!hasItem || !nextItem) {
+                result = { errors: [`${lineNum}行目:後続処理に「を実行し，そうでなければ」「を実行し，そうでなくもし<条件>ならば」「実行する」のいずれかを配置してください`], hasError: true };
+            }
             break;
+        }
 
-        case ProcessEnum.Else:
-
+        case ProcessEnum.Else: {
+            //開始要素が同じ深度・同じ親IDで前の要素
+            let hasItem = prevItem?.processIndex == ProcessEnum.If || nextItem?.processIndex == ProcessEnum.ElseIf;
+            if (!hasItem || !prevItem) {
+                result = { errors: [`${lineNum}行目:先行処理に「もし<条件>ならば」「を実行し，そうでなくもし<条件>ならば」のいずれかを配置してください`], hasError: true };
+            }
+            //接続する要素が同じ深度・同じ親IDで次の要素
+            hasItem = nextItem?.processIndex == ProcessEnum.EndIf;
+            if (!hasItem || !nextItem) {
+                result = { errors: [`${lineNum}行目:後続処理に「実行する」がないか，配置に誤りがあります`], hasError: true };
+            }
             break;
+        }
 
-        case ProcessEnum.EndIf:
+        case ProcessEnum.EndIf: {
+            //開始要素が同じ深度・同じ親IDで前の要素
+            let hasItem = prevItem?.processIndex == ProcessEnum.If || nextItem?.processIndex == ProcessEnum.ElseIf || nextItem?.processIndex == ProcessEnum.Else;
+            if (!hasItem || !prevItem) {
+                result = { errors: [`${lineNum}行目:先行処理に「もし<条件>ならば」「を実行し，そうでなくもし<条件>ならば」「を実行し，そうでなければ」のいずれかを配置してください`], hasError: true };
+            }
             break;
+        }
 
-        case ProcessEnum.While:
+        case ProcessEnum.While: {
+            //終了要素が同じ深度・同じ親IDで次の要素
+            const hasItem = nextItem?.processIndex == ProcessEnum.EndWhile;
+            if (!hasItem || !nextItem) {
+                result = { errors: [`${lineNum}行目:後続処理に「を繰り返す(前判定)」がないか，配置に誤りがあります`], hasError: true };
+            }
             break;
+        }
 
-        case ProcessEnum.EndWhile:
-        case ProcessEnum.EndFor:
+        case ProcessEnum.EndWhile: {
+            //開始要素が同じ深度・同じ親IDで前の要素
+            const hasItem = prevItem?.processIndex == ProcessEnum.While;
+            if (!hasItem || !prevItem) {
+                result = { errors: [`${lineNum}行目:先行処理に「<条件>の間」がないか，配置に誤りがあります`], hasError: true };
+            }
             break;
+        }
 
         case ProcessEnum.DoWhile:
-
-            break;
-
-        case ProcessEnum.EndDoWhile:
-            break;
-
-        case ProcessEnum.ForIncrement: {
-            //終了タグが同じ深度・同じ親IDで隣接している
-
-            const hasItem = sameParentItems.some(item => item.parentId == targetItem.parentId && item.
-                depth == targetItem.depth && item.processIndex == ProcessEnum.EndFor);
-            if (!hasItem) {
-                result = { errors: [`${lineNum}行目:対応する「を繰り返す」がないか，インデントに誤りがあります`], hasError: true };
-                break;
+            //終了要素が同じ深度・同じ親IDで次の要素
+            const hasItem = nextItem?.processIndex == ProcessEnum.EndDoWhile;
+            if (!hasItem || !nextItem) {
+                result = { errors: [`${lineNum}行目:後続処理に「を,<条件>になるまで実行する」がないか，配置に誤りがあります`], hasError: true };
             }
-            //対応するitemと同数になる必要がある
-            const sameProcessItems = items.filter(item => item.parentId == targetItem.parentId && item.depth == targetItem.depth && (item.processIndex == ProcessEnum.ForDecrement || item.processIndex == ProcessEnum.ForIncrement));
-            const correspondingItems = items.filter(item => item.parentId == targetItem.parentId && item.depth == targetItem.depth && item.processIndex == ProcessEnum.EndFor);
-            if (sameProcessItems.length != correspondingItems.length) {
-                result = { errors: [`${lineNum}行目:「～増やしながら」または「を繰り返す」に過不足があります`], hasError: true };
-                break;
+            break;
+
+        case ProcessEnum.EndDoWhile: {
+            //開始要素が同じ深度・同じ親IDで前の要素
+            const hasItem = prevItem?.processIndex == ProcessEnum.DoWhile;
+            if (!hasItem || !prevItem) {
+                result = { errors: [`${lineNum}行目:先行処理に「繰り返し，」がないか，配置に誤りがあります`], hasError: true };
             }
             break;
         }
+
+        case ProcessEnum.ForIncrement:
         case ProcessEnum.ForDecrement: {
-            //終了タグが同じ深度・同じ親IDである必要がある
-            const hasItem = items.some(item => item.parentId == targetItem.parentId && item.
-                depth == targetItem.depth && item.processIndex == ProcessEnum.EndFor);
-            if (!hasItem) {
-                result = { errors: [`${lineNum}行目:対応する「を繰り返す」がないか，インデントに誤りがあります`], hasError: true };
-                break;
+            //終了要素が同じ深度・同じ親IDで次の要素
+            const hasItem = nextItem?.processIndex == ProcessEnum.EndFor;
+            if (!hasItem || !nextItem) {
+                result = { errors: [`${lineNum}行目:後続処理に「を繰り返す(順次繰り返し)」がないか，配置に誤りがあります`], hasError: true };
             }
-            //対応するitemと同数になる必要がある
-            const sameProcessItems = items.filter(item => item.parentId == targetItem.parentId && item.depth == targetItem.depth && (item.processIndex == ProcessEnum.ForDecrement || item.processIndex == ProcessEnum.ForIncrement));
-            const correspondingItems = items.filter(item => item.parentId == targetItem.parentId && item.depth == targetItem.depth && item.processIndex == ProcessEnum.EndFor);
-            if (sameProcessItems.length != correspondingItems.length) {
-                result = { errors: [`${lineNum}行目:「～減らしながら」または「を繰り返す」に過不足があります`], hasError: true };
-                break;
+            break;
+        }
+        case ProcessEnum.EndFor: {
+            //開始要素が同じ深度・同じ親IDで前の要素
+            const hasItem = prevItem?.processIndex == ProcessEnum.ForIncrement || prevItem?.processIndex == ProcessEnum.ForDecrement;
+            if (!hasItem || !prevItem) {
+                result = { errors: [`${lineNum}行目:先行処理に「順次繰り返しの開始」がないか，配置に誤りがあります`], hasError: true };
             }
             break;
         }
 
-        case ProcessEnum.DefineFunction:
-        case ProcessEnum.Defined: {
-
-            switch (processIndex) {
-                case ProcessEnum.DefineFunction: {
-                    //終了タグが同じ深度・同じ親IDで隣接しているか
-                    const hasItem = items.some(item => item.parentId == targetItem.parentId && item.
-                        depth == targetItem.depth && item.processIndex == ProcessEnum.Defined);
-                    if (!hasItem) {
-                        result = { errors: [`${lineNum}行目:対応する「と定義する」がないか，インデントに誤りがあります`], hasError: true };
-                    }
-                    break;
-                }
-
-                case ProcessEnum.Defined: {
-                    //終了タグが同じ深度・同じ親IDである必要がある
-                    const hasItem = items.some(item => item.parentId == targetItem.parentId && item.
-                        depth == targetItem.depth && item.processIndex == ProcessEnum.DefineFunction);
-                    if (!hasItem) {
-                        result = { errors: [`${lineNum}行目:対応する「新しい関数の定義」がないか，インデントに誤りがあります`], hasError: true };
-                        break;
-                    }
-
-                    const targetIndex = sameParentItems.findIndex(item => item.id == targetItem.id);
-                    //開始タグが終了タグよりも前方にあるか
-                    let isInFront
-                    items.map((item, index) => {
-                        if (item.processIndex == ProcessEnum.DefineFunction) {
-                            if (index > targetIndex) {
-                                isInFront = false;
-                            }
-                        }
-                    })
-                    if (!isInFront) {
-                        result = { errors: [`${lineNum}行目:「新しい関数の定義」を「と定義する」よりも先に配置してください`], hasError: true };
-                        break;
-                    }
-                }
+        case ProcessEnum.DefineFunction: {
+            //終了要素が同じ深度・同じ親IDで次の要素
+            const hasItem = nextItem?.processIndex == ProcessEnum.Defined;
+            if (!hasItem || !nextItem) {
+                result = { errors: [`${lineNum}行目:後続処理に「と定義する」がないか，配置に誤りがあります`], hasError: true };
             }
-
-            //対応するitemと同数になる必要がある
-            const sameProcessItems = items.filter(item => item.parentId == targetItem.parentId && item.depth == targetItem.depth && item.processIndex == ProcessEnum.DefineFunction);
-            const correspondingItems = items.filter(item => item.parentId == targetItem.parentId && item.depth == targetItem.depth && item.processIndex == ProcessEnum.Defined);
-            if (sameProcessItems.length != correspondingItems.length) {
-                result = { errors: [`${lineNum}行目:「新しい関数の定義」または「と定義する」に過不足があります`], hasError: true };
-                break;
-            }
-
-
             break;
-
         }
         case ProcessEnum.Defined: {
-
-            //開始タグが同じ深度・同じ親IDである必要がある
-            const hasItem = items.some(item => item.parentId == targetItem.parentId && item.
-                depth == targetItem.depth && item.processIndex == ProcessEnum.Defined);
-            if (!hasItem) {
-                result = { errors: [`${lineNum}行目:対応する「新しい関数の定義」がないか，インデントに誤りがあります`], hasError: true };
-                break;
+            //開始要素が同じ深度・同じ親IDで前の要素
+            const hasItem = prevItem?.processIndex == ProcessEnum.DefineFunction;
+            if (!hasItem || !prevItem) {
+                result = { errors: [`${lineNum}行目:先行処理に「関数の定義の開始」がないか，配置に誤りがあります`], hasError: true };
             }
-            //対応するitemと同数になる必要がある
-            const sameProcessItems = items.filter(item => item.parentId == targetItem.parentId && item.depth == targetItem.depth && item.processIndex == ProcessEnum.DefineFunction);
-            const correspondingItems = items.filter(item => item.parentId == targetItem.parentId && item.depth == targetItem.depth && item.processIndex == ProcessEnum.Defined);
-            if (sameProcessItems.length != correspondingItems.length) {
-                result = { errors: [`「新しい関数の定義」または「と定義する」に過不足があります`], hasError: true };
-            }
-
-
             break;
         }
+
         case ProcessEnum.ExecuteUserDefinedFunction:
 
             //定義済みでなければならない
             //引数の括弧を除去して関数名のみ取得
-            const funcName = targetItem.lineTokens ? targetItem.lineTokens[0].replace(/^([^()]+).*/, '$1') : '';
+            const token = targetItem.lineTokens && targetItem.lineTokens[0];
+            if (!token) {
+                result = { errors: [`${lineNum}行目:行を削除し，追加しなおしてください`], hasError: true };
+                break;
+            }
+            const funcName = token.replace(/^([^()]+).*/, '$1');
             if (funcName == '') {
                 result = { errors: [`${lineNum}行目:行を削除し，追加しなおしてください`], hasError: true };
                 break;
@@ -286,8 +270,8 @@ const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedItem, line
 
             if (!hasFuncItems) {
                 result = { errors: [`${lineNum}行目:実行する関数を定義してください`], hasError: true };
+                break;
             }
-
             break;
 
         default:
