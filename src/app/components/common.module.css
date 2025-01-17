@@ -1,3 +1,15 @@
+.h100 {
+    height: 100%;
+}
+
+.dFlex {
+    display: flex;
+}
+
+.flexColumn {
+    flex-direction: column;
+}
+
 .bgSlate800 {
     background-color: var(--slate-800);
 }

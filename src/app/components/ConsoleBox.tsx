@@ -439,14 +439,11 @@ export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...pro
     }
 
     return (
-        <Box className={`${styles.bgSlate800} ${styles.colorWhite}`} sx={{
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column',
+        <Box className={`${styles.bgSlate800} ${styles.colorWhite} ${styles.h100} ${styles.dFlex} ${styles.flexColumn}`} sx={{
             ...sx
         }} {...props} >
-            <Grid className={`${styles.bgSlate900}`} sx={{
-                paddingX: 1, paddingY: 0.5, flexBasis: '0%', display: 'flex'
+            <Grid className={`${styles.bgSlate900} ${styles.dFlex}`} sx={{
+                paddingX: 1, paddingY: 0.5, flexBasis: '0%'
             }} container justifyContent="space-between" alignItems="center">
                 <Grid>
                     <Box>
