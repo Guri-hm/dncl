@@ -114,7 +114,8 @@ const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }
 const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedItem, lineNum: number): ErrObj => {
 
     const processIndex = targetItem.processIndex;
-
+    const sameParentItems = items.filter(item => item.parentId == targetItem.parentId);
+    const nextItem = sameParentItems[sameParentItems.findIndex(item => item.id == targetItem.id) + 1];
     let result: ErrObj = { errors: [], hasError: false };
 
     switch (processIndex) {
@@ -164,23 +165,48 @@ const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedItem, line
         case ProcessEnum.EndDoWhile:
             break;
 
-        case ProcessEnum.ForIncrement:
-        case ProcessEnum.ForDecrement:
+        case ProcessEnum.ForIncrement: {
+            //終了タグが同じ深度・同じ親IDで隣接している
+
+            const hasItem = sameParentItems.some(item => item.parentId == targetItem.parentId && item.
+                depth == targetItem.depth && item.processIndex == ProcessEnum.EndFor);
+            if (!hasItem) {
+                result = { errors: [`${lineNum}行目:対応する「を繰り返す」がないか，インデントに誤りがあります`], hasError: true };
+                break;
+            }
+            //対応するitemと同数になる必要がある
+            const sameProcessItems = items.filter(item => item.parentId == targetItem.parentId && item.depth == targetItem.depth && (item.processIndex == ProcessEnum.ForDecrement || item.processIndex == ProcessEnum.ForIncrement));
+            const correspondingItems = items.filter(item => item.parentId == targetItem.parentId && item.depth == targetItem.depth && item.processIndex == ProcessEnum.EndFor);
+            if (sameProcessItems.length != correspondingItems.length) {
+                result = { errors: [`${lineNum}行目:「～増やしながら」または「を繰り返す」に過不足があります`], hasError: true };
+                break;
+            }
             break;
+        }
+        case ProcessEnum.ForDecrement: {
+            //終了タグが同じ深度・同じ親IDである必要がある
+            const hasItem = items.some(item => item.parentId == targetItem.parentId && item.
+                depth == targetItem.depth && item.processIndex == ProcessEnum.EndFor);
+            if (!hasItem) {
+                result = { errors: [`${lineNum}行目:対応する「を繰り返す」がないか，インデントに誤りがあります`], hasError: true };
+                break;
+            }
+            //対応するitemと同数になる必要がある
+            const sameProcessItems = items.filter(item => item.parentId == targetItem.parentId && item.depth == targetItem.depth && (item.processIndex == ProcessEnum.ForDecrement || item.processIndex == ProcessEnum.ForIncrement));
+            const correspondingItems = items.filter(item => item.parentId == targetItem.parentId && item.depth == targetItem.depth && item.processIndex == ProcessEnum.EndFor);
+            if (sameProcessItems.length != correspondingItems.length) {
+                result = { errors: [`${lineNum}行目:「～減らしながら」または「を繰り返す」に過不足があります`], hasError: true };
+                break;
+            }
+            break;
+        }
 
         case ProcessEnum.DefineFunction:
-        case ProcessEnum.Defined:
-
-            //対応するitemと同数になる必要がある
-            const sameProcessItems = items.filter(item => item.parentId == targetItem.parentId && item.depth == targetItem.depth && item.processIndex == ProcessEnum.DefineFunction);
-            const correspondingItems = items.filter(item => item.parentId == targetItem.parentId && item.depth == targetItem.depth && item.processIndex == ProcessEnum.Defined);
-            if (sameProcessItems.length != correspondingItems.length) {
-                result = { errors: [`${lineNum}行目:「新しい関数の定義」または「と定義する」に過不足があります`], hasError: true };
-            }
+        case ProcessEnum.Defined: {
 
             switch (processIndex) {
                 case ProcessEnum.DefineFunction: {
-                    //終了タグが同じ深度・同じ親IDである必要がある
+                    //終了タグが同じ深度・同じ親IDで隣接しているか
                     const hasItem = items.some(item => item.parentId == targetItem.parentId && item.
                         depth == targetItem.depth && item.processIndex == ProcessEnum.Defined);
                     if (!hasItem) {
@@ -188,21 +214,54 @@ const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedItem, line
                     }
                     break;
                 }
+
                 case ProcessEnum.Defined: {
                     //終了タグが同じ深度・同じ親IDである必要がある
                     const hasItem = items.some(item => item.parentId == targetItem.parentId && item.
                         depth == targetItem.depth && item.processIndex == ProcessEnum.DefineFunction);
                     if (!hasItem) {
                         result = { errors: [`${lineNum}行目:対応する「新しい関数の定義」がないか，インデントに誤りがあります`], hasError: true };
+                        break;
                     }
-                    break;
+
+                    const targetIndex = sameParentItems.findIndex(item => item.id == targetItem.id);
+                    //開始タグが終了タグよりも前方にあるか
+                    let isInFront
+                    items.map((item, index) => {
+                        if (item.processIndex == ProcessEnum.DefineFunction) {
+                            if (index > targetIndex) {
+                                isInFront = false;
+                            }
+                        }
+                    })
+                    if (!isInFront) {
+                        result = { errors: [`${lineNum}行目:「新しい関数の定義」を「と定義する」よりも先に配置してください`], hasError: true };
+                        break;
+                    }
                 }
             }
 
+            //対応するitemと同数になる必要がある
+            const sameProcessItems = items.filter(item => item.parentId == targetItem.parentId && item.depth == targetItem.depth && item.processIndex == ProcessEnum.DefineFunction);
+            const correspondingItems = items.filter(item => item.parentId == targetItem.parentId && item.depth == targetItem.depth && item.processIndex == ProcessEnum.Defined);
+            if (sameProcessItems.length != correspondingItems.length) {
+                result = { errors: [`${lineNum}行目:「新しい関数の定義」または「と定義する」に過不足があります`], hasError: true };
+                break;
+            }
+
+
             break;
 
+        }
         case ProcessEnum.Defined: {
 
+            //開始タグが同じ深度・同じ親IDである必要がある
+            const hasItem = items.some(item => item.parentId == targetItem.parentId && item.
+                depth == targetItem.depth && item.processIndex == ProcessEnum.Defined);
+            if (!hasItem) {
+                result = { errors: [`${lineNum}行目:対応する「新しい関数の定義」がないか，インデントに誤りがあります`], hasError: true };
+                break;
+            }
             //対応するitemと同数になる必要がある
             const sameProcessItems = items.filter(item => item.parentId == targetItem.parentId && item.depth == targetItem.depth && item.processIndex == ProcessEnum.DefineFunction);
             const correspondingItems = items.filter(item => item.parentId == targetItem.parentId && item.depth == targetItem.depth && item.processIndex == ProcessEnum.Defined);
@@ -210,12 +269,6 @@ const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedItem, line
                 result = { errors: [`「新しい関数の定義」または「と定義する」に過不足があります`], hasError: true };
             }
 
-            //終了タグが同じ深度・同じ親IDである必要がある
-            const hasItem = items.some(item => item.parentId == targetItem.parentId && item.
-                depth == targetItem.depth && item.processIndex == ProcessEnum.Defined);
-            if (!hasItem) {
-                result = { errors: [`${lineNum}行目:対応する「と定義する」がないか，インデントに誤りがあります`], hasError: true };
-            }
 
             break;
         }
