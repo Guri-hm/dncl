@@ -366,15 +366,15 @@ export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...pro
         return renderCodeArray.join('\n');
     }
 
+    const convertNewLinesToBreaks = (text: string) => {
+        return text.split('\n').map((line, index) => (
+            <Fragment key={index}>
+                {line}
+                <br />
+            </Fragment>
+        ));
+    };
     const renderResults = (results: string[]): React.ReactNode => {
-        const convertNewLinesToBreaks = (text: string) => {
-            return text.split('\n').map((line, index) => (
-                <Fragment key={index}>
-                    {line}
-                    <br />
-                </Fragment>
-            ));
-        };
         return results.map((result, index) => (
             <Fragment key={index}>
                 {index > 0 && <Divider sx={{ borderColor: 'white' }} />}
@@ -418,7 +418,12 @@ export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...pro
             <Box sx={{ flex: 1, height: '100%' }}>
 
                 {tmpMsg && <Box sx={{ padding: 1 }}> {tmpMsg}</Box>}
-                {error && <Box sx={{ padding: 1, color: error.color }}>エラー {error.msg}</Box>}
+                {(error) && <Box sx={{ padding: 1, color: error.color }}>エラー
+                    <Box>
+                        {convertNewLinesToBreaks(error.msg)}
+                    </Box>
+                </Box>
+                }
 
                 <Box className={`${styles.overflowAuto}`} style={{ height: 'calc(100% - 120px)' }}>
                     {runResults && renderResults(runResults)}
