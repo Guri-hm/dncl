@@ -1,15 +1,14 @@
 import { Box, BoxProps, Button } from "@mui/material";
 import { FC, useEffect, useState, Fragment, ReactElement } from "react";
-import { TreeItem, TreeItems } from "../types";
+import { FlattenedItem, TreeItem, TreeItems } from "../types";
 import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, LoopEnum, ArithmeticOperator } from "../enum";
 import { cnvToDivision, cnvToRomaji, containsJapanese, flattenTree, getEnumIndex, tryParseToJsFunction } from "../utilities";
 import { SxProps, Theme } from '@mui/material';
 import { ErrObj } from "../types";
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid2';
-import styles from './editor.module.css';
+import styles from '@/app/components/common.module.css';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
-import { styled } from '@mui/system';
 
 interface CustomBoxProps extends BoxProps {
     children: React.ReactNode;
@@ -112,9 +111,9 @@ const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }
     return tmpLine;
 }
 
-const checkDNCLSyntax = (items: TreeItems, item: TreeItem, lineIndex: number): ErrObj => {
+const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedItem, lineNum: number): ErrObj => {
 
-    const processIndex = item.processIndex;
+    const processIndex = targetItem.processIndex;
 
     let result: ErrObj = { errors: [], hasError: false };
 
@@ -156,7 +155,6 @@ const checkDNCLSyntax = (items: TreeItems, item: TreeItem, lineIndex: number): E
 
         case ProcessEnum.EndWhile:
         case ProcessEnum.EndFor:
-        case ProcessEnum.Defined:
             break;
 
         case ProcessEnum.DoWhile:
@@ -171,9 +169,60 @@ const checkDNCLSyntax = (items: TreeItems, item: TreeItem, lineIndex: number): E
             break;
 
         case ProcessEnum.DefineFunction:
+        case ProcessEnum.Defined:
+
+            //対応するitemと同数になる必要がある
+            const sameProcessItems = items.filter(item => item.parentId == targetItem.parentId && item.depth == targetItem.depth && item.processIndex == ProcessEnum.DefineFunction);
+            const correspondingItems = items.filter(item => item.parentId == targetItem.parentId && item.depth == targetItem.depth && item.processIndex == ProcessEnum.Defined);
+            if (sameProcessItems.length != correspondingItems.length) {
+                result = { errors: [`${lineNum}行目:「新しい関数の定義」または「と定義する」に過不足があります`], hasError: true };
+            }
+
+            switch (processIndex) {
+                case ProcessEnum.DefineFunction: {
+                    //終了タグが同じ深度・同じ親IDである必要がある
+                    const hasItem = items.some(item => item.parentId == targetItem.parentId && item.
+                        depth == targetItem.depth && item.processIndex == ProcessEnum.Defined);
+                    if (!hasItem) {
+                        result = { errors: [`${lineNum}行目:対応する「と定義する」がないか，インデントに誤りがあります`], hasError: true };
+                    }
+                    break;
+                }
+                case ProcessEnum.Defined: {
+                    //終了タグが同じ深度・同じ親IDである必要がある
+                    const hasItem = items.some(item => item.parentId == targetItem.parentId && item.
+                        depth == targetItem.depth && item.processIndex == ProcessEnum.DefineFunction);
+                    if (!hasItem) {
+                        result = { errors: [`${lineNum}行目:対応する「新しい関数の定義」がないか，インデントに誤りがあります`], hasError: true };
+                    }
+                    break;
+                }
+            }
+
             break;
 
+        case ProcessEnum.Defined: {
+
+            //対応するitemと同数になる必要がある
+            const sameProcessItems = items.filter(item => item.parentId == targetItem.parentId && item.depth == targetItem.depth && item.processIndex == ProcessEnum.DefineFunction);
+            const correspondingItems = items.filter(item => item.parentId == targetItem.parentId && item.depth == targetItem.depth && item.processIndex == ProcessEnum.Defined);
+            if (sameProcessItems.length != correspondingItems.length) {
+                result = { errors: [`「新しい関数の定義」または「と定義する」に過不足があります`], hasError: true };
+            }
+
+            //終了タグが同じ深度・同じ親IDである必要がある
+            const hasItem = items.some(item => item.parentId == targetItem.parentId && item.
+                depth == targetItem.depth && item.processIndex == ProcessEnum.Defined);
+            if (!hasItem) {
+                result = { errors: [`${lineNum}行目:対応する「と定義する」がないか，インデントに誤りがあります`], hasError: true };
+            }
+
+
+            break;
+        }
         case ProcessEnum.ExecuteUserDefinedFunction:
+
+
             break;
 
         default:
@@ -184,12 +233,21 @@ const checkDNCLSyntax = (items: TreeItems, item: TreeItem, lineIndex: number): E
     return result;
 }
 
+type Err = {
+    msg: string,
+    color: string
+}
+const Color = {
+    error: '#FF4500',
+    warnning: '#FFFF00'
+}
+
 export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }) => {
 
     const [shouldRunEffect, setShouldRunEffect] = useState(false);
     const [code, setCode] = useState('');
     const [runResults, setRunResults] = useState<string[] | null>(null);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<Err | null>(null);
     const [tmpMsg, setTmpMsg] = useState<string | null>(null);
 
     interface CheckerProps extends BoxProps {
@@ -198,14 +256,9 @@ export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...pro
         lineIndex: number;
         sx?: SxProps<Theme>;
     }
-    const LineSyntaxChecker: FC<CheckerProps> = ({ flattenItems, lineIndex, ...props }) => {
 
-        return (
-            <Box>
-                aaa
-            </Box>
-        );
-    }
+    const flatten = flattenTree(treeItems);
+
     const fetchLintResults = async () => {
 
         try {
@@ -227,19 +280,20 @@ export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...pro
             if (data.resultText == '') {
                 execute();
             } else {
-                setError(data.resultText);
+                setError({ color: Color.warnning, msg: data.resultText });
             }
 
         } catch (err: any) {
-            setError(err.message || 'An unexpected error occurred');
+            setError({ color: Color.error, msg: err.message || 'An unexpected error occurred' });
         } finally {
-            setTmpMsg(null);
         }
 
     };
 
     useEffect(() => {
+        console.log(flatten)
         const timer = setTimeout(() => {
+            setTmpMsg('コード解析中・・・');
             setShouldRunEffect(true);
         }, 1000); // 1秒後に実行
         return () => clearTimeout(timer); // クリーンアップ
@@ -249,30 +303,30 @@ export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...pro
         if (code) {
             fetchLintResults();
         }
-        // handleExecute();
     }, [code]);
 
     useEffect(() => {
         if (shouldRunEffect) {
+            setError(null);
             const convertCode = async () => {
                 setCode(await renderCode(treeItems));
             };
             setShouldRunEffect(false); // フラグをリセット
-            setTmpMsg('コード解析中・・・');
 
             let result: ErrObj = { errors: [], hasError: false };
-            flatten.map((item, index) => {
-                const { hasError, errors } = checkDNCLSyntax(treeItems, item, index);
+            flatten.map((item: FlattenedItem, index) => {
+                const { hasError, errors } = checkDNCLSyntax(flatten, item, index + 1);
                 if (hasError) {
                     result.hasError = true;
                     result.errors.push(...errors);
                 }
             })
 
+            setTmpMsg(null);
             if (!(result.hasError)) {
                 convertCode();
             } else {
-                setTmpMsg(null);
+                setError({ color: Color.warnning, msg: result.errors.join('\n') });
             }
         }
     }, [shouldRunEffect]);
@@ -281,7 +335,6 @@ export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...pro
         setError(null);
 
         try {
-            // const response = await fetch('/api/lint', {
             const response = await fetch('/api/execute', {
                 method: 'POST',
                 headers: {
@@ -298,11 +351,9 @@ export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...pro
             const data = await response.json();
             setRunResults((prevResults) => (prevResults ? [...prevResults, data.result] : [data.result]));
         } catch (err: any) {
-            setError(err.message);
+            setError({ color: Color.error, msg: err.message || 'An unexpected error occurred' });
         }
     };
-
-    const flatten = flattenTree(treeItems);
 
     const renderCode = async (nodes: TreeItems): Promise<string> => {
 
@@ -326,7 +377,7 @@ export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...pro
         };
         return results.map((result, index) => (
             <Fragment key={index}>
-                {index > 0 && <Divider />}
+                {index > 0 && <Divider sx={{ borderColor: 'white' }} />}
                 <Box sx={{ paddingY: 0.2, paddingX: 1, height: 'auto' }}>
                     {convertNewLinesToBreaks(result)}
                 </Box>
@@ -339,14 +390,14 @@ export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...pro
     }
 
     return (
-        <Box sx={{
+        <Box className={`${styles.bgSlate800} ${styles.colorWhite}`} sx={{
             height: '100%',
             display: 'flex',
             flexDirection: 'column',
             ...sx
         }} {...props} >
             <Grid className={`${styles.bgSlate900}`} sx={{
-                color: 'white', paddingX: 1, paddingY: 0.5, flexBasis: '0%', display: 'flex'
+                paddingX: 1, paddingY: 0.5, flexBasis: '0%', display: 'flex'
             }} container justifyContent="space-between" alignItems="center">
                 <Grid>
                     <Box>
@@ -367,12 +418,10 @@ export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...pro
             <Box sx={{ flex: 1, height: '100%' }}>
 
                 {tmpMsg && <Box sx={{ padding: 1 }}> {tmpMsg}</Box>}
-                {error && <Box sx={{ padding: 1, color: 'red' }}>Error: {error}</Box>}
+                {error && <Box sx={{ padding: 1, color: error.color }}>エラー {error.msg}</Box>}
 
-                <Box sx={{ height: '100%' }}>
-                    <div style={{ height: 'calc(100% - 85px)', overflowY: 'auto' }}>
-                        {runResults && renderResults(runResults)}
-                    </div>
+                <Box className={`${styles.overflowAuto}`} style={{ height: 'calc(100% - 120px)' }}>
+                    {runResults && renderResults(runResults)}
                 </Box>
 
             </Box>

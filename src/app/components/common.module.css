@@ -1,0 +1,32 @@
+.bgSlate800 {
+    background-color: var(--slate-800);
+}
+
+.bgSlate900 {
+    background-color: var(--slate-900);
+}
+
+.colorWhite {
+    color: white;
+}
+
+.overflowAuto {
+    overflow: auto;
+
+    &::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 10px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+}
