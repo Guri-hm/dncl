@@ -287,8 +287,10 @@ type Err = {
     color: string
 }
 const Color = {
-    error: '#FF4500',
-    warnning: '#FFFF00'
+    error: 'var(--error)',
+    warnning: 'var(--warnning)',
+    darkgray: 'var(--darkgray)',
+    white: 'white'
 }
 
 export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }) => {
@@ -340,7 +342,6 @@ export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...pro
     };
 
     useEffect(() => {
-        console.log(flatten)
         const timer = setTimeout(() => {
             setTmpMsg('コード解析中・・・');
             setShouldRunEffect(true);
@@ -426,7 +427,7 @@ export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...pro
     const renderResults = (results: string[]): React.ReactNode => {
         return results.map((result, index) => (
             <Fragment key={index}>
-                {index > 0 && <Divider sx={{ borderColor: 'white' }} />}
+                {index > 0 && <Divider sx={{ borderColor: Color.white }} />}
                 <Box sx={{ paddingY: 0.2, paddingX: 1, height: 'auto' }}>
                     {convertNewLinesToBreaks(result)}
                 </Box>
@@ -439,12 +440,12 @@ export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...pro
     }
 
     return (
-        <Box className={`${styles.bgSlate800} ${styles.colorWhite} ${styles.h100} ${styles.dFlex} ${styles.flexColumn}`} sx={{
+        <Grid container direction="column" spacing={0} className={`${styles.bgSlate800} ${styles.colorWhite} ${styles.h100}`} sx={{
             ...sx
-        }} {...props} >
-            <Grid className={`${styles.bgSlate900} ${styles.dFlex}`} sx={{
+        }}>
+            <Grid size="auto" className={`${styles.bgSlate900} ${styles.w100}`} sx={{
                 paddingX: 1, paddingY: 0.5, flexBasis: '0%'
-            }} container justifyContent="space-between" alignItems="center">
+            }} container direction="row" justifyContent="space-between" alignItems="center">
                 <Grid>
                     <Box>
                         コンソール
@@ -452,7 +453,7 @@ export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...pro
                 </Grid>
                 <Grid>
                     <Box>
-                        <Button variant="contained" startIcon={<ClearAllIcon sx={{ fontSize: '10px' }} />} sx={{ paddingLeft: '6px', paddingRight: '4px', paddingTop: '2px', paddingBottom: '2px', fontSize: '10px', backgroundColor: '#424242', color: 'white' }}
+                        <Button variant="contained" startIcon={<ClearAllIcon sx={{ fontSize: '10px' }} />} sx={{ paddingLeft: '6px', paddingRight: '4px', paddingTop: '2px', paddingBottom: '2px', fontSize: '10px', backgroundColor: Color.darkgray, color: Color.white }}
                             onClick={() => {
                                 resetRunResults();
                             }}>
@@ -461,21 +462,34 @@ export const ConsoleBox: FC<CustomBoxProps> = ({ treeItems, children, sx, ...pro
                     </Box>
                 </Grid>
             </Grid>
-            <Box sx={{ flex: 1, height: '100%' }}>
+            <Grid size="grow" container direction="column">
+                <div style={{ height: '100%', overflow: 'auto' }}>
 
-                {tmpMsg && <Box sx={{ padding: 1 }}> {tmpMsg}</Box>}
-                {(error) && <Box sx={{ padding: 1, color: error.color }}>エラー
-                    <Box>
-                        {convertNewLinesToBreaks(error.msg)}
-                    </Box>
-                </Box>
-                }
-
-                <Box className={`${styles.overflowAuto}`} style={{ height: 'calc(100% - 120px)' }}>
-                    {runResults && renderResults(runResults)}
-                </Box>
-
-            </Box>
-        </Box>
+                    {/* {tmpMsg && <Grid className={`${styles.w100}`} size="auto" sx={{ padding: 1 }}> {tmpMsg}</Grid>}
+                    {(error) && <Grid className={`${styles.w100}`} size="auto" sx={{ padding: 1, color: error.color }}>エラー
+                        <Box>
+                            {convertNewLinesToBreaks(error.msg)}
+                        </Box>
+                    </Grid>
+                    } */}
+                    <div className={`${styles.w100}`} style={{ backgroundColor: 'red', flexBasis: '0%' }}>エラー
+                        <Box>
+                            いいいいいいいいいいいいいいいいいいいいいいいいいい
+                        </Box>
+                    </div>
+                    <div className={`${styles.w100}`} style={{ backgroundColor: 'yellow', flexGrow: 1 }}>ああああいいいいうううう
+                        <Box>
+                            えええええええ
+                        </Box>
+                    </div>
+                    <div className={`${styles.w100}`} style={{ backgroundColor: 'aqua', flexBasis: '0%' }}>エラー
+                        <Box>
+                            おおおおおおおおおおおおおおおおおおおおおおおおおおおううううううううううううううううううううううううううううううううううううううううううううううううううう
+                        </Box>
+                    </div>
+                </div>
+                {/* {runResults && renderResults(runResults)} */}
+            </Grid>
+        </Grid>
     );
 };

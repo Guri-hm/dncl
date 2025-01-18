@@ -8,6 +8,9 @@
   --slate-900: rgb(15 23 42 / var(--bg-opacity, 1));
   --sky-300: rgb(125 211 252 / var(--bg-opacity, 1));
   --stone-50: #fafaf9;
+  --error: #FF4500;
+  --warnning: #FFFF00;
+  --darkgray: #424242;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -28,5 +31,5 @@ body,
 #__next {
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  /* overflow: hidden; */
 }

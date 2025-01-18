@@ -74,7 +74,7 @@ export default function Home() {
   };
 
   return (
-    <div>
+    <div style={{ border: '7px black solid', height: '100%', margin: 0, padding: 0 }}>
       <h1>JavaScript コード文法チェック</h1>
       <textarea
         rows={10}
@@ -87,6 +87,7 @@ export default function Home() {
       <button onClick={handleCheckSyntax}>文法チェック</button>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <EvaluateComponent></EvaluateComponent>
+      <div style={{ border: '7px black solid', height: '100%', margin: 0, padding: 0 }}>aaaa</div>
     </div>
   );
 }

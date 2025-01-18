@@ -2,12 +2,24 @@
     height: 100%;
 }
 
+.w100 {
+    width: 100%;
+}
+
 .dFlex {
     display: flex;
 }
 
 .flexColumn {
     flex-direction: column;
+}
+
+.bgStone50 {
+    background-color: var(--stone-50);
+}
+
+.marginTop16 {
+    margin-top: 16px;
 }
 
 .bgSlate800 {

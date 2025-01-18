@@ -3,14 +3,14 @@ import * as React from "react";
 import { Allotment } from "allotment";
 import "allotment/dist/style.css";
 import "../components/alloment-custom.css";
-import { SortableTree } from "../components/SortableTree";
-import styles from '@/app/components/editor.module.css';
+import { SortableTree } from "@/app/components/SortableTree";
+import styles from '@/app/components/common.module.css';
 import { styled } from '@mui/system';
 import Box from '@mui/material/Box';
-import { TreeItems } from "../types";
+import { TreeItems } from "@/app/types";
 import Image from "next/image";
 import Typography from '@mui/material/Typography';
-import { ConsoleBox } from "../components/ConsoleBox";
+import { ConsoleBox } from "@/app/components/ConsoleBox";
 
 const initialItems: TreeItems = [
   {
@@ -139,21 +139,18 @@ const initialItems: TreeItems = [
 ]
 
 
-const StyledDiv = styled(Box)(({ theme }) => ({
-  width: '100%', // w-full
-  borderStyle: 'solid', // border-solid
-  borderWidth: '2px', // border-2
-  height: '100vh', // h-dvh (depending on the parent element or viewport height)
-  borderRadius: '0.75rem', // rounded-xl
-  overflow: 'hidden', // overflow-hidden
+const Container = styled(Box)(({ theme }) => ({
+  width: '100%',
+  height: '100vh',
+  borderRadius: '0.75rem',
+  display: 'flex',
+  flexDirection: 'column'
+  // overflow: 'hidden',
 }));
 
-const StyledHeader = styled(Box)(({ theme }) => ({
-  position: 'relative', // relative
+const Header = styled(Box)(({ theme }) => ({
   display: 'flex', // flex
-  color: '#94a3b8', // text-slate-400
-  fontSize: '0.75rem', // text-xs
-  lineHeight: '1.5rem', // leading-6
+  flexBasis: '0%',
 }));
 
 const HeaderItem = styled(Box)(({ theme }) => ({
@@ -163,13 +160,17 @@ const HeaderItem = styled(Box)(({ theme }) => ({
   alignItems: 'center', // items-center
 }));
 
+const ContentsBox = styled(Box)(({ theme }) => ({
+  flexGrow: 1,
+}));
+
 export default function Home() {
 
   const [items, setItems] = React.useState(() => initialItems);
 
   return (
-    <StyledDiv className={`${styles.bgSlate900}`} >
-      <StyledHeader>
+    <Container className={`${styles.bgSlate900}`} >
+      <Header>
         <HeaderItem>
           <Image
             aria-hidden
@@ -187,15 +188,17 @@ export default function Home() {
           </Typography>
 
         </HeaderItem>
-      </StyledHeader>
-      <Allotment vertical defaultSizes={[200, 100]}>
-        <Allotment.Pane>
-          <SortableTree treeItems={items} setTreeItems={setItems} collapsible indicator removable ></SortableTree>
-        </Allotment.Pane>
-        <Allotment.Pane className={`${styles.bgStone50} ${styles.marginTop16}`}>
-          <ConsoleBox treeItems={items}>ここにコードの結果を出力する</ConsoleBox>
-        </Allotment.Pane>
-      </Allotment >
-    </StyledDiv >
+      </Header>
+      <ContentsBox>
+        <Allotment vertical defaultSizes={[200, 100]}>
+          <Allotment.Pane>
+            <SortableTree treeItems={items} setTreeItems={setItems} collapsible indicator removable ></SortableTree>
+          </Allotment.Pane>
+          <Allotment.Pane className={`${styles.bgStone50} ${styles.marginTop16} ${styles.h100} `}>
+            <ConsoleBox treeItems={items}>ここにコードの結果を出力する</ConsoleBox>
+          </Allotment.Pane>
+        </Allotment >
+      </ContentsBox>
+    </Container >
   );
 }
