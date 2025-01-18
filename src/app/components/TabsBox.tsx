@@ -3,28 +3,48 @@ import Tab, { TabProps } from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import styles from './tabs-box.module.css'
 import { BoxProps, styled } from '@mui/system';
-import { IconButton, Snackbar } from '@mui/material';
+import { Button, IconButton, Snackbar } from '@mui/material';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import cmnStyles from '@/app/components/common.module.css';
 import { Children, FC, forwardRef, useRef, useState } from 'react';
+import { useDraggable } from "@dnd-kit/core";
 
 interface TabsProps {
     value: number;
     onChange: (event: React.SyntheticEvent, newValue: number) => void;
-    keyProps: (index: number) => { id: string; 'aria-controls': string };
+    a11yProps: (index: number) => { id: string; 'aria-controls': string };
     tabLabels: string[];
     tabClasses?: string[];
 }
 
-const CustomTabs: FC<TabsProps> = ({ value, onChange, keyProps, tabLabels, tabClasses = [] }) => {
+interface CustomTabProps {
+    id: number;
+    a11yProps: (index: number) => { id: string; 'aria-controls': string };
+    tabLabel: string;
+    tabClasses?: string[];
+}
+
+const CustomTabs: FC<TabsProps> = ({ value, onChange, a11yProps, tabLabels, tabClasses = [] }) => {
+
     return (
         <Tabs sx={{ minHeight: 'unset' }} value={value} onChange={onChange} aria-label="tabs">
             {tabLabels.map((label, index) => (
 
+                <DraggableTab id={index} key={label} a11yProps={a11yProps} tabLabel={label} tabClasses={tabClasses}></DraggableTab>
+
+            ))}
+        </Tabs>
+    );
+};
+
+const CustomTabsTest: FC<TabsProps> = ({ value, onChange, a11yProps, tabLabels, tabClasses = [] }) => {
+    return (
+        <Tabs sx={{ minHeight: 'unset' }} value={value} onChange={onChange} aria-label="tabs">
+            {tabLabels.map((label, index) => (
                 <Tab key={label}
                     label={label}
                     className={tabClasses[index] || ''}
-                    {...keyProps(index)}
+                    {...a11yProps(index)}
                     sx={{
                         marginTop: '0.5rem',
                         flex: 'none',
@@ -37,11 +57,92 @@ const CustomTabs: FC<TabsProps> = ({ value, onChange, keyProps, tabLabels, tabCl
                         fontSize: '0.75rem',
                         minHeight: 'auto',
                         padding: '10px',
-                    }}>
-
+                    }}
+                >
                 </Tab>
             ))}
         </Tabs>
+    );
+};
+
+
+interface StyledTabProps extends TabProps { className?: string; }
+const StyledTab = styled((props: StyledTabProps) =>
+(<Tab {...props} >
+
+
+
+</Tab>))(({ theme }) =>
+({
+    marginTop: '0.5rem',
+    flex: 'none',
+    color: '#38bdf8',
+    borderTop: 'transparent',
+    paddingX: '1rem',
+    paddingY: '0.25rem',
+    display: 'flex',
+    alignItems: 'center',
+    fontSize: '0.75rem',
+    minHeight: 'auto',
+    padding: '10px',
+}));
+
+const TestTab: FC<CustomTabProps> = ({ id, a11yProps, tabClasses = [], tabLabel }) => {
+
+    return (
+        <Tab key={tabLabel}
+            label={tabLabel}
+            className={tabClasses[id] || ''}
+            {...a11yProps(id)}
+            sx={{
+                marginTop: '0.5rem',
+                flex: 'none',
+                color: '#38bdf8',
+                borderTop: 'transparent',
+                paddingX: '1rem',
+                paddingY: '0.25rem',
+                display: 'flex',
+                alignItems: 'center',
+                fontSize: '0.75rem',
+                minHeight: 'auto',
+                padding: '10px',
+            }}
+        >
+        </Tab>
+    );
+};
+
+const DraggableTab: FC<CustomTabProps> = ({ id, a11yProps, tabClasses = [], tabLabel }) => {
+    const {
+        setNodeRef,
+        listeners,
+        attributes,
+    } = useDraggable({
+        id
+    });
+    return (
+        <Tab key={tabLabel}
+            label={tabLabel}
+            className={tabClasses[id] || ''}
+            {...a11yProps(id)}
+            sx={{
+                marginTop: '0.5rem',
+                flex: 'none',
+                color: '#38bdf8',
+                borderTop: 'transparent',
+                paddingX: '1rem',
+                paddingY: '0.25rem',
+                display: 'flex',
+                alignItems: 'center',
+                fontSize: '0.75rem',
+                minHeight: 'auto',
+                padding: '10px',
+            }}
+            ref={setNodeRef}
+            {...attributes}
+            {...listeners}
+        >
+        </Tab>
     );
 };
 
@@ -70,7 +171,8 @@ const TabPanel = forwardRef<HTMLDivElement, TabPanelProps>(({ children, index, v
     );
 });
 
-function keyProps(index: number) {
+//a11yはaccessibilityの略記
+function a11yProps(index: number) {
     return {
         id: `simple-tab-${index}`,
         'aria-controls': `simple-tabpanel-${index}`,
@@ -143,6 +245,7 @@ export default function TabsBox({ tabs, ...props }: Props) {
     const [snackbar, setSnackbar] = useState<{ open: boolean, duration: number, text: string }>({ open: false, duration: 3000, text: '' });
 
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+        alert(newValue)
         setValue(newValue);
     };
     const handleClose = () => {
@@ -155,10 +258,10 @@ export default function TabsBox({ tabs, ...props }: Props) {
     return (
         <TabsWrapper>
             <Header>
-                <CustomTabs
+                <CustomTabsTest
                     value={value}
                     onChange={handleChange}
-                    keyProps={keyProps}
+                    a11yProps={a11yProps}
                     tabLabels={tabLabels}
                     tabClasses={tabLabels.map((_, index) => `${value === index ? styles.tabSelected : styles.tab}`)}
                 />
@@ -183,7 +286,6 @@ export default function TabsBox({ tabs, ...props }: Props) {
                     </TabFillerInner>
                 </TabFillerContainer>
             </Header>
-
             {
                 Children.map(tabPanels, (child, index) => (
                     <TabPanel value={value} index={index} key={index} ref={contentRef}> {child} </TabPanel>

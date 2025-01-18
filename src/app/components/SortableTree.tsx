@@ -196,89 +196,88 @@ export function SortableTree({
     return null;
   }
   return (
-    <DndContext
-      // 衝突検知を collisionDetection={closestCenter} にすると、全エリアでDropOver扱いになる
-      sensors={sensors}
-      measuring={measuring}
-      collisionDetection={closestCenter}
-      onDragStart={handleDragStart}
-      onDragMove={handleDragMove}
-      onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}
-      onDragCancel={handleDragCancel}
-    >
-      <DnclEditDialog {...editor}></DnclEditDialog>
-      <Allotment separator={false} defaultSizes={[50, 50, 100, 200]} className={styles.splitViewContainer} onVisibleChange={(_index, value) => {
-        setVisible(value);
-      }}>
-        <Allotment.Pane maxSize={50} minSize={50} className={`${styles.paneBg}`}>
-          <ArrowButton setVisible={setVisible} visible={visible}></ArrowButton>
-        </Allotment.Pane>
-        <Allotment.Pane visible={visible} className={`${styles.leftPane} ${styles.paneBg}`} snap>
-          <Box sx={{ padding: '10px' }}>
-            <Box sx={{ fontSize: '1.125rem', fontWeight: 'bold', backgroundColor: '#cbd5e1' }}>ドラッグして行を追加</Box>
-            {fragments.map(({ id, line }) => (
-              <FragmentsListItem
-                key={id}
-                id={id}
-                value={line}
-              />
-            ))}
-          </Box>
-        </Allotment.Pane>
-
-        <div className={`${cmnStyles.hFull}`} style={{ marginLeft: '17px', marginRight: '5px' }}>
-          <Allotment.Pane ref={ref} className={`${styles.rightPane} ${cmnStyles.hFull} ${cmnStyles.overflowAuto}`} >
-
-            <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
-              {flattenedItems.map(({ id, children, collapsed, depth, line }, index) => (
-                <SortableTreeItem
+    <>
+      <DndContext
+        // 衝突検知を collisionDetection={closestCenter} にすると、全エリアでDropOver扱いになる
+        sensors={sensors}
+        measuring={measuring}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragMove={handleDragMove}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
+      >
+        <DnclEditDialog {...editor}></DnclEditDialog>
+        <Allotment separator={false} defaultSizes={[50, 50, 100, 200]} className={styles.splitViewContainer} onVisibleChange={(_index, value) => {
+          setVisible(value);
+        }}>
+          <Allotment.Pane maxSize={50} minSize={50} className={`${styles.paneBg}`}>
+            <ArrowButton setVisible={setVisible} visible={visible}></ArrowButton>
+          </Allotment.Pane>
+          <Allotment.Pane visible={visible} className={`${styles.leftPane} ${styles.paneBg}`} snap>
+            <Box sx={{ padding: '10px' }}>
+              <Box sx={{ fontSize: '1.125rem', fontWeight: 'bold', backgroundColor: '#cbd5e1' }}>ドラッグして行を追加</Box>
+              {fragments.map(({ id, line }) => (
+                <FragmentsListItem
                   key={id}
                   id={id}
                   value={line}
-                  depth={id === activeId && projected ? projected.depth : depth}
-                  indentationWidth={indentationWidth}
-                  indicator={indicator}
-                  collapsed={Boolean(collapsed && children.length)}
-                  onCollapse={
-                    collapsible && children.length
-                      ? () => handleCollapse(id)
-                      : undefined
-                  }
-                  onRemove={removable ? () => handleRemove(id) : undefined}
-                  isError={dnclValidation.lineNum.includes(index + 1)}
                 />
               ))}
-            </SortableContext>
-            {/* <TabsBox tabLabels={['DNCL(編集用)', 'DNCL']}>
-            </TabsBox> */}
-
-            {createPortal(
-              <DragOverlay
-                dropAnimation={dropAnimation}
-                modifiers={indicator ? [adjustTranslate] : undefined}
-              >
-                {activeId && activeItem ? (
-                  <SortableTreeItem
-                    id={activeId}
-                    depth={activeItem.depth}
-                    clone
-                    childCount={getChildCount(treeItems, activeId) + 1}
-                    value={activeCode ? activeCode : ""}
-                    indentationWidth={indentationWidth}
-                  />
-                ) : null}
-              </DragOverlay>,
-              document.body
-            )}
+            </Box>
           </Allotment.Pane>
 
-        </div>
-        <CnvWrapper treeItems={treeItems}></CnvWrapper>
+          <div className={`${cmnStyles.hFull}`} style={{ marginLeft: '17px', marginRight: '5px' }}>
+            <Allotment.Pane ref={ref} className={`${styles.rightPane} ${cmnStyles.hFull} ${cmnStyles.overflowAuto}`} >
 
+              <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
+                {flattenedItems.map(({ id, children, collapsed, depth, line }, index) => (
+                  <SortableTreeItem
+                    key={id}
+                    id={id}
+                    value={line}
+                    depth={id === activeId && projected ? projected.depth : depth}
+                    indentationWidth={indentationWidth}
+                    indicator={indicator}
+                    collapsed={Boolean(collapsed && children.length)}
+                    onCollapse={
+                      collapsible && children.length
+                        ? () => handleCollapse(id)
+                        : undefined
+                    }
+                    onRemove={removable ? () => handleRemove(id) : undefined}
+                    isError={dnclValidation.lineNum.includes(index + 1)}
+                  />
+                ))}
+              </SortableContext>
+              {/* <TabsBox tabLabels={['DNCL(編集用)', 'DNCL']}>
+            </TabsBox> */}
 
-      </Allotment>
-    </DndContext >
+              {createPortal(
+                <DragOverlay
+                  dropAnimation={dropAnimation}
+                  modifiers={indicator ? [adjustTranslate] : undefined}
+                >
+                  {activeId && activeItem ? (
+                    <SortableTreeItem
+                      id={activeId}
+                      depth={activeItem.depth}
+                      clone
+                      childCount={getChildCount(treeItems, activeId) + 1}
+                      value={activeCode ? activeCode : ""}
+                      indentationWidth={indentationWidth}
+                    />
+                  ) : null}
+                </DragOverlay>,
+                document.body
+              )}
+            </Allotment.Pane>
+
+          </div>
+        </Allotment>
+      </DndContext >
+    </>
   );
 
   function handleDragStart({ active: { id: activeId } }: DragStartEvent) {

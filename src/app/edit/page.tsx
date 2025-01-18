@@ -16,6 +16,7 @@ import { HeaderItem } from "../components/HeaderItem";
 import { ContentWrapper } from "../components/ContentWrapper";
 import { useEffect, useState } from "react";
 import { checkDNCLSyntax, flattenTree } from "../utilities";
+import { CnvWrapper } from "../components/CnvWrapper";
 
 const initialItems: TreeItems = sampleFuncItems;
 
@@ -81,9 +82,14 @@ export default function Home() {
       </Header>
       <ContentWrapper>
         <Allotment vertical defaultSizes={[200, 100]}>
-          <Allotment.Pane>
-            <SortableTree treeItems={items} setTreeItems={setItems} dnclValidation={dnclValidation} collapsible indicator removable ></SortableTree>
-          </Allotment.Pane>
+          <Allotment defaultSizes={[100, 100]}>
+            <Allotment>
+              <SortableTree treeItems={items} setTreeItems={setItems} dnclValidation={dnclValidation} collapsible indicator removable ></SortableTree>
+            </Allotment>
+            <Allotment>
+              <CnvWrapper treeItems={items}></CnvWrapper>
+            </Allotment>
+          </Allotment>
 
           <Allotment.Pane className={`${styles.bgStone50} ${styles.marginTop16} ${styles.hFull} `}>
 

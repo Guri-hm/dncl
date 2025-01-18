@@ -19,7 +19,7 @@ interface Tab {
 
 export const CnvWrapper: FC<Props> = ({ treeItems }) => {
 
-    const tabs2: Tab[] = [
+    const [tabs2, setTabs2] = useState([
         {
             title: 'javascript', component: <JsTab treeItems={treeItems}>
                 javascriptのコード
@@ -35,7 +35,8 @@ export const CnvWrapper: FC<Props> = ({ treeItems }) => {
                 VBAのコード
             </VbaTab>
         },
-    ];
+    ]);
+
     const tabs1: Tab[] = [
         {
             title: 'DNCL', component: <DnclTab treeItems={treeItems}>
