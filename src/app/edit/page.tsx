@@ -54,7 +54,6 @@ export default function Home() {
             <ConsoleBox tabLabels={['コンソール']} setRunResults={setRunResults}>
               <ConsoleTab treeItems={items} runResults={runResults} setRunResults={setRunResults}></ConsoleTab>
             </ConsoleBox>
-            {/* <ConsoleBox treeItems={items}>ここにコードの結果を出力する</ConsoleBox> */}
           </Allotment.Pane>
         </Allotment >
       </ContentWrapper>

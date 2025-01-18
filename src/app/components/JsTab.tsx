@@ -2,7 +2,7 @@ import { Box, BoxProps } from "@mui/material";
 import { FC, useEffect, useState, Fragment } from "react";
 import { TreeItems } from "../types";
 import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, LoopEnum, ArithmeticOperator } from "../enum";
-import { cnvToDivision, cnvToRomaji, containsJapanese, getEnumIndex, tryParseToJsFunction } from "../utilities";
+import { cnvToDivision, cnvToRomaji, containsJapanese, tryParseToJsFunction } from "../utilities";
 import ScopeBox from "./ScopeBox";
 import styles from './tab.module.css';
 

@@ -74,7 +74,7 @@ export const ConsoleBox = ({ children, tabLabels, setRunResults }: Props) => {
             }} container direction="row" justifyContent="space-between" alignItems="center">
                 <Grid>
                     <Box>
-                        コンソール
+                        {tabLabels[0]}
                     </Box>
                 </Grid>
                 <Grid>

@@ -1,14 +1,11 @@
 import React from 'react';
-import { Box, BoxProps, Button } from "@mui/material";
-import { FC, useEffect, useState, Fragment, ReactElement } from "react";
-import { FlattenedItem, TreeItem, TreeItems } from "../types";
+import { Box, BoxProps } from "@mui/material";
+import { useEffect, useState, Fragment } from "react";
+import { FlattenedItem, TreeItems } from "../types";
 import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, LoopEnum, ArithmeticOperator } from "../enum";
-import { cnvToDivision, cnvToRomaji, containsJapanese, flattenTree, getEnumIndex, tryParseToJsFunction } from "../utilities";
-import { SxProps, Theme } from '@mui/material';
+import { cnvToDivision, cnvToRomaji, containsJapanese, flattenTree, tryParseToJsFunction } from "../utilities";
 import { ErrObj } from "../types";
 import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Grid2';
-import ClearAllIcon from '@mui/icons-material/ClearAll';
 
 interface CustomBoxProps extends BoxProps {
     children?: React.ReactNode;
@@ -295,7 +292,7 @@ const Color = {
     white: 'white'
 }
 
-export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults,setRunResults }) => {
+export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, setRunResults }) => {
 
     const [shouldRunEffect, setShouldRunEffect] = useState(false);
     const [code, setCode] = useState('');
@@ -393,7 +390,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults,set
             }
 
             const data = await response.json();
-            setRunResults((prevResults:string[]) => (prevResults ? [...prevResults, data.result] : [data.result]));
+            setRunResults((prevResults: string[]) => (prevResults ? [...prevResults, data.result] : [data.result]));
         } catch (err: any) {
             setError({ color: Color.error, msg: err.message || 'An unexpected error occurred' });
         }
