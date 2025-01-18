@@ -14,7 +14,6 @@ interface CustomBoxProps extends BoxProps {
     setRunResults: any;
 }
 
-
 const cnvToken = (token: string): string => {
     token = cnvToDivision(token);
     const { convertedStr } = tryParseToJsFunction(token);
@@ -121,18 +120,15 @@ const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedItem, line
 
     switch (processIndex) {
         case ProcessEnum.Output:
-            //処理なし
-            break;
         case ProcessEnum.SetValToVariableOrArray:
-            //右辺に配列がある場合，同じまたは上位の深度で初期化されている必要がある
-
-            //代入先に配列がある場合，存在しないインデックスに入れられない
-            break;
         case ProcessEnum.InitializeArray:
-            //処理なし
+        case ProcessEnum.BulkAssignToArray: {
+            if (targetItem.children.length > 0) {
+                result = { errors: [`${lineNum}行目:この行には別の処理をぶら下げられません`], hasError: true };
+                break;
+            }
             break;
-        case ProcessEnum.BulkAssignToArray:
-            break;
+        }
 
         case ProcessEnum.If: {
             //接続する要素が同じ深度・同じ親IDで次の要素
@@ -176,6 +172,11 @@ const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedItem, line
             let hasItem = prevItem?.processIndex == ProcessEnum.If || nextItem?.processIndex == ProcessEnum.ElseIf || nextItem?.processIndex == ProcessEnum.Else;
             if (!hasItem || !prevItem) {
                 result = { errors: [`${lineNum}行目:先行処理に「もし<条件>ならば」「を実行し，そうでなくもし<条件>ならば」「を実行し，そうでなければ」のいずれかを配置してください`], hasError: true };
+                break;
+            }
+            if (targetItem.children.length > 0) {
+                result = { errors: [`${lineNum}行目:この行には別の処理をぶら下げられません`], hasError: true };
+                break;
             }
             break;
         }
@@ -194,6 +195,11 @@ const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedItem, line
             const hasItem = prevItem?.processIndex == ProcessEnum.While;
             if (!hasItem || !prevItem) {
                 result = { errors: [`${lineNum}行目:先行処理に「<条件>の間」がないか，配置に誤りがあります`], hasError: true };
+                break;
+            }
+            if (targetItem.children.length > 0) {
+                result = { errors: [`${lineNum}行目:この行には別の処理をぶら下げられません`], hasError: true };
+                break;
             }
             break;
         }
@@ -211,6 +217,11 @@ const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedItem, line
             const hasItem = prevItem?.processIndex == ProcessEnum.DoWhile;
             if (!hasItem || !prevItem) {
                 result = { errors: [`${lineNum}行目:先行処理に「繰り返し，」がないか，配置に誤りがあります`], hasError: true };
+                break;
+            }
+            if (targetItem.children.length > 0) {
+                result = { errors: [`${lineNum}行目:この行には別の処理をぶら下げられません`], hasError: true };
+                break;
             }
             break;
         }
@@ -229,6 +240,11 @@ const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedItem, line
             const hasItem = prevItem?.processIndex == ProcessEnum.ForIncrement || prevItem?.processIndex == ProcessEnum.ForDecrement;
             if (!hasItem || !prevItem) {
                 result = { errors: [`${lineNum}行目:先行処理に「順次繰り返しの開始」がないか，配置に誤りがあります`], hasError: true };
+                break;
+            }
+            if (targetItem.children.length > 0) {
+                result = { errors: [`${lineNum}行目:この行には別の処理をぶら下げられません`], hasError: true };
+                break;
             }
             break;
         }
@@ -246,6 +262,11 @@ const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedItem, line
             const hasItem = prevItem?.processIndex == ProcessEnum.DefineFunction;
             if (!hasItem || !prevItem) {
                 result = { errors: [`${lineNum}行目:先行処理に「関数の定義の開始」がないか，配置に誤りがあります`], hasError: true };
+                break;
+            }
+            if (targetItem.children.length > 0) {
+                result = { errors: [`${lineNum}行目:この行には別の処理をぶら下げられません`], hasError: true };
+                break;
             }
             break;
         }
@@ -269,6 +290,11 @@ const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedItem, line
 
             if (!hasFuncItems) {
                 result = { errors: [`${lineNum}行目:実行する関数を定義してください`], hasError: true };
+                break;
+            }
+
+            if (targetItem.children.length > 0) {
+                result = { errors: [`${lineNum}行目:この行には別の処理をぶら下げられません`], hasError: true };
                 break;
             }
             break;
