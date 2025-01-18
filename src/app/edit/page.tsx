@@ -4,7 +4,7 @@ import "allotment/dist/style.css";
 import "../components/alloment-custom.css";
 import { SortableTree } from "@/app/components/SortableTree";
 import styles from '@/app/components/common.module.css';
-import { TreeItems } from "@/app/types";
+import { ErrObj, FlattenedItem, TreeItems } from "@/app/types";
 import Image from "next/image";
 import Typography from '@mui/material/Typography';
 import { ConsoleBox } from "@/app/components/ConsoleBox";
@@ -14,7 +14,8 @@ import { sampleFuncItems } from "../components/SampleDncl";
 import { Header } from "../components/Header";
 import { HeaderItem } from "../components/HeaderItem";
 import { ContentWrapper } from "../components/ContentWrapper";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { checkDNCLSyntax, flattenTree } from "../utilities";
 
 const initialItems: TreeItems = sampleFuncItems;
 
@@ -22,6 +23,40 @@ export default function Home() {
 
   const [items, setItems] = useState(() => initialItems);
   const [runResults, setRunResults] = useState<string[]>([]);
+  const [shouldRunEffect, setShouldRunEffect] = useState(false);
+  const [dnclValidation, setDnclValidation] = useState<{ hasError: boolean; errors: string[]; guid: number }>({ hasError: false, errors: [], guid: 0 });
+  const [tmpMsg, setTmpMsg] = useState<string>('ここに出力結果が表示されます');
+
+  useEffect(() => {
+
+    setTmpMsg('DNCL解析中・・・')
+
+    const timer = setTimeout(() => {
+      setShouldRunEffect(true);
+    }, 2000); // 2秒後に実行
+    return () => clearTimeout(timer); // クリーンアップ
+  }, [items]);
+
+  useEffect(() => {
+    if (shouldRunEffect) {
+      // フラグをリセット
+      setShouldRunEffect(false);
+      const flatten = flattenTree(items);
+
+      let result: ErrObj = { errors: [], hasError: false };
+      flatten.map((item: FlattenedItem, index) => {
+        const { hasError, errors } = checkDNCLSyntax(flatten, item, index + 1);
+        if (hasError) {
+          result.hasError = true;
+          result.errors.push(...errors);
+        }
+      })
+
+      //useEffectが変更を検知できるように乱数を使う
+      setDnclValidation({ ...result, guid: Math.random() });
+
+    }
+  }, [shouldRunEffect]);
 
   return (
     <PageWrapper>
@@ -52,7 +87,7 @@ export default function Home() {
           <Allotment.Pane className={`${styles.bgStone50} ${styles.marginTop16} ${styles.hFull} `}>
 
             <ConsoleBox tabLabels={['コンソール']} setRunResults={setRunResults}>
-              <ConsoleTab treeItems={items} runResults={runResults} setRunResults={setRunResults}></ConsoleTab>
+              <ConsoleTab treeItems={items} runResults={runResults} setRunResults={setRunResults} dnclValidation={dnclValidation} tmpMsg={tmpMsg} setTmpMsg={setTmpMsg}></ConsoleTab>
             </ConsoleBox>
           </Allotment.Pane>
         </Allotment >
