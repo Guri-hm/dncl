@@ -13,7 +13,8 @@ import ClearAllIcon from '@mui/icons-material/ClearAll';
 interface CustomBoxProps extends BoxProps {
     children?: React.ReactNode;
     treeItems: TreeItems;
-    testEvent?: any;
+    runResults: string[];
+    setRunResults: any;
 }
 
 
@@ -294,11 +295,10 @@ const Color = {
     white: 'white'
 }
 
-export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, testEvent }) => {
+export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults,setRunResults }) => {
 
     const [shouldRunEffect, setShouldRunEffect] = useState(false);
     const [code, setCode] = useState('');
-    const [runResults, setRunResults] = useState<string[]>([]);
     const [error, setError] = useState<Err | null>(null);
     const [tmpMsg, setTmpMsg] = useState<string>('ここに出力結果が表示されます');
 
@@ -336,10 +336,6 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, testEvent }) =
     };
 
     useEffect(() => {
-        if (testEvent) {
-            testEvent();
-
-        }
         setTmpMsg('コード解析中・・・');
         const timer = setTimeout(() => {
             setShouldRunEffect(true);
@@ -397,7 +393,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, testEvent }) =
             }
 
             const data = await response.json();
-            setRunResults((prevResults) => (prevResults ? [...prevResults, data.result] : [data.result]));
+            setRunResults((prevResults:string[]) => (prevResults ? [...prevResults, data.result] : [data.result]));
         } catch (err: any) {
             setError({ color: Color.error, msg: err.message || 'An unexpected error occurred' });
         }

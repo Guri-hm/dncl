@@ -4,12 +4,10 @@ import "allotment/dist/style.css";
 import "../components/alloment-custom.css";
 import { SortableTree } from "@/app/components/SortableTree";
 import styles from '@/app/components/common.module.css';
-import Box from '@mui/material/Box';
 import { TreeItems } from "@/app/types";
 import Image from "next/image";
 import Typography from '@mui/material/Typography';
 import { ConsoleBox } from "@/app/components/ConsoleBox";
-import { ConsoleBoxTes } from "@/app/components/ConsoleBoxTes";
 import { ConsoleTab } from "../components/ConsoleTab";
 import { PageWrapper } from "../components/PageWrapper";
 import { sampleFuncItems } from "../components/SampleDncl";
@@ -23,6 +21,7 @@ const initialItems: TreeItems = sampleFuncItems;
 export default function Home() {
 
   const [items, setItems] = useState(() => initialItems);
+  const [runResults, setRunResults] = useState<string[]>([]);
 
   return (
     <PageWrapper>
@@ -52,9 +51,9 @@ export default function Home() {
 
           <Allotment.Pane className={`${styles.bgStone50} ${styles.marginTop16} ${styles.hFull} `}>
 
-            <ConsoleBoxTes tabLabels={['コンソール']}>
-              <ConsoleTab treeItems={items}></ConsoleTab>
-            </ConsoleBoxTes>
+            <ConsoleBox tabLabels={['コンソール']} setRunResults={setRunResults}>
+              <ConsoleTab treeItems={items} runResults={runResults} setRunResults={setRunResults}></ConsoleTab>
+            </ConsoleBox>
             {/* <ConsoleBox treeItems={items}>ここにコードの結果を出力する</ConsoleBox> */}
           </Allotment.Pane>
         </Allotment >
