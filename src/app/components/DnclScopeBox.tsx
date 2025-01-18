@@ -1,7 +1,7 @@
 // components/ScopeBox.tsx
 import React from 'react';
 import Box from '@mui/material/Box';
-import { fontStyle, fontWeight, margin, styled } from '@mui/system';
+import { styled } from '@mui/system';
 
 interface ScopeBoxProps {
     children: React.ReactNode;

@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import * as babelParser from '@babel/parser';
 import EvaluateComponent from '../components/EvaluateComponent';
+import { ChildComponent, ParentComponent } from '../components/Test';
 
 const errorTranslations: { [key: string]: string } = {
   "Unexpected token": "予期しないトークンが見つかりました",
@@ -87,7 +88,12 @@ export default function Home() {
       <button onClick={handleCheckSyntax}>文法チェック</button>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <EvaluateComponent></EvaluateComponent>
-      <div style={{ border: '7px black solid', height: '100%', margin: 0, padding: 0 }}>aaaa</div>
+
+
+      <ParentComponent>
+        <ChildComponent></ChildComponent>
+      </ParentComponent>
+
     </div>
   );
 }

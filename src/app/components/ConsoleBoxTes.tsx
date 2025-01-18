@@ -3,15 +3,17 @@ import Tabs from '@mui/material/Tabs';
 import Tab, { TabProps } from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import styles from './tabs-box.module.css'
-import { BoxProps, createTheme, styled, ThemeProvider } from '@mui/system';
-import { CssBaseline, IconButton } from '@mui/material';
+import { BoxProps, styled } from '@mui/system';
+import { Button, IconButton } from '@mui/material';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import cmnStyles from '@/app/components/common.module.css';
+import ClearAllIcon from '@mui/icons-material/ClearAll';
 
 interface TabPanelProps {
     children?: React.ReactNode;
     index: number;
     value: number;
+    onChange?: any;
 }
 
 interface StyledTabsProps {
@@ -38,24 +40,28 @@ const StyledTabs = styled((props: StyledTabsProps) => {
     );
 })(({ theme }) => ({})); // 必要に応じてスタイルを追加
 
-function TabPanel(props: TabPanelProps) {
-    const { children, value, index } = props;
+function TabPanel(params: TabPanelProps) {
+    const { children, value, index, ...props } = params;
+
     return (
         <>
-
             {value === index &&
-
                 <Box className={`${cmnStyles.overflowAuto}`} sx={{
                     wordBreak: 'break-all',
                     flex: 1,
                     color: 'white',
-                    margin: '15px'
+                    paddingLeft: '15px',
+                    paddingRight: '10px',
+                    paddingTop: '10px',
+                    paddingBottom: '30px'
                 }} role="tabpanel"
                     hidden={value !== index}
                     id={`simple-tabpanel-${index}`}
-                    aria-labelledby={`simple-tab-${index}`}>{children}</Box>
-
+                    aria-labelledby={`simple-tab-${index}`} {...props}>
+                    {children}
+                </Box>
             }
+
         </>
     );
 }
@@ -141,12 +147,13 @@ type Props = {
     children: React.ReactNode | React.ReactNode[];
     tabLabels: string[];
 }
-export default function TabsBox({ children, tabLabels, ...props }: Props) {
+export const ConsoleBoxTes = ({ children, tabLabels, ...props }: Props) => {
     const [value, setValue] = React.useState(0);
 
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue);
     };
+    const handleChangeTest = (event: any) => { console.log('イベントが発生しました:', event); };
 
     return (
         <StyledBox>
@@ -160,15 +167,19 @@ export default function TabsBox({ children, tabLabels, ...props }: Props) {
                 />
                 <TabFillerContainer>
                     <TabFillerInner>
-                        <IconButton size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: '#fff' } }} aria-label="clipboard">
-                            <AssignmentIcon />
-                        </IconButton>
+                        <Button variant="contained" startIcon={<ClearAllIcon sx={{ fontSize: '10px' }} />} sx={{ paddingLeft: '6px', paddingRight: '4px', paddingTop: '2px', paddingBottom: '2px', fontSize: '10px', backgroundColor: 'var(--darkgray)', color: 'white' }}
+                            onClick={() => {
+                            }}>
+                            リセット
+                        </Button>
                     </TabFillerInner>
                 </TabFillerContainer>
             </Header>
             {React.Children.map(children, (child, index) => (
-                <TabPanel value={value} index={index} key={index}> {child} </TabPanel>
+                <TabPanel index={index} value={value} key={index} onChange={handleChange}>
+                    {child}
+                </TabPanel>
             ))}
         </StyledBox>
     );
-}
+};

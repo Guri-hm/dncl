@@ -146,6 +146,7 @@ export const PythonTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...prop
     const [nodes, setNodes] = useState<React.ReactNode>(children);
 
     useEffect(() => {
+        setNodes("変換中");
         const timer = setTimeout(() => {
             setShouldRunEffect(true);
         }, 1000); // 1秒後に実行
