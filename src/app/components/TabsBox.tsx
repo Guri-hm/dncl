@@ -6,11 +6,9 @@ import { BoxProps, createTheme, styled, ThemeProvider } from '@mui/system';
 import { Alert, CssBaseline, IconButton, Snackbar } from '@mui/material';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import cmnStyles from '@/app/components/common.module.css';
-import { Children, forwardRef, useRef, useState } from 'react';
+import { Children, FC, forwardRef, useRef, useState } from 'react';
 
-
-
-interface StyledTabsProps {
+interface TabsProps {
     value: number;
     onChange: (event: React.SyntheticEvent, newValue: number) => void;
     a11yProps: (index: number) => { id: string; 'aria-controls': string };
@@ -18,8 +16,7 @@ interface StyledTabsProps {
     tabClasses?: string[];
 }
 
-const StyledTabs = styled((props: StyledTabsProps) => {
-    const { value, onChange, a11yProps, tabLabels, tabClasses = [] } = props;
+const CustomTabs: FC<TabsProps> = ({ value, onChange, a11yProps, tabLabels, tabClasses = [] }) => {
     return (
         <Tabs sx={{ minHeight: 'unset' }} value={value} onChange={onChange} aria-label="tabs">
             {tabLabels.map((label, index) => (
@@ -32,7 +29,7 @@ const StyledTabs = styled((props: StyledTabsProps) => {
             ))}
         </Tabs>
     );
-})(({ theme }) => ({})); // 必要に応じてスタイルを追加
+};
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -84,7 +81,7 @@ const StyledTab = styled((props: StyledTabProps) =>
     }));
 
 
-const StyledBox = styled((props: BoxProps) => (
+const TabsWrapper = styled((props: BoxProps) => (
     <Box {...props} />
 ))(({ theme }) => ({
     height: '100%',
@@ -107,34 +104,50 @@ const StyledBox = styled((props: BoxProps) => (
     },
 }));
 
-const Header = styled((props: BoxProps) => (
-    <Box {...props} />
-))(({ theme }) => ({
-    flexBasis: '0%',
-    position: 'relative',
-    display: 'flex',
-    color: '#94a3b8',
-    fontSize: '0.75rem',
-    lineHeight: '1.5rem',
-}));
+const Header: FC<BoxProps> = ({ children }) => {
+    return (
+        <Box sx={{
+            flexBasis: '0%',
+            position: 'relative',
+            display: 'flex',
+            color: '#94a3b8',
+            fontSize: '0.75rem',
+            lineHeight: '1.5rem',
+        }} >
+            {children}
+        </Box>
+    );
+};
 
-const TabFillerContainer = styled(Box)(({ theme }) => ({
-    flex: 'auto',
-    display: 'flex',
-    paddingTop: '0.5rem',
-    overflow: 'hidden',
-    position: 'relative',
-}));
+const TabFillerContainer: FC<BoxProps> = ({ children }) => {
+    return (
+        <Box sx={{
+            flex: 'auto',
+            display: 'flex',
+            paddingTop: '0.5rem',
+            overflow: 'hidden',
+            position: 'relative',
+        }} >
+            {children}
+        </Box>
+    );
+};
 
-const TabFillerInner = styled(Box)(({ theme }) => ({
-    flex: '1',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    display: 'flex',
-    marginRight: '-1px',
-    backgroundColor: 'rgba(71, 85, 105, 0.5)', // bg-slate-700/50
-    border: '1px solid rgba(71, 85, 105, 0.3)', // border-slate-500/30
-}));
+const TabFillerInner: FC<BoxProps> = ({ children }) => {
+    return (
+        <Box sx={{
+            flex: '1',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            display: 'flex',
+            marginRight: '-1px',
+            backgroundColor: 'rgba(71, 85, 105, 0.5)', // bg-slate-700/50
+            border: '1px solid rgba(71, 85, 105, 0.3)', // border-slate-500/30
+        }} >
+            {children}
+        </Box>
+    );
+};
 
 type Props = {
     children: React.ReactNode | React.ReactNode[];
@@ -153,9 +166,9 @@ export default function TabsBox({ children, tabLabels, ...props }: Props) {
     };
 
     return (
-        <StyledBox>
+        <TabsWrapper>
             <Header>
-                <StyledTabs
+                <CustomTabs
                     value={value}
                     onChange={handleChange}
                     a11yProps={a11yProps}
@@ -196,6 +209,6 @@ export default function TabsBox({ children, tabLabels, ...props }: Props) {
                 onClose={handleClose}
                 message={snackbar.text}
             />
-        </StyledBox >
+        </TabsWrapper >
     );
 }

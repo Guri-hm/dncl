@@ -15,9 +15,6 @@ interface Props {
 
 export const CnvWrapper: FC<Props> = ({ treeItems }) => {
 
-    const [code1, setCode1] = useState<React.ReactNode>(null);
-    const [code2, setCode2] = useState<React.ReactNode>(null);
-
     return (
         <Allotment>
             <div className={`${cmnStyles.hFull}`} style={{ marginLeft: '16px' }}>
@@ -33,13 +30,13 @@ export const CnvWrapper: FC<Props> = ({ treeItems }) => {
                 <Allotment.Pane className={`${cmnStyles.hFull}`}>
                     <TabsBox tabLabels={['javascript', 'Python', 'VBA']}>
                         <JsTab treeItems={treeItems}>
-                            {code2}
+                            javascriptのコード
                         </JsTab>
                         <PythonTab treeItems={treeItems}>
-                            {code2}
+                            Pythonのコード
                         </PythonTab>
                         <VbaTab treeItems={treeItems}>
-                            {code2}
+                            VBAのコード
                         </VbaTab>
                     </TabsBox>
                 </Allotment.Pane>
