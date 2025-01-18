@@ -47,3 +47,8 @@ export type ErrObj = {
   hasError: boolean,
   errors: string[]
 }
+
+export interface DnclValidationType extends ErrObj {
+  guid: number, //変更なしでもuseEffectを動かすため
+  lineNum: number[]
+}

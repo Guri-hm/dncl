@@ -4,7 +4,7 @@ import "allotment/dist/style.css";
 import "../components/alloment-custom.css";
 import { SortableTree } from "@/app/components/SortableTree";
 import styles from '@/app/components/common.module.css';
-import { ErrObj, FlattenedItem, TreeItems } from "@/app/types";
+import { DnclValidationType, ErrObj, FlattenedItem, TreeItems } from "@/app/types";
 import Image from "next/image";
 import Typography from '@mui/material/Typography';
 import { ConsoleBox } from "@/app/components/ConsoleBox";
@@ -24,7 +24,7 @@ export default function Home() {
   const [items, setItems] = useState(() => initialItems);
   const [runResults, setRunResults] = useState<string[]>([]);
   const [shouldRunEffect, setShouldRunEffect] = useState(false);
-  const [dnclValidation, setDnclValidation] = useState<{ hasError: boolean; errors: string[]; guid: number }>({ hasError: false, errors: [], guid: 0 });
+  const [dnclValidation, setDnclValidation] = useState<DnclValidationType>({ hasError: false, errors: [], guid: 0, lineNum: [] });
   const [tmpMsg, setTmpMsg] = useState<string>('ここに出力結果が表示されます');
 
   useEffect(() => {
@@ -43,17 +43,18 @@ export default function Home() {
       setShouldRunEffect(false);
       const flatten = flattenTree(items);
 
-      let result: ErrObj = { errors: [], hasError: false };
+      let result: DnclValidationType = { errors: [], hasError: false, guid: Math.random(), lineNum: [] };
       flatten.map((item: FlattenedItem, index) => {
         const { hasError, errors } = checkDNCLSyntax(flatten, item, index + 1);
         if (hasError) {
           result.hasError = true;
           result.errors.push(...errors);
+          result.lineNum.push(index + 1);
         }
       })
 
       //useEffectが変更を検知できるように乱数を使う
-      setDnclValidation({ ...result, guid: Math.random() });
+      setDnclValidation(result);
 
     }
   }, [shouldRunEffect]);
@@ -81,7 +82,7 @@ export default function Home() {
       <ContentWrapper>
         <Allotment vertical defaultSizes={[200, 100]}>
           <Allotment.Pane>
-            <SortableTree treeItems={items} setTreeItems={setItems} collapsible indicator removable ></SortableTree>
+            <SortableTree treeItems={items} setTreeItems={setItems} dnclValidation={dnclValidation} collapsible indicator removable ></SortableTree>
           </Allotment.Pane>
 
           <Allotment.Pane className={`${styles.bgStone50} ${styles.marginTop16} ${styles.hFull} `}>

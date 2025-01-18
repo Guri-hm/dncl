@@ -1,10 +1,9 @@
 import React from 'react';
 import { Box, BoxProps } from "@mui/material";
 import { useEffect, useState, Fragment } from "react";
-import { FlattenedItem, TreeItems } from "../types";
+import { DnclValidationType, TreeItems } from "../types";
 import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, LoopEnum, ArithmeticOperator } from "../enum";
 import { cnvToDivision, cnvToRomaji, containsJapanese, flattenTree, tryParseToJsFunction } from "../utilities";
-import { ErrObj } from "../types";
 import Divider from '@mui/material/Divider';
 
 interface CustomBoxProps extends BoxProps {
@@ -12,7 +11,7 @@ interface CustomBoxProps extends BoxProps {
     treeItems: TreeItems;
     runResults: string[];
     setRunResults: any;
-    dnclValidation: { hasError: boolean; errors: string[]; guid: number },
+    dnclValidation: DnclValidationType,
     tmpMsg: string,
     setTmpMsg: any,
 }

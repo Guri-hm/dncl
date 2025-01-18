@@ -33,7 +33,7 @@ import {
   removeChildrenOf,
   setProperty,
 } from "../utilities";
-import { FlattenedItem, SensorContext, TreeItems, FragmentItems, FragmentItem, DnclEditorProps } from "@/app/types";
+import { FlattenedItem, SensorContext, TreeItems, FragmentItems, FragmentItem, DnclEditorProps, DnclValidationType } from "@/app/types";
 import { SortableTreeItem, FragmentsListItem, DnclEditDialog } from "../components";
 import { v4 as uuidv4 } from "uuid";
 import { StatementEnum, StatementJpEnum } from "@/app/enum";
@@ -105,6 +105,7 @@ interface Props {
   indentationWidth?: number;
   indicator?: boolean;
   removable?: boolean;
+  dnclValidation: DnclValidationType,
 }
 
 export function SortableTree({
@@ -113,7 +114,8 @@ export function SortableTree({
   setTreeItems,
   indicator,
   indentationWidth = 30, //ツリー子要素の左インデント
-  removable
+  removable,
+  dnclValidation
 }: Props) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeCode, setActiveCode] = useState<string | null>(null);
@@ -228,7 +230,7 @@ export function SortableTree({
           <Allotment.Pane ref={ref} className={`${styles.rightPane} ${cmnStyles.hFull} ${cmnStyles.overflowAuto}`} >
 
             <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
-              {flattenedItems.map(({ id, children, collapsed, depth, line }) => (
+              {flattenedItems.map(({ id, children, collapsed, depth, line }, index) => (
                 <SortableTreeItem
                   key={id}
                   id={id}
@@ -243,6 +245,7 @@ export function SortableTree({
                       : undefined
                   }
                   onRemove={removable ? () => handleRemove(id) : undefined}
+                  isError={dnclValidation.lineNum.includes(index + 1)}
                 />
               ))}
             </SortableContext>

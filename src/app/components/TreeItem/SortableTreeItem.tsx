@@ -6,12 +6,13 @@ import { TreeItem, Props as TreeItemProps } from './TreeItem';
 
 interface Props extends TreeItemProps {
   id: string;
+  isError: boolean
 }
 
 const animateLayoutChanges: AnimateLayoutChanges = ({ isSorting, wasDragging }) =>
   isSorting || wasDragging ? false : true;
 
-export function SortableTreeItem({ id, depth, ...props }: Props) {
+export function SortableTreeItem({ id, depth, isError, ...props }: Props) {
   const {
     attributes,
     isDragging,
@@ -28,6 +29,7 @@ export function SortableTreeItem({ id, depth, ...props }: Props) {
   const style: CSSProperties = {
     transform: CSS.Translate.toString(transform),
     transition,
+    backgroundColor: isError ? 'yellow' : '',
   };
   return (
     <TreeItem
