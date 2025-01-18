@@ -2,8 +2,8 @@ import Tabs from '@mui/material/Tabs';
 import Tab, { TabProps } from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import styles from './tabs-box.module.css'
-import { BoxProps, createTheme, styled, ThemeProvider } from '@mui/system';
-import { Alert, CssBaseline, IconButton, Snackbar } from '@mui/material';
+import { BoxProps, styled } from '@mui/system';
+import { IconButton, Snackbar } from '@mui/material';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import cmnStyles from '@/app/components/common.module.css';
 import { Children, FC, forwardRef, useRef, useState } from 'react';
@@ -11,21 +11,35 @@ import { Children, FC, forwardRef, useRef, useState } from 'react';
 interface TabsProps {
     value: number;
     onChange: (event: React.SyntheticEvent, newValue: number) => void;
-    a11yProps: (index: number) => { id: string; 'aria-controls': string };
+    keyProps: (index: number) => { id: string; 'aria-controls': string };
     tabLabels: string[];
     tabClasses?: string[];
 }
 
-const CustomTabs: FC<TabsProps> = ({ value, onChange, a11yProps, tabLabels, tabClasses = [] }) => {
+const CustomTabs: FC<TabsProps> = ({ value, onChange, keyProps, tabLabels, tabClasses = [] }) => {
     return (
         <Tabs sx={{ minHeight: 'unset' }} value={value} onChange={onChange} aria-label="tabs">
             {tabLabels.map((label, index) => (
-                <StyledTab
-                    key={label}
-                    className={tabClasses[index] || ''}
+
+                <Tab key={label}
                     label={label}
-                    {...a11yProps(index)}
-                />
+                    className={tabClasses[index] || ''}
+                    {...keyProps(index)}
+                    sx={{
+                        marginTop: '0.5rem',
+                        flex: 'none',
+                        color: '#38bdf8',
+                        borderTop: 'transparent',
+                        paddingX: '1rem',
+                        paddingY: '0.25rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        fontSize: '0.75rem',
+                        minHeight: 'auto',
+                        padding: '10px',
+                    }}>
+
+                </Tab>
             ))}
         </Tabs>
     );
@@ -56,54 +70,20 @@ const TabPanel = forwardRef<HTMLDivElement, TabPanelProps>(({ children, index, v
     );
 });
 
-function a11yProps(index: number) {
+function keyProps(index: number) {
     return {
         id: `simple-tab-${index}`,
         'aria-controls': `simple-tabpanel-${index}`,
     };
 }
 
-interface StyledTabProps extends TabProps { className?: string; }
-const StyledTab = styled((props: StyledTabProps) =>
-    (<Tab {...props} />))(({ theme }) =>
-    ({
-        marginTop: '0.5rem',
-        flex: 'none',
-        color: '#38bdf8',
-        borderTop: 'transparent',
-        paddingX: '1rem',
-        paddingY: '0.25rem',
-        display: 'flex',
-        alignItems: 'center',
-        fontSize: '0.75rem',
-        minHeight: 'auto',
-        padding: '10px',
-    }));
-
-
-const TabsWrapper = styled((props: BoxProps) => (
-    <Box {...props} />
-))(({ theme }) => ({
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    border: '1px solid #4b5563',
-    position: 'relative',
-    zIndex: 10,
-    gridColumn: 'span 3',
-    backgroundColor: '#1e293b',
-    boxShadow: '0 10px 15px rgba(0, 0, 0, 0.1)',
-    [theme.breakpoints.up('xl')]: {
-        marginLeft: 0,
-    },
-    '&.dark': {
-        boxShadow: 'none',
-        ring: 1,
-        ringInset: true,
-        ringColor: 'rgba(255, 255, 255, 0.1)',
-    },
-}));
-
+const TabsWrapper: FC<BoxProps> = ({ children }) => {
+    return (
+        <Box className={`${styles.tabsWrapper} ${styles.dark}`}>
+            {children}
+        </Box>
+    );
+};
 const Header: FC<BoxProps> = ({ children }) => {
     return (
         <Box sx={{
@@ -149,11 +129,15 @@ const TabFillerInner: FC<BoxProps> = ({ children }) => {
     );
 };
 
-type Props = {
-    children: React.ReactNode | React.ReactNode[];
-    tabLabels: string[];
+interface Tab {
+    title: string;
+    component: React.ReactNode
 }
-export default function TabsBox({ children, tabLabels, ...props }: Props) {
+
+type Props = {
+    tabs: Tab[];
+}
+export default function TabsBox({ tabs, ...props }: Props) {
     const [value, setValue] = useState(0);
     const contentRef = useRef<HTMLDivElement | null>(null);
     const [snackbar, setSnackbar] = useState<{ open: boolean, duration: number, text: string }>({ open: false, duration: 3000, text: '' });
@@ -165,13 +149,16 @@ export default function TabsBox({ children, tabLabels, ...props }: Props) {
         setSnackbar({ ...snackbar, open: false });
     };
 
+    const tabLabels: string[] = tabs.map(tab => { return tab.title });
+    const tabPanels: React.ReactNode[] = tabs.map(tab => { return tab.component });
+
     return (
         <TabsWrapper>
             <Header>
                 <CustomTabs
                     value={value}
                     onChange={handleChange}
-                    a11yProps={a11yProps}
+                    keyProps={keyProps}
                     tabLabels={tabLabels}
                     tabClasses={tabLabels.map((_, index) => `${value === index ? styles.tabSelected : styles.tab}`)}
                 />
@@ -198,7 +185,7 @@ export default function TabsBox({ children, tabLabels, ...props }: Props) {
             </Header>
 
             {
-                Children.map(children, (child, index) => (
+                Children.map(tabPanels, (child, index) => (
                     <TabPanel value={value} index={index} key={index} ref={contentRef}> {child} </TabPanel>
                 ))
             }
