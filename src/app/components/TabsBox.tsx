@@ -1,18 +1,14 @@
-import * as React from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab, { TabProps } from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import styles from './tabs-box.module.css'
 import { BoxProps, createTheme, styled, ThemeProvider } from '@mui/system';
-import { CssBaseline, IconButton } from '@mui/material';
+import { Alert, CssBaseline, IconButton, Snackbar } from '@mui/material';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import cmnStyles from '@/app/components/common.module.css';
+import { Children, forwardRef, useRef, useState } from 'react';
 
-interface TabPanelProps {
-    children?: React.ReactNode;
-    index: number;
-    value: number;
-}
+
 
 interface StyledTabsProps {
     value: number;
@@ -38,13 +34,17 @@ const StyledTabs = styled((props: StyledTabsProps) => {
     );
 })(({ theme }) => ({})); // 必要に応じてスタイルを追加
 
-function TabPanel(props: TabPanelProps) {
-    const { children, value, index } = props;
+interface TabPanelProps {
+    children?: React.ReactNode;
+    index: number;
+    value: number;
+}
+
+//refを渡すときはforwardRef
+const TabPanel = forwardRef<HTMLDivElement, TabPanelProps>(({ children, index, value }, ref) => {
     return (
         <>
-
             {value === index &&
-
                 <Box className={`${cmnStyles.overflowAuto}`} sx={{
                     wordBreak: 'break-all',
                     flex: 1,
@@ -53,12 +53,11 @@ function TabPanel(props: TabPanelProps) {
                 }} role="tabpanel"
                     hidden={value !== index}
                     id={`simple-tabpanel-${index}`}
-                    aria-labelledby={`simple-tab-${index}`}>{children}</Box>
-
+                    aria-labelledby={`simple-tab-${index}`} ref={ref}>{children}</Box>
             }
         </>
     );
-}
+});
 
 function a11yProps(index: number) {
     return {
@@ -142,10 +141,15 @@ type Props = {
     tabLabels: string[];
 }
 export default function TabsBox({ children, tabLabels, ...props }: Props) {
-    const [value, setValue] = React.useState(0);
+    const [value, setValue] = useState(0);
+    const contentRef = useRef<HTMLDivElement | null>(null);
+    const [snackbar, setSnackbar] = useState<{ open: boolean, duration: number, text: string }>({ open: false, duration: 3000, text: '' });
 
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue);
+    };
+    const handleClose = () => {
+        setSnackbar({ ...snackbar, open: false });
     };
 
     return (
@@ -160,15 +164,38 @@ export default function TabsBox({ children, tabLabels, ...props }: Props) {
                 />
                 <TabFillerContainer>
                     <TabFillerInner>
-                        <IconButton size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: '#fff' } }} aria-label="clipboard">
+                        <IconButton size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: '#fff' } }} aria-label="clipboard" onClick={() => {
+                            if (contentRef.current) {
+                                const content = contentRef.current.textContent;
+                                if (!content) {
+                                    return;
+                                }
+                                navigator.clipboard.writeText(content).then(() => {
+                                    setSnackbar({ ...snackbar, open: true, text: 'クリップボードにコピーしました' });
+                                }, (err) => {
+                                    console.error(err);
+                                    setSnackbar({ ...snackbar, open: true, text: '失敗しました' });
+                                });
+                            }
+                        }}>
                             <AssignmentIcon />
                         </IconButton>
                     </TabFillerInner>
                 </TabFillerContainer>
             </Header>
-            {React.Children.map(children, (child, index) => (
-                <TabPanel value={value} index={index} key={index}> {child} </TabPanel>
-            ))}
-        </StyledBox>
+
+            {
+                Children.map(children, (child, index) => (
+                    <TabPanel value={value} index={index} key={index} ref={contentRef}> {child} </TabPanel>
+                ))
+            }
+            <Snackbar
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                autoHideDuration={snackbar.duration}
+                open={snackbar.open}
+                onClose={handleClose}
+                message={snackbar.text}
+            />
+        </StyledBox >
     );
 }

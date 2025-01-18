@@ -47,6 +47,7 @@ import { JsTab } from "./JsTab";
 import { PythonTab } from "./PythonTab";
 import { DnclTab } from "./DnclTab";
 import { VbaTab } from "./VbaTab";
+import { CnvWrapper } from "./CnvWrapper";
 
 const statementEnumMap = {
   [StatementJpEnum.Output]: StatementEnum.Output,
@@ -207,7 +208,7 @@ export function SortableTree({
       onDragCancel={handleDragCancel}
     >
       <DnclEditDialog {...editor}></DnclEditDialog>
-      <Allotment separator={false} defaultSizes={[50, 50, 100, 100]} className={styles.splitViewContainer} onVisibleChange={(_index, value) => {
+      <Allotment separator={false} defaultSizes={[50, 50, 100, 200]} className={styles.splitViewContainer} onVisibleChange={(_index, value) => {
         setVisible(value);
       }}>
         <Allotment.Pane maxSize={50} minSize={50} className={`${styles.paneBg}`}>
@@ -273,37 +274,8 @@ export function SortableTree({
           </Allotment.Pane>
 
         </div>
+        <CnvWrapper treeItems={treeItems}></CnvWrapper>
 
-        <div className={`${cmnStyles.hFull}`} style={{ marginLeft: '17px' }}>
-
-          <Allotment.Pane className={`${cmnStyles.hFull}`}>
-            <TabsBox tabLabels={['DNCL']}>
-              <DnclTab treeItems={treeItems}></DnclTab>
-            </TabsBox>
-          </Allotment.Pane>
-        </div>
-        <div className={`${cmnStyles.hFull}`} style={{ marginLeft: '17px' }}>
-
-          <Allotment.Pane className={`${cmnStyles.hFull}`}>
-            <TabsBox tabLabels={['javascript', 'Python', 'VBA']}>
-              <JsTab treeItems={treeItems}>
-                <>
-                  変換中
-                </>
-              </JsTab>
-              <PythonTab treeItems={treeItems}>
-                <>
-                  変換中
-                </>
-              </PythonTab>
-              <VbaTab treeItems={treeItems}>
-                <>
-                  変換中
-                </>
-              </VbaTab>
-            </TabsBox>
-          </Allotment.Pane>
-        </div>
 
       </Allotment>
     </DndContext >

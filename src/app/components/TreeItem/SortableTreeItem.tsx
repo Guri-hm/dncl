@@ -6,7 +6,7 @@ import { TreeItem, Props as TreeItemProps } from './TreeItem';
 
 interface Props extends TreeItemProps {
   id: string;
-  isError: boolean
+  isError?: boolean
 }
 
 const animateLayoutChanges: AnimateLayoutChanges = ({ isSorting, wasDragging }) =>

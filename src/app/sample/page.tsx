@@ -1,8 +1,9 @@
 "use client"
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as babelParser from '@babel/parser';
 import EvaluateComponent from '../components/EvaluateComponent';
 import { ChildComponent, ParentComponent } from '../components/Test';
+import { Box } from '@mui/material';
 
 const errorTranslations: { [key: string]: string } = {
   "Unexpected token": "予期しないトークンが見つかりました",
@@ -39,11 +40,60 @@ const translateErrorMessage = (message: string): string => {
   return message; // 訳が見つからなかった場合、元のメッセージを返す
 };
 
+const HeaderComponent: React.FC<{ onCopy: () => void }> = ({ onCopy }) => {
+  return (
+    <div className="flex items-center justify-center">
+      <button onClick={onCopy} className="text-gray-500">
+        <svg fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6" viewBox="0 0 24 24"><path d="M8 7l6 6 6-6"></path></svg>
+      </button>
+    </div>
+  );
+};
+
+const ContentComponent: React.FC<{ content: string }> = ({ content }) => {
+  return <div>{content}</div>;
+};
+
+const CardComponent: React.FC<{ content: string }> = ({ content }) => {
+  const [clipboardContent, setClipboardContent] = useState('');
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(content).then(() => {
+      setClipboardContent(content);
+      alert('コンテンツがクリップボードにコピーされました');
+    }, (err) => {
+      console.error('クリップボードにコピーできませんでした:', err);
+    });
+  };
+
+  return (
+    <div className="card">
+      <HeaderComponent onCopy={copyToClipboard} />
+      <ContentComponent content={content} />
+    </div>
+  );
+};
+
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  content: string;
+  ref?: React.RefObject<HTMLDivElement> | null;
+}
+
+const TabPanel: React.FC<TabPanelProps> = ({ children, content, ref }) => {
+  return (
+    <Box className="overflow-auto" sx={{ wordBreak: 'break-all', flex: 1, color: 'white', margin: '15px' }} role="tabpanel" id={`simple-tabpanel-${index}`} aria-labelledby={`simple-tab-${index}`} ref={ref}>
+      {children}
+    </Box>
+  );
+};
+
 
 export default function Home() {
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
-
+  const contentRef = useRef<HTMLDivElement | null>(null);
   const handleChange = (event) => {
     setCode(event.target.value);
   };
@@ -74,6 +124,7 @@ export default function Home() {
     }
   };
 
+  const cardContent = "ここにコンテンツが入ります。";
   return (
     <div style={{ border: '7px black solid', height: '100%', margin: 0, padding: 0 }}>
       <h1>JavaScript コード文法チェック</h1>
@@ -88,11 +139,8 @@ export default function Home() {
       <button onClick={handleCheckSyntax}>文法チェック</button>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <EvaluateComponent></EvaluateComponent>
-
-
-      <ParentComponent>
-        <ChildComponent></ChildComponent>
-      </ParentComponent>
+      <TabPanel content="ここにコンテンツが入ります。" ref={contentRef} />
+      <CardComponent content={cardContent} />
 
     </div>
   );
