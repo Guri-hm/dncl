@@ -3,8 +3,95 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as babelParser from '@babel/parser';
 import EvaluateComponent from '../components/EvaluateComponent';
 import { ChildComponent, ParentComponent } from '../components/Test';
-import { Box } from '@mui/material';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Box from '@mui/material/Box';
 
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function CustomTabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+    </div>
+  );
+}
+
+function a11yProps(index: number) {
+  return {
+    id: `simple-tab-${index}`,
+    'aria-controls': `simple-tabpanel-${index}`,
+  };
+}
+
+interface TabProps {
+  children?: React.ReactNode;
+  index: number;
+  label: string;
+  onClick: (event: React.SyntheticEvent) => void;
+}
+const CustomTab = (props: TabProps) => {
+  return (
+    <Tab
+      key={props.index}
+      label={props.label}
+      {...a11yProps(props.index)}
+      onClick={props.onClick}
+    />
+  );
+};
+
+const BasicTabs = () => {
+  const [value, setValue] = React.useState(0);
+
+  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+    setValue(newValue);
+  };
+
+  const labels = ["Item One", "Item Two", "Item Three"]
+
+  return (
+    <Box sx={{ width: '100%' }}>
+      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
+          {labels.map((label, index) => (
+
+
+            <CustomTab
+              key={index}
+              label={label}
+              index={index}
+              onClick={(event) => handleChange(event, index)}
+            />
+          ))
+
+          }
+        </Tabs>
+      </Box>
+      <CustomTabPanel value={value} index={0}>
+        Item One
+      </CustomTabPanel>
+      <CustomTabPanel value={value} index={1}>
+        Item Two
+      </CustomTabPanel>
+      <CustomTabPanel value={value} index={2}>
+        Item Three
+      </CustomTabPanel>
+    </Box>
+  );
+}
 const errorTranslations: { [key: string]: string } = {
   "Unexpected token": "予期しないトークンが見つかりました",
   "Unexpected string": "予期しない文字列が見つかりました",
@@ -50,51 +137,12 @@ const HeaderComponent: React.FC<{ onCopy: () => void }> = ({ onCopy }) => {
   );
 };
 
-const ContentComponent: React.FC<{ content: string }> = ({ content }) => {
-  return <div>{content}</div>;
-};
-
-const CardComponent: React.FC<{ content: string }> = ({ content }) => {
-  const [clipboardContent, setClipboardContent] = useState('');
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(content).then(() => {
-      setClipboardContent(content);
-      alert('コンテンツがクリップボードにコピーされました');
-    }, (err) => {
-      console.error('クリップボードにコピーできませんでした:', err);
-    });
-  };
-
-  return (
-    <div className="card">
-      <HeaderComponent onCopy={copyToClipboard} />
-      <ContentComponent content={content} />
-    </div>
-  );
-};
-
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  content: string;
-  ref?: React.RefObject<HTMLDivElement> | null;
-}
-
-const TabPanel: React.FC<TabPanelProps> = ({ children, content, ref }) => {
-  return (
-    <Box className="overflow-auto" sx={{ wordBreak: 'break-all', flex: 1, color: 'white', margin: '15px' }} role="tabpanel" id={`simple-tabpanel-${index}`} aria-labelledby={`simple-tab-${index}`} ref={ref}>
-      {children}
-    </Box>
-  );
-};
-
 
 export default function Home() {
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
-  const handleChange = (event) => {
+  const handleChange = (event: any) => {
     setCode(event.target.value);
   };
 
@@ -139,9 +187,8 @@ export default function Home() {
       <button onClick={handleCheckSyntax}>文法チェック</button>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <EvaluateComponent></EvaluateComponent>
-      <TabPanel content="ここにコンテンツが入ります。" ref={contentRef} />
-      <CardComponent content={cardContent} />
 
+      <BasicTabs></BasicTabs>
     </div>
   );
 }
