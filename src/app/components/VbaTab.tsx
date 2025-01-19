@@ -129,6 +129,31 @@ const cnvToVba = async (statement: { lineTokens: string[], processIndex: number 
     return tmpLine;
 }
 
+const setEndSubItem = (nodes: TreeItems): TreeItems => {
+
+    let newItems: TreeItems = [];
+    let isSub: boolean = false;
+    nodes.map((item, index) => {
+
+        newItems.push(item);
+
+        if (![ProcessEnum.DefineFunction, ProcessEnum.Defined].includes(Number(item.processIndex))) {
+            isSub = true;
+        }
+        const nextItem = nodes[index + 1];
+        if (isSub && !nextItem) {
+            newItems.push({ id: String(Math.random()), children: [], line: '', processIndex: ProcessEnum.EndSub });
+        }
+
+        if (isSub && nextItem && [ProcessEnum.DefineFunction, ProcessEnum.Defined].includes(Number(nextItem.processIndex))) {
+            newItems.push({ id: String(Math.random()), children: [], line: '', processIndex: ProcessEnum.EndSub });
+        }
+
+    })
+    return newItems;
+}
+
+
 export const VbaTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }) => {
 
     const [shouldRunEffect, setShouldRunEffect] = useState(false);
@@ -145,7 +170,8 @@ export const VbaTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }
     useEffect(() => {
         if (shouldRunEffect) {
             const convertCode = async () => {
-                setNodes(renderNodes(treeItems, 0));
+                //EndSubに変換するTreeItemを挿入
+                setNodes(renderNodes(setEndSubItem(treeItems), 0));
             };
             setShouldRunEffect(false); // フラグをリセット
             convertCode();
@@ -170,20 +196,9 @@ export const VbaTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }
                 </Fragment>
                 return sub;
             }
-            if (isStartedSub && depth == 0 && ![ProcessEnum.DefineFunction, ProcessEnum.Defined].includes(Number(node.processIndex)) && nodes[index + 1] == null) {
-                const sub = <Fragment key={node.id}>
-                    <ScopeBox nested={true} depth={depth + 1}>
-                        <Box className={styles.noCounter}>{cnvToVba({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) })}</Box>
-                        {node.children.length > 0 && (
-                            <ScopeBox nested={true} depth={depth + 1}>
-                                {renderNodes(node.children, depth + 1)}
-                            </ScopeBox>
-                        )}
-                    </ScopeBox>
-                    <Box className={(index == 0 && depth != 0) ? styles.noCounter : ""}>{cnvToVba({ lineTokens: [], processIndex: ProcessEnum.EndSub })}</Box>
-                </Fragment>
+
+            if ([ProcessEnum.EndSub].includes(Number(node.processIndex))) {
                 isStartedSub = false;
-                return sub;
             }
             if (isStartedSub && depth == 0) {
                 return (
