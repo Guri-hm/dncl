@@ -74,9 +74,10 @@ export const CustomTab: FC<CustomTabProps> = ({ item, a11yProps, index, onClick,
 export const CustomTabs: FC<TabsProps> = ({ value, onChange, a11yProps, tabIdsLabels, tabClasses = [] }) => {
     return (
         <Tabs sx={{ minHeight: 'unset' }} value={value} onChange={onChange} aria-label="tabs">
+
             {tabIdsLabels.map((item, index) => (
                 <CustomTab
-                    key={index}
+                    key={item.id}
                     item={item}
                     index={index}
                     onClick={(event) => onChange(event, index)}
@@ -222,7 +223,7 @@ export default function TabsBox({ tabs, ...props }: Props) {
     return (
         <TabsWrapper>
             <Header>
-                {/* <SortableContext items={tabIdsLabels.map(item => item.id)}>
+                <SortableContext items={tabs}>
                     <CustomTabs
                         value={value}
                         onChange={handleChange}
@@ -230,8 +231,7 @@ export default function TabsBox({ tabs, ...props }: Props) {
                         tabIdsLabels={tabIdsLabels}
                         tabClasses={tabIdsLabels.map((_, index) => `${value === index ? styles.tabSelected : styles.tab}`)}
                     />
-                </SortableContext> */}
-
+                </SortableContext>
                 <TabFillerContainer>
                     <TabFillerInner>
                         <IconButton size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: '#fff' } }} aria-label="clipboard" onClick={() => {

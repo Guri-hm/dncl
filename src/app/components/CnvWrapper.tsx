@@ -10,6 +10,7 @@ import { VbaTab } from "./VbaTab";
 import { closestCenter, DndContext, MeasuringStrategy, PointerSensor, useDraggable, useDroppable, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext } from "@dnd-kit/sortable";
 import { SimpleSortableItem } from "./SimpleSortableItem";
+import { Tabs } from "@mui/material";
 
 interface Props {
     treeItems: TreeItems;
@@ -92,35 +93,7 @@ export const CnvWrapper: FC<Props> = ({ treeItems }) => {
                 <div className={`${cmnStyles.hFull}`} style={{ marginLeft: '16px' }}>
 
                     <Allotment.Pane className={`${cmnStyles.hFull}`}>
-
-                        {/* <SortableContext items={tabIdsLabels.map(item => item.id)}>
-                            <CustomTabs
-                                value={0}
-                                onChange={console.log}
-                                a11yProps={a11yProps}
-                                tabIdsLabels={tabIdsLabels}
-                                tabClasses={[]}
-                            />
-                        </SortableContext> */}
-                        <SortableContext items={tabs2}>
-
-                            {tabIdsLabels.map((item, index) => (
-                                <CustomTab
-                                    key={item.id}
-                                    item={item}
-                                    index={index}
-                                    onClick={(event) => console.log}
-                                    tabClasses={[]}
-                                    a11yProps={a11yProps}
-                                />
-                            ))}
-
-                            {/* {items.map((item) => (
-
-                                <SimpleSortableItem key={item.id} item={item} />
-                            ))} */}
-                        </SortableContext>
-                        {/* <TabsBox tabs={tabs2} /> */}
+                        <TabsBox tabs={tabs2} />
                     </Allotment.Pane>
                 </div>
 
