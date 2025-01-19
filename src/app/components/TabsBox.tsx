@@ -16,15 +16,14 @@ interface TabsProps {
     value: number;
     onChange: (event: React.SyntheticEvent, newValue: number) => void;
     a11yProps: (index: number) => { id: string; 'aria-controls': string };
-    tabIdsLabels: { id: number, title: string }[];
+    tabIdsLabels: { id: number, label: string }[];
     tabClasses?: string[];
 }
 
 interface CustomTabProps {
-    id: number;
+    item: { id: number, label: string };
     children?: React.ReactNode;
     index: number;
-    label: string;
     tabClasses?: string[];
     a11yProps: (index: number) => { id: string; 'aria-controls': string };
     onClick: (event: React.SyntheticEvent) => void;
@@ -39,8 +38,8 @@ interface CustomTabProps {
 //         </div>
 //     );
 // };
-export const CustomTab: FC<CustomTabProps> = ({ id, a11yProps, index, label, onClick, tabClasses = [] }) => {
-    const { isDragging, setActivatorNodeRef, attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
+export const CustomTab: FC<CustomTabProps> = ({ item, a11yProps, index, onClick, tabClasses = [] }) => {
+    const { isDragging, setActivatorNodeRef, attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: item.id });
 
     return (
         <Box className={`${isDragging ? cmnStyles.zIndexMax : ''}`} ref={setNodeRef} style={{
@@ -53,7 +52,7 @@ export const CustomTab: FC<CustomTabProps> = ({ id, a11yProps, index, label, onC
             </span>
             <Tab
                 key={index}
-                label={label}
+                label={item.label}
                 onClick={onClick}
                 // className={tabClasses[index] || ''}
                 // {...a11yProps(index)}
@@ -78,8 +77,7 @@ export const CustomTabs: FC<TabsProps> = ({ value, onChange, a11yProps, tabIdsLa
             {tabIdsLabels.map((item, index) => (
                 <CustomTab
                     key={index}
-                    id={item.id}
-                    label={item.title}
+                    item={item}
                     index={index}
                     onClick={(event) => onChange(event, index)}
                     tabClasses={tabClasses}
@@ -177,7 +175,7 @@ const TabFillerInner: FC<BoxProps> = ({ children }) => {
 
 interface Tab {
     id: number;
-    title: string;
+    label: string;
     component: React.ReactNode
 }
 
@@ -218,13 +216,13 @@ export default function TabsBox({ tabs, ...props }: Props) {
         setSnackbar({ ...snackbar, open: false });
     };
 
-    const tabIdsLabels: { id: number, title: string }[] = tabs.map(tab => { return { id: tab.id, title: tab.title } });
+    const tabIdsLabels: { id: number, label: string }[] = tabs.map(tab => { return { id: tab.id, label: tab.label } });
     const tabPanels: React.ReactNode[] = tabs.map(tab => { return tab.component });
 
     return (
         <TabsWrapper>
             <Header>
-                <SortableContext items={tabIdsLabels.map(item => item.id)}>
+                {/* <SortableContext items={tabIdsLabels.map(item => item.id)}>
                     <CustomTabs
                         value={value}
                         onChange={handleChange}
@@ -232,7 +230,8 @@ export default function TabsBox({ tabs, ...props }: Props) {
                         tabIdsLabels={tabIdsLabels}
                         tabClasses={tabIdsLabels.map((_, index) => `${value === index ? styles.tabSelected : styles.tab}`)}
                     />
-                </SortableContext>
+                </SortableContext> */}
+
                 <TabFillerContainer>
                     <TabFillerInner>
                         <IconButton size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: '#fff' } }} aria-label="clipboard" onClick={() => {

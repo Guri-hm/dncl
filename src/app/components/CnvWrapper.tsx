@@ -10,7 +10,6 @@ import { VbaTab } from "./VbaTab";
 import { closestCenter, DndContext, MeasuringStrategy, PointerSensor, useDraggable, useDroppable, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext } from "@dnd-kit/sortable";
 import { SimpleSortableItem } from "./SimpleSortableItem";
-import { Tabs } from "@mui/material";
 
 interface Props {
     treeItems: TreeItems;
@@ -18,7 +17,7 @@ interface Props {
 
 interface Tab {
     id: number;
-    title: string;
+    label: string;
     component: React.ReactNode
 }
 
@@ -49,19 +48,19 @@ export const CnvWrapper: FC<Props> = ({ treeItems }) => {
         }
     };
 
-    const [tabs2, setTabs2] = useState([
+    const [tabs2, setTabs2] = useState<Tab[]>([
         {
-            id: 1, title: 'javascript', component: <JsTab treeItems={treeItems}>
+            id: 1, label: 'javascript', component: <JsTab treeItems={treeItems}>
                 javascriptのコード
             </JsTab>
         },
         {
-            id: 2, title: 'Python', component: <PythonTab treeItems={treeItems}>
+            id: 2, label: 'Python', component: <PythonTab treeItems={treeItems}>
                 Pythonのコード
             </PythonTab>
         },
         {
-            id: 3, title: 'VBA', component: <VbaTab treeItems={treeItems}>
+            id: 3, label: 'VBA', component: <VbaTab treeItems={treeItems}>
                 VBAのコード
             </VbaTab>
         },
@@ -69,12 +68,12 @@ export const CnvWrapper: FC<Props> = ({ treeItems }) => {
 
     const tabs1: Tab[] = [
         {
-            id: 4, title: 'DNCL', component: <DnclTab treeItems={treeItems}>
+            id: 4, label: 'DNCL', component: <DnclTab treeItems={treeItems}>
                 DNCLのコード
             </DnclTab>
         },
     ];
-    const tabIdsLabels: { id: number, title: string }[] = tabs2.map(tab => { return { id: tab.id, title: tab.title } });
+    const tabIdsLabels: { id: number, label: string }[] = tabs2.map(tab => { return { id: tab.id, label: tab.label } });
 
     return (
         <DndContext
@@ -103,21 +102,19 @@ export const CnvWrapper: FC<Props> = ({ treeItems }) => {
                                 tabClasses={[]}
                             />
                         </SortableContext> */}
-                        <SortableContext items={items}>
-                            <Tabs sx={{ minHeight: 'unset' }} value={0} aria-label="tabs">
+                        <SortableContext items={tabs2}>
 
-                                {tabIdsLabels.map((item, index) => (
-                                    <CustomTab
-                                        key={index}
-                                        id={item.id}
-                                        label={item.title}
-                                        index={index}
-                                        onClick={(event) => console.log}
-                                        tabClasses={[]}
-                                        a11yProps={a11yProps}
-                                    />
-                                ))}
-                            </Tabs>
+                            {tabIdsLabels.map((item, index) => (
+                                <CustomTab
+                                    key={item.id}
+                                    item={item}
+                                    index={index}
+                                    onClick={(event) => console.log}
+                                    tabClasses={[]}
+                                    a11yProps={a11yProps}
+                                />
+                            ))}
+
                             {/* {items.map((item) => (
 
                                 <SimpleSortableItem key={item.id} item={item} />
