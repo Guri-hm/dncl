@@ -6,8 +6,9 @@ import { BoxProps } from '@mui/system';
 import { Button, IconButton, Snackbar } from '@mui/material';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import cmnStyles from '@/app/components/common.module.css';
-import { Children, FC, forwardRef, useRef, useState } from 'react';
-import { useDraggable } from "@dnd-kit/core";
+import { Children, FC, forwardRef, ReactNode, useRef, useState } from 'react';
+import { useDraggable, useDroppable } from "@dnd-kit/core";
+import { Handle } from "@/app/components/TreeItem/Handle";
 
 interface TabsProps {
     value: number;
@@ -18,6 +19,7 @@ interface TabsProps {
 }
 
 interface CustomTabProps {
+    id: number;
     children?: React.ReactNode;
     index: number;
     label: string;
@@ -25,29 +27,45 @@ interface CustomTabProps {
     a11yProps: (index: number) => { id: string; 'aria-controls': string };
     onClick: (event: React.SyntheticEvent) => void;
 }
-const CustomTab: FC<CustomTabProps> = ({ a11yProps, index, label, onClick, tabClasses = [] }) => {
+
+// const DroppableArea: React.FC<DroppableAreaProps> = ({ id, children }) => {
+//     const { setNodeRef } = useDroppable({ id });
+
+//     return (
+//         <div ref={setNodeRef}>
+//             {children}
+//         </div>
+//     );
+// };
+const CustomTab: FC<CustomTabProps> = ({ id, a11yProps, index, label, onClick, tabClasses = [] }) => {
+    const { attributes, listeners, setNodeRef, transform } = useDraggable({ id });
+
     return (
-        <Tab
-            key={index}
-            label={label}
-            {...a11yProps(index)}
-            onClick={onClick}
-            className={tabClasses[index] || ''}
-            {...a11yProps(index)}
-            sx={{
-                marginTop: '0.5rem',
-                flex: 'none',
-                color: '#38bdf8',
-                borderTop: 'transparent',
-                paddingX: '1rem',
-                paddingY: '0.25rem',
-                display: 'flex',
-                alignItems: 'center',
-                fontSize: '0.75rem',
-                minHeight: 'auto',
-                padding: '10px',
-            }}
-        />
+        <div ref={setNodeRef} style={{
+            transform: `translate3d(${transform?.x}px, ${transform?.y}px, 0)`, display: 'flex'
+        }}>
+            <Handle {...attributes} {...listeners} />
+            <Tab
+                key={index}
+                label={label}
+                onClick={onClick}
+                className={tabClasses[index] || ''}
+                {...a11yProps(index)}
+                sx={{
+                    marginTop: '0.5rem',
+                    flex: 'none',
+                    color: '#38bdf8',
+                    borderTop: 'transparent',
+                    paddingX: '1rem',
+                    paddingY: '0.25rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    fontSize: '0.75rem',
+                    minHeight: 'auto',
+                    padding: '10px',
+                }}
+            />
+        </div>
     );
 };
 
@@ -57,6 +75,7 @@ const CustomTabs: FC<TabsProps> = ({ value, onChange, a11yProps, tabLabels, tabC
             {tabLabels.map((label, index) => (
                 <CustomTab
                     key={index}
+                    id={index}
                     label={label}
                     index={index}
                     onClick={(event) => onChange(event, index)}
@@ -65,62 +84,6 @@ const CustomTabs: FC<TabsProps> = ({ value, onChange, a11yProps, tabLabels, tabC
                 />
             ))}
         </Tabs>
-    );
-};
-
-const DraggableTab: FC<CustomTabProps> = ({ index, onChange, a11yProps, tabClasses = [], label }) => {
-    // const {
-    //     setNodeRef,
-    //     listeners,
-    //     attributes,
-    // } = useDraggable({
-    //     id
-    // });
-    return (
-        <Tab key={label}
-            label={label}
-            className={tabClasses[index] || ''}
-            {...a11yProps(index)}
-            sx={{
-                marginTop: '0.5rem',
-                flex: 'none',
-                color: '#38bdf8',
-                borderTop: 'transparent',
-                paddingX: '1rem',
-                paddingY: '0.25rem',
-                display: 'flex',
-                alignItems: 'center',
-                fontSize: '0.75rem',
-                minHeight: 'auto',
-                padding: '10px',
-            }}
-        >
-        </Tab>
-    );
-};
-
-const TestTab: FC<CustomTabProps> = ({ id, a11yProps, tabClasses = [], tabLabel }) => {
-
-    return (
-        <Tab key={tabLabel}
-            label={tabLabel}
-            className={tabClasses[id] || ''}
-            {...a11yProps(id)}
-            sx={{
-                marginTop: '0.5rem',
-                flex: 'none',
-                color: '#38bdf8',
-                borderTop: 'transparent',
-                paddingX: '1rem',
-                paddingY: '0.25rem',
-                display: 'flex',
-                alignItems: 'center',
-                fontSize: '0.75rem',
-                minHeight: 'auto',
-                padding: '10px',
-            }}
-        >
-        </Tab>
     );
 };
 
@@ -217,6 +180,28 @@ interface Tab {
 type Props = {
     tabs: Tab[];
 }
+
+type DroppableProp = {
+    id: string;
+    children: ReactNode;
+};
+const Droppable: FC<DroppableProp> = ({ children, id }) => {
+    const { isOver, setNodeRef } = useDroppable({
+        id: "droppable-area",
+    });
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={{
+                backgroundColor: isOver ? "lightgreen" : "",
+            }}
+        >
+            {children}
+        </div>
+    );
+}
+
 export default function TabsBox({ tabs, ...props }: Props) {
     const [value, setValue] = useState(0);
     const contentRef = useRef<HTMLDivElement | null>(null);
@@ -235,13 +220,17 @@ export default function TabsBox({ tabs, ...props }: Props) {
     return (
         <TabsWrapper>
             <Header>
-                <CustomTabs
-                    value={value}
-                    onChange={handleChange}
-                    a11yProps={a11yProps}
-                    tabLabels={tabLabels}
-                    tabClasses={tabLabels.map((_, index) => `${value === index ? styles.tabSelected : styles.tab}`)}
-                />
+                <Droppable id="droppableArea">
+
+                    <CustomTabs
+                        value={value}
+                        onChange={handleChange}
+                        a11yProps={a11yProps}
+                        tabLabels={tabLabels}
+                        tabClasses={tabLabels.map((_, index) => `${value === index ? styles.tabSelected : styles.tab}`)}
+                    />
+                </Droppable>
+
                 <TabFillerContainer>
                     <TabFillerInner>
                         <IconButton size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: '#fff' } }} aria-label="clipboard" onClick={() => {

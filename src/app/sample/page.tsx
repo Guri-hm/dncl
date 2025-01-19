@@ -2,7 +2,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as babelParser from '@babel/parser';
 import EvaluateComponent from '../components/EvaluateComponent';
-import { ChildComponent, ParentComponent } from '../components/Test';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
