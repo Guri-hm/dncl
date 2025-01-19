@@ -54,3 +54,7 @@
         background: #555;
     }
 }
+
+.zIndexMax {
+    z-index: 9999;
+}

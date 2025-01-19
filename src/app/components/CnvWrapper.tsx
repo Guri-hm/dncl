@@ -2,31 +2,48 @@ import { FC, JSX, useState } from "react";
 import { TreeItems } from "@/app/types";
 import cmnStyles from './common.module.css'
 import { Allotment } from "allotment";
-import TabsBox from "./TabsBox";
+import TabsBox, { a11yProps, CustomTab, CustomTabs } from "./TabsBox";
 import { DnclTab } from "./DnclTab";
 import { JsTab } from "./JsTab";
 import { PythonTab } from "./PythonTab";
 import { VbaTab } from "./VbaTab";
 import { closestCenter, DndContext, MeasuringStrategy, PointerSensor, useDraggable, useDroppable, useSensor, useSensors } from "@dnd-kit/core";
-import { arrayMove } from "@dnd-kit/sortable";
+import { arrayMove, SortableContext } from "@dnd-kit/sortable";
+import { SimpleSortableItem } from "./SimpleSortableItem";
+import { Tabs } from "@mui/material";
 
 interface Props {
     treeItems: TreeItems;
 }
 
 interface Tab {
+    id: number;
     title: string;
     component: React.ReactNode
 }
 
 export const CnvWrapper: FC<Props> = ({ treeItems }) => {
 
+    type Item = {
+        id: number;
+        text: string;
+    };
+    const ITEMS: Item[] = [
+        { id: 1, text: "項目１" },
+        { id: 2, text: "項目２" },
+        { id: 3, text: "項目３" },
+        { id: 4, text: "項目４" },
+        { id: 5, text: "項目５" }
+    ];
+
+    const [items, setItems] = useState(ITEMS);
+
     const handleDragEnd = (event: any) => {
         const { active, over } = event;
         if (active.id !== over.id) {
             setTabs2((items) => {
-                const oldIndex = items.findIndex((item) => item.title === active.id);
-                const newIndex = items.findIndex((item) => item.title === over.id);
+                const oldIndex = items.findIndex((item) => item.id === active.id);
+                const newIndex = items.findIndex((item) => item.id === over.id);
                 return arrayMove(items, oldIndex, newIndex);
             });
         }
@@ -34,17 +51,17 @@ export const CnvWrapper: FC<Props> = ({ treeItems }) => {
 
     const [tabs2, setTabs2] = useState([
         {
-            title: 'javascript', component: <JsTab treeItems={treeItems}>
+            id: 1, title: 'javascript', component: <JsTab treeItems={treeItems}>
                 javascriptのコード
             </JsTab>
         },
         {
-            title: 'Python', component: <PythonTab treeItems={treeItems}>
+            id: 2, title: 'Python', component: <PythonTab treeItems={treeItems}>
                 Pythonのコード
             </PythonTab>
         },
         {
-            title: 'VBA', component: <VbaTab treeItems={treeItems}>
+            id: 3, title: 'VBA', component: <VbaTab treeItems={treeItems}>
                 VBAのコード
             </VbaTab>
         },
@@ -52,11 +69,12 @@ export const CnvWrapper: FC<Props> = ({ treeItems }) => {
 
     const tabs1: Tab[] = [
         {
-            title: 'DNCL', component: <DnclTab treeItems={treeItems}>
+            id: 4, title: 'DNCL', component: <DnclTab treeItems={treeItems}>
                 DNCLのコード
             </DnclTab>
         },
     ];
+    const tabIdsLabels: { id: number, title: string }[] = tabs2.map(tab => { return { id: tab.id, title: tab.title } });
 
     return (
         <DndContext
@@ -75,7 +93,37 @@ export const CnvWrapper: FC<Props> = ({ treeItems }) => {
                 <div className={`${cmnStyles.hFull}`} style={{ marginLeft: '16px' }}>
 
                     <Allotment.Pane className={`${cmnStyles.hFull}`}>
-                        <TabsBox tabs={tabs2} />
+
+                        {/* <SortableContext items={tabIdsLabels.map(item => item.id)}>
+                            <CustomTabs
+                                value={0}
+                                onChange={console.log}
+                                a11yProps={a11yProps}
+                                tabIdsLabels={tabIdsLabels}
+                                tabClasses={[]}
+                            />
+                        </SortableContext> */}
+                        <SortableContext items={items}>
+                            <Tabs sx={{ minHeight: 'unset' }} value={0} aria-label="tabs">
+
+                                {tabIdsLabels.map((item, index) => (
+                                    <CustomTab
+                                        key={index}
+                                        id={item.id}
+                                        label={item.title}
+                                        index={index}
+                                        onClick={(event) => console.log}
+                                        tabClasses={[]}
+                                        a11yProps={a11yProps}
+                                    />
+                                ))}
+                            </Tabs>
+                            {/* {items.map((item) => (
+
+                                <SimpleSortableItem key={item.id} item={item} />
+                            ))} */}
+                        </SortableContext>
+                        {/* <TabsBox tabs={tabs2} /> */}
                     </Allotment.Pane>
                 </div>
 

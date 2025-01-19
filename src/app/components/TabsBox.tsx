@@ -9,12 +9,14 @@ import cmnStyles from '@/app/components/common.module.css';
 import { Children, FC, forwardRef, ReactNode, useRef, useState } from 'react';
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { Handle } from "@/app/components/TreeItem/Handle";
+import { SortableContext, useSortable } from '@dnd-kit/sortable';
+import { CSS } from "@dnd-kit/utilities";
 
 interface TabsProps {
     value: number;
     onChange: (event: React.SyntheticEvent, newValue: number) => void;
     a11yProps: (index: number) => { id: string; 'aria-controls': string };
-    tabLabels: string[];
+    tabIdsLabels: { id: number, title: string }[];
     tabClasses?: string[];
 }
 
@@ -37,27 +39,28 @@ interface CustomTabProps {
 //         </div>
 //     );
 // };
-const CustomTab: FC<CustomTabProps> = ({ id, a11yProps, index, label, onClick, tabClasses = [] }) => {
-    const { attributes, listeners, setNodeRef, transform } = useDraggable({ id });
+export const CustomTab: FC<CustomTabProps> = ({ id, a11yProps, index, label, onClick, tabClasses = [] }) => {
+    const { isDragging, setActivatorNodeRef, attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
 
     return (
-        <div ref={setNodeRef} style={{
-            transform: `translate3d(${transform?.x}px, ${transform?.y}px, 0)`, display: 'flex'
+        <Box className={`${isDragging ? cmnStyles.zIndexMax : ''}`} ref={setNodeRef} style={{
+            transform: CSS.Transform.toString(transform),
+            transition,
+            display: 'flex',
         }}>
-            <Handle {...attributes} {...listeners} />
+            <span ref={setActivatorNodeRef}>
+                <Handle {...attributes} {...listeners} />
+            </span>
             <Tab
                 key={index}
                 label={label}
                 onClick={onClick}
-                className={tabClasses[index] || ''}
-                {...a11yProps(index)}
+                // className={tabClasses[index] || ''}
+                // {...a11yProps(index)}
                 sx={{
-                    marginTop: '0.5rem',
                     flex: 'none',
                     color: '#38bdf8',
                     borderTop: 'transparent',
-                    paddingX: '1rem',
-                    paddingY: '0.25rem',
                     display: 'flex',
                     alignItems: 'center',
                     fontSize: '0.75rem',
@@ -65,18 +68,18 @@ const CustomTab: FC<CustomTabProps> = ({ id, a11yProps, index, label, onClick, t
                     padding: '10px',
                 }}
             />
-        </div>
+        </Box>
     );
 };
 
-const CustomTabs: FC<TabsProps> = ({ value, onChange, a11yProps, tabLabels, tabClasses = [] }) => {
+export const CustomTabs: FC<TabsProps> = ({ value, onChange, a11yProps, tabIdsLabels, tabClasses = [] }) => {
     return (
         <Tabs sx={{ minHeight: 'unset' }} value={value} onChange={onChange} aria-label="tabs">
-            {tabLabels.map((label, index) => (
+            {tabIdsLabels.map((item, index) => (
                 <CustomTab
                     key={index}
-                    id={index}
-                    label={label}
+                    id={item.id}
+                    label={item.title}
                     index={index}
                     onClick={(event) => onChange(event, index)}
                     tabClasses={tabClasses}
@@ -113,7 +116,7 @@ const TabPanel = forwardRef<HTMLDivElement, TabPanelProps>(({ children, index, v
 });
 
 //a11yはaccessibilityの略記
-function a11yProps(index: number) {
+export function a11yProps(index: number) {
     return {
         id: `simple-tab-${index}`,
         'aria-controls': `simple-tabpanel-${index}`,
@@ -173,6 +176,7 @@ const TabFillerInner: FC<BoxProps> = ({ children }) => {
 };
 
 interface Tab {
+    id: number;
     title: string;
     component: React.ReactNode
 }
@@ -214,23 +218,21 @@ export default function TabsBox({ tabs, ...props }: Props) {
         setSnackbar({ ...snackbar, open: false });
     };
 
-    const tabLabels: string[] = tabs.map(tab => { return tab.title });
+    const tabIdsLabels: { id: number, title: string }[] = tabs.map(tab => { return { id: tab.id, title: tab.title } });
     const tabPanels: React.ReactNode[] = tabs.map(tab => { return tab.component });
 
     return (
         <TabsWrapper>
             <Header>
-                <Droppable id="droppableArea">
-
+                <SortableContext items={tabIdsLabels.map(item => item.id)}>
                     <CustomTabs
                         value={value}
                         onChange={handleChange}
                         a11yProps={a11yProps}
-                        tabLabels={tabLabels}
-                        tabClasses={tabLabels.map((_, index) => `${value === index ? styles.tabSelected : styles.tab}`)}
+                        tabIdsLabels={tabIdsLabels}
+                        tabClasses={tabIdsLabels.map((_, index) => `${value === index ? styles.tabSelected : styles.tab}`)}
                     />
-                </Droppable>
-
+                </SortableContext>
                 <TabFillerContainer>
                     <TabFillerInner>
                         <IconButton size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: '#fff' } }} aria-label="clipboard" onClick={() => {
