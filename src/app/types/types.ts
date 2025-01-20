@@ -1,5 +1,6 @@
 import type { RefObject } from 'react';
 import { StatementEnum } from "@/app/enum";
+import { UniqueIdentifier } from '@dnd-kit/core';
 
 export interface TreeItem {
   id: string;
@@ -51,4 +52,13 @@ export type ErrObj = {
 export interface DnclValidationType extends ErrObj {
   guid: number, //変更なしでもuseEffectを動かすため
   lineNum: number[]
+}
+
+export interface TabItem {
+  id: UniqueIdentifier;
+  label: string;
+  component: React.ReactNode
+}
+export interface TabItems {
+  [key: UniqueIdentifier]: TabItem[];
 }

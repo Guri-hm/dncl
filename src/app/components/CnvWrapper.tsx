@@ -1,5 +1,5 @@
 import { FC, JSX, useEffect, useRef, useState } from "react";
-import { TreeItems } from "@/app/types";
+import { TabItems, TreeItems } from "@/app/types";
 import cmnStyles from './common.module.css'
 import { Allotment } from "allotment";
 import TabsBox, { a11yProps, CustomTab, CustomTabs } from "./TabsBox";
@@ -15,15 +15,6 @@ import { Container } from "./Container";
 
 interface Props {
     treeItems: TreeItems;
-}
-
-interface TabItem {
-    id: UniqueIdentifier;
-    label: string;
-    component: React.ReactNode
-}
-interface TabItems {
-    [key: UniqueIdentifier]: TabItem[];
 }
 
 export interface ContainerProps {

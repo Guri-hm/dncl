@@ -11,17 +11,18 @@ import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { Handle } from "@/app/components/TreeItem/Handle";
 import { SortableContext, useSortable } from '@dnd-kit/sortable';
 import { CSS } from "@dnd-kit/utilities";
+import { TabItem, TabItems } from '../types';
 
 interface TabsProps {
     value: number;
     onChange: (event: React.SyntheticEvent, newValue: number) => void;
     a11yProps: (index: number) => { id: string; 'aria-controls': string };
-    tabIdsLabels: { id: number, label: string }[];
+    tabItems: TabItem[];
     tabClasses?: string[];
 }
 
 interface CustomTabProps {
-    item: { id: number, label: string };
+    item: TabItem;
     children?: React.ReactNode;
     index: number;
     tabClasses?: string[];
@@ -48,7 +49,7 @@ export const CustomTab: FC<CustomTabProps> = ({ item, a11yProps, index, onClick,
             display: 'flex',
         }}>
             <span ref={setActivatorNodeRef}>
-                <Handle {...attributes} {...listeners} />
+                <Handle {...attributes} {...listeners} cursor={isDragging ? 'grabbing' : "grab"} />
             </span>
             <Tab
                 key={index}
@@ -71,11 +72,11 @@ export const CustomTab: FC<CustomTabProps> = ({ item, a11yProps, index, onClick,
     );
 };
 
-export const CustomTabs: FC<TabsProps> = ({ value, onChange, a11yProps, tabIdsLabels, tabClasses = [] }) => {
+export const CustomTabs: FC<TabsProps> = ({ value, onChange, a11yProps, tabItems, tabClasses = [] }) => {
     return (
         <Tabs sx={{ minHeight: 'unset' }} value={value} onChange={onChange} aria-label="tabs">
 
-            {tabIdsLabels.map((item, index) => (
+            {tabItems.map((item, index) => (
                 <CustomTab
                     key={item.id}
                     item={item}
@@ -174,12 +175,6 @@ const TabFillerInner: FC<BoxProps> = ({ children }) => {
     );
 };
 
-interface TabItem {
-    id: number;
-    label: string;
-    component: React.ReactNode
-}
-
 type Props = {
     tabs: TabItem[];
 }
@@ -217,7 +212,6 @@ export default function TabsBox({ tabs, ...props }: Props) {
         setSnackbar({ ...snackbar, open: false });
     };
 
-    const tabIdsLabels: { id: number, label: string }[] = tabs.map(tab => { return { id: tab.id, label: tab.label } });
     const tabPanels: React.ReactNode[] = tabs.map(tab => { return tab.component });
 
     return (
@@ -227,8 +221,8 @@ export default function TabsBox({ tabs, ...props }: Props) {
                     value={value}
                     onChange={handleChange}
                     a11yProps={a11yProps}
-                    tabIdsLabels={tabIdsLabels}
-                    tabClasses={tabIdsLabels.map((_, index) => `${value === index ? styles.tabSelected : styles.tab}`)}
+                    tabItems={tabs}
+                    tabClasses={tabs.map((_, index) => `${value === index ? styles.tabSelected : styles.tab}`)}
                 />
                 <TabFillerContainer>
                     <TabFillerInner>
