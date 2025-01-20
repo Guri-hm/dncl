@@ -12,6 +12,7 @@ import { AnimateLayoutChanges, arrayMove, defaultAnimateLayoutChanges, SortableC
 import { SimpleSortableItem } from "./SimpleSortableItem";
 import { CSS } from "@dnd-kit/utilities";
 import { Container } from "./Container";
+import { restrictToHorizontalAxis } from "@dnd-kit/modifiers";
 
 interface Props {
     treeItems: TreeItems;
@@ -30,7 +31,7 @@ export interface ContainerProps {
 const animateLayoutChanges: AnimateLayoutChanges = (args) =>
     defaultAnimateLayoutChanges({ ...args, wasDragging: true });
 
-function DroppableContainer({
+export function DroppableContainer({
     children,
     disabled,
     id,
@@ -260,19 +261,14 @@ export const CnvWrapper: FC<Props> = ({ treeItems }) => {
             }}
             onDragOver={handleDragOver}
             onDragEnd={handleDragEnd}
+            modifiers={[restrictToHorizontalAxis]}
         >
             <SortableContext items={[...containers, PLACEHOLDER_ID]}>
                 <Allotment className={`${cmnStyles.hFull}`}>
                     {containers.map((containerId) => (
-                        <DroppableContainer key={containerId}
-                            id={containerId}
-                            label={false ? undefined : `${containerId}`}
-                            items={tabItemsObj[containerId]}>
-
-                            <div key={containerId} className={`${cmnStyles.hFull}`} style={{ marginLeft: '16px' }}>
-                                <TabsBox tabItems={tabItemsObj[containerId]} disabled={isSortingContainer} containerId={containerId} />
-                            </div>
-                        </DroppableContainer>
+                        <div key={containerId} className={`${cmnStyles.hFull}`} style={{ marginLeft: '16px' }}>
+                            <TabsBox tabItems={tabItemsObj[containerId]} disabled={isSortingContainer} containerId={containerId} />
+                        </div>
                     ))}
                 </Allotment>
             </SortableContext>
