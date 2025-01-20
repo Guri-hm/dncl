@@ -59,6 +59,6 @@ export interface TabItem {
   label: string;
   component: React.ReactNode
 }
-export interface TabItems {
+export interface TabItemsObj {
   [key: UniqueIdentifier]: TabItem[];
 }

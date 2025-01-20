@@ -7,11 +7,11 @@ import { Button, IconButton, Snackbar } from '@mui/material';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import cmnStyles from '@/app/components/common.module.css';
 import { Children, FC, forwardRef, ReactNode, useRef, useState } from 'react';
-import { useDraggable, useDroppable } from "@dnd-kit/core";
+import { UniqueIdentifier, useDraggable, useDroppable } from "@dnd-kit/core";
 import { Handle } from "@/app/components/TreeItem/Handle";
 import { SortableContext, useSortable } from '@dnd-kit/sortable';
 import { CSS } from "@dnd-kit/utilities";
-import { TabItem, TabItems } from '../types';
+import { TabItem, TabItemsObj } from '../types';
 
 interface TabsProps {
     value: number;
@@ -19,6 +19,7 @@ interface TabsProps {
     a11yProps: (index: number) => { id: string; 'aria-controls': string };
     tabItems: TabItem[];
     tabClasses?: string[];
+    disabled?: boolean;
 }
 
 interface CustomTabProps {
@@ -176,7 +177,9 @@ const TabFillerInner: FC<BoxProps> = ({ children }) => {
 };
 
 type Props = {
-    tabs: TabItem[];
+    tabItems: TabItem[];
+    disabled?: boolean;
+    containerId?: UniqueIdentifier
 }
 
 type DroppableProp = {
@@ -200,7 +203,7 @@ const Droppable: FC<DroppableProp> = ({ children, id }) => {
     );
 }
 
-export default function TabsBox({ tabs, ...props }: Props) {
+export default function TabsBox({ tabItems, disabled, containerId = 'box', ...props }: Props) {
     const [value, setValue] = useState(0);
     const contentRef = useRef<HTMLDivElement | null>(null);
     const [snackbar, setSnackbar] = useState<{ open: boolean, duration: number, text: string }>({ open: false, duration: 3000, text: '' });
@@ -212,18 +215,21 @@ export default function TabsBox({ tabs, ...props }: Props) {
         setSnackbar({ ...snackbar, open: false });
     };
 
-    const tabPanels: React.ReactNode[] = tabs.map(tab => { return tab.component });
+    const tabPanels: React.ReactNode[] = tabItems.map(tabItem => { return tabItem.component });
 
     return (
         <TabsWrapper>
             <Header>
-                <CustomTabs
-                    value={value}
-                    onChange={handleChange}
-                    a11yProps={a11yProps}
-                    tabItems={tabs}
-                    tabClasses={tabs.map((_, index) => `${value === index ? styles.tabSelected : styles.tab}`)}
-                />
+                <SortableContext key={containerId} items={tabItems}>
+                    <CustomTabs
+                        value={value}
+                        onChange={handleChange}
+                        a11yProps={a11yProps}
+                        tabItems={tabItems}
+                        tabClasses={tabItems.map((_, index) => `${value === index ? styles.tabSelected : styles.tab}`)}
+                        disabled={disabled}
+                    />
+                </SortableContext>
                 <TabFillerContainer>
                     <TabFillerInner>
                         <IconButton size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: '#fff' } }} aria-label="clipboard" onClick={() => {
