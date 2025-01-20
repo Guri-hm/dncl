@@ -1,4 +1,4 @@
-import { FC, JSX, useState } from "react";
+import { FC, JSX, useEffect, useRef, useState } from "react";
 import { TreeItems } from "@/app/types";
 import cmnStyles from './common.module.css'
 import { Allotment } from "allotment";
@@ -7,97 +7,283 @@ import { DnclTab } from "./DnclTab";
 import { JsTab } from "./JsTab";
 import { PythonTab } from "./PythonTab";
 import { VbaTab } from "./VbaTab";
-import { closestCenter, DndContext, MeasuringStrategy, PointerSensor, useDraggable, useDroppable, useSensor, useSensors } from "@dnd-kit/core";
-import { arrayMove, SortableContext } from "@dnd-kit/sortable";
+import { closestCenter, DndContext, DragEndEvent, DragOverEvent, MeasuringStrategy, PointerSensor, UniqueIdentifier, useDraggable, useDroppable, useSensor, useSensors } from "@dnd-kit/core";
+import { AnimateLayoutChanges, arrayMove, defaultAnimateLayoutChanges, SortableContext, useSortable } from "@dnd-kit/sortable";
 import { SimpleSortableItem } from "./SimpleSortableItem";
-import { Tabs } from "@mui/material";
+import { CSS } from "@dnd-kit/utilities";
+import { Container } from "./Container";
 
 interface Props {
     treeItems: TreeItems;
 }
 
-interface Tab {
-    id: number;
+interface TabItem {
+    id: UniqueIdentifier;
     label: string;
     component: React.ReactNode
+}
+interface TabItems {
+    [key: UniqueIdentifier]: TabItem[];
+}
+
+export interface ContainerProps {
+    children: React.ReactNode;
+    columns?: number;
+    label?: string;
+    style?: React.CSSProperties;
+    horizontal?: boolean;
+    hover?: boolean;
+    handleProps?: React.HTMLAttributes<any>;
+    scrollable?: boolean;
+    shadow?: boolean;
+    placeholder?: boolean;
+    unstyled?: boolean;
+    onClick?(): void;
+    onRemove?(): void;
+}
+
+const animateLayoutChanges: AnimateLayoutChanges = (args) =>
+    defaultAnimateLayoutChanges({ ...args, wasDragging: true });
+
+function DroppableContainer({
+    children,
+    columns = 1,
+    disabled,
+    id,
+    items,
+    style,
+    ...props
+}: ContainerProps & {
+    disabled?: boolean;
+    id: UniqueIdentifier;
+    items: UniqueIdentifier[];
+    style?: React.CSSProperties;
+}) {
+    const {
+        active,
+        attributes,
+        isDragging,
+        listeners,
+        over,
+        setNodeRef,
+        transition,
+        transform,
+    } = useSortable({
+        id,
+        data: {
+            type: "container",
+            children: items,
+        },
+        animateLayoutChanges,
+    });
+    const isOverContainer = over
+        ? (id === over.id && active?.data.current?.type !== "container") ||
+        items.includes(over.id)
+        : false;
+
+    return (
+        <Container
+            ref={disabled ? undefined : setNodeRef}
+            style={{
+                ...style,
+                transition,
+                transform: CSS.Translate.toString(transform),
+                opacity: isDragging ? 0.5 : undefined,
+            }}
+            hover={isOverContainer}
+            handleProps={{
+                ...attributes,
+                ...listeners,
+            }}
+            columns={columns}
+            {...props}
+        >
+            {children}
+        </Container>
+    );
 }
 
 export const CnvWrapper: FC<Props> = ({ treeItems }) => {
 
-    type Item = {
-        id: number;
-        text: string;
+    const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
+    const recentlyMovedToNewContainer = useRef(false);
+
+    const findContainer = (id: UniqueIdentifier) => {
+        if (id in tabItems) {
+            return id;
+        }
+        for (const key of Object.keys(tabItems)) {
+            const foundItem = tabItems[key].find(item => item.id === id);
+            if (foundItem) {
+                return key as UniqueIdentifier;
+            }
+        }
+        return null;
     };
-    const ITEMS: Item[] = [
-        { id: 1, text: "項目１" },
-        { id: 2, text: "項目２" },
-        { id: 3, text: "項目３" },
-        { id: 4, text: "項目４" },
-        { id: 5, text: "項目５" }
-    ];
 
-    const [items, setItems] = useState(ITEMS);
+    const handleDragOver = ({ active, over }: DragOverEvent) => {
+        const overId = over?.id;
+        if (overId == null || active.id in tabItems) {
+            return;
+        }
 
-    const handleDragEnd = (event: any) => {
-        const { active, over } = event;
-        if (active.id !== over.id) {
-            setTabs2((items) => {
-                const oldIndex = items.findIndex((item) => item.id === active.id);
-                const newIndex = items.findIndex((item) => item.id === over.id);
-                return arrayMove(items, oldIndex, newIndex);
+        const overContainer = findContainer(overId);
+        const activeContainer = findContainer(active.id);
+
+        if (!overContainer || !activeContainer) {
+            return;
+        }
+
+        if (activeContainer !== overContainer) {
+            setTabItems((items) => {
+                const activeItems = items[activeContainer];
+                const overItems = items[overContainer];
+                const activeIndex = activeItems.map(item => item.id).indexOf(active.id);
+                const overIndex = overItems.map(item => item.id).indexOf(overId);
+
+                let newIndex: number;
+
+                if (overId in items) {
+                    newIndex = overItems.length + 1;
+                } else {
+                    const isBelowOverItem =
+                        over &&
+                        active.rect.current.translated &&
+                        active.rect.current.translated.top >
+                        over.rect.top + over.rect.height;
+
+                    const modifier = isBelowOverItem ? 1 : 0;
+
+                    newIndex =
+                        overIndex >= 0 ? overIndex + modifier : overItems.length + 1;
+                }
+
+                recentlyMovedToNewContainer.current = true;
+
+                console.log("setting items onDragOver");
+
+                return {
+                    ...items,
+                    [activeContainer]: items[activeContainer].filter(
+                        (item) => item.id !== active.id
+                    ),
+                    [overContainer]: [
+                        ...items[overContainer].slice(0, newIndex),
+                        items[activeContainer][activeIndex],
+                        ...items[overContainer].slice(
+                            newIndex,
+                            items[overContainer].length
+                        ),
+                    ],
+                };
             });
         }
+    }
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        console.log(`active.id:${active.id}`)
+        console.log(`over.id:${over?.id}`)
+        if (!active.id) {
+            return;
+        }
+
+        const activeContainer = findContainer(active.id);
+
+        if (!activeContainer) {
+            setActiveId(null);
+            return;
+        }
+
+        const overId = over?.id;
+
+        if (overId == null) {
+            setActiveId(null);
+            return;
+        }
+
+        if (overId === PLACEHOLDER_ID) {
+        }
+
+        const overContainer = findContainer(overId);
+        if (overContainer) {
+            const activeIndex = tabItems[activeContainer].map(item => item.id).indexOf(active.id);
+            const overIndex = tabItems[overContainer].map(item => item.id).indexOf(overId);
+
+            if (activeIndex !== overIndex) {
+                setTabItems((items) => ({
+                    ...items,
+                    [overContainer]: arrayMove(
+                        items[overContainer],
+                        activeIndex,
+                        overIndex
+                    ),
+                }));
+            }
+        }
+        setActiveId(null);
     };
 
-    const [tabs2, setTabs2] = useState<Tab[]>([
-        {
-            id: 1, label: 'javascript', component: <JsTab treeItems={treeItems}>
-                javascriptのコード
-            </JsTab>
-        },
-        {
-            id: 2, label: 'Python', component: <PythonTab treeItems={treeItems}>
-                Pythonのコード
-            </PythonTab>
-        },
-        {
-            id: 3, label: 'VBA', component: <VbaTab treeItems={treeItems}>
-                VBAのコード
-            </VbaTab>
-        },
-    ]);
+    const [tabItems, setTabItems] = useState<TabItems>({
+        group1: [
+            {
+                id: 4, label: 'DNCL', component: <DnclTab treeItems={treeItems}>
+                    DNCLのコード
+                </DnclTab>
+            },
+        ],
+        group2: [
+            {
+                id: 1, label: 'javascript', component: <JsTab treeItems={treeItems}>
+                    javascriptのコード
+                </JsTab>
+            },
+            {
+                id: 2, label: 'Python', component: <PythonTab treeItems={treeItems}>
+                    Pythonのコード
+                </PythonTab>
+            },
+            {
+                id: 3, label: 'VBA', component: <VbaTab treeItems={treeItems}>
+                    VBAのコード
+                </VbaTab>
+            },
+        ],
+    });
 
-    const tabs1: Tab[] = [
-        {
-            id: 4, label: 'DNCL', component: <DnclTab treeItems={treeItems}>
-                DNCLのコード
-            </DnclTab>
-        },
-    ];
-    const tabIdsLabels: { id: number, label: string }[] = tabs2.map(tab => { return { id: tab.id, label: tab.label } });
+    const [containers, setContainers] = useState(
+        Object.keys(tabItems) as UniqueIdentifier[]
+    );
+    const PLACEHOLDER_ID = "placeholder";
+
+    useEffect(() => {
+        requestAnimationFrame(() => {
+            recentlyMovedToNewContainer.current = false;
+        });
+    }, [tabItems]);
 
     return (
         <DndContext
             // 衝突検知を collisionDetection={closestCenter} にすると、全エリアでDropOver扱いになる
             collisionDetection={closestCenter}
             onDragEnd={handleDragEnd}
+            onDragStart={({ active }) => {
+                setActiveId(active.id);
+            }}
+            onDragOver={handleDragOver}
         >
-            <Allotment>
-
-                <div className={`${cmnStyles.hFull}`} style={{ marginLeft: '16px' }}>
-
-                    <Allotment.Pane className={`${cmnStyles.hFull}`}>
-                        <TabsBox tabs={tabs1} />
-                    </Allotment.Pane>
-                </div>
-                <div className={`${cmnStyles.hFull}`} style={{ marginLeft: '16px' }}>
-
-                    <Allotment.Pane className={`${cmnStyles.hFull}`}>
-                        <TabsBox tabs={tabs2} />
-                    </Allotment.Pane>
-                </div>
-
-            </Allotment>
+            <SortableContext items={[...containers, PLACEHOLDER_ID]}>
+                <Allotment>
+                    {containers.map((containerId) => (
+                        <SortableContext key={containerId} items={tabItems[containerId]}>
+                            <div key={containerId} className={`${cmnStyles.hFull}`} style={{ marginLeft: '16px' }}>
+                                <Allotment.Pane className={`${cmnStyles.hFull}`}>
+                                    <TabsBox tabs={tabItems[containerId]} />
+                                </Allotment.Pane>
+                            </div>
+                        </SortableContext>
+                    ))}
+                </Allotment>
+            </SortableContext>
         </DndContext>
     );
 };

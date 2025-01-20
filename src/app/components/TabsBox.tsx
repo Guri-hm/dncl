@@ -174,14 +174,14 @@ const TabFillerInner: FC<BoxProps> = ({ children }) => {
     );
 };
 
-interface Tab {
+interface TabItem {
     id: number;
     label: string;
     component: React.ReactNode
 }
 
 type Props = {
-    tabs: Tab[];
+    tabs: TabItem[];
 }
 
 type DroppableProp = {
@@ -223,15 +223,13 @@ export default function TabsBox({ tabs, ...props }: Props) {
     return (
         <TabsWrapper>
             <Header>
-                <SortableContext items={tabs}>
-                    <CustomTabs
-                        value={value}
-                        onChange={handleChange}
-                        a11yProps={a11yProps}
-                        tabIdsLabels={tabIdsLabels}
-                        tabClasses={tabIdsLabels.map((_, index) => `${value === index ? styles.tabSelected : styles.tab}`)}
-                    />
-                </SortableContext>
+                <CustomTabs
+                    value={value}
+                    onChange={handleChange}
+                    a11yProps={a11yProps}
+                    tabIdsLabels={tabIdsLabels}
+                    tabClasses={tabIdsLabels.map((_, index) => `${value === index ? styles.tabSelected : styles.tab}`)}
+                />
                 <TabFillerContainer>
                     <TabFillerInner>
                         <IconButton size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: '#fff' } }} aria-label="clipboard" onClick={() => {
