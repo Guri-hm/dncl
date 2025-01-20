@@ -11,7 +11,6 @@ export interface Props {
     hover?: boolean;
     handleProps?: React.HTMLAttributes<any>;
     scrollable?: boolean;
-    placeholder?: boolean;
     onClick?(): void;
 }
 
@@ -70,7 +69,6 @@ export const Container = forwardRef<HTMLDivElement, Props>(
             hover,
             onClick,
             label,
-            placeholder,
             style,
             scrollable,
             ...props
@@ -99,13 +97,7 @@ export const Container = forwardRef<HTMLDivElement, Props>(
                         </div>
                     </div>
                 ) : null}
-                {placeholder ? (
-                    children
-                ) : (
-                    <div>
-                        {children}
-                    </div>
-                )}
+                {children}
             </Component>
         );
     }
