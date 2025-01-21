@@ -1,90 +1,31 @@
-import { FC, JSX, useEffect, useRef, useState } from "react";
-import { TabItem, TabItemsObj, TreeItems } from "@/app/types";
+import { FC, useEffect, useRef, useState } from "react";
+import { TabItemsObj, TreeItems } from "@/app/types";
 import cmnStyles from './common.module.css'
 import { Allotment } from "allotment";
-import TabsBox, { a11yProps, CustomTab, CustomTabs } from "./TabsBox";
+import TabsBox from "./TabsBox";
 import { DnclTab } from "./DnclTab";
 import { JsTab } from "./JsTab";
 import { PythonTab } from "./PythonTab";
 import { VbaTab } from "./VbaTab";
-import { closestCenter, DndContext, DragEndEvent, DragOverEvent, MeasuringStrategy, PointerSensor, UniqueIdentifier, useDraggable, useDroppable, useSensor, useSensors } from "@dnd-kit/core";
-import { AnimateLayoutChanges, arrayMove, defaultAnimateLayoutChanges, SortableContext, useSortable } from "@dnd-kit/sortable";
-import { SimpleSortableItem } from "./SimpleSortableItem";
-import { CSS } from "@dnd-kit/utilities";
-import { Container } from "./Container";
+import { closestCenter, DndContext, DragEndEvent, DragOverEvent, UniqueIdentifier } from "@dnd-kit/core";
+import { arrayMove, SortableContext } from "@dnd-kit/sortable";
 import { restrictToHorizontalAxis } from "@dnd-kit/modifiers";
 
 interface Props {
     treeItems: TreeItems;
 }
 
-export interface ContainerProps {
-    children: React.ReactNode;
-    label?: string;
-    hover?: boolean;
-    handleProps?: React.HTMLAttributes<any>;
-    scrollable?: boolean;
-    placeholder?: boolean;
-    onClick?(): void;
-}
+// export interface ContainerProps {
+//     children: React.ReactNode;
+//     label?: string;
+//     hover?: boolean;
+//     handleProps?: React.HTMLAttributes<any>;
+//     scrollable?: boolean;
+//     placeholder?: boolean;
+//     onClick?(): void;
+// }
 
-const animateLayoutChanges: AnimateLayoutChanges = (args) =>
-    defaultAnimateLayoutChanges({ ...args, wasDragging: true });
-
-export function DroppableContainer({
-    children,
-    disabled,
-    id,
-    items,
-    ...props
-}: ContainerProps & {
-    disabled?: boolean;
-    id: UniqueIdentifier;
-    items: TabItem[];
-}) {
-    const {
-        active,
-        attributes,
-        isDragging,
-        listeners,
-        over,
-        setNodeRef,
-        transition,
-        transform,
-    } = useSortable({
-        id,
-        data: {
-            type: "container",
-            children: items,
-        },
-        animateLayoutChanges,
-    });
-    const isOverContainer = over
-        ? (id === over.id && active?.data.current?.type !== "container") ||
-        items.map(item => item.id).includes(over.id)
-        : false;
-
-    return (
-        <Container
-            ref={disabled ? undefined : setNodeRef}
-            style={{
-                transition,
-                transform: CSS.Translate.toString(transform),
-                opacity: isDragging ? 0.5 : undefined,
-            }}
-            hover={isOverContainer}
-            handleProps={{
-                ...attributes,
-                ...listeners,
-            }}
-            {...props}
-        >
-            {children}
-        </Container>
-    );
-}
-
-export const CnvWrapper: FC<Props> = ({ treeItems }) => {
+export const TabsBoxWrapper: FC<Props> = ({ treeItems }) => {
 
     const [tabItemsObj, setTabItemsObj] = useState<TabItemsObj>({
         group1: [
@@ -148,7 +89,6 @@ export const CnvWrapper: FC<Props> = ({ treeItems }) => {
             return;
         }
 
-        console.log("aaaaa")
         if (activeContainer !== overContainer) {
             setTabItemsObj((items) => {
                 const activeItems = items[activeContainer];
@@ -174,8 +114,6 @@ export const CnvWrapper: FC<Props> = ({ treeItems }) => {
                 }
 
                 recentlyMovedToNewContainer.current = true;
-
-                console.log("setting items onDragOver");
 
                 return {
                     ...items,

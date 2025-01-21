@@ -4,19 +4,19 @@ import "allotment/dist/style.css";
 import "../components/alloment-custom.css";
 import { SortableTree } from "@/app/components/SortableTree";
 import styles from '@/app/components/common.module.css';
-import { DnclValidationType, ErrObj, FlattenedItem, TreeItems } from "@/app/types";
+import { DnclValidationType, FlattenedItem, TreeItems } from "@/app/types";
 import Image from "next/image";
 import Typography from '@mui/material/Typography';
 import { ConsoleBox } from "@/app/components/ConsoleBox";
-import { ConsoleTab } from "../components/ConsoleTab";
-import { PageWrapper } from "../components/PageWrapper";
-import { sampleFuncItems } from "../components/SampleDncl";
-import { Header } from "../components/Header";
-import { HeaderItem } from "../components/HeaderItem";
-import { ContentWrapper } from "../components/ContentWrapper";
+import { ConsoleTab } from "@/app/components/ConsoleTab";
+import { PageWrapper } from "@/app/components/PageWrapper";
+import { sampleFuncItems } from "@/app/components/SampleDncl";
+import { Header } from "@/app/components/Header";
+import { HeaderItem } from "@/app/components/HeaderItem";
+import { ContentWrapper } from "@/app/components/ContentWrapper";
 import { useEffect, useState } from "react";
-import { checkDNCLSyntax, flattenTree } from "../utilities";
-import { CnvWrapper } from "../components/CnvWrapper";
+import { checkDNCLSyntax, flattenTree } from "@/app/utilities";
+import { TabsBoxWrapper } from "@/app/components/TabsBoxWrapper";
 
 const initialItems: TreeItems = sampleFuncItems;
 
@@ -87,7 +87,7 @@ export default function Home() {
               <SortableTree treeItems={items} setTreeItems={setItems} dnclValidation={dnclValidation} collapsible indicator removable ></SortableTree>
             </Allotment>
             <Allotment>
-              <CnvWrapper treeItems={items}></CnvWrapper>
+              <TabsBoxWrapper treeItems={items}></TabsBoxWrapper>
             </Allotment>
           </Allotment>
 

@@ -47,7 +47,7 @@ import { JsTab } from "./JsTab";
 import { PythonTab } from "./PythonTab";
 import { DnclTab } from "./DnclTab";
 import { VbaTab } from "./VbaTab";
-import { CnvWrapper } from "./CnvWrapper";
+import { CnvWrapper } from "./TabsBoxWrapper";
 
 const statementEnumMap = {
   [StatementJpEnum.Output]: StatementEnum.Output,

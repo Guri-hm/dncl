@@ -3,16 +3,15 @@ import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import styles from './tabs-box.module.css'
 import { BoxProps } from '@mui/system';
-import { Button, IconButton, Snackbar } from '@mui/material';
+import { IconButton, Snackbar } from '@mui/material';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import cmnStyles from '@/app/components/common.module.css';
-import { Children, FC, forwardRef, ReactNode, useRef, useState } from 'react';
-import { UniqueIdentifier, useDraggable, useDroppable } from "@dnd-kit/core";
+import { Children, FC, forwardRef, useRef, useState } from 'react';
+import { UniqueIdentifier } from "@dnd-kit/core";
 import { Handle } from "@/app/components/TreeItem/Handle";
-import { SortableContext, useSortable } from '@dnd-kit/sortable';
+import { AnimateLayoutChanges, defaultAnimateLayoutChanges, SortableContext, useSortable } from '@dnd-kit/sortable';
 import { CSS } from "@dnd-kit/utilities";
-import { TabItem, TabItemsObj } from '../types';
-import { DroppableContainer } from './CnvWrapper';
+import { TabItem } from '../types';
 
 interface TabsProps {
     value: number;
@@ -32,16 +31,7 @@ interface CustomTabProps {
     onClick: (event: React.SyntheticEvent) => void;
 }
 
-// const DroppableArea: React.FC<DroppableAreaProps> = ({ id, children }) => {
-//     const { setNodeRef } = useDroppable({ id });
-
-//     return (
-//         <div ref={setNodeRef}>
-//             {children}
-//         </div>
-//     );
-// };
-export const CustomTab: FC<CustomTabProps> = ({ item, a11yProps, index, onClick, tabClasses = [] }) => {
+const CustomTab: FC<CustomTabProps> = ({ item, a11yProps, index, onClick, tabClasses = [] }) => {
     const { isDragging, setActivatorNodeRef, attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: item.id });
 
     return (
@@ -74,7 +64,7 @@ export const CustomTab: FC<CustomTabProps> = ({ item, a11yProps, index, onClick,
     );
 };
 
-export const CustomTabs: FC<TabsProps> = ({ value, onChange, a11yProps, tabItems, tabClasses = [] }) => {
+const CustomTabs: FC<TabsProps> = ({ value, onChange, a11yProps, tabItems, tabClasses = [] }) => {
     return (
         <Tabs sx={{ minHeight: 'unset' }} value={value} onChange={onChange} aria-label="tabs">
 
@@ -183,26 +173,39 @@ type Props = {
     containerId?: UniqueIdentifier
 }
 
-type DroppableProp = {
-    id: string;
-    children: ReactNode;
-};
-const Droppable: FC<DroppableProp> = ({ children, id }) => {
-    const { isOver, setNodeRef } = useDroppable({
-        id: "droppable-area",
-    });
+const animateLayoutChanges: AnimateLayoutChanges = (args) =>
+    defaultAnimateLayoutChanges({ ...args, wasDragging: true });
 
+const TabPanelsWrapper: FC<BoxProps & { containerId: UniqueIdentifier, items: TabItem[], disabled?: boolean; }> = ({ children, containerId, items, disabled }) => {
+    const {
+        attributes,
+        isDragging,
+        listeners,
+        setNodeRef,
+        transition,
+        transform,
+    } = useSortable({
+        id: containerId,
+        data: {
+            type: "container",
+            children: items,
+        },
+        animateLayoutChanges,
+    });
     return (
-        <div
-            ref={setNodeRef}
+        <Box className={`${styles.tabsWrapper} ${styles.dark}`} ref={disabled ? undefined : setNodeRef}
             style={{
-                backgroundColor: isOver ? "lightgreen" : "",
+                transition,
+                transform: CSS.Translate.toString(transform),
+                opacity: isDragging ? 0.5 : undefined,
+                cursor: isDragging ? 'grabbing' : 'grab'
             }}
-        >
+            {...attributes}
+            {...listeners}>
             {children}
-        </div>
+        </Box>
     );
-}
+};
 
 export default function TabsBox({ tabItems, disabled, containerId = 'box', ...props }: Props) {
     const [value, setValue] = useState(0);
@@ -219,58 +222,53 @@ export default function TabsBox({ tabItems, disabled, containerId = 'box', ...pr
     const tabPanels: React.ReactNode[] = tabItems.map(tabItem => { return tabItem.component });
 
     return (
-        <DroppableContainer key={containerId}
-            id={containerId}
-            label={false ? undefined : `${containerId}`}
-            items={tabItems}>
-
-            <TabsWrapper>
-                <Header>
-                    <SortableContext key={containerId} items={tabItems}>
-                        <CustomTabs
-                            value={value}
-                            onChange={handleChange}
-                            a11yProps={a11yProps}
-                            tabItems={tabItems}
-                            tabClasses={tabItems.map((_, index) => `${value === index ? styles.tabSelected : styles.tab}`)}
-                            disabled={disabled}
-                        />
-                    </SortableContext>
-                    <TabFillerContainer>
-                        <TabFillerInner>
-                            <IconButton size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: '#fff' } }} aria-label="clipboard" onClick={() => {
-                                if (contentRef.current) {
-                                    const content = contentRef.current.textContent;
-                                    if (!content) {
-                                        return;
-                                    }
-                                    navigator.clipboard.writeText(content).then(() => {
-                                        setSnackbar({ ...snackbar, open: true, text: 'クリップボードにコピーしました' });
-                                    }, (err) => {
-                                        console.error(err);
-                                        setSnackbar({ ...snackbar, open: true, text: '失敗しました' });
-                                    });
+        <TabsWrapper>
+            <Header>
+                <SortableContext key={containerId} items={tabItems}>
+                    <CustomTabs
+                        value={value}
+                        onChange={handleChange}
+                        a11yProps={a11yProps}
+                        tabItems={tabItems}
+                        tabClasses={tabItems.map((_, index) => `${value === index ? styles.tabSelected : styles.tab}`)}
+                        disabled={disabled}
+                    />
+                </SortableContext>
+                <TabFillerContainer>
+                    <TabFillerInner>
+                        <IconButton size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: '#fff' } }} aria-label="clipboard" onClick={() => {
+                            if (contentRef.current) {
+                                const content = contentRef.current.textContent;
+                                if (!content) {
+                                    return;
                                 }
-                            }}>
-                                <AssignmentIcon />
-                            </IconButton>
-                        </TabFillerInner>
-                    </TabFillerContainer>
-                </Header>
+                                navigator.clipboard.writeText(content).then(() => {
+                                    setSnackbar({ ...snackbar, open: true, text: 'クリップボードにコピーしました' });
+                                }, (err) => {
+                                    console.error(err);
+                                    setSnackbar({ ...snackbar, open: true, text: '失敗しました' });
+                                });
+                            }
+                        }}>
+                            <AssignmentIcon />
+                        </IconButton>
+                    </TabFillerInner>
+                </TabFillerContainer>
+            </Header>
+            <TabPanelsWrapper containerId={containerId} items={tabItems}>
                 {
                     Children.map(tabPanels, (child, index) => (
                         <TabPanel value={value} index={index} key={index} ref={contentRef}> {child} </TabPanel>
                     ))
                 }
-                <Snackbar
-                    anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-                    autoHideDuration={snackbar.duration}
-                    open={snackbar.open}
-                    onClose={handleClose}
-                    message={snackbar.text}
-                />
-            </TabsWrapper >
-        </DroppableContainer>
-
+            </TabPanelsWrapper>
+            <Snackbar
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                autoHideDuration={snackbar.duration}
+                open={snackbar.open}
+                onClose={handleClose}
+                message={snackbar.text}
+            />
+        </TabsWrapper >
     );
 }
