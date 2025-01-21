@@ -1,10 +1,7 @@
 import * as React from 'react';
-import Tabs from '@mui/material/Tabs';
-import Tab, { TabProps } from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import { BoxProps, styled } from '@mui/system';
 import { Button, IconButton } from '@mui/material';
-import AssignmentIcon from '@mui/icons-material/Assignment';
 import cmnStyles from '@/app/components/common.module.css';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
 import Grid from '@mui/material/Grid2';
