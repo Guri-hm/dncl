@@ -42,12 +42,6 @@ import styles from './alloment-custom.module.css'
 import cmnStyles from './common.module.css'
 import { ArrowButton } from "./ArrowButton";
 import "./alloment-custom.css";
-import TabsBox from "./TabsBox";
-import { JsTab } from "./JsTab";
-import { PythonTab } from "./PythonTab";
-import { DnclTab } from "./DnclTab";
-import { VbaTab } from "./VbaTab";
-import { CnvWrapper } from "./TabsBoxWrapper";
 
 const statementEnumMap = {
   [StatementJpEnum.Output]: StatementEnum.Output,

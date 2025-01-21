@@ -2,12 +2,12 @@ import { FC, useEffect, useRef, useState } from "react";
 import { TabItemsObj, TreeItems } from "@/app/types";
 import cmnStyles from './common.module.css'
 import { Allotment } from "allotment";
-import TabsBox from "./TabsBox";
+import { TabsBox } from "./TabsBox";
 import { DnclTab } from "./DnclTab";
 import { JsTab } from "./JsTab";
 import { PythonTab } from "./PythonTab";
 import { VbaTab } from "./VbaTab";
-import { closestCenter, DndContext, DragEndEvent, DragOverEvent, UniqueIdentifier } from "@dnd-kit/core";
+import { closestCenter, DndContext, DragEndEvent, DragOverEvent, MeasuringStrategy, UniqueIdentifier } from "@dnd-kit/core";
 import { arrayMove, SortableContext } from "@dnd-kit/sortable";
 import { restrictToHorizontalAxis } from "@dnd-kit/modifiers";
 
@@ -115,6 +115,7 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems }) => {
 
                 recentlyMovedToNewContainer.current = true;
 
+                console.log("aaa")
                 return {
                     ...items,
                     [activeContainer]: items[activeContainer].filter(
@@ -147,7 +148,7 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems }) => {
             });
         }
 
-        //タブ移動の場合
+        //以降はタブ移動の場合
         const activeContainer = findContainer(active.id);
 
         if (!activeContainer) {
@@ -200,13 +201,20 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems }) => {
             onDragOver={handleDragOver}
             onDragEnd={handleDragEnd}
             modifiers={[restrictToHorizontalAxis]}
+            measuring={{
+                droppable: {
+                    strategy: MeasuringStrategy.Always,
+                },
+            }}
         >
             <SortableContext items={[...containers, PLACEHOLDER_ID]}>
                 <Allotment className={`${cmnStyles.hFull}`}>
                     {containers.map((containerId) => (
-                        <div key={containerId} className={`${cmnStyles.hFull}`} style={{ marginLeft: '16px' }}>
-                            <TabsBox tabItems={tabItemsObj[containerId]} disabled={isSortingContainer} containerId={containerId} />
-                        </div>
+                        <Allotment.Pane key={containerId} visible={tabItemsObj[containerId].length > 0 || activeId ? true : true} >
+                            <div key={containerId} className={`${cmnStyles.hFull}`} style={{ marginLeft: '16px' }}>
+                                <TabsBox tabItems={tabItemsObj[containerId]} disabled={isSortingContainer} containerId={containerId} />
+                            </div>
+                        </Allotment.Pane>
                     ))}
                 </Allotment>
             </SortableContext>

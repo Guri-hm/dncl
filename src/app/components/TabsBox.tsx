@@ -1,86 +1,14 @@
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import styles from './tabs-box.module.css'
 import { BoxProps } from '@mui/system';
 import { IconButton, Snackbar } from '@mui/material';
-import AssignmentIcon from '@mui/icons-material/Assignment';
 import cmnStyles from '@/app/components/common.module.css';
-import { Children, FC, forwardRef, useRef, useState } from 'react';
+import { Children, FC, forwardRef, useMemo, useRef, useState } from 'react';
 import { UniqueIdentifier } from "@dnd-kit/core";
-import { Handle } from "@/app/components/TreeItem/Handle";
 import { AnimateLayoutChanges, defaultAnimateLayoutChanges, SortableContext, useSortable } from '@dnd-kit/sortable';
 import { CSS } from "@dnd-kit/utilities";
 import { TabItem } from '../types';
-
-interface TabsProps {
-    value: number;
-    onChange: (event: React.SyntheticEvent, newValue: number) => void;
-    a11yProps: (index: number) => { id: string; 'aria-controls': string };
-    tabItems: TabItem[];
-    tabClasses?: string[];
-    disabled?: boolean;
-}
-
-interface CustomTabProps {
-    item: TabItem;
-    children?: React.ReactNode;
-    index: number;
-    tabClasses?: string[];
-    a11yProps: (index: number) => { id: string; 'aria-controls': string };
-    onClick: (event: React.SyntheticEvent) => void;
-}
-
-const CustomTab: FC<CustomTabProps> = ({ item, a11yProps, index, onClick, tabClasses = [] }) => {
-    const { isDragging, setActivatorNodeRef, attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: item.id });
-
-    return (
-        <Box className={`${isDragging ? cmnStyles.zIndexMax : ''}`} ref={setNodeRef} style={{
-            transform: CSS.Transform.toString(transform),
-            transition,
-            display: 'flex',
-        }}>
-            <span ref={setActivatorNodeRef}>
-                <Handle {...attributes} {...listeners} cursor={isDragging ? 'grabbing' : "grab"} />
-            </span>
-            <Tab
-                key={index}
-                label={item.label}
-                onClick={onClick}
-                // className={tabClasses[index] || ''}
-                // {...a11yProps(index)}
-                sx={{
-                    flex: 'none',
-                    color: '#38bdf8',
-                    borderTop: 'transparent',
-                    display: 'flex',
-                    alignItems: 'center',
-                    fontSize: '0.75rem',
-                    minHeight: 'auto',
-                    padding: '10px',
-                }}
-            />
-        </Box>
-    );
-};
-
-const CustomTabs: FC<TabsProps> = ({ value, onChange, a11yProps, tabItems, tabClasses = [] }) => {
-    return (
-        <Tabs sx={{ minHeight: 'unset' }} value={value} onChange={onChange} aria-label="tabs">
-
-            {tabItems.map((item, index) => (
-                <CustomTab
-                    key={item.id}
-                    item={item}
-                    index={index}
-                    onClick={(event) => onChange(event, index)}
-                    tabClasses={tabClasses}
-                    a11yProps={a11yProps}
-                />
-            ))}
-        </Tabs>
-    );
-};
+import { CustomTabs } from './CustomTabs';
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -207,7 +135,7 @@ const TabPanelsWrapper: FC<BoxProps & { containerId: UniqueIdentifier, items: Ta
     );
 };
 
-export default function TabsBox({ tabItems, disabled, containerId = 'box', ...props }: Props) {
+export const TabsBox = ({ tabItems, disabled, containerId = 'box', ...props }: Props) => {
     const [value, setValue] = useState(0);
     const contentRef = useRef<HTMLDivElement | null>(null);
     const [snackbar, setSnackbar] = useState<{ open: boolean, duration: number, text: string }>({ open: false, duration: 3000, text: '' });
@@ -219,12 +147,12 @@ export default function TabsBox({ tabItems, disabled, containerId = 'box', ...pr
         setSnackbar({ ...snackbar, open: false });
     };
 
-    const tabPanels: React.ReactNode[] = tabItems.map(tabItem => { return tabItem.component });
+    const tabPanels: React.ReactNode[] = useMemo(() => tabItems.map(tabItem => tabItem.component), [tabItems]);
 
     return (
         <TabsWrapper>
-            <Header>
-                <SortableContext key={containerId} items={tabItems}>
+            <SortableContext key={containerId} items={tabItems}>
+                <Header>
                     <CustomTabs
                         value={value}
                         onChange={handleChange}
@@ -233,28 +161,28 @@ export default function TabsBox({ tabItems, disabled, containerId = 'box', ...pr
                         tabClasses={tabItems.map((_, index) => `${value === index ? styles.tabSelected : styles.tab}`)}
                         disabled={disabled}
                     />
-                </SortableContext>
-                <TabFillerContainer>
-                    <TabFillerInner>
-                        <IconButton size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: '#fff' } }} aria-label="clipboard" onClick={() => {
-                            if (contentRef.current) {
-                                const content = contentRef.current.textContent;
-                                if (!content) {
-                                    return;
+                    {/* <TabFillerContainer>
+                        <TabFillerInner>
+                            <IconButton size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: '#fff' } }} aria-label="clipboard" onClick={() => {
+                                if (contentRef.current) {
+                                    const content = contentRef.current.textContent;
+                                    if (!content) {
+                                        return;
+                                    }
+                                    navigator.clipboard.writeText(content).then(() => {
+                                        setSnackbar({ ...snackbar, open: true, text: 'クリップボードにコピーしました' });
+                                    }, (err) => {
+                                        console.error(err);
+                                        setSnackbar({ ...snackbar, open: true, text: '失敗しました' });
+                                    });
                                 }
-                                navigator.clipboard.writeText(content).then(() => {
-                                    setSnackbar({ ...snackbar, open: true, text: 'クリップボードにコピーしました' });
-                                }, (err) => {
-                                    console.error(err);
-                                    setSnackbar({ ...snackbar, open: true, text: '失敗しました' });
-                                });
-                            }
-                        }}>
-                            <AssignmentIcon />
-                        </IconButton>
-                    </TabFillerInner>
-                </TabFillerContainer>
-            </Header>
+                            }}>
+                                <AssignmentIcon />
+                            </IconButton>
+                        </TabFillerInner>
+                    </TabFillerContainer> */}
+                </Header>
+            </SortableContext>
             <TabPanelsWrapper containerId={containerId} items={tabItems}>
                 {
                     Children.map(tabPanels, (child, index) => (
