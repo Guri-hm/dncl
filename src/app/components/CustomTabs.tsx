@@ -13,8 +13,9 @@ interface TabsProps {
 }
 
 export const CustomTabs: FC<TabsProps> = ({ value, onChange, a11yProps, tabItems, tabClasses = [] }) => {
+    //minHeightで最低限高さがないとwidthが効かない
     return (
-        <Tabs sx={{ minHeight: 'unset' }} value={value} onChange={onChange} aria-label="tabs">
+        <Tabs sx={{ minHeight: 'auto' }} value={value} onChange={onChange} aria-label="tabs">
 
             {tabItems.map((item, index) => (
                 <CustomTab

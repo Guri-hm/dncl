@@ -9,6 +9,8 @@ import { AnimateLayoutChanges, defaultAnimateLayoutChanges, SortableContext, use
 import { CSS } from "@dnd-kit/utilities";
 import { TabItem } from '../types';
 import { CustomTabs } from './CustomTabs';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -43,9 +45,9 @@ export function a11yProps(index: number) {
     };
 }
 
-const TabsWrapper: FC<BoxProps> = ({ children }) => {
+const TabsWrapper: FC<BoxProps> = ({ children, ref, style }) => {
     return (
-        <Box className={`${styles.tabsWrapper} ${styles.dark}`}>
+        <Box ref={ref} className={`${styles.tabsWrapper} ${styles.dark}`} sx={{ ...style }}>
             {children}
         </Box>
     );
@@ -54,6 +56,7 @@ const Header: FC<BoxProps> = ({ children }) => {
     return (
         <Box sx={{
             flexBasis: '0%',
+            // flexBasis: '0%',
             position: 'relative',
             display: 'flex',
             color: '#94a3b8',
@@ -149,8 +152,28 @@ export const TabsBox = ({ tabItems, disabled, containerId = 'box', ...props }: P
 
     const tabPanels: React.ReactNode[] = useMemo(() => tabItems.map(tabItem => tabItem.component), [tabItems]);
 
+    const {
+        attributes,
+        isDragging,
+        listeners,
+        setNodeRef,
+        transition,
+        transform,
+        setActivatorNodeRef
+    } = useSortable({
+        id: containerId,
+        data: {
+            type: "container",
+            children: tabItems,
+        },
+        animateLayoutChanges,
+    });
     return (
-        <TabsWrapper>
+        <TabsWrapper ref={setNodeRef} style={{
+            transition,
+            transform: CSS.Translate.toString(transform),
+            opacity: isDragging ? 0.5 : undefined,
+        }}>
             <SortableContext key={containerId} items={tabItems}>
                 <Header>
                     <CustomTabs
@@ -161,9 +184,9 @@ export const TabsBox = ({ tabItems, disabled, containerId = 'box', ...props }: P
                         tabClasses={tabItems.map((_, index) => `${value === index ? styles.tabSelected : styles.tab}`)}
                         disabled={disabled}
                     />
-                    {/* <TabFillerContainer>
+                    <TabFillerContainer>
                         <TabFillerInner>
-                            <IconButton size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: '#fff' } }} aria-label="clipboard" onClick={() => {
+                            <IconButton size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: 'var(--stone-50)' } }} aria-label="clipboard" onClick={() => {
                                 if (contentRef.current) {
                                     const content = contentRef.current.textContent;
                                     if (!content) {
@@ -179,17 +202,22 @@ export const TabsBox = ({ tabItems, disabled, containerId = 'box', ...props }: P
                             }}>
                                 <AssignmentIcon />
                             </IconButton>
+                            <IconButton size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: 'var(--stone-50)' } }} aria-label="clipboard" ref={setActivatorNodeRef} {...attributes} {...listeners} style={{
+                                cursor: isDragging ? 'grabbing' : 'grab'
+                            }}>
+                                <SwapHorizIcon />
+                            </IconButton>
                         </TabFillerInner>
-                    </TabFillerContainer> */}
+                    </TabFillerContainer>
                 </Header>
             </SortableContext>
-            <TabPanelsWrapper containerId={containerId} items={tabItems}>
-                {
-                    Children.map(tabPanels, (child, index) => (
-                        <TabPanel value={value} index={index} key={index} ref={contentRef}> {child} </TabPanel>
-                    ))
-                }
-            </TabPanelsWrapper>
+            {/* <TabPanelsWrapper containerId={containerId} items={tabItems}> */}
+            {
+                Children.map(tabPanels, (child, index) => (
+                    <TabPanel value={value} index={index} key={index} ref={contentRef}> {child} </TabPanel>
+                ))
+            }
+            {/* </TabPanelsWrapper> */}
             <Snackbar
                 anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
                 autoHideDuration={snackbar.duration}
