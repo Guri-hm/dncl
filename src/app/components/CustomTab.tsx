@@ -19,11 +19,10 @@ export const CustomTab: FC<CustomTabProps> = ({ item, a11yProps, index, onClick,
     const { isDragging, setActivatorNodeRef, attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: item.id });
 
     return (
-        <Box className={`${isDragging ? cmnStyles.zIndexMax : ''}`} ref={setNodeRef} style={{
+        <Box className={`${isDragging ? cmnStyles.zIndexMax : ''} ${tabClasses[index] || ''}`} ref={setNodeRef} style={{
             transform: CSS.Transform.toString(transform),
             transition,
             display: 'flex',
-            zIndex: isDragging ? 9999 : 'auto'
         }}>
             <span ref={setActivatorNodeRef}>
                 <Handle {...attributes} {...listeners} cursor={isDragging ? 'grabbing' : "grab"} />
@@ -32,11 +31,9 @@ export const CustomTab: FC<CustomTabProps> = ({ item, a11yProps, index, onClick,
                 key={index}
                 label={item.label}
                 onClick={onClick}
-                className={tabClasses[index] || ''}
                 {...a11yProps(index)}
                 sx={{
                     flex: 'none',
-                    color: '#38bdf8',
                     fontWeight: 600,
                     borderTop: 'transparent',
                     display: 'flex',

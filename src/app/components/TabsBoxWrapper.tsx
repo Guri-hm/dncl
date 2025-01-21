@@ -15,16 +15,6 @@ interface Props {
     treeItems: TreeItems;
 }
 
-// export interface ContainerProps {
-//     children: React.ReactNode;
-//     label?: string;
-//     hover?: boolean;
-//     handleProps?: React.HTMLAttributes<any>;
-//     scrollable?: boolean;
-//     placeholder?: boolean;
-//     onClick?(): void;
-// }
-
 export const TabsBoxWrapper: FC<Props> = ({ treeItems }) => {
 
     const [tabItemsObj, setTabItemsObj] = useState<TabItemsObj>({
@@ -88,7 +78,6 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems }) => {
         if (!overContainer || !activeContainer) {
             return;
         }
-
         if (activeContainer !== overContainer) {
             setTabItemsObj((items) => {
                 const activeItems = items[activeContainer];
@@ -115,7 +104,6 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems }) => {
 
                 recentlyMovedToNewContainer.current = true;
 
-                console.log("aaa")
                 return {
                     ...items,
                     [activeContainer]: items[activeContainer].filter(
@@ -209,13 +197,14 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems }) => {
         >
             <SortableContext items={[...containers, PLACEHOLDER_ID]}>
                 <Allotment className={`${cmnStyles.hFull}`}>
-                    {containers.map((containerId) => (
-                        <Allotment.Pane key={containerId} visible={tabItemsObj[containerId].length > 0 || activeId ? true : true} >
+                    {containers.map((containerId) => {
+                        return <Allotment.Pane key={containerId} visible={tabItemsObj[containerId].length > 0 || activeId ? true : false}>
                             <div key={containerId} className={`${cmnStyles.hFull}`} style={{ marginLeft: '16px' }}>
                                 <TabsBox tabItems={tabItemsObj[containerId]} disabled={isSortingContainer} containerId={containerId} />
                             </div>
                         </Allotment.Pane>
-                    ))}
+                    }
+                    )}
                 </Allotment>
             </SortableContext>
         </DndContext>
