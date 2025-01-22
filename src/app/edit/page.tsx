@@ -17,6 +17,9 @@ import { ContentWrapper } from "@/app/components/ContentWrapper";
 import { useEffect, useState } from "react";
 import { checkDNCLSyntax, flattenTree } from "@/app/utilities";
 import { TabsBoxWrapper } from "@/app/components/TabsBoxWrapper";
+import Button from '@mui/material/Button';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import { HowToDialog } from "../components/Dialog";
 
 const initialItems: TreeItems = sampleFuncItems;
 
@@ -27,6 +30,15 @@ export default function Home() {
   const [shouldRunEffect, setShouldRunEffect] = useState(false);
   const [dnclValidation, setDnclValidation] = useState<DnclValidationType>({ hasError: false, errors: [], guid: 0, lineNum: [] });
   const [tmpMsg, setTmpMsg] = useState<string>('ここに出力結果が表示されます');
+  const [openHowToDialog, setOpenHowToDialog] = useState(false);
+
+  const handleClickOpen = () => {
+    setOpenHowToDialog(true);
+  };
+
+  const handleClose = () => {
+    setOpenHowToDialog(false);
+  };
 
   useEffect(() => {
 
@@ -79,6 +91,11 @@ export default function Home() {
             いじる子
           </Typography>
         </HeaderItem>
+        <HeaderItem>
+          <Button sx={{ backgroundColor: 'var(--sky-500)', borderRadius: 5, position: 'absolute', right: '10px', bottom: '10px', zIndex: 20 }} variant="contained" onClick={handleClickOpen} startIcon={<HelpOutlineIcon />}>
+            使い方
+          </Button>
+        </HeaderItem>
       </Header>
       <ContentWrapper>
         <Allotment vertical defaultSizes={[200, 100]}>
@@ -98,6 +115,7 @@ export default function Home() {
             </ConsoleBox>
           </Allotment.Pane>
         </Allotment >
+        <HowToDialog open={openHowToDialog} setOpen={setOpenHowToDialog}></HowToDialog>
       </ContentWrapper>
     </PageWrapper >
   );

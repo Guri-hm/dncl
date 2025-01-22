@@ -3,3 +3,4 @@ export { StatementName } from "./StatementName";
 export { StatementDesc } from "./StatementDesc";
 export { EditorBox } from "./EditorBox";
 export { DraggableItem } from "./DraggableItem"
+export { HowToDialog } from "./HowToDialog"

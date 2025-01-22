@@ -56,51 +56,6 @@ export const sampleFuncItems: TreeItems = [
         ],
         processIndex: 0
       },
-      {
-        id: "a37c97e2-b605-40bb-acef-3ce352d30943",
-        line: "waを表示する",
-        children: [],
-        lineTokens: [
-          "wa"
-        ],
-        processIndex: 0
-      },
-      {
-        id: "a37c97e2-b605-40bb-acef-3ce352d30753",
-        line: "waを表示する",
-        children: [],
-        lineTokens: [
-          "wa"
-        ],
-        processIndex: 0
-      },
-      {
-        id: "a37c97e2-b605-40bb-acef-3ce352d3853",
-        line: "waを表示する",
-        children: [],
-        lineTokens: [
-          "wa"
-        ],
-        processIndex: 0
-      },
-      {
-        id: "a37c97e2-b605-40bb-acef-3ce352d39853",
-        line: "waを表示する",
-        children: [],
-        lineTokens: [
-          "wa"
-        ],
-        processIndex: 0
-      },
-      {
-        id: "a37c97e2-b605-40bb-acef-3ce352d55953",
-        line: "waを表示する",
-        children: [],
-        lineTokens: [
-          "wa"
-        ],
-        processIndex: 0
-      }
     ],
     lineTokens: [
       "和(n)"
