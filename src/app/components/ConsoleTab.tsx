@@ -115,7 +115,6 @@ const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }
     return tmpLine;
 }
 
-
 const Color = {
     error: 'var(--error)',
     warnning: 'var(--warnning)',
@@ -128,43 +127,54 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
     const [code, setCode] = useState('');
     const [error, setError] = useState<Err | null>(null);
 
-    const fetchLintResults = async () => {
+    useEffect(() => {
 
-        if (!code) {
-            return;
-        }
+        const fetchLintResults = async () => {
 
-        try {
-            const response = await fetch('/api/lint', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ code }), // コードを送信
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Something went wrong');
+            if (!code) {
+                return;
             }
 
-            const data = await response.json();
-
-            setTmpMsg('エラーを解決してください');
-
-            if (data.resultText == '') {
-                execute();
-                setTmpMsg('');
-            } else {
-                setError({ color: Color.warnning, msg: data.resultText });
+            if (dnclValidation.hasError) {
+                return;
             }
 
-        } catch (err: any) {
-            setError({ color: Color.error, msg: err.message || 'An unexpected error occurred' });
-        } finally {
-        }
+            try {
+                const response = await fetch('/api/lint', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ code }), // コードを送信
+                });
 
-    };
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Something went wrong');
+                }
+
+                const data = await response.json();
+
+                setTmpMsg('エラーを解決してください');
+
+                console.log(data)
+                if (data.resultText == '') {
+                    execute();
+                    setTmpMsg('');
+                } else {
+                    setError({ color: Color.warnning, msg: data.resultText });
+                }
+
+            } catch (err: any) {
+                setError({ color: Color.error, msg: err.message || 'An unexpected error occurred' });
+            } finally {
+            }
+
+        };
+
+        fetchLintResults();
+
+    }, [dnclValidation])
 
     useEffect(() => {
         if (dnclValidation.errors.length > 0) {
@@ -173,7 +183,6 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
 
         const convertCode = async () => {
             setCode(await renderCode(treeItems))
-            fetchLintResults();
         };
         if (!dnclValidation.hasError) {
             convertCode();

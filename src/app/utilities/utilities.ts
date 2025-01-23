@@ -772,14 +772,54 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
   return { errorMsgArray: [], hasError: false };
 }
 
+const pushIfNotEmpty = (array: string[], pushedString: string) => {
+  if (pushedString == "") return;
+  array.push(pushedString);
+}
 
-export const cnvObjToArray = (obj: { [k: string]: string; }, operandsMaxIndex: number, keyword: keyPrefixEnum): string[] => {
+export const getVariables = (obj: { [k: string]: string; }, operandsMaxIndex: number, keyword: keyPrefixEnum): string[] => {
 
-  const pushIfNotEmpty = (array: string[], pushedString: string) => {
-    if (pushedString == "") return;
-    array.push(pushedString);
+  let strArray: string[] = [];
+  for (let i = 0; i <= operandsMaxIndex; i++) {
+
+    if (obj[`${keyword}_${i}_${keyPrefixEnum.Type}`] == inputTypeEnum.String) {
+      continue;
+    }
+
+    const variable = toEmptyIfNull(obj[`${keyword}_${i}`]);
+
+    if (!variable) {
+      continue;
+    }
+
+    if (!(/^\d+$/.test(variable))) {
+      //数値や文字列以外は変数名として格納
+      strArray.push(variable);
+    }
+
+    const suffix = toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Suffix}`]);
+    if (!(/^\d+$/.test(suffix))) {
+      //数値や文字列以外は変数名として格納
+      strArray.push(suffix);
+    }
+
+    //引数
+    for (let j = 0; j < Number(toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}`])); j++) {
+      const argument = toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}_${j}`]);
+      if (/^\d+$/.test(argument)) {
+        continue;
+      }
+      strArray.push(argument);
+    }
   }
 
+  return strArray;
+}
+
+// 元のJSON構造を保持しつつ値をサニタイズして更新
+export const sanitizeJsonValues = (obj: {
+  [k: string]: string;
+}) => {
   // サニタイズ関数
   function sanitizeString(str: string) {
     return str.replace(/[&<>"']/g, function (char) {
@@ -799,46 +839,41 @@ export const cnvObjToArray = (obj: { [k: string]: string; }, operandsMaxIndex: n
       }
     });
   }
+  const sanitizedData = { ...obj }; // 元のデータをコピー
+  Object.keys(sanitizedData).forEach(key => {
+    if (!key.includes(keyPrefixEnum.Operator)) {
+      sanitizedData[key] = sanitizeString(sanitizedData[key]);
+    }
+  });
+  return sanitizedData;
+}
 
-  // 元のJSON構造を保持しつつ値をサニタイズして更新
-  function sanitizeJsonValues(obj: {
-    [k: string]: string;
-  }) {
-    const sanitizedData = { ...obj }; // 元のデータをコピー
-    Object.keys(sanitizedData).forEach(key => {
-      if (!key.includes(keyPrefixEnum.Operator)) {
-        sanitizedData[key] = sanitizeString(sanitizedData[key]);
-      }
-    });
-    return sanitizedData;
-  }
-
-  const sanitizedData = sanitizeJsonValues(obj);
+export const cnvObjToArray = (obj: { [k: string]: string; }, operandsMaxIndex: number, keyword: keyPrefixEnum): string[] => {
 
   let strArray: string[] = [];
   //演算子以外はサニタイズされた値で処理していく
   for (let i = 0; i <= operandsMaxIndex; i++) {
 
-    pushIfNotEmpty(strArray, toEmptyIfNull(sanitizedData[`${keyword}_${i}_${keyPrefixEnum.Operator}`]));
-    pushIfNotEmpty(strArray, toEmptyIfNull(sanitizedData[`${keyword}_${i}_${keyPrefixEnum.LeftOfOperand}`]));
+    pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Operator}`]));
+    pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.LeftOfOperand}`]));
 
-    switch (sanitizedData[`${keyword}_${i}_${keyPrefixEnum.Type}`]) {
+    switch (obj[`${keyword}_${i}_${keyPrefixEnum.Type}`]) {
       case inputTypeEnum.String:
-        pushIfNotEmpty(strArray, `"${toEmptyIfNull(sanitizedData[`${keyword}_${i}`])}"`);
+        pushIfNotEmpty(strArray, `"${toEmptyIfNull(obj[`${keyword}_${i}`])}"`);
         break;
       default:
-        pushIfNotEmpty(strArray, toEmptyIfNull(sanitizedData[`${keyword}_${i}`]));
+        pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}`]));
         break;
 
     }
 
     //関数名
-    let functionName = `${toEmptyIfNull(sanitizedData[`${keyword}_${i}_${keyPrefixEnum.Function}`])}${toEmptyIfNull(sanitizedData[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`])}`
+    let functionName = `${toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Function}`])}${toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`])}`
 
     //引数
     let tmpArguments: string[] = [];
     for (let j = 0; j < Number(toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}`])); j++) {
-      pushIfNotEmpty(tmpArguments, toEmptyIfNull(sanitizedData[`${keyword}_${i}_${keyPrefixEnum.Argument}_${j}`]));
+      pushIfNotEmpty(tmpArguments, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}_${j}`]));
     }
     const joinedStr = tmpArguments.join(",");
     if (joinedStr.length > 0) {
@@ -847,9 +882,9 @@ export const cnvObjToArray = (obj: { [k: string]: string; }, operandsMaxIndex: n
       pushIfNotEmpty(strArray, `${functionName}`);
     }
 
-    pushIfNotEmpty(strArray, toEmptyIfNull(sanitizedData[`${keyword}_${i}_${keyPrefixEnum.Suffix}`]));
-    pushIfNotEmpty(strArray, toEmptyIfNull(sanitizedData[`${keyword}_${i}_${keyPrefixEnum.RightOfOperand}`]));
-    pushIfNotEmpty(strArray, toEmptyIfNull(sanitizedData[`${keyword}_${i}_${keyPrefixEnum.Negation}`]));
+    pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Suffix}`]));
+    pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.RightOfOperand}`]));
+    pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Negation}`]));
   }
 
   return strArray;

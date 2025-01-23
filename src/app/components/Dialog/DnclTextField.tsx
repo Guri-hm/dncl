@@ -166,61 +166,6 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
           </>
         );
 
-      case inputTypeEnum.RadioWithString:
-
-        switch (radioValue) {
-          case inputTypeEnum.VariableOrNumber:
-            tmpLabel = InputTypeJpEnum.VariableOrNumber;
-            pattern = ValidationEnum.VariableOrNumber;
-            break;
-          case inputTypeEnum.Array:
-            tmpLabel = InputTypeJpEnum.Array;
-            pattern = ValidationEnum.Array;
-            break;
-          case inputTypeEnum.String:
-            tmpLabel = InputTypeJpEnum.String;
-            pattern = ValidationEnum.String;
-            break;
-          default:
-            break;
-        }
-
-        //変数と配列を切り替え可能
-        return (
-          <>
-            <Grid container spacing={0} direction='column'>
-              <Grid container direction='row'>
-                <Grid size='grow'>
-                  <ValidatedTextField name={`${name}_${index}`} label={tmpLabel} pattern={pattern} isIMEOn={radioValue == inputTypeEnum.String ? true : false}></ValidatedTextField>
-                </Grid>
-                <input type='hidden' name={`${name}_${index}_${keyPrefixEnum.Type}`} value={`${radioValue}`}></input>
-                {radioValue == inputTypeEnum.Array &&
-                  <Grid container size='grow'>
-                    <FixedHeightGrid>[</FixedHeightGrid>
-                    <Grid size="grow">
-                      <ValidatedTextField
-                        name={`${name}_${index}_${keyPrefixEnum.Suffix}`} label={InputTypeJpEnum.SuffixOnly} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
-                    </Grid>
-                    <FixedHeightGrid>]</FixedHeightGrid>
-                  </Grid>
-                }
-              </Grid>
-              <Grid>
-                <RadioGroup
-                  row
-                  aria-labelledby="row-radio-buttons-group-label"
-                  onChange={handleChangeRadio}
-                  defaultValue={inputTypeEnum.VariableOrNumber}
-                >
-                  <FormControlLabel sx={{ margin: 0, paddingBottom: 0 }} value={inputTypeEnum.VariableOrNumber} control={<Radio size="small" />} label={SwitchJpEnum.VariableOrNumber} />
-                  <FormControlLabel sx={{ margin: 0, paddingBottom: 0 }} value={inputTypeEnum.Array} control={<Radio size="small" />} label={SwitchJpEnum.Array} />
-                  <FormControlLabel sx={{ margin: 0, paddingBottom: 0 }} value={inputTypeEnum.String} control={<Radio size="small" />} label={SwitchJpEnum.String} />
-                </RadioGroup>
-              </Grid>
-            </Grid>
-          </>
-        );
-
       case inputTypeEnum.All:
       case inputTypeEnum.RadioWithVoid:
 
@@ -317,10 +262,6 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
         return <Grid size="grow">
           <ValidatedTextField name={`${name}_${index}`} label={InputTypeJpEnum.VariableOnly} pattern={ValidationEnum.Variable}></ValidatedTextField>
         </Grid>
-      case inputTypeEnum.SuffixOnly:
-        return <Grid size="grow">
-          <ValidatedTextField name={`${name}_${index}_${suffixValue}`} label={InputTypeJpEnum.VariableOrNumber} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
-        </Grid>
       case inputTypeEnum.ArrayWithoutSuffix:
         return <Grid size="grow">
           <ValidatedTextField name={`${name}_${index}`} label={InputTypeJpEnum.Array} pattern={ValidationEnum.VariableOrArray}></ValidatedTextField>
@@ -342,14 +283,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
             <FixedHeightGrid>]</FixedHeightGrid>
           </Grid>
         </Grid>
-      case inputTypeEnum.SuffixWithBrackets:
-        return <Grid container size='auto'>
-          <FixedHeightGrid>[</FixedHeightGrid>
-          <Grid size="grow">
-            <ValidatedTextField name={`${name}_${index}_${suffixValue}`} label={label} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
-          </Grid>
-          <FixedHeightGrid>]</FixedHeightGrid>
-        </Grid>;
+
       case inputTypeEnum.InitializeArray:
         return <Grid container size='auto'>
           <FixedHeightGrid>[</FixedHeightGrid>
@@ -361,10 +295,6 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
       case inputTypeEnum.VariableOrNumber:
         return <Grid size="grow">
           <ValidatedTextField name={`${name}_${index}_${suffixValue}`} label={InputTypeJpEnum.VariableOrNumber} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
-        </Grid>
-      case inputTypeEnum.Number:
-        return <Grid size="grow">
-          <ValidatedTextField name={`${name}_${index}_${suffixValue}`} label={label} pattern={ValidationEnum.Integer}></ValidatedTextField>
         </Grid>
       case inputTypeEnum.UserDefinedfunction:
         return <Grid size="grow">

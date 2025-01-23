@@ -43,7 +43,6 @@ export default function Home() {
   useEffect(() => {
 
     setTmpMsg('DNCL解析中・・・')
-
     const timer = setTimeout(() => {
       setShouldRunEffect(true);
     }, 2000); // 2秒後に実行
@@ -54,9 +53,9 @@ export default function Home() {
     if (shouldRunEffect) {
       // フラグをリセット
       setShouldRunEffect(false);
-      const flatten = flattenTree(items);
 
       let result: DnclValidationType = { errors: [], hasError: false, guid: Math.random(), lineNum: [] };
+      const flatten = flattenTree(items);
       flatten.map((item: FlattenedItem, index) => {
         const { hasError, errors } = checkDNCLSyntax(flatten, item, index + 1);
         if (hasError) {

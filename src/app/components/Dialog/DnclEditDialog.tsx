@@ -11,11 +11,18 @@ import { StatementDesc } from './StatementDesc';
 import { EditorBox } from './EditorBox';
 import { keyPrefixEnum } from './Enum';
 import { ArithmeticOperatorDncl, ArithmeticOperator, BooleanDncl, BooleanJpDncl, ComparisonOperatorDncl, ComparisonOperator, SimpleAssignmentOperator, ReturnFuncDncl, ReturnFuncJpDncl, StatementEnum, UserDefinedFuncDncl, UserDefinedFuncJpDncl, VoidFuncDncl, VoidFuncJpDncl, ProcessEnum } from '@/app/enum';
-import { checkBraketPair, cnvAndOrOperator, cnvObjToArray, cnvToDivision, enumToKeyIndexObject, escapeHtml, getOperandsMaxIndex, isValidExpression, replaceToAmpersand, sanitizeInput, transformNegation, tryParseToJsFunction, updateToWithSquareBrackets, ValidateObjValue } from '@/app/utilities';
+import { checkBraketPair, cnvAndOrOperator, cnvObjToArray, cnvToDivision, escapeHtml, getOperandsMaxIndex, getVariables, replaceToAmpersand, sanitizeInput, sanitizeJsonValues, transformNegation, tryParseToJsFunction, updateToWithSquareBrackets, ValidateObjValue } from '@/app/utilities';
 import { ErrorMsgBox } from './ErrorMsgBox';
 import * as babelParser from '@babel/parser';
 
 interface Props extends DnclEditorProps { };
+
+type itemElms = {
+    tokens: string;
+    dnclStatement: string;
+    variables: string[];
+}
+
 
 const getOperator = (statementType: StatementEnum) => {
 
@@ -113,16 +120,25 @@ export function DnclEditDialog(params: Props) {
 
     }
 
-    const getDnclStatement = (data: { [k: string]: string; }, keyword: keyPrefixEnum): string => {
+    const getItemElms = (data: { [k: string]: string; }, keyword: keyPrefixEnum): itemElms => {
 
         //キーワードを含むオブジェクトを取得
         const obj = Object.fromEntries(Object.entries(data).filter(([key, value]) => key.includes(keyword)));
         //オペランドの数を取得
         const operandsMaxIndex = getOperandsMaxIndex(obj, keyword)
-        //添字は前後に[]をつける
-        const updatedObj = updateToWithSquareBrackets(obj);
 
+        const sanitizedObj = sanitizeJsonValues(obj);
+        const variables = getVariables(sanitizedObj, operandsMaxIndex, keyword);
+        //添字は前後に[]をつける
+        const updatedObj = updateToWithSquareBrackets(sanitizedObj);
         let strArray: string[] = cnvObjToArray(updatedObj, operandsMaxIndex, keyword);
+        const statement = getDnclStatement(strArray);
+        const tokens = getTokens(strArray)
+
+        return { dnclStatement: statement, tokens: tokens, variables: variables }
+    }
+
+    const getDnclStatement = (strArray: string[]): string => {
 
         for (let i = 0; i < strArray.length; i++) {
             strArray[i] = strArray[i]
@@ -143,16 +159,7 @@ export function DnclEditDialog(params: Props) {
 
         return strArray.join(' ')
     }
-    const getTokens = (data: { [k: string]: string; }, keyword: keyPrefixEnum): string => {
-
-        //キーワードを含むオブジェクトを取得
-        const obj = Object.fromEntries(Object.entries(data).filter(([key, value]) => key.includes(keyword)));
-        //オペランドの数を取得
-        const operandsMaxIndex = getOperandsMaxIndex(obj, keyword)
-        //添字は前後に[]をつける
-        const updatedObj = updateToWithSquareBrackets(obj);
-
-        let strArray: string[] = cnvObjToArray(updatedObj, operandsMaxIndex, keyword);
+    const getTokens = (strArray: string[]): string => {
 
         let line = strArray.join(' ');
 
@@ -182,17 +189,10 @@ export function DnclEditDialog(params: Props) {
                         const formJson = Object.fromEntries((formData as any).entries());
                         // Enumの値を配列に変換 
                         const ProcessEnumArray = Object.values(ProcessEnum);
-                        const getValueByIndex = (index: number): number => {
-                            if (index < 0 || index >= ProcessEnumArray.length) {
-                                return ProcessEnum.Unknown;
-                            }
-                            return Number(ProcessEnumArray[index]);
-                        }
-
                         const processType = formJson.processIndex as ProcessEnum;
 
                         //存在しない処理の場合は実行させない
-                        if (processType == null) {
+                        if (processType == null || processType > ProcessEnumArray.length - 1) {
                             return;
                         }
                         if (!checkStatement(formJson, processType, keyPrefixEnum.LeftSide, params.treeItems)) return;
@@ -201,13 +201,17 @@ export function DnclEditDialog(params: Props) {
                         setError([]);
 
                         const operator = getOperator(params.type);
-                        const leftside = getDnclStatement(formJson, keyPrefixEnum.LeftSide);
-                        const rightside = getDnclStatement(formJson, keyPrefixEnum.RigthSide);
+                        const leftSideElms = getItemElms(formJson, keyPrefixEnum.LeftSide)
+                        const rightSideElms = getItemElms(formJson, keyPrefixEnum.RigthSide)
+                        const leftside = leftSideElms.dnclStatement;
+                        const rightside = rightSideElms.dnclStatement;
+
+                        const variables = [...new Set([...leftSideElms.variables, ...rightSideElms.variables])];
 
                         let processPhrase = "";
                         let tokens: string[] = [];
-                        tokens.push(getTokens(formJson, keyPrefixEnum.LeftSide));
-                        tokens.push(getTokens(formJson, keyPrefixEnum.RigthSide));
+                        tokens.push(leftSideElms.tokens);
+                        tokens.push(rightSideElms.tokens);
 
                         switch (Number(formJson.processIndex)) {
                             case ProcessEnum.SetValToVariableOrArray:
