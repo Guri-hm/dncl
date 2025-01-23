@@ -117,7 +117,7 @@ export function SortableTree({
   const [activeCode, setActiveCode] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
-  const [editor, setEditor] = useState<DnclEditorProps>({ onSubmit: null, open: false, type: StatementEnum.Input, overIndex: 0, treeItems: treeItems, setItems: setTreeItems });
+  const [editor, setEditor] = useState<DnclEditorProps>({ addItem: null, open: false, overIndex: 0, treeItems: treeItems, setItems: setTreeItems });
 
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
@@ -314,17 +314,16 @@ export function SortableTree({
   function handleDragEnd({ active, over }: DragEndEvent) {
     resetState();
 
-    interface ItemsParams {
-      newItem: FlattenedItem; statementText: string; tokens: string[]; processIndex: number; overIndex: number;
+    interface NewItemParams {
+      newItem: FlattenedItem; overIndex: number;
     }
 
-    const addStatementToTree = (itemsParams: ItemsParams) => {
+    const addItemToTree = (itemParams: NewItemParams) => {
       const clonedItems: FlattenedItem[] = structuredClone(flattenTree(treeItems));
-      itemsParams.newItem = { ...itemsParams.newItem, line: itemsParams.statementText, lineTokens: itemsParams.tokens, processIndex: itemsParams.processIndex }
 
-      clonedItems.push(itemsParams.newItem);
+      clonedItems.push(itemParams.newItem);
 
-      const sortedItems = arrayMove(clonedItems, Number(itemsParams.newItem.id), itemsParams.overIndex);
+      const sortedItems = arrayMove(clonedItems, Number(itemParams.newItem.id), itemParams.overIndex);
       const newItems = buildTree(sortedItems);
 
       setTreeItems(newItems);
@@ -345,7 +344,7 @@ export function SortableTree({
         // active.id = newId;
         // clonedItems.push(clonedItem);
         clonedItem = { ...clonedItem, id: newId, depth: depth, parentId: parentId }
-        setEditor((prevState: DnclEditorProps) => ({ ...prevState, item: clonedItem, onSubmit: addStatementToTree, open: true, type: fragmentItem.statementType, overIndex: Number(over.id), treeItems: treeItems, refresh: refrash, setEditor: setEditor }));
+        setEditor((prevState: DnclEditorProps) => ({ ...prevState, item: clonedItem, addItem: addItemToTree, open: true, type: fragmentItem.statementType, overIndex: Number(over.id), treeItems: treeItems, refresh: refrash, setEditor: setEditor }));
         return;
       }
       const overIndex = clonedItems.findIndex(({ id }) => id === over.id);

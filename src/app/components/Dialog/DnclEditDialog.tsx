@@ -34,7 +34,7 @@ const getOperator = (statementType: StatementEnum) => {
     }
 }
 
-export function DnclEditDialog(params: Props) {
+export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props) {
 
     const [error, setError] = useState<string[]>([]);
 
@@ -200,7 +200,7 @@ export function DnclEditDialog(params: Props) {
 
                         setError([]);
 
-                        const operator = getOperator(params.type);
+                        const operator = getOperator(type);
                         const leftSideElms = getItemElms(formJson, keyPrefixEnum.LeftSide)
                         const rightSideElms = getItemElms(formJson, keyPrefixEnum.RigthSide)
                         const leftside = leftSideElms.dnclStatement;
@@ -282,19 +282,22 @@ export function DnclEditDialog(params: Props) {
                                 break;
                         }
                         tokens = tokens.filter(token => token != '');
-                        params.onSubmit({ newItem: params.item, statementText: processPhrase, tokens: tokens, processIndex: Number(formJson.processIndex), overIndex: params.overIndex });
+                        if (params.item) {
+                            params.item = { ...params.item, line: processPhrase, lineTokens: tokens, processIndex: Number(formJson.processIndex), variables }
+                        }
+                        params.addItem({ newItem: params.item, overIndex: params.overIndex });
                         handleClose();
                     },
                 }}
             >
                 <DialogTitle>
-                    <StatementName statementType={params.type}></StatementName>
+                    <StatementName statementType={type}></StatementName>
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        <StatementDesc statementType={params.type}></StatementDesc>
+                        <StatementDesc statementType={type}></StatementDesc>
                     </DialogContentText>
-                    <EditorBox statementType={params.type} treeItems={params.treeItems}></EditorBox>
+                    <EditorBox statementType={type} treeItems={params.treeItems}></EditorBox>
                 </DialogContent>
                 <DialogActions>
                     <ErrorMsgBox sx={{ display: 'flex', flexDirection: 'column' }} errorArray={error}></ErrorMsgBox>

@@ -4,8 +4,9 @@ import { UniqueIdentifier } from '@dnd-kit/core';
 
 export interface TreeItem {
   id: string;
-  line: string;
-  lineTokens?: string[];
+  line: string;//DNCL表記の文
+  lineTokens?: string[];//文の要素(語句単位)
+  variables?: string[]; //文で使用されている変数
   children: TreeItem[];
   collapsed?: boolean;
   processIndex?: number;
@@ -38,8 +39,8 @@ export type DnclEditorProps = {
   setItems: any,
   setEditor?: any,
   open: boolean,
-  onSubmit: any,
-  type: StatementEnum,
+  addItem: any,
+  type?: StatementEnum,
   overIndex: number,
   refresh?: any,
 }
