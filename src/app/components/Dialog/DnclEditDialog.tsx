@@ -157,7 +157,10 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props)
                 .replace(BooleanDncl.False, BooleanJpDncl.False)
         }
 
-        return strArray.join(' ')
+        let dnclStatement = strArray.join(' ');
+        //引数の[]の左側の半角スペースは詰める
+        dnclStatement = dnclStatement.replace(/\s+\[/g, '[');
+        return dnclStatement;
     }
     const getTokens = (strArray: string[]): string => {
 
