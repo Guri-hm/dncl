@@ -210,7 +210,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
 
         fetchLintResults();
 
-    }, [dnclValidation])
+    }, [code])
 
     useEffect(() => {
         if (dnclValidation.errors.length > 0) {

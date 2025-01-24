@@ -8,6 +8,14 @@
   ],
   "rules": {
     "react/react-in-jsx-scope": "off",
-    "react/prop-types": "off"
+    "react/prop-types": "off",
+    "no-undef": [
+      "error",
+      {
+        "typeof": true
+      }
+    ], // typeof演算子でチェックを許可
+    "no-unused-vars": "off", // 未使用変数の警告を無効化
+    "@typescript-eslint/no-unused-vars": "off" // 未使用変数の警告を無効化
   }
 }

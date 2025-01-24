@@ -7,8 +7,10 @@ export async function POST(req: NextRequest) {
     const eslint = new ESLint();
 
     try {
-
-        const results = await eslint.lintText(code);
+        // 変数定義をコードの先頭に追加
+        const predefinedVariables = `var a, b;\n`;
+        const modifiedCode = predefinedVariables + code;
+        const results = await eslint.lintText(modifiedCode);
         const formatter = await eslint.loadFormatter('stylish');
         //formatの第2引数にオブジェクトを入れないと警告が出るので，適当なものを作成して代用
         const lintResultData: ESLint.LintResultData = {

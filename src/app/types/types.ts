@@ -52,7 +52,7 @@ export type ErrObj = {
 }
 
 export interface DnclValidationType extends ErrObj {
-  guid: number, //変更なしでもuseEffectを動かすため
+  guid: string, //変更なしでもuseEffectを動かすため
   lineNum: number[]
 }
 

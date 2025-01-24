@@ -20,6 +20,7 @@ import { TabsBoxWrapper } from "@/app/components/TabsBoxWrapper";
 import Button from '@mui/material/Button';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { HowToDialog } from "../components/Dialog";
+import { v4 as uuidv4 } from "uuid";
 
 const initialItems: TreeItems = sampleFuncItems;
 
@@ -28,7 +29,7 @@ export default function Home() {
   const [items, setItems] = useState(() => initialItems);
   const [runResults, setRunResults] = useState<string[]>([]);
   const [shouldRunEffect, setShouldRunEffect] = useState(false);
-  const [dnclValidation, setDnclValidation] = useState<DnclValidationType>({ hasError: false, errors: [], guid: 0, lineNum: [] });
+  const [dnclValidation, setDnclValidation] = useState<DnclValidationType>({ hasError: false, errors: [], guid: uuidv4(), lineNum: [] });
   const [tmpMsg, setTmpMsg] = useState<string>('ここに出力結果が表示されます');
   const [openHowToDialog, setOpenHowToDialog] = useState(false);
 
@@ -42,7 +43,7 @@ export default function Home() {
 
   useEffect(() => {
 
-    setTmpMsg('DNCL解析中・・・')
+    setTmpMsg(items.length.toString())
     const timer = setTimeout(() => {
       setShouldRunEffect(true);
     }, 2000); // 2秒後に実行
@@ -54,7 +55,7 @@ export default function Home() {
       // フラグをリセット
       setShouldRunEffect(false);
 
-      let result: DnclValidationType = { errors: [], hasError: false, guid: Math.random(), lineNum: [] };
+      let result: DnclValidationType = { errors: [], hasError: false, guid: uuidv4(), lineNum: [] };
       const flatten = flattenTree(items);
       flatten.map((item: FlattenedItem, index) => {
         const { hasError, errors } = checkDNCLSyntax(flatten, item, index + 1);
@@ -67,6 +68,7 @@ export default function Home() {
 
       //useEffectが変更を検知できるように乱数を使う
       setDnclValidation(result);
+      setTmpMsg("実行待ち")
 
     }
   }, [shouldRunEffect]);
