@@ -11,7 +11,7 @@ import { StatementDesc } from './StatementDesc';
 import { EditorBox } from './EditorBox';
 import { keyPrefixEnum } from './Enum';
 import { ArithmeticOperatorDncl, ArithmeticOperator, BooleanDncl, BooleanJpDncl, ComparisonOperatorDncl, ComparisonOperator, SimpleAssignmentOperator, ReturnFuncDncl, ReturnFuncJpDncl, StatementEnum, UserDefinedFuncDncl, UserDefinedFuncJpDncl, VoidFuncDncl, VoidFuncJpDncl, ProcessEnum } from '@/app/enum';
-import { checkBraketPair, cnvAndOrOperator, cnvObjToArray, cnvToDivision, escapeHtml, getOperandsMaxIndex, getVariables, replaceToAmpersand, sanitizeInput, sanitizeJsonValues, transformNegation, tryParseToJsFunction, updateToWithSquareBrackets, ValidateObjValue } from '@/app/utilities';
+import { checkBraketPair, cnvAndOrOperator, cnvObjToArray, cnvToDivision, escapeHtml, getOperandsMaxIndex, getVariableNames, replaceToAmpersand, sanitizeInput, sanitizeJsonValues, transformNegation, tryParseToJsFunction, updateToWithSquareBrackets, ValidateObjValue } from '@/app/utilities';
 import { ErrorMsgBox } from './ErrorMsgBox';
 import * as babelParser from '@babel/parser';
 
@@ -38,7 +38,11 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props)
 
     const [error, setError] = useState<string[]>([]);
 
-    const checkStatement = (data: { [k: string]: string; }, proceccType: ProcessEnum, keyword: keyPrefixEnum, treeItems: TreeItems): boolean => {
+    const checkStatement = (data: { [k: string]: string; }, keyword: keyPrefixEnum, treeItems: TreeItems): boolean => {
+
+        //直接変換できないためUnknown型をはさむ
+        const processIndexUnknown: unknown = data.processIndex;
+        const processType: ProcessEnum = processIndexUnknown as ProcessEnum;
 
         //キーワードを含むオブジェクトを取得
         const obj = Object.fromEntries(Object.entries(data).filter(([key, value]) => key.includes(keyword)));
@@ -50,7 +54,7 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props)
         //メイン処理はここから
         let result: { errorMsgArray: string[]; hasError: boolean; };
 
-        result = ValidateObjValue(updatedObj, operandsMaxIndex, proceccType, keyword, treeItems)
+        result = ValidateObjValue(updatedObj, operandsMaxIndex, processType, keyword, treeItems)
         if (result.hasError) {
             setError(result.errorMsgArray);
             return false;
@@ -104,7 +108,6 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props)
                 sourceType: 'module',
                 plugins: ['jsx', 'typescript'],
             });
-
             return true;
         } catch (err: any) {
             let errMsg = err.message;
@@ -117,10 +120,13 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props)
             setError(result.errorMsgArray);
             return false;
         }
-
     }
 
     const getItemElms = (data: { [k: string]: string; }, keyword: keyPrefixEnum): itemElms => {
+
+        //直接変換できないためUnknown型をはさむ
+        const processIndexUnknown: unknown = data.processIndex;
+        const processType: ProcessEnum = processIndexUnknown as ProcessEnum;
 
         //キーワードを含むオブジェクトを取得
         const obj = Object.fromEntries(Object.entries(data).filter(([key, value]) => key.includes(keyword)));
@@ -128,7 +134,7 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props)
         const operandsMaxIndex = getOperandsMaxIndex(obj, keyword)
 
         const sanitizedObj = sanitizeJsonValues(obj);
-        const variables = getVariables(sanitizedObj, operandsMaxIndex, keyword);
+        const variables = getVariableNames(sanitizedObj, operandsMaxIndex, keyword, processType);
         //添字は前後に[]をつける
         const updatedObj = updateToWithSquareBrackets(sanitizedObj);
         let strArray: string[] = cnvObjToArray(updatedObj, operandsMaxIndex, keyword);
@@ -198,8 +204,8 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props)
                         if (processType == null || processType > ProcessEnumArray.length - 1) {
                             return;
                         }
-                        if (!checkStatement(formJson, processType, keyPrefixEnum.LeftSide, params.treeItems)) return;
-                        if (!checkStatement(formJson, processType, keyPrefixEnum.RigthSide, params.treeItems)) return;
+                        if (!checkStatement(formJson, keyPrefixEnum.LeftSide, params.treeItems)) return;
+                        if (!checkStatement(formJson, keyPrefixEnum.RigthSide, params.treeItems)) return;
 
                         setError([]);
 

@@ -6,7 +6,8 @@ export interface TreeItem {
   id: string;
   line: string;//DNCL表記の文
   lineTokens?: string[];//文の要素(語句単位)
-  variables?: string[]; //文で使用されている変数
+  variables?: string[]; //文で使用されている変数名
+  array?: string[]; //文で使用されている配列名
   children: TreeItem[];
   collapsed?: boolean;
   processIndex?: number;

@@ -777,7 +777,49 @@ const pushIfNotEmpty = (array: string[], pushedString: string) => {
   array.push(pushedString);
 }
 
-export const getVariables = (obj: { [k: string]: string; }, operandsMaxIndex: number, keyword: keyPrefixEnum): string[] => {
+export const getVariableNames = (obj: { [k: string]: string; }, operandsMaxIndex: number, keyword: keyPrefixEnum, processType: ProcessEnum): string[] => {
+
+  let strArray: string[] = [];
+  //配列への一括代入は左辺が必ず配列名なのでスキップ
+  if (processType == ProcessEnum.BulkAssignToArray && keyword == keyPrefixEnum.LeftSide) {
+    return strArray;
+  }
+  for (let i = 0; i <= operandsMaxIndex; i++) {
+
+    const suffix = toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Suffix}`]);
+    if (suffix) {
+      //配列なのでは処理しない
+      continue;
+    }
+
+    if (obj[`${keyword}_${i}_${keyPrefixEnum.Type}`] == inputTypeEnum.String) {
+      continue;
+    }
+
+    const variable = toEmptyIfNull(obj[`${keyword}_${i}`]);
+
+    if (!variable) {
+      continue;
+    }
+
+    if (!(/^\d+$/.test(variable))) {
+      //数値や文字列以外は変数名として格納
+      strArray.push(variable);
+    }
+
+    //引数
+    for (let j = 0; j < Number(toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}`])); j++) {
+      const argument = toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}_${j}`]);
+      if (/^\d+$/.test(argument)) {
+        continue;
+      }
+      strArray.push(argument);
+    }
+  }
+
+  return strArray;
+}
+export const getArrayNames = (obj: { [k: string]: string; }, operandsMaxIndex: number, keyword: keyPrefixEnum): string[] => {
 
   let strArray: string[] = [];
   for (let i = 0; i <= operandsMaxIndex; i++) {
@@ -864,7 +906,6 @@ export const cnvObjToArray = (obj: { [k: string]: string; }, operandsMaxIndex: n
       default:
         pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}`]));
         break;
-
     }
 
     //関数名
