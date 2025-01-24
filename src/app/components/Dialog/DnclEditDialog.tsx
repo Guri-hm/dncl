@@ -126,15 +126,24 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props)
 
         //直接変換できないためUnknown型をはさむ
         const processIndexUnknown: unknown = data.processIndex;
-        const processType: ProcessEnum = processIndexUnknown as ProcessEnum;
-
+        const processType: ProcessEnum = Number(processIndexUnknown) as ProcessEnum;
+        const validationProcesses: ProcessEnum[] = [
+            ProcessEnum.BulkAssignToArray,
+            ProcessEnum.InitializeArray,
+            ProcessEnum.SetValToVariableOrArray
+        ];
         //キーワードを含むオブジェクトを取得
         const obj = Object.fromEntries(Object.entries(data).filter(([key, value]) => key.includes(keyword)));
         //オペランドの数を取得
         const operandsMaxIndex = getOperandsMaxIndex(obj, keyword)
 
         const sanitizedObj = sanitizeJsonValues(obj);
-        const variables = getVariableNames(sanitizedObj, operandsMaxIndex, keyword, processType);
+
+        let variables: string[] = [];
+        //代入文の左辺に使われているものを変数名として格納(配列名も変数名として扱う)
+        if (validationProcesses.includes(processType) && keyword == keyPrefixEnum.LeftSide) {
+            variables = getVariableNames(sanitizedObj, operandsMaxIndex, keyword);
+        }
         //添字は前後に[]をつける
         const updatedObj = updateToWithSquareBrackets(sanitizedObj);
         let strArray: string[] = cnvObjToArray(updatedObj, operandsMaxIndex, keyword);
@@ -294,6 +303,7 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props)
                         if (params.item) {
                             params.item = { ...params.item, line: processPhrase, lineTokens: tokens, processIndex: Number(formJson.processIndex), variables }
                         }
+                        console.log(params.item)
                         params.addItem({ newItem: params.item, overIndex: params.overIndex });
                         handleClose();
                     },
