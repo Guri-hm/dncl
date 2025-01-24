@@ -26,6 +26,33 @@ const cnvToken = (token: string): string => {
     return convertedStr;
 }
 
+const convertToHexadecimal = (str: string): string => {
+    return Array.from(str)
+        .map(char => char.charCodeAt(0).toString(16))
+        .join('');
+}
+
+const makeVariableName = (hexStr: string): string => {
+    return 'var_' + hexStr.replace(/[^a-zA-Z0-9_]/g, '');
+}
+function extractJapaneseAndNonJapanese(text: string) {
+    // 日本語の文字を表す正規表現
+    const japanesePattern = /[\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\uFF00-\uFFEF]/g;
+
+    // 日本語の部分を抽出
+    const japaneseMatches = text.match(japanesePattern);
+    const japaneseText = japaneseMatches ? japaneseMatches.join('') : '';
+
+    // 日本語以外の部分を抽出
+    const nonJapaneseText = text.replace(japanesePattern, '');
+
+    // 結果をオブジェクトにまとめる
+    return {
+        japanese: japaneseText,
+        nonJapanese: nonJapaneseText
+    };
+}
+
 const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }) => {
 
     const lineTokens: string[] = statement.lineTokens.map(token => { return cnvToken(token) });
@@ -93,16 +120,25 @@ const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }
 
         case ProcessEnum.DefineFunction:
 
-            tmpLine = `${UserDefinedFunc.Js} ${lineTokens[0]} ${BraketSymbolEnum.OpenBrace}`
-            if (containsJapanese(tmpLine)) {
-                tmpLine = await cnvToRomaji(tmpLine);
+            let funcName = `${lineTokens[0]}`
+            if (containsJapanese(funcName)) {
+                // tmpLine = await cnvToRomaji(tmpLine);
+                const extracted = extractJapaneseAndNonJapanese(funcName);
+                const hexStr = convertToHexadecimal(extracted.japanese);
+                const variableName = makeVariableName(hexStr);
+                funcName = variableName + extracted.nonJapanese;
             }
+            tmpLine = `${UserDefinedFunc.Js} ${funcName} ${BraketSymbolEnum.OpenBrace}`
             break;
 
         case ProcessEnum.ExecuteUserDefinedFunction:
             tmpLine = `${lineTokens[0]};`
             if (containsJapanese(tmpLine)) {
-                tmpLine = await cnvToRomaji(tmpLine);
+                // tmpLine = await cnvToRomaji(tmpLine);
+                const extracted = extractJapaneseAndNonJapanese(tmpLine);
+                const hexStr = convertToHexadecimal(extracted.japanese);
+                const variableName = makeVariableName(hexStr);
+                tmpLine = variableName + extracted.nonJapanese;
             }
             break;
 
@@ -134,7 +170,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
             if (!code) {
                 return;
             }
-
+            console.log(code)
             if (dnclValidation.hasError) {
                 return;
             }
