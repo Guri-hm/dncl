@@ -12,8 +12,8 @@ import { NextImage } from './NextImage';
 const steps = [
     {
         label: '大学共通テストの疑似言語「DNCL」を体験できます',
-        description: `処理工程を一つずつ作成し，計算結果などを確認できます。複雑な処理には対応できていません。`,
-        imgPath: '/girl_turning_around.png'
+        description: `処理工程を一つずつ作成し，計算結果などを確認できます。ただし，複雑な処理には対応させていません。`,
+        imgPath: '/girl_turning_around.svg'
     },
     {
         label: 'アイテムをリストにドロップしましょう',
@@ -24,14 +24,14 @@ const steps = [
     },
     {
         label: 'アイテムを編集しましょう',
-        description: `値などはアイテムの追加時に編集します。誤ったアイテムを追加した場合は，追加し直しましょう。`,
+        description: `値などはアイテムの追加時に編集します。誤ったアイテムを追加した場合は，削除してもう一度追加しましょう。`,
         imgPath: '/dialog.png',
         width: '100%'
     },
     {
         label: '早速操作してみましょう',
         description: `教科書などのプログラムなどを作成し，DNCLを学びましょう。`,
-        imgPath: '/greeting.png',
+        imgPath: '/greeting.svg',
         width: '100%'
     },
 ];

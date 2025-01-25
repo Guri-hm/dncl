@@ -56,8 +56,6 @@ export default function Home() {
             </ruby>
             いじる子
           </Typography>
-        </HeaderItem>
-        <HeaderItem>
           <Button sx={{ backgroundColor: 'var(--sky-500)', borderRadius: 5, position: 'absolute', right: '10px', bottom: '10px', zIndex: 20 }} variant="contained" onClick={handleClickOpen} startIcon={<HelpOutlineIcon />}>
             使い方
           </Button>
