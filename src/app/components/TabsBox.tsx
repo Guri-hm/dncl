@@ -56,12 +56,12 @@ const Header: FC<BoxProps> = ({ children }) => {
     return (
         <Box sx={{
             flexBasis: '0%',
-            // flexBasis: '0%',
             position: 'relative',
             display: 'flex',
             color: '#94a3b8',
             fontSize: '0.75rem',
             lineHeight: '1.5rem',
+            paddingTop: '0.25rem'
         }} >
             {children}
         </Box>
@@ -73,7 +73,6 @@ const TabFillerContainer: FC<BoxProps> = ({ children }) => {
         <Box sx={{
             flex: 'auto',
             display: 'flex',
-            paddingTop: '0.5rem',
             overflow: 'hidden',
             position: 'relative',
         }} >

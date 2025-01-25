@@ -198,7 +198,7 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems }) => {
             <SortableContext items={[...containers, PLACEHOLDER_ID]}>
                 <Allotment className={`${cmnStyles.hFull}`}>
                     {containers.map((containerId) => {
-                        return <Allotment.Pane key={containerId} visible={tabItemsObj[containerId].length > 0 || activeId ? true : false}>
+                        return <Allotment.Pane key={containerId} snap>
                             <div key={containerId} className={`${cmnStyles.hFull}`} style={{ marginLeft: '16px' }}>
                                 <TabsBox tabItems={tabItemsObj[containerId]} disabled={isSortingContainer} containerId={containerId} />
                             </div>
