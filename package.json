@@ -35,6 +35,7 @@
     "@types/react-dom": "^19",
     "eslint": "^8.57.1",
     "eslint-config-next": "15.0.4",
+    "eslint-plugin-custom-rules": "file:eslint-plugin-custom-rules",
     "postcss": "^8",
     "sass": "^1.83.0",
     "typescript": "^5"

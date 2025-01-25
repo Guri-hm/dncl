@@ -4,18 +4,27 @@
     "next/typescript"
   ],
   "plugins": [
+    "custom-rules",
     "react"
   ],
   "rules": {
+    "custom-rules/no-use-before-assign": "error",
     "react/react-in-jsx-scope": "off",
     "react/prop-types": "off",
-    "no-undef": [
-      "error",
-      {
-        "typeof": true
-      }
-    ], // typeof演算子でチェックを許可
+    "no-undef": "off", // no-undef ルールを無効化
     "no-unused-vars": "off", // 未使用変数の警告を無効化
     "@typescript-eslint/no-unused-vars": "off" // 未使用変数の警告を無効化
+  },
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [
+          ".js",
+          ".jsx",
+          ".ts",
+          ".tsx"
+        ]
+      }
+    }
   }
 }
