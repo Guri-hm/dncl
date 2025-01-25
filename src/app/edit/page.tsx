@@ -14,13 +14,11 @@ import { sampleFuncItems } from "@/app/components/SampleDncl";
 import { Header } from "@/app/components/Header";
 import { HeaderItem } from "@/app/components/HeaderItem";
 import { ContentWrapper } from "@/app/components/ContentWrapper";
-import { useEffect, useState } from "react";
-import { checkDNCLSyntax, flattenTree } from "@/app/utilities";
+import { useState } from "react";
 import { TabsBoxWrapper } from "@/app/components/TabsBoxWrapper";
 import Button from '@mui/material/Button';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { HowToDialog } from "../components/Dialog";
-import { v4 as uuidv4 } from "uuid";
 
 const initialItems: TreeItems = sampleFuncItems;
 
@@ -28,8 +26,7 @@ export default function Home() {
 
   const [items, setItems] = useState(() => initialItems);
   const [runResults, setRunResults] = useState<string[]>([]);
-  const [shouldRunEffect, setShouldRunEffect] = useState(false);
-  const [dnclValidation, setDnclValidation] = useState<DnclValidationType>({ hasError: false, errors: [], guid: uuidv4(), lineNum: [] });
+  const [dnclValidation, setDnclValidation] = useState<DnclValidationType>({ hasError: false, errors: [], lineNum: [] });
   const [tmpMsg, setTmpMsg] = useState<string>('ここに出力結果が表示されます');
   const [openHowToDialog, setOpenHowToDialog] = useState(false);
 
@@ -40,38 +37,6 @@ export default function Home() {
   const handleClose = () => {
     setOpenHowToDialog(false);
   };
-
-  useEffect(() => {
-
-    setTmpMsg(items.length.toString())
-    const timer = setTimeout(() => {
-      setShouldRunEffect(true);
-    }, 2000); // 2秒後に実行
-    return () => clearTimeout(timer); // クリーンアップ
-  }, [items]);
-
-  useEffect(() => {
-    if (shouldRunEffect) {
-      // フラグをリセット
-      setShouldRunEffect(false);
-
-      let result: DnclValidationType = { errors: [], hasError: false, guid: uuidv4(), lineNum: [] };
-      const flatten = flattenTree(items);
-      flatten.map((item: FlattenedItem, index) => {
-        const { hasError, errors } = checkDNCLSyntax(flatten, item, index + 1);
-        if (hasError) {
-          result.hasError = true;
-          result.errors.push(...errors);
-          result.lineNum.push(index + 1);
-        }
-      })
-
-      //useEffectが変更を検知できるように乱数を使う
-      setDnclValidation(result);
-      setTmpMsg("実行待ち")
-
-    }
-  }, [shouldRunEffect]);
 
   return (
     <PageWrapper>
@@ -112,7 +77,7 @@ export default function Home() {
           <Allotment.Pane className={`${styles.bgStone50} ${styles.marginTop16} ${styles.hFull} `}>
 
             <ConsoleBox tabLabels={['コンソール']} setRunResults={setRunResults}>
-              <ConsoleTab treeItems={items} runResults={runResults} setRunResults={setRunResults} dnclValidation={dnclValidation} tmpMsg={tmpMsg} setTmpMsg={setTmpMsg}></ConsoleTab>
+              <ConsoleTab treeItems={items} runResults={runResults} setRunResults={setRunResults} dnclValidation={dnclValidation} setDnclValidation={setDnclValidation} tmpMsg={tmpMsg} setTmpMsg={setTmpMsg}></ConsoleTab>
             </ConsoleBox>
           </Allotment.Pane>
         </Allotment >

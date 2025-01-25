@@ -1,9 +1,9 @@
 import React from 'react';
 import { Box, BoxProps } from "@mui/material";
 import { useEffect, useState, Fragment } from "react";
-import { DnclValidationType, TreeItems } from "../types";
+import { DnclValidationType, FlattenedItem, TreeItems } from "../types";
 import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, LoopEnum, ArithmeticOperator } from "../enum";
-import { cnvToDivision, cnvToRomaji, containsJapanese, flattenTree, tryParseToJsFunction } from "../utilities";
+import { checkDNCLSyntax, cnvToDivision, cnvToRomaji, containsJapanese, flattenTree, tryParseToJsFunction } from "../utilities";
 import Divider from '@mui/material/Divider';
 
 interface CustomBoxProps extends BoxProps {
@@ -14,6 +14,7 @@ interface CustomBoxProps extends BoxProps {
     dnclValidation: DnclValidationType,
     tmpMsg: string,
     setTmpMsg: any,
+    setDnclValidation: any,
 }
 type Err = {
     msg: string,
@@ -112,10 +113,7 @@ const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }
 
         case ProcessEnum.ForIncrement:
         case ProcessEnum.ForDecrement:
-            tmpLine = `${LoopEnum.JsPythonFor} ${BraketSymbolEnum.LeftBraket}
-            ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]}; 
-            ${lineTokens[0]} ${ComparisonOperator.LessThanOrEqualToOperator} ${lineTokens[2]}; 
-            ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[0]} ${statement.processIndex == ProcessEnum.ForIncrement ? ArithmeticOperator.AdditionOperator : ArithmeticOperator.SubtractionOperator} ${lineTokens[3]}${BraketSymbolEnum.RigthBraket} ${BraketSymbolEnum.OpenBrace}`;
+            tmpLine = `${LoopEnum.JsPythonFor} ${BraketSymbolEnum.LeftBraket} ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]}; ${lineTokens[0]} ${ComparisonOperator.LessThanOrEqualToOperator} ${lineTokens[2]}; ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[0]} ${statement.processIndex == ProcessEnum.ForIncrement ? ArithmeticOperator.AdditionOperator : ArithmeticOperator.SubtractionOperator} ${lineTokens[3]}${BraketSymbolEnum.RigthBraket} ${BraketSymbolEnum.OpenBrace}`;
             break;
 
         case ProcessEnum.DefineFunction:
@@ -158,77 +156,97 @@ const Color = {
     white: 'white'
 }
 
-export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, setRunResults, dnclValidation, tmpMsg, setTmpMsg }) => {
+export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, setRunResults, tmpMsg, setTmpMsg, setDnclValidation }) => {
 
-    const [code, setCode] = useState('');
     const [error, setError] = useState<Err | null>(null);
+    const [shouldRunEffect, setShouldRunEffect] = useState(false);
 
-    useEffect(() => {
+    const fetchLintResults = async (code: string) => {
 
-        const fetchLintResults = async () => {
+        if (!code || code == '') {
+            return;
+        }
 
-            if (!code) {
-                return;
+        try {
+            const response = await fetch('/api/lint', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ code }), // コードを送信
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Something went wrong');
             }
-            console.log(code)
-            if (dnclValidation.hasError) {
-                return;
-            }
 
-            try {
-                const response = await fetch('/api/lint', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ code }), // コードを送信
+            const data = await response.json();
+
+            if (data.messages.length == 0) {
+                execute(code);
+            } else {
+                const result: DnclValidationType = { errors: data.messages, hasError: false, lineNum: data.lineNumbers };
+                setDnclValidation(result);
+
+                const formattedMessages = data.lineNumbers.map((lineNumber: number, index: number) => {
+                    return `${lineNumber}行目：${data.messages[index]}`;
                 });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Something went wrong');
-                }
-
-                const data = await response.json();
-
-                setTmpMsg('エラーを解決してください');
-
-                console.log(data)
-                if (data.resultText == '') {
-                    execute();
-                    setTmpMsg('');
-                } else {
-                    setError({ color: Color.warnning, msg: data.resultText });
-                }
-
-            } catch (err: any) {
-                setError({ color: Color.error, msg: err.message || 'An unexpected error occurred' });
-            } finally {
+                setError({ color: Color.warnning, msg: formattedMessages.join('\n') });
             }
 
-        };
+        } catch (err: any) {
+            setError({ color: Color.error, msg: err.message || 'An unexpected error occurred' });
+        } finally {
+        }
 
-        fetchLintResults();
-
-    }, [code])
+    };
 
     useEffect(() => {
-        if (dnclValidation.errors.length > 0) {
-            setError({ color: Color.warnning, msg: dnclValidation.errors.join('\n') || 'An unexpected error occurred' });
-        }
 
-        const convertCode = async () => {
-            setCode(await renderCode(treeItems))
-        };
-        if (!dnclValidation.hasError) {
+        setTmpMsg("DNCL解析中…")
+        const timer = setTimeout(() => {
+            setShouldRunEffect(true);
+        }, 2000); // 2秒後に実行
+        return () => clearTimeout(timer); // クリーンアップ
+
+    }, [treeItems]);
+
+    useEffect(() => {
+
+        if (shouldRunEffect) {
+            // フラグをリセット
+            setShouldRunEffect(false);
+            setTmpMsg('');
+
+            let result: DnclValidationType = { errors: [], hasError: false, lineNum: [] };
+            const flatten = flattenTree(treeItems);
+            flatten.map((item: FlattenedItem, index) => {
+                const { hasError, errors } = checkDNCLSyntax(flatten, item, index + 1);
+                if (hasError) {
+                    result.hasError = true;
+                    result.errors.push(...errors);
+                    result.lineNum.push(index + 1);
+                }
+            })
+
+            setDnclValidation(result);
+            if (result.hasError) {
+                return;
+            }
+
+            const convertCode = async () => {
+                const code = await renderCode(treeItems);
+                fetchLintResults(code);
+            };
+
             convertCode();
-        } else {
-            setTmpMsg('エラーを解決してください');
+
         }
 
-    }, [dnclValidation]);
+    }, [shouldRunEffect]);
 
-    const execute = async () => {
+    const execute = async (code: string) => {
         setError(null);
 
         try {
@@ -260,7 +278,6 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
             const content = await cnvToJs({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) });
             return content
         }));
-
         return renderCodeArray.join('\n');
     }
 
@@ -278,7 +295,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
     const renderResults = (results: string[]): React.ReactNode => {
         return results.map((result, index) => (
             <Fragment key={index}>
-                {index > 0 && <Divider sx={{ borderColor: Color.white }} />}
+                {index > 0 && <Divider sx={{ borderColor: 'var(--slate-300)' }} />}
                 <Box sx={{ paddingY: 0.2, paddingX: 1 }}>
                     {convertNewLinesToBreaks(result)}
                 </Box>
@@ -289,7 +306,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
     return <Box>
 
         {tmpMsg && <Box sx={{ padding: 1 }}> {tmpMsg}</Box>}
-        {(error) && <Box sx={{ padding: 1, color: error.color }}>エラー
+        {(error) && <Box sx={{ padding: 1, color: error.color }}>エラーを解決してください
             <Box>
                 {(error) && convertNewLinesToBreaks(error.msg)}
             </Box>

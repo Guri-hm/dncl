@@ -9,7 +9,7 @@ module.exports = {
         },
         schema: [],
         messages: {
-            useBeforeDeclaration: "'{{name}}' は定義される前に使用されています。",
+            useBeforeDeclaration: "'{{name}}' は定義される前に使用されています",
         },
     },
     create(context) {
@@ -100,14 +100,20 @@ module.exports = {
                 if (assignedVariables.has(node.name)) {
                     return;
                 }
-                // 未定義の変数かどうかをチェック
-                if (!assignedVariables.has(node.name)) {
-                    context.report({
-                        node,
-                        messageId: "useBeforeDeclaration",
-                        data: { name: node.name },
-                    });
+
+
+                // 関数スコープ内で後に定義される関数宣言を許可
+                const scope = context.getScope();
+                const variable = scope.set.get(node.name);
+                if (variable && variable.defs.some(def => def.type === "FunctionName")) {
+                    return;
                 }
+                // 未定義の変数かどうかをチェック
+                context.report({
+                    node,
+                    messageId: "useBeforeDeclaration",
+                    data: { name: node.name },
+                });
             },
         };
     },
