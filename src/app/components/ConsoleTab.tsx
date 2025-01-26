@@ -205,6 +205,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
     useEffect(() => {
 
         setTmpMsg("DNCL解析中…")
+        setError(null);
         const timer = setTimeout(() => {
             setShouldRunEffect(true);
         }, 2000); // 2秒後に実行

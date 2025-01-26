@@ -242,7 +242,7 @@ export function SortableTree({
                         : undefined
                     }
                     onRemove={removable ? () => handleRemove(id) : undefined}
-                    isError={dnclValidation.lineNum.includes(index + 1)}
+                    isError={dnclValidation?.lineNum.includes(index + 1)}
                   />
                 ))}
               </SortableContext>
