@@ -42,7 +42,7 @@ export type DnclEditorProps = {
   open: boolean,
   addItem: any,
   type?: StatementEnum,
-  overIndex: number,
+  overIndex: UniqueIdentifier,
   refresh?: any,
 }
 
@@ -52,7 +52,8 @@ export type ErrObj = {
 }
 
 export interface DnclValidationType extends ErrObj {
-  lineNum: number[]
+  lineNum: number[];
+  color?: string;
 }
 
 export interface TabItem {

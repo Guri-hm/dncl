@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Allotment } from "allotment";
 import { createPortal } from "react-dom";
-import { DndContext } from '@dnd-kit/core';
+import { DndContext, UniqueIdentifier } from '@dnd-kit/core';
 import {
   closestCenter,
   PointerSensor,
@@ -315,15 +315,17 @@ export function SortableTree({
     resetState();
 
     interface NewItemParams {
-      newItem: FlattenedItem; overIndex: number;
+      newItem: FlattenedItem; overIndex: UniqueIdentifier;
     }
 
     const addItemToTree = (itemParams: NewItemParams) => {
       const clonedItems: FlattenedItem[] = structuredClone(flattenTree(treeItems));
 
       clonedItems.push(itemParams.newItem);
-
-      const sortedItems = arrayMove(clonedItems, Number(itemParams.newItem.id), itemParams.overIndex);
+      const overIndex = clonedItems.findIndex(({ id }) => id === itemParams.overIndex);
+      const activeIndex = clonedItems.findIndex(({ id }) => id === active.id);
+      console.log(itemParams.overIndex)
+      const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
       const newItems = buildTree(sortedItems);
 
       setTreeItems(newItems);
@@ -344,7 +346,7 @@ export function SortableTree({
         // active.id = newId;
         // clonedItems.push(clonedItem);
         clonedItem = { ...clonedItem, id: newId, depth: depth, parentId: parentId }
-        setEditor((prevState: DnclEditorProps) => ({ ...prevState, item: clonedItem, addItem: addItemToTree, open: true, type: fragmentItem.statementType, overIndex: Number(over.id), treeItems: treeItems, refresh: refrash, setEditor: setEditor }));
+        setEditor((prevState: DnclEditorProps) => ({ ...prevState, item: clonedItem, addItem: addItemToTree, open: true, type: fragmentItem.statementType, overIndex: over.id, treeItems: treeItems, refresh: refrash, setEditor: setEditor }));
         return;
       }
       const overIndex = clonedItems.findIndex(({ id }) => id === over.id);

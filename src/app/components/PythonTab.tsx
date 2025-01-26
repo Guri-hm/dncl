@@ -42,13 +42,18 @@ const cnvToPython = async (statement: { lineTokens: string[], processIndex: numb
     switch (statement.processIndex) {
         case ProcessEnum.SetValToVariableOrArray:
         case ProcessEnum.InitializeArray:
-            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]};`
+            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]}`
             break;
 
         case ProcessEnum.BulkAssignToArray:
+            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} [${lineTokens[1]} for _ in ${lineTokens[0]}]`
+            break;
         case ProcessEnum.Increment:
+            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[0]} ${ArithmeticOperator.AdditionOperator} ${lineTokens[1]}`
+            break;
         case ProcessEnum.Decrement:
-
+            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[0]} ${ArithmeticOperator.SubtractionOperator} ${lineTokens[1]}`
+            break;
 
         case ProcessEnum.Output:
 

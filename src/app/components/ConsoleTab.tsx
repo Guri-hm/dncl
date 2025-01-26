@@ -70,9 +70,10 @@ const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }
             break;
 
         case ProcessEnum.Increment:
+            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[0]} ${ArithmeticOperator.AdditionOperator} ${lineTokens[1]};`
+            break;
         case ProcessEnum.Decrement:
-
-            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]};`
+            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[0]} ${ArithmeticOperator.SubtractionOperator} ${lineTokens[1]};`
             break;
 
         case ProcessEnum.Output:
@@ -162,9 +163,8 @@ const Color = {
     white: 'white'
 }
 
-export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, setRunResults, tmpMsg, setTmpMsg, setDnclValidation }) => {
+export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, setRunResults, tmpMsg, setTmpMsg, setDnclValidation, dnclValidation }) => {
 
-    const [error, setError] = useState<Err | null>(null);
     const [shouldRunEffect, setShouldRunEffect] = useState(false);
 
     const fetchLintResults = async (code: string) => {
@@ -192,18 +192,18 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
             if (data.messages.length == 0) {
                 execute(code);
             } else {
-                const result: DnclValidationType = { errors: data.messages, hasError: false, lineNum: data.lineNumbers };
-                setDnclValidation(result);
-
                 const formattedMessages = data.lineNumbers.map((lineNumber: number, index: number) => {
                     return `${lineNumber}行目：${data.messages[index]}`;
                 });
-                setError({ color: Color.warnning, msg: formattedMessages.join('\n') });
+                const result: DnclValidationType = { color: Color.warnning, errors: formattedMessages, hasError: true, lineNum: data.lineNumbers };
+                setDnclValidation(result);
+
             }
             setTmpMsg('');
 
         } catch (err: any) {
-            setError({ color: Color.error, msg: err.message || 'An unexpected error occurred' });
+            const result: DnclValidationType = { color: Color.error, errors: err.message || 'An unexpected error occurred', hasError: true, lineNum: [] };
+            setDnclValidation(result);
         } finally {
         }
 
@@ -212,7 +212,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
     useEffect(() => {
 
         setTmpMsg("DNCL解析中…")
-        setError(null);
+        setDnclValidation(null);
         const timer = setTimeout(() => {
             setShouldRunEffect(true);
         }, 2000); // 2秒後に実行
@@ -255,7 +255,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
     }, [shouldRunEffect]);
 
     const execute = async (code: string) => {
-        setError(null);
+        setDnclValidation(null);
 
         try {
             const response = await fetch('/api/execute', {
@@ -276,7 +276,8 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
                 setRunResults((prevResults: string[]) => (prevResults ? [...prevResults, data.result] : [data.result]));
             }
         } catch (err: any) {
-            setError({ color: Color.error, msg: err.message || 'An unexpected error occurred' });
+            const result: DnclValidationType = { color: Color.error, errors: err.message || 'An unexpected error occurred', hasError: true, lineNum: [] };
+            setDnclValidation(result);
         }
     };
 
@@ -316,9 +317,9 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
     return <Box>
 
         {tmpMsg && <Box sx={{ padding: 1 }}> {tmpMsg}</Box>}
-        {(error) && <Box sx={{ padding: 1, color: error.color }}>エラーを解決してください
+        {(dnclValidation) && (dnclValidation.hasError) && <Box sx={{ padding: 1, color: dnclValidation.color || Color.warnning }}>エラーを解決してください
             <Box>
-                {(error) && convertNewLinesToBreaks(error.msg)}
+                {(dnclValidation.errors.length > 0) && convertNewLinesToBreaks(dnclValidation?.errors.join('\n'))}
             </Box>
         </Box>
         }

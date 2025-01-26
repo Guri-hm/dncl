@@ -50,9 +50,14 @@ const cnvToVba = async (statement: { lineTokens: string[], processIndex: number 
             tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${ArrayForVBA.Array}${convertBracketsToParentheses(lineTokens[1])}`
             break;
         case ProcessEnum.BulkAssignToArray:
+            tmpLine = `For i = LBound(${lineTokens[0]}) to UBound(${lineTokens[0]})\n ${lineTokens[0]}(i) ${SimpleAssignmentOperator.Other} ${lineTokens[1]}\n Next`
+            break;
         case ProcessEnum.Increment:
+            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[0]} ${ArithmeticOperator.AdditionOperator} ${lineTokens[1]}`
+            break;
         case ProcessEnum.Decrement:
-
+            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[0]} ${ArithmeticOperator.SubtractionOperator} ${lineTokens[1]}`
+            break;
 
         case ProcessEnum.Output:
 

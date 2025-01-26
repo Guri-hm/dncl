@@ -155,8 +155,10 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props)
 
     const getDnclStatement = (strArray: string[]): string => {
 
+        //もとの配列が置換されないように別配列に入れる
+        let replacedArray: string[] = [];
         for (let i = 0; i < strArray.length; i++) {
-            strArray[i] = strArray[i]
+            replacedArray.push(strArray[i]
                 .replace(ComparisonOperator.EqualToOperator, ComparisonOperatorDncl.EqualToOperator)
                 .replace(ComparisonOperator.NotEqualToOperator, ComparisonOperatorDncl.NotEqualToOperator)
                 .replace(ComparisonOperator.GreaterThanOrEqualToOperator, ComparisonOperatorDncl.GreaterThanOrEqualToOperator)
@@ -170,9 +172,10 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props)
                 .replace(UserDefinedFuncDncl.UserDefined, UserDefinedFuncJpDncl.UserDefined)
                 .replace(BooleanDncl.True, BooleanJpDncl.True)
                 .replace(BooleanDncl.False, BooleanJpDncl.False)
+            )
         }
 
-        let line = strArray.join(' ');
+        let line = replacedArray.join(' ');
         //引数の[]の左側の半角スペースは詰める
         line = line.replace(/\s+\[/g, '[');
         line = line.replace(/,(?=\S)/g, ', ');
@@ -181,10 +184,10 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props)
     const getTokens = (strArray: string[]): string => {
 
         let line = strArray.join(' ');
-        line = line.replace(/\s+\[/g, '[');
-        line = line.replace(/,(?=\S)/g, ', ');
         line = cnvAndOrOperator(line);
         line = transformNegation(line);
+        line = line.replace(/\s+\[/g, '[');
+        line = line.replace(/,(?=\S)/g, ', ');
         //商と余りは言語ごとに処理が異なるので別途処理
         return line;
     }

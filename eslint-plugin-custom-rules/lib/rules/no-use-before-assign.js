@@ -99,9 +99,12 @@ module.exports = {
                     const objectName = parent.object.name;
                     const propertyName = parent.property.name;
 
+                    if (propertyName === "fill") {
+                        return; // 'fill' メソッドについてのエラーメッセージが重複しないようにする
+                    }
+
                     // 代入された変数が配列であればメソッド呼び出しを許可
                     if (assignedVariables.has(objectName) && assignedVariables.get(objectName) === "array") {
-                        console.log('合格')
                         return; // 配列ならメソッド呼び出しを許可
                     }
 
@@ -114,9 +117,6 @@ module.exports = {
                             data: { name: objectName }
                         });
                         reportedErrors.add(errorKey); // エラーメッセージを報告済みとして記録
-                    }
-                    if (propertyName === "fill") {
-                        return; // 'fill' メソッドについてのエラーメッセージが重複しないようにする
                     }
                 }
 
