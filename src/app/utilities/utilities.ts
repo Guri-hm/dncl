@@ -1209,3 +1209,6 @@ export const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedIte
   return result;
 }
 
+export const convertBracketsToParentheses = (input: string): string => {
+  return input.replace(/^\[/, BraketSymbolEnum.LeftBraket).replace(/\]$/, BraketSymbolEnum.RigthBraket);
+}

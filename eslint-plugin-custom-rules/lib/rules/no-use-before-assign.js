@@ -3,7 +3,7 @@ module.exports = {
         type: "problem",
         docs: {
             description:
-                "Allow direct assignment but prevent use-before-declaration",
+                "Allow direct assignment but prevent use-before-declaration, with selective method usage",
             category: "Best Practices",
             recommended: false,
         },
@@ -15,10 +15,10 @@ module.exports = {
     create(context) {
         const assignedVariables = new Set(); // 直接代入された変数を追跡
         const definedFunctions = new Set(); // 定義された関数を追跡
-        const allowedGlobals = new Set([
-            "console",
-            "Math",
-        ]);
+        const allowedGlobalsWithMethods = {
+            console: new Set(["log"]),
+            Array: new Set(["fill"]),
+        };
 
         return {
             FunctionDeclaration(node) {
@@ -76,21 +76,38 @@ module.exports = {
                     return;
                 }
 
-                // プロパティアクセス (e.g., console.log) の場合はスキップ
+                // 特定のグローバルオブジェクトのメソッドを許可
                 if (
                     parent &&
                     parent.type === "MemberExpression" &&
-                    parent.property === node &&
-                    parent.object.type === "Identifier" &&
-                    allowedGlobals.has(parent.object.name)
+                    parent.property.type === "Identifier" &&
+                    allowedGlobalsWithMethods[parent.object.name]?.has(parent.property.name)
                 ) {
                     return;
                 }
+                // assignedVariables に含まれている場合、配列であればメソッド呼び出しを許可
+                if (
+                    parent &&
+                    parent.type === "MemberExpression" &&
+                    parent.property.type === "Identifier" &&
+                    parent.object.type === "Identifier"
+                ) {
+                    // 変数が assignedVariables に含まれている場合
+                    console.log(parent.object.name)
+                    console.log(parent.property.name)
+                    if (assignedVariables.has(parent.object.name)) {
+                        // 配列かどうかチェックする方法が不明なので，メソッドが配列で許可するメソッドかで判定することにした
+                        if (allowedGlobalsWithMethods.Array.has(parent.property.name)) {
+                            return;
+                        }
+                    }
+                }
 
                 // 許可されたグローバル変数はスキップ
-                if (allowedGlobals.has(node.name)) {
+                if (Object.keys(allowedGlobalsWithMethods).includes(node.name)) {
                     return;
                 }
+
                 // 定義された関数の使用を許可
                 if (definedFunctions.has(node.name)) {
                     return;
@@ -101,13 +118,13 @@ module.exports = {
                     return;
                 }
 
-
                 // 関数スコープ内で後に定義される関数宣言を許可
                 const scope = context.getScope();
                 const variable = scope.set.get(node.name);
-                if (variable && variable.defs.some(def => def.type === "FunctionName")) {
+                if (variable && variable.defs.some((def) => def.type === "FunctionName")) {
                     return;
                 }
+
                 // 未定義の変数かどうかをチェック
                 context.report({
                     node,

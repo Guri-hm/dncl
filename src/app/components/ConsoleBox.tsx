@@ -12,14 +12,6 @@ interface TabPanelProps {
     value: number;
 }
 
-interface StyledTabsProps {
-    value: number;
-    onChange: (event: React.SyntheticEvent, newValue: number) => void;
-    a11yProps: (index: number) => { id: string; 'aria-controls': string };
-    tabLabels: string[];
-    tabClasses?: string[];
-}
-
 function TabPanel(params: TabPanelProps) {
     const { children, value, index, } = params;
 

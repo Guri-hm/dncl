@@ -172,15 +172,17 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props)
                 .replace(BooleanDncl.False, BooleanJpDncl.False)
         }
 
-        let dnclStatement = strArray.join(' ');
+        let line = strArray.join(' ');
         //引数の[]の左側の半角スペースは詰める
-        dnclStatement = dnclStatement.replace(/\s+\[/g, '[');
-        return dnclStatement;
+        line = line.replace(/\s+\[/g, '[');
+        line = line.replace(/,(?=\S)/g, ', ');
+        return line;
     }
     const getTokens = (strArray: string[]): string => {
 
         let line = strArray.join(' ');
-
+        line = line.replace(/\s+\[/g, '[');
+        line = line.replace(/,(?=\S)/g, ', ');
         line = cnvAndOrOperator(line);
         line = transformNegation(line);
         //商と余りは言語ごとに処理が異なるので別途処理
@@ -215,7 +217,7 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props)
                         }
                         if (!checkStatement(formJson, keyPrefixEnum.LeftSide, params.treeItems)) return;
                         if (!checkStatement(formJson, keyPrefixEnum.RigthSide, params.treeItems)) return;
-
+                        console.log(formJson)
                         setError([]);
 
                         const operator = getOperator(type);

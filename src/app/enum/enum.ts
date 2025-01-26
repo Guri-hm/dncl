@@ -40,9 +40,13 @@ export enum ComparisonOperatorDncl {
   NullOperator = '',
 }
 
-export enum AndOrOperatorJpArrayForDncl {
+export enum AndOrOperatorJpForDncl {
   AndOperator = 'かつ',
   OrOperator = 'または',
+}
+
+export enum ArrayForVBA {
+  Array = 'Array',
 }
 
 export enum OutputEnum {

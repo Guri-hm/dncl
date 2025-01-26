@@ -43,6 +43,35 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems }) => {
             },
         ],
     });
+
+    useEffect(() => {
+        // `treeItems` が変更されるたびに `tabItemsObj` の `component` 部分のみを更新
+        setTabItemsObj(prevTabItemsObj => {
+            const updateComponents = (group: any) => group.map((item: any) => ({
+                ...item,
+                component: (() => {
+                    switch (item.label) {
+                        case 'DNCL':
+                            return <DnclTab treeItems={treeItems}>DNCLのコード</DnclTab>;
+                        case 'javascript':
+                            return <JsTab treeItems={treeItems}>javascriptのコード</JsTab>;
+                        case 'Python':
+                            return <PythonTab treeItems={treeItems}>Pythonのコード</PythonTab>;
+                        case 'VBA':
+                            return <VbaTab treeItems={treeItems}>VBAのコード</VbaTab>;
+                        default:
+                            return item.component;
+                    }
+                })()
+            }));
+
+            return {
+                group1: updateComponents(prevTabItemsObj.group1),
+                group2: updateComponents(prevTabItemsObj.group2)
+            };
+        });
+    }, [treeItems]);
+
     const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
     const [containers, setContainers] = useState(
         Object.keys(tabItemsObj) as UniqueIdentifier[]

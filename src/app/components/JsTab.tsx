@@ -2,7 +2,7 @@ import { Box, BoxProps } from "@mui/material";
 import { FC, useEffect, useState, Fragment } from "react";
 import { TreeItems } from "../types";
 import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, LoopEnum, ArithmeticOperator } from "../enum";
-import { cnvToDivision, cnvToRomaji, containsJapanese, tryParseToJsFunction } from "../utilities";
+import { cnvToDivision, cnvToRomaji, containsJapanese, convertBracketsToParentheses, tryParseToJsFunction } from "../utilities";
 import ScopeBox from "./ScopeBox";
 import styles from './tab.module.css';
 
@@ -25,12 +25,15 @@ const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }
     switch (statement.processIndex) {
         case ProcessEnum.SetValToVariableOrArray:
         case ProcessEnum.InitializeArray:
+            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]};`
+            break;
+
         case ProcessEnum.BulkAssignToArray:
+            tmpLine = `${lineTokens[0]}.fill(${lineTokens[1]});`
+            break;
         case ProcessEnum.Increment:
         case ProcessEnum.Decrement:
 
-            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]};`
-            break;
 
         case ProcessEnum.Output:
 
@@ -113,6 +116,7 @@ export const JsTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props })
 
     useEffect(() => {
         setNodes("変換中");
+        console.log(treeItems)
         const timer = setTimeout(() => {
             setShouldRunEffect(true);
         }, 1000); // 1秒後に実行

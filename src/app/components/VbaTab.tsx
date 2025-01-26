@@ -1,8 +1,8 @@
 import { Box, BoxProps } from "@mui/material";
 import { FC, useEffect, useState, Fragment } from "react";
 import { TreeItem, TreeItems } from "../types";
-import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, ComparisonOperatorDncl, LoopEnum, ArithmeticOperator, ArithmeticOperatorPython, ArithmeticOperatorVba } from "../enum";
-import { tryParseToVbaFunc } from "../utilities";
+import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, ComparisonOperatorDncl, LoopEnum, ArithmeticOperator, ArithmeticOperatorPython, ArithmeticOperatorVba, ArrayForVBA } from "../enum";
+import { convertBracketsToParentheses, tryParseToVbaFunc } from "../utilities";
 import ScopeBox from "./ScopeBox";
 import styles from './tab.module.css';
 
@@ -44,80 +44,82 @@ const cnvToVba = async (statement: { lineTokens: string[], processIndex: number 
 
     switch (statement.processIndex) {
         case ProcessEnum.SetValToVariableOrArray:
+            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]}`
+            break;
         case ProcessEnum.InitializeArray:
+            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${ArrayForVBA.Array}${convertBracketsToParentheses(lineTokens[1])}`
+            break;
         case ProcessEnum.BulkAssignToArray:
         case ProcessEnum.Increment:
         case ProcessEnum.Decrement:
 
-            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[2]}`
-            break;
 
         case ProcessEnum.Output:
 
-            tmpLine = `${OutputEnum.Vba}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket}`
+            tmpLine = `${OutputEnum.Vba}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket} `
             break;
 
         case ProcessEnum.If:
-            tmpLine = `${ConditionEnum.VbaIf} ${lineTokens[0]} ${ConditionEnum.VbaThen}`
+            tmpLine = `${ConditionEnum.VbaIf} ${lineTokens[0]} ${ConditionEnum.VbaThen} `
             break;
 
         case ProcessEnum.ElseIf:
-            tmpLine = `${ConditionEnum.VbaElseIf} ${lineTokens[0]} ${ConditionEnum.VbaThen}`
+            tmpLine = `${ConditionEnum.VbaElseIf} ${lineTokens[0]} ${ConditionEnum.VbaThen} `
 
             break;
 
         case ProcessEnum.Else:
-            tmpLine = `${ConditionEnum.VbaElse}`
+            tmpLine = `${ConditionEnum.VbaElse} `
 
             break;
 
         case ProcessEnum.EndIf:
-            tmpLine = `${ConditionEnum.VbaEndIf}`
+            tmpLine = `${ConditionEnum.VbaEndIf} `
             break;
 
         case ProcessEnum.While:
-            tmpLine = `${LoopEnum.VbaWhile} ${lineTokens[0]}`
+            tmpLine = `${LoopEnum.VbaWhile} ${lineTokens[0]} `
             break;
 
         case ProcessEnum.EndWhile:
-            tmpLine = `${LoopEnum.VbaEndWhile}`
+            tmpLine = `${LoopEnum.VbaEndWhile} `
             break;
 
         case ProcessEnum.DoWhile:
-            tmpLine = `${LoopEnum.VbaDoWhile}`;
+            tmpLine = `${LoopEnum.VbaDoWhile} `;
 
             break;
 
         case ProcessEnum.EndDoWhile:
-            tmpLine = `${LoopEnum.VbaEndDoWhile} ${lineTokens[0]}`;
+            tmpLine = `${LoopEnum.VbaEndDoWhile} ${lineTokens[0]} `;
             break;
 
         case ProcessEnum.ForIncrement:
         case ProcessEnum.ForDecrement:
             tmpLine = `${LoopEnum.VbaFor} ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]} ${LoopEnum.VbaTo} ${lineTokens[2]}
-                    ${LoopEnum.VbaStep} ${statement.processIndex == ProcessEnum.ForIncrement ? '' : ArithmeticOperator.SubtractionOperator}${lineTokens[3]}`;
+                    ${LoopEnum.VbaStep} ${statement.processIndex == ProcessEnum.ForIncrement ? '' : ArithmeticOperator.SubtractionOperator}${lineTokens[3]} `;
             break;
 
         case ProcessEnum.EndFor:
-            tmpLine = `${LoopEnum.VbaNext}`;
+            tmpLine = `${LoopEnum.VbaNext} `;
             break;
         case ProcessEnum.Defined:
-            tmpLine = `${UserDefinedFunc.VbaEndFunction}`
+            tmpLine = `${UserDefinedFunc.VbaEndFunction} `
             break;
 
         case ProcessEnum.DefineFunction:
 
-            tmpLine = `${UserDefinedFunc.VbaFunction} ${lineTokens[0]}`
+            tmpLine = `${UserDefinedFunc.VbaFunction} ${lineTokens[0]} `
             break;
 
         case ProcessEnum.ExecuteUserDefinedFunction:
-            tmpLine = `${lineTokens[0]}`
+            tmpLine = `${lineTokens[0]} `
             break;
         case ProcessEnum.Sub:
-            tmpLine = `${UserDefinedFunc.VbaSub}${BraketSymbolEnum.LeftBraket}${BraketSymbolEnum.RigthBraket}`
+            tmpLine = `${UserDefinedFunc.VbaSub}${BraketSymbolEnum.LeftBraket}${BraketSymbolEnum.RigthBraket} `
             break;
         case ProcessEnum.EndSub:
-            tmpLine = `${UserDefinedFunc.VbaEndSub}`
+            tmpLine = `${UserDefinedFunc.VbaEndSub} `
             break;
 
         default:
