@@ -200,6 +200,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
                 });
                 setError({ color: Color.warnning, msg: formattedMessages.join('\n') });
             }
+            setTmpMsg('');
 
         } catch (err: any) {
             setError({ color: Color.error, msg: err.message || 'An unexpected error occurred' });
@@ -224,7 +225,6 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
         if (shouldRunEffect) {
             // フラグをリセット
             setShouldRunEffect(false);
-            setTmpMsg('');
 
             let result: DnclValidationType = { errors: [], hasError: false, lineNum: [] };
             const flatten = flattenTree(treeItems);
@@ -239,6 +239,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
 
             setDnclValidation(result);
             if (result.hasError) {
+                setTmpMsg('');
                 return;
             }
 
@@ -271,7 +272,9 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
             }
 
             const data = await response.json();
-            setRunResults((prevResults: string[]) => (prevResults ? [...prevResults, data.result] : [data.result]));
+            if (data.result != '') {
+                setRunResults((prevResults: string[]) => (prevResults ? [...prevResults, data.result] : [data.result]));
+            }
         } catch (err: any) {
             setError({ color: Color.error, msg: err.message || 'An unexpected error occurred' });
         }

@@ -7,6 +7,8 @@ export async function POST(req: NextRequest) {
     const eslint = new ESLint();
 
     try {
+        // let test = "a = [1, 2, 4, 5];\nconsole.log(a);\na.fill(a[2]);"
+        // console.log(test);
         // 変数定義をコードの先頭に追加
         // const predefinedVariables = `var a, b;\n`;
         // const modifiedCode = predefinedVariables + code;

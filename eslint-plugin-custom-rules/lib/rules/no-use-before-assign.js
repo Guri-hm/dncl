@@ -13,12 +13,13 @@ module.exports = {
         },
     },
     create(context) {
-        const assignedVariables = new Set(); // 直接代入された変数を追跡
+        const assignedVariables = new Map(); // 直接代入された変数を追跡
         const definedFunctions = new Set(); // 定義された関数を追跡
         const allowedGlobalsWithMethods = {
             console: new Set(["log"]),
             Array: new Set(["fill"]),
         };
+        const reportedErrors = new Set();
 
         return {
             FunctionDeclaration(node) {
@@ -31,7 +32,7 @@ module.exports = {
                 if (node.params) {
                     node.params.forEach((param) => {
                         if (param.type === "Identifier") {
-                            assignedVariables.add(param.name);
+                            assignedVariables.set(param.name, "other");
                         }
                     });
                 }
@@ -51,7 +52,7 @@ module.exports = {
                     if (node.init.params) {
                         node.init.params.forEach((param) => {
                             if (param.type === "Identifier") {
-                                assignedVariables.add(param.name);
+                                assignedVariables.set(param.name, "other");
                             }
                         });
                     }
@@ -60,9 +61,17 @@ module.exports = {
             AssignmentExpression(node) {
                 // 直接代入を許可
                 if (node.left.type === "Identifier") {
-                    assignedVariables.add(node.left.name); // 追跡リストに追加
+                    if (node.right.type === "ArrayExpression") {
+                        assignedVariables.set(node.left.name, "array"); // 配列が代入された場合
+                    } else {
+                        assignedVariables.set(node.left.name, "other");
+                    }
                     context.markVariableAsUsed(node.left.name);
                 }
+                // if (node.left.type === "Identifier") {
+                //     assignedVariables.add(node.left.name); // 追跡リストに追加
+                //     context.markVariableAsUsed(node.left.name);
+                // }
             },
             Identifier(node) {
                 const parent = node.parent;
@@ -85,21 +94,29 @@ module.exports = {
                 ) {
                     return;
                 }
-                // assignedVariables に含まれている場合、配列であればメソッド呼び出しを許可
-                if (
-                    parent &&
-                    parent.type === "MemberExpression" &&
-                    parent.property.type === "Identifier" &&
-                    parent.object.type === "Identifier"
-                ) {
-                    // 変数が assignedVariables に含まれている場合
-                    console.log(parent.object.name)
-                    console.log(parent.property.name)
-                    if (assignedVariables.has(parent.object.name)) {
-                        // 配列かどうかチェックする方法が不明なので，メソッドが配列で許可するメソッドかで判定することにした
-                        if (allowedGlobalsWithMethods.Array.has(parent.property.name)) {
-                            return;
-                        }
+                // プロパティアクセス (e.g., a.fill) の場合
+                if (parent && parent.type === "MemberExpression") {
+                    const objectName = parent.object.name;
+                    const propertyName = parent.property.name;
+
+                    // 代入された変数が配列であればメソッド呼び出しを許可
+                    if (assignedVariables.has(objectName) && assignedVariables.get(objectName) === "array") {
+                        console.log('合格')
+                        return; // 配列ならメソッド呼び出しを許可
+                    }
+
+                    // 配列以外の型であれば、エラーを報告
+                    const errorKey = `${objectName}.${propertyName}`;
+                    if (!reportedErrors.has(errorKey)) {
+                        context.report({
+                            node,
+                            message: "'{{name}}' は配列ではないため使えません",
+                            data: { name: objectName }
+                        });
+                        reportedErrors.add(errorKey); // エラーメッセージを報告済みとして記録
+                    }
+                    if (propertyName === "fill") {
+                        return; // 'fill' メソッドについてのエラーメッセージが重複しないようにする
                     }
                 }
 
