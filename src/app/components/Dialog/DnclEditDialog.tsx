@@ -319,7 +319,7 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props)
                 <DialogTitle>
                     <StatementName statementType={type}></StatementName>
                 </DialogTitle>
-                <DialogContent>
+                <DialogContent dividers>
                     <DialogContentText>
                         <StatementDesc statementType={type}></StatementDesc>
                     </DialogContentText>
@@ -328,7 +328,7 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props)
                 <DialogActions>
                     <ErrorMsgBox sx={{ display: 'flex', flexDirection: 'column' }} errorArray={error}></ErrorMsgBox>
                     <Button onClick={handleClose}>キャンセル</Button>
-                    <Button type="submit">挿入</Button>
+                    <Button variant="outlined" type="submit">決定</Button>
                 </DialogActions>
             </Dialog>
         </Fragment >

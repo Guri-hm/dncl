@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import styles from './tabs-box.module.css'
 import { BoxProps } from '@mui/system';
-import { IconButton, Snackbar } from '@mui/material';
+import { Button, IconButton, Menu, MenuItem, Snackbar } from '@mui/material';
 import cmnStyles from '@/app/components/common.module.css';
 import { Children, FC, forwardRef, useMemo, useRef, useState } from 'react';
 import { UniqueIdentifier } from "@dnd-kit/core";
@@ -11,6 +11,7 @@ import { TabItem } from '../types';
 import { CustomTabs } from './CustomTabs';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import MenuIcon from '@mui/icons-material/Menu';
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -141,6 +142,8 @@ export const TabsBox = ({ tabItems, disabled, containerId = 'box', ...props }: P
     const [value, setValue] = useState(0);
     const contentRef = useRef<HTMLDivElement | null>(null);
     const [snackbar, setSnackbar] = useState<{ open: boolean, duration: number, text: string }>({ open: false, duration: 3000, text: '' });
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const open = Boolean(anchorEl);
 
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue);
@@ -148,7 +151,12 @@ export const TabsBox = ({ tabItems, disabled, containerId = 'box', ...props }: P
     const handleClose = () => {
         setSnackbar({ ...snackbar, open: false });
     };
-
+    const handleClickMenu = (event: React.MouseEvent<HTMLElement>) => {
+        setAnchorEl(event.currentTarget);
+    };
+    const handleCloseMenu = () => {
+        setAnchorEl(null);
+    };
     const tabPanels: React.ReactNode[] = useMemo(() => tabItems.map(tabItem => tabItem.component), [tabItems]);
 
     const {
@@ -206,6 +214,30 @@ export const TabsBox = ({ tabItems, disabled, containerId = 'box', ...props }: P
                             }}>
                                 <SwapHorizIcon />
                             </IconButton>
+                            <div>
+                                <IconButton id="demo-positioned-button" aria-controls={open ? 'demo-positioned-menu' : undefined} aria-haspopup="true" aria-expanded={open ? 'true' : undefined} onClick={handleClickMenu} size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: 'var(--stone-50)' } }}>
+                                    <MenuIcon />
+                                </IconButton>
+                                <Menu
+                                    id="demo-positioned-menu"
+                                    aria-labelledby="demo-positioned-button"
+                                    anchorEl={anchorEl}
+                                    open={open}
+                                    onClose={handleCloseMenu}
+                                    anchorOrigin={{
+                                        vertical: 'top',
+                                        horizontal: 'left',
+                                    }}
+                                    transformOrigin={{
+                                        vertical: 'top',
+                                        horizontal: 'left',
+                                    }}
+                                >
+                                    <MenuItem onClick={handleCloseMenu}>Profile</MenuItem>
+                                    <MenuItem onClick={handleCloseMenu}>My account</MenuItem>
+                                    <MenuItem onClick={handleCloseMenu}>Logout</MenuItem>
+                                </Menu>
+                            </div>
                         </TabFillerInner>
                     </TabFillerContainer>
                 </Header>
