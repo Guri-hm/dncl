@@ -313,13 +313,13 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
             </Fragment>
         ))
     }
-
     return <Box>
 
+
         {tmpMsg && <Box sx={{ padding: 1 }}> {tmpMsg}</Box>}
-        {(dnclValidation) && (dnclValidation.hasError) && <Box sx={{ padding: 1, color: dnclValidation.color || Color.warnning }}>エラーを解決してください
+        {(dnclValidation?.hasError) && <Box sx={{ padding: 1, color: dnclValidation?.color || Color.warnning }}>エラーを解決してください
             <Box>
-                {(dnclValidation.errors.length > 0) && convertNewLinesToBreaks(dnclValidation?.errors.join('\n'))}
+                {dnclValidation?.errors ? convertNewLinesToBreaks(dnclValidation?.errors.join('\n')) : ''}
             </Box>
         </Box>
         }
