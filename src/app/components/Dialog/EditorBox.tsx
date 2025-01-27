@@ -134,7 +134,7 @@ export function EditorBox(params: Props) {
                 return <>
                     <NowrapText text={'を，'}></NowrapText>
                     <Divider sx={{ marginRight: 1 }} orientation="vertical" flexItem />
-                    <Operation  processType={ProcessEnum.EndDoWhile}>
+                    <Operation processType={ProcessEnum.EndDoWhile}>
                     </Operation>
                     <Divider sx={{ marginLeft: 1 }} orientation="vertical" flexItem />
                     <NowrapText text={'になるまで実行する'}></NowrapText>
@@ -203,7 +203,7 @@ export function EditorBox(params: Props) {
     //     getOptionLabel: (option: processTypes) => option.title,
     // };
 
-    const ddl = <Box sx={{ minWidth: 120 }}>
+    const ddl = <Box sx={{ minWidth: 120, marginTop: 2 }}>
         <FormControl variant="standard" fullWidth>
             <InputLabel id="process-select-label">文の内容</InputLabel>
             <Select labelId="process-select-label" defaultValue={result[0].value.toString()} onChange={handleChange} label="文の内容" >
