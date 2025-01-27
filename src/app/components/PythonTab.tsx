@@ -1,7 +1,7 @@
 import { Box, BoxProps } from "@mui/material";
 import { TreeItems } from "../types";
 import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, ComparisonOperatorDncl, LoopEnum, ArithmeticOperator, BreakEnum, ArithmeticOperatorPython } from "../enum";
-import { cnvToRomaji, containsJapanese, tryParseToPyFunc } from "../utilities";
+import { capitalizeTrueFalse, cnvToRomaji, containsJapanese, tryParseToPyFunc } from "../utilities";
 import { FC, Fragment, ReactNode, useEffect, useState } from "react";
 import ScopeBox from "./ScopeBox";
 import styles from "./tab.module.css"
@@ -20,12 +20,14 @@ const cnvToken = (token: string): string => {
             { regex: /\s*\&\&\s*/g, replacement: ' and ' },
             { regex: /!\(/g, replacement: 'not (' },
             { regex: /!([^=])/g, replacement: 'not $1' },
-            { regex: ArithmeticOperator.DivisionOperatorQuotient, replacement: ArithmeticOperatorPython.DivisionOperatorQuotient }
+            { regex: ArithmeticOperator.DivisionOperatorQuotient, replacement: ArithmeticOperatorPython.DivisionOperatorQuotient },
         ];
 
         replacements.forEach(({ regex, replacement }) => {
             targetString = targetString.replace(regex, replacement);
         });
+
+        targetString = capitalizeTrueFalse(targetString);
 
         return targetString;
     }

@@ -1213,3 +1213,7 @@ export const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedIte
 export const convertBracketsToParentheses = (input: string): string => {
   return input.replace(/^\[/, BraketSymbolEnum.LeftBraket).replace(/\]$/, BraketSymbolEnum.RigthBraket);
 }
+
+export const capitalizeTrueFalse = (str: string): string => {
+  return str.replace(/\b(true|false)\b/g, match => match.charAt(0).toUpperCase() + match.slice(1));
+}

@@ -1,8 +1,8 @@
 import { Box, BoxProps } from "@mui/material";
 import { FC, useEffect, useState, Fragment } from "react";
-import { TreeItem, TreeItems } from "../types";
-import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, ComparisonOperatorDncl, LoopEnum, ArithmeticOperator, ArithmeticOperatorPython, ArithmeticOperatorVba, ArrayForVBA } from "../enum";
-import { convertBracketsToParentheses, tryParseToVbaFunc } from "../utilities";
+import { TreeItems } from "../types";
+import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, LoopEnum, ArithmeticOperator, ArithmeticOperatorVba, ArrayForVBA } from "../enum";
+import { capitalizeTrueFalse, convertBracketsToParentheses, tryParseToVbaFunc } from "../utilities";
 import ScopeBox from "./ScopeBox";
 import styles from './tab.module.css';
 
@@ -29,6 +29,7 @@ const cnvToken = (token: string): string => {
         replacements.forEach(({ regex, replacement }) => {
             targetString = targetString.replace(regex, replacement);
         });
+        targetString = capitalizeTrueFalse(targetString);
 
         return targetString;
     }
