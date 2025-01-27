@@ -15,7 +15,7 @@ type DroppableProp = {
     type?: OperationEnum
 };
 
-export const DroppableOperator: FC<DroppableProp> = ({ id, name, isDragging, endOfArrayEvent, type, parentIndex, event }) => {
+export const DroppableOperator: FC<DroppableProp> = ({ id, name, isDragging, endOfArrayEvent, type, parentIndex }) => {
     const {
         setNodeRef,
         isOver

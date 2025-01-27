@@ -7,17 +7,18 @@ import { DnclTextField, DnclTextFieldProps } from "./DnclTextField";
 import { Operator } from "./Operator";
 import { Droppable } from "../Droppable";
 import { bracketEnum, inputTypeEnum, keyPrefixEnum } from "./Enum";
-import { BraketSymbolEnum, OperationEnum, OperatorTypeJpEnum, StatementEnum } from "@/app/enum";
+import { BraketSymbolEnum, OperationEnum, OperatorTypeJpEnum, ProcessEnum, StatementEnum } from "@/app/enum";
 import AddIcon from '@mui/icons-material/Add';
 import { useUpdateEffect } from './useUpdateEffect ';
 import { checkParenthesesBalance, enumsToObjects, getValueByKey } from "@/app/utilities";
 import { DroppableOperator } from "../DroppableOperator";
 import { ErrorMsgBox } from "./ErrorMsgBox";
 import { TreeItems } from "@/app/types";
+import { EmphasiseBox } from "./EmphasiseBox";
 
 type Props = {
     children?: ReactNode;
-    statementType?: StatementEnum
+    processType: ProcessEnum;
     treeItems?: TreeItems
 };
 
@@ -34,7 +35,7 @@ const DraggableOperatorsBox: FC<DraggableOperatorsProps> = ({ children }) => {
     );
 };
 
-export const Operation: FC<Props> = ({ children, statementType, treeItems = [] }) => {
+export const Operation: FC<Props> = ({ children, processType, treeItems = [] }) => {
 
     const [isDragging, setIsDragging] = useState(false);
     const [operandComponents, setOperandComponents] = useState<DnclTextFieldProps[]>([{ name: keyPrefixEnum.RigthSide }]);
@@ -159,7 +160,7 @@ export const Operation: FC<Props> = ({ children, statementType, treeItems = [] }
             ));
     }
 
-    const draggleItems = (statementType: StatementEnum | undefined): ReactNode => {
+    const draggleItems = (process: ProcessEnum | undefined): ReactNode => {
         const brakets: ReactNode = <>
             <ErrorMsgBox sx={{ display: 'flex', flexDirection: 'column' }} errorArray={braketError}></ErrorMsgBox>
             {operandComponents.map((component, index) => (
@@ -172,9 +173,8 @@ export const Operation: FC<Props> = ({ children, statementType, treeItems = [] }
                 <DraggableItem id={bracketEnum.RigthBraket} value={BraketSymbolEnum.RigthBraket} />
             </Stack>
         </>
-        switch (statementType) {
-            case StatementEnum.Input:
-            case StatementEnum.Predefinedfunction:
+        switch (process) {
+            case ProcessEnum.SetValToVariableOrArray:
                 return <DraggableOperatorsBox>
                     {brakets}
                     <Stack direction="row" spacing={2} sx={{ marginTop: 1 }}>
@@ -182,7 +182,8 @@ export const Operation: FC<Props> = ({ children, statementType, treeItems = [] }
                     </Stack>
                 </DraggableOperatorsBox>
 
-            case StatementEnum.Condition:
+            case ProcessEnum.If:
+            case ProcessEnum.ElseIf:
                 return <DraggableOperatorsBox>
                     {brakets}
                     <Stack direction="row" spacing={2} sx={{ marginTop: 1 }}>
@@ -191,8 +192,8 @@ export const Operation: FC<Props> = ({ children, statementType, treeItems = [] }
                         <DraggableItem id={OperationEnum.Logical} value={OperatorTypeJpEnum.Logical} />
                     </Stack>
                 </DraggableOperatorsBox>
-            case StatementEnum.ConditionalLoopPreTest:
-            case StatementEnum.ConditionalLoopPostTest:
+            case ProcessEnum.While:
+            case ProcessEnum.EndDoWhile:
                 return <DraggableOperatorsBox>
                     <Stack direction="row" spacing={2} sx={{ marginTop: 1 }}>
                         <DraggableItem id={OperationEnum.Comparison} value={OperatorTypeJpEnum.Comparison} />
@@ -209,14 +210,16 @@ export const Operation: FC<Props> = ({ children, statementType, treeItems = [] }
     const isNotActiveIdOperator = (activeId: string): boolean => {
         return [OperationEnum.Arithmetic, OperationEnum.Comparison, OperationEnum.Logical].every(elm => elm !== activeId);
     }
-    const getSwitchType = (type: StatementEnum | undefined): inputTypeEnum => {
-        switch (type) {
-            case StatementEnum.Output:
+    const getSwitchType = (processType: ProcessEnum | undefined): inputTypeEnum => {
+        switch (processType) {
+            case ProcessEnum.Output:
                 return inputTypeEnum.RadioWithVoid;
-            case StatementEnum.Input:
-            case StatementEnum.Condition:
-            case StatementEnum.ConditionalLoopPreTest:
-            case StatementEnum.ConditionalLoopPostTest:
+            case ProcessEnum.SetValToVariableOrArray:
+            case ProcessEnum.If:
+            case ProcessEnum.ElseIf:
+            case ProcessEnum.While:
+            case ProcessEnum.EndDoWhile:
+            case ProcessEnum.InitializeArray:
                 return inputTypeEnum.All;
             default:
                 return inputTypeEnum.SwitchVariableOrNumberOrArray;
@@ -273,29 +276,35 @@ export const Operation: FC<Props> = ({ children, statementType, treeItems = [] }
                     <Box>
                         {operandComponents.map((component, index) => (
                             <Stack direction="row" spacing={0} key={`${component.name}_${index}`}>
+                                {(index == 0) && (processType == ProcessEnum.InitializeArray) ? <EmphasiseBox>{BraketSymbolEnum.OpenSquareBracket}</EmphasiseBox> : ''}
                                 {(index != 0) && <DroppableOperator id={`${component.name}_${index}_${keyPrefixEnum.Operator}`} name={`${component.name}`} parentIndex={index} isDragging={isDragging && isActiveIdOperator(activeId)} endOfArrayEvent={() => removeOperator(index)} type={component.operator}></DroppableOperator>}
                                 {
-                                    (statementType == StatementEnum.Output && index > 0) &&
+                                    (processType == ProcessEnum.Output && index > 0) &&
                                     <Operator name={`${component.name}`} parentIndex={index} type={OperationEnum.JoinString}></Operator>
+                                }
+                                {
+                                    (processType == ProcessEnum.InitializeArray && index > 0) &&
+                                    <Operator name={`${component.name}`} parentIndex={index} type={OperationEnum.Comma}></Operator>
                                 }
                                 <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfOperand}`} isDragging={isDragging && isNotActiveIdOperator(activeId)} onClick={() => removeOneSideOfOperand(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfOperand}`)} stringArray={component.leftOfOperandValue}>{component.leftOfOperandValue?.join('')}</Droppable>
 
-                                <DnclTextField name={`${component.name}`} index={index} inputType={getSwitchType(statementType)} treeItems={treeItems} />
+                                <DnclTextField name={`${component.name}`} index={index} inputType={getSwitchType(processType)} treeItems={treeItems} />
                                 <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfOperand}`} isDragging={isDragging && isNotActiveIdOperator(activeId)} onClick={() => removeOneSideOfOperand(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfOperand}`)} stringArray={component.rightOfOperandValue}>{component.rightOfOperandValue?.join('')}</Droppable>
 
-                                {(statementType == StatementEnum.Condition && index != 0) && <Operator name={`${component.name}`} parentIndex={index} type={OperationEnum.Negation}></Operator>}
+                                {([ProcessEnum.If, ProcessEnum.ElseIf].includes(processType) && index != 0) && <Operator name={`${component.name}`} parentIndex={index} type={OperationEnum.Negation}></Operator>}
 
+                                {(operandComponents.length - 1 == index) && (processType == ProcessEnum.InitializeArray) ? <EmphasiseBox>{BraketSymbolEnum.CloseSquareBracket}</EmphasiseBox> : ''}
                                 {(index == operandComponents.length - 1 && index != 0) && <IconButton aria-label="delete" onClick={() => removeOperandComponent(index)}><BackspaceIcon /></IconButton>}
                             </Stack>
                         ))}
 
                         <Button variant="text" fullWidth size="small" startIcon={<AddIcon />}
                             onClick={addOperandComponent}>
-                            オペランドを追加する
+                            {processType == ProcessEnum.InitializeArray ? '引数を追加する' : 'オペランドを追加する'}
                         </Button>
                     </Box>
                 </Stack >
-                {draggleItems(statementType)}
+                {draggleItems(processType)}
             </DndContext >
         </Box >
     );

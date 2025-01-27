@@ -61,8 +61,10 @@ const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }
 
     switch (statement.processIndex) {
         case ProcessEnum.SetValToVariableOrArray:
-        case ProcessEnum.InitializeArray:
             tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]};`
+            break;
+        case ProcessEnum.InitializeArray:
+            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${BraketSymbolEnum.OpenSquareBracket}${lineTokens[1]}${BraketSymbolEnum.CloseSquareBracket};`
             break;
 
         case ProcessEnum.BulkAssignToArray:

@@ -10,7 +10,7 @@ import { StatementName } from './StatementName';
 import { StatementDesc } from './StatementDesc';
 import { EditorBox } from './EditorBox';
 import { keyPrefixEnum } from './Enum';
-import { ArithmeticOperatorDncl, ArithmeticOperator, BooleanDncl, BooleanJpDncl, ComparisonOperatorDncl, ComparisonOperator, SimpleAssignmentOperator, ReturnFuncDncl, ReturnFuncJpDncl, StatementEnum, UserDefinedFuncDncl, UserDefinedFuncJpDncl, VoidFuncDncl, VoidFuncJpDncl, ProcessEnum } from '@/app/enum';
+import { ArithmeticOperatorDncl, ArithmeticOperator, BooleanDncl, BooleanJpDncl, ComparisonOperatorDncl, ComparisonOperator, SimpleAssignmentOperator, ReturnFuncDncl, ReturnFuncJpDncl, StatementEnum, UserDefinedFuncDncl, UserDefinedFuncJpDncl, VoidFuncDncl, VoidFuncJpDncl, ProcessEnum, BraketSymbolEnum } from '@/app/enum';
 import { checkBraketPair, cnvAndOrOperator, cnvObjToArray, cnvToDivision, escapeHtml, getOperandsMaxIndex, getVariableNames, replaceToAmpersand, sanitizeInput, sanitizeJsonValues, transformNegation, tryParseToJsFunction, updateToWithSquareBrackets, ValidateObjValue } from '@/app/utilities';
 import { ErrorMsgBox } from './ErrorMsgBox';
 import * as babelParser from '@babel/parser';
@@ -238,8 +238,10 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props)
 
                         switch (Number(formJson.processIndex)) {
                             case ProcessEnum.SetValToVariableOrArray:
-                            case ProcessEnum.InitializeArray:
                                 processPhrase = `${leftside} ${operator} ${rightside}`;
+                                break;
+                            case ProcessEnum.InitializeArray:
+                                processPhrase = `${leftside} ${operator} ${BraketSymbolEnum.OpenSquareBracket}${rightside}${BraketSymbolEnum.CloseSquareBracket}`;
                                 break;
                             case ProcessEnum.BulkAssignToArray:
                                 processPhrase = `${leftside}のすべての要素に${rightside}を代入する`;

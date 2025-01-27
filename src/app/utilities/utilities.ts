@@ -605,7 +605,7 @@ const toEmptyIfNull = (targetString: string | undefined) => {
 
 export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex: number, proceccType: ProcessEnum, keyword: keyPrefixEnum, treeItems: TreeItems): { errorMsgArray: string[]; hasError: boolean; } => {
 
-  const regexForOperator = new RegExp(/^(\+|\-|\*|\/|÷|%|==|!=|>|>=|<|<=|かつ|または|と)$/);
+  const regexForOperator = new RegExp(/^(\+|\-|\*|\/|,|÷|%|==|!=|>|>=|<|<=|かつ|または|と)$/);
 
   //オペランドの文字列のバリデーションパターン
   const regexForStringOperand = new RegExp(ValidationEnum.String);
@@ -654,7 +654,7 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
       case inputTypeEnum.String:
 
         if (operandsMaxIndex > 0) {
-          if (proceccType != ProcessEnum.Output) {
+          if (!([Number(ProcessEnum.Output), Number(ProcessEnum.InitializeArray)].includes(Number(proceccType)))) {
             errorMsgArray.push(`文字列が含まれる場合，演算子が使用できません`);
           }
         }

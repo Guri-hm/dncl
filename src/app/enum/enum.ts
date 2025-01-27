@@ -164,6 +164,7 @@ export enum OperationEnum {
   Arithmetic = 'Arithmetic',
   Comparison = 'Comparison',
   Logical = 'Logical',
+  Comma = 'Comma',
 }
 export enum OperatorTypeJpEnum {
   Arithmetic = '算術',
@@ -176,6 +177,8 @@ export enum BraketSymbolEnum {
   RigthBraket = ')',
   OpenBrace = '{',
   CloseBrace = '}',
+  OpenSquareBracket = '[',
+  CloseSquareBracket = ']',
 }
 
 export enum LogicalOperationJpEnum {

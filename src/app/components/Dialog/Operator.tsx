@@ -251,6 +251,12 @@ export function Operator({ type, name = "", parentIndex = 0, event, ...props }: 
         <input type="hidden" name={`${name}_${parentIndex}_${keyPrefixEnum.Operator}`} value="と"></input>
       </>
       break;
+    case OperationEnum.Comma:
+      elms = <>
+        <Typography color="primary" fontWeight={700}>，</Typography>
+        <input type="hidden" name={`${name}_${parentIndex}_${keyPrefixEnum.Operator}`} value=","></input>
+      </>
+      break;
     default:
       return;
   }
