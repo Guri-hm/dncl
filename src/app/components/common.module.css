@@ -64,7 +64,5 @@
 }
 
 .paneHover:hover {
-    width: 200px;
-    height: 200px;
-    background-color: #555;
+    background-color: var(--stone-50);
 }

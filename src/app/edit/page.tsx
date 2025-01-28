@@ -21,7 +21,7 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { HowToDialog } from "../components/Dialog";
 import { ArrowButton } from "../components/ArrowButton";
 import { NextImage } from "../components/NextImage";
-import { Box } from "@mui/material";
+import { Box, Tooltip } from "@mui/material";
 
 const initialItems: TreeItems = sampleFuncItems;
 
@@ -78,10 +78,12 @@ export default function Home() {
               <TabsBoxWrapper treeItems={items} tabsBoxWrapperVisible={tabsBoxWrapperVisible} setTabsBoxWrapperVisible={setTabsBoxWrapperVisible}></TabsBoxWrapper>
             </Allotment.Pane>
             {tabsBoxWrapperVisible ? '' :
-              <Allotment.Pane minSize={60} maxSize={60} >
-                <span onClick={handleShowTabsBoxWrapper} className={styles.paneHover}>
-                  <NextImage src={"/door.svg"} alt={'ドアから覗く'} objectFit="cover" />
-                </span>
+              <Allotment.Pane minSize={60} maxSize={60} className={styles.paneHover}>
+                <Tooltip title="パネルを表示したいですか？" arrow followCursor>
+                  <span onClick={handleShowTabsBoxWrapper} >
+                    <NextImage src={"/door.svg"} alt={'ドアから覗く'} objectFit="cover" />
+                  </span>
+                </Tooltip>
                 {/* <ArrowButton setVisible={handleShowTabsBoxWrapper} visible={true}></ArrowButton> */}
               </Allotment.Pane>
             }
