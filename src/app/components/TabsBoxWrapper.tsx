@@ -15,9 +15,10 @@ import { Button } from "@mui/material";
 interface Props {
     treeItems: TreeItems;
     setTabsBoxWrapperVisible: any;
+    tabsBoxWrapperVisible: boolean;
 }
 
-export const TabsBoxWrapper: FC<Props> = ({ treeItems, setTabsBoxWrapperVisible }) => {
+export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, setTabsBoxWrapperVisible }) => {
     const ref = useRef<any>(null);
     const [tabItemsObj, setTabItemsObj] = useState<TabItemsObj>({
         group1: {
@@ -238,6 +239,24 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, setTabsBoxWrapperVisible 
         }
     }, [tabItemsObj]);
 
+    useEffect(() => {
+        const toggleAllVisible = (newVisible: boolean) => {
+            setTabItemsObj((prevState: TabItemsObj) => {
+                const updatedObj: TabItemsObj = {};
+                for (const group in prevState) {
+                    updatedObj[group] = {
+                        ...prevState[group],
+                        visible: newVisible,
+                    };
+                }
+                return updatedObj;
+            });
+        };
+        if (tabsBoxWrapperVisible) {
+            toggleAllVisible(true);
+        }
+    }, [tabsBoxWrapperVisible]);
+
     // const isInitialRender = useRef(true);
     // useEffect(() => {
     //     if (isInitialRender.current) {
@@ -258,37 +277,39 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, setTabsBoxWrapperVisible 
     // }, Object.keys(tabItemsObj).map(key => tabItemsObj[key].visible));
 
     return (
-        <DndContext
-            // 衝突検知を collisionDetection={closestCenter} にすると、全エリアでDropOver扱いになる
-            collisionDetection={closestCenter}
-            onDragStart={({ active }) => {
-                setActiveId(active.id);
-            }}
-            onDragOver={handleDragOver}
-            onDragEnd={handleDragEnd}
-            modifiers={[restrictToHorizontalAxis]}
-            measuring={{
-                droppable: {
-                    strategy: MeasuringStrategy.Always,
-                },
-            }}
-        >
-            <SortableContext items={[...containers, PLACEHOLDER_ID]}>
-                {/* <Button onClick={() => {
-                    console.log(ref.current)
-                    ref.current.resize([0]);
-                }}>aaaa</Button> */}
-                <Allotment minSize={0} className={`${cmnStyles.hFull}`} ref={ref}>
-                    {containers.map((containerId) => {
-                        return <Allotment.Pane minSize={0} snap visible={tabItemsObj[containerId].visible} key={containerId}>
-                            <div key={containerId} className={`${cmnStyles.hFull}`} style={{ marginLeft: '16px' }}>
-                                <TabsBox tabItems={tabItemsObj[containerId].items} disabled={isSortingContainer} containerId={containerId} setTabItemsObj={setTabItemsObj} />
-                            </div>
-                        </Allotment.Pane>
-                    }
-                    )}
-                </Allotment>
-            </SortableContext>
-        </DndContext>
+        <>
+            {tabsBoxWrapperVisible ?
+                <DndContext
+                    // 衝突検知を collisionDetection={closestCenter} にすると、全エリアでDropOver扱いになる
+                    collisionDetection={closestCenter}
+                    onDragStart={({ active }) => {
+                        setActiveId(active.id);
+                    }}
+                    onDragOver={handleDragOver}
+                    onDragEnd={handleDragEnd}
+                    modifiers={[restrictToHorizontalAxis]}
+                    measuring={{
+                        droppable: {
+                            strategy: MeasuringStrategy.Always,
+                        },
+                    }}
+                >
+
+                    <SortableContext items={[...containers, PLACEHOLDER_ID]}>
+                        <Allotment minSize={0} className={`${cmnStyles.hFull}`} ref={ref}>
+                            {containers.map((containerId) => {
+                                return <Allotment.Pane minSize={0} snap visible={tabItemsObj[containerId].visible} key={containerId}>
+                                    <div key={containerId} className={`${cmnStyles.hFull}`} style={{ marginLeft: '16px' }}>
+                                        <TabsBox tabItems={tabItemsObj[containerId].items} disabled={isSortingContainer} containerId={containerId} setTabItemsObj={setTabItemsObj} />
+                                    </div>
+                                </Allotment.Pane>
+                            }
+                            )}
+                        </Allotment>
+                    </SortableContext>
+                </DndContext>
+                : null
+            }
+        </>
     );
 };

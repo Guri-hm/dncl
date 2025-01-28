@@ -5,9 +5,11 @@ import { FC } from "react";
 type NextImageProps = {
     src: string;
     alt: string;
+    size?: string | undefined;
+    objectFit?: string;
 };
 
-export const NextImage: FC<NextImageProps> = ({ src, alt }) => {
+export const NextImage: FC<NextImageProps> = ({ src, alt, size = "100vw", objectFit = "cover" }) => {
     return (
         <Box
             sx={{
@@ -17,7 +19,7 @@ export const NextImage: FC<NextImageProps> = ({ src, alt }) => {
                 mb: 2,
             }}
         >
-            <Image src={src} alt={alt} fill sizes="100vw" objectFit="cover" />
+            <Image src={src} alt={alt} fill sizes={size} objectFit={objectFit} />
         </Box>
     );
 };

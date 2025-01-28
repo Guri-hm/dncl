@@ -25,3 +25,12 @@
     box-shadow: 1px 1px 3px silver;
 
 }
+
+.pane-hover {
+    transition: all 0.3s ease;
+}
+
+.pane-hover:hover {
+    width: 120%;
+    height: 120%;
+}

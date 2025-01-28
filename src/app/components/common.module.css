@@ -58,3 +58,13 @@
 .zIndexMax {
     /* z-index: 9999; */
 }
+
+.paneHover {
+    transition: all 0.3s ease;
+}
+
+.paneHover:hover {
+    width: 200px;
+    height: 200px;
+    background-color: #555;
+}

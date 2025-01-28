@@ -4,7 +4,7 @@ import "allotment/dist/style.css";
 import "../components/alloment-custom.css";
 import { SortableTree } from "@/app/components/SortableTree";
 import styles from '@/app/components/common.module.css';
-import { DnclValidationType, FlattenedItem, TreeItems } from "@/app/types";
+import { DnclValidationType, TreeItems } from "@/app/types";
 import Image from "next/image";
 import Typography from '@mui/material/Typography';
 import { ConsoleBox } from "@/app/components/ConsoleBox";
@@ -19,6 +19,9 @@ import { TabsBoxWrapper } from "@/app/components/TabsBoxWrapper";
 import Button from '@mui/material/Button';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { HowToDialog } from "../components/Dialog";
+import { ArrowButton } from "../components/ArrowButton";
+import { NextImage } from "../components/NextImage";
+import { Box } from "@mui/material";
 
 const initialItems: TreeItems = sampleFuncItems;
 
@@ -29,7 +32,7 @@ export default function Home() {
   const [dnclValidation, setDnclValidation] = useState<DnclValidationType>({ hasError: false, errors: [], lineNum: [] });
   const [tmpMsg, setTmpMsg] = useState<string>('ここに出力結果が表示されます');
   const [openHowToDialog, setOpenHowToDialog] = useState(false);
-  const [tabsBoxWrapperVisible, setTabsBoxWrapperVisible] = useState(true);
+  const [tabsBoxWrapperVisible, setTabsBoxWrapperVisible] = useState(false);
 
   const handleClickOpen = () => {
     setOpenHowToDialog(true);
@@ -37,6 +40,9 @@ export default function Home() {
 
   const handleClose = () => {
     setOpenHowToDialog(false);
+  };
+  const handleShowTabsBoxWrapper = () => {
+    setTabsBoxWrapperVisible(true);
   };
 
   return (
@@ -69,11 +75,14 @@ export default function Home() {
               <SortableTree treeItems={items} setTreeItems={setItems} dnclValidation={dnclValidation} collapsible indicator removable ></SortableTree>
             </Allotment.Pane>
             <Allotment.Pane visible={tabsBoxWrapperVisible}>
-              <TabsBoxWrapper treeItems={items} setTabsBoxWrapperVisible={setTabsBoxWrapperVisible}></TabsBoxWrapper>
+              <TabsBoxWrapper treeItems={items} tabsBoxWrapperVisible={tabsBoxWrapperVisible} setTabsBoxWrapperVisible={setTabsBoxWrapperVisible}></TabsBoxWrapper>
             </Allotment.Pane>
             {tabsBoxWrapperVisible ? '' :
-              <Allotment.Pane>
-                <>aaaaaaaaaaaaaaaaaaaaaaああああああああああ</>
+              <Allotment.Pane minSize={60} maxSize={60} >
+                <span onClick={handleShowTabsBoxWrapper} className={styles.paneHover}>
+                  <NextImage src={"/door.svg"} alt={'ドアから覗く'} objectFit="cover" />
+                </span>
+                {/* <ArrowButton setVisible={handleShowTabsBoxWrapper} visible={true}></ArrowButton> */}
               </Allotment.Pane>
             }
           </Allotment>
