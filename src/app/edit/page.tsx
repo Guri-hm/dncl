@@ -84,7 +84,6 @@ export default function Home() {
                     <NextImage src={"/door.svg"} alt={'ドアから覗く'} objectFit="cover" />
                   </span>
                 </Tooltip>
-                {/* <ArrowButton setVisible={handleShowTabsBoxWrapper} visible={true}></ArrowButton> */}
               </Allotment.Pane>
             }
           </Allotment>
