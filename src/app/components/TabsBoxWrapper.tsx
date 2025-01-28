@@ -14,9 +14,10 @@ import { Button } from "@mui/material";
 
 interface Props {
     treeItems: TreeItems;
+    setTabsBoxWrapperVisible: any;
 }
 
-export const TabsBoxWrapper: FC<Props> = ({ treeItems }) => {
+export const TabsBoxWrapper: FC<Props> = ({ treeItems, setTabsBoxWrapperVisible }) => {
     const ref = useRef<any>(null);
     const [tabItemsObj, setTabItemsObj] = useState<TabItemsObj>({
         group1: {
@@ -225,9 +226,16 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems }) => {
     };
 
     useEffect(() => {
+        const areAllVisibleFalse = (obj: TabItemsObj) => {
+            return Object.keys(obj).every(key => !obj[key].visible);
+        };
         requestAnimationFrame(() => {
             recentlyMovedToNewContainer.current = false;
         });
+        const allVisibleFalse = areAllVisibleFalse(tabItemsObj);
+        if (allVisibleFalse) {
+            setTabsBoxWrapperVisible(false);
+        }
     }, [tabItemsObj]);
 
     // const isInitialRender = useRef(true);
@@ -266,10 +274,10 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems }) => {
             }}
         >
             <SortableContext items={[...containers, PLACEHOLDER_ID]}>
-                <Button onClick={() => {
+                {/* <Button onClick={() => {
                     console.log(ref.current)
                     ref.current.resize([0]);
-                }}>aaaa</Button>
+                }}>aaaa</Button> */}
                 <Allotment minSize={0} className={`${cmnStyles.hFull}`} ref={ref}>
                     {containers.map((containerId) => {
                         return <Allotment.Pane minSize={0} snap visible={tabItemsObj[containerId].visible} key={containerId}>

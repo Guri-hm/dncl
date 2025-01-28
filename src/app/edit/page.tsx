@@ -29,6 +29,7 @@ export default function Home() {
   const [dnclValidation, setDnclValidation] = useState<DnclValidationType>({ hasError: false, errors: [], lineNum: [] });
   const [tmpMsg, setTmpMsg] = useState<string>('ここに出力結果が表示されます');
   const [openHowToDialog, setOpenHowToDialog] = useState(false);
+  const [tabsBoxWrapperVisible, setTabsBoxWrapperVisible] = useState(true);
 
   const handleClickOpen = () => {
     setOpenHowToDialog(true);
@@ -64,8 +65,12 @@ export default function Home() {
       <ContentWrapper>
         <Allotment vertical defaultSizes={[200, 100]}>
           <Allotment>
-            <SortableTree treeItems={items} setTreeItems={setItems} dnclValidation={dnclValidation} collapsible indicator removable ></SortableTree>
-            <TabsBoxWrapper treeItems={items}></TabsBoxWrapper>
+            <Allotment.Pane>
+              <SortableTree treeItems={items} setTreeItems={setItems} dnclValidation={dnclValidation} collapsible indicator removable ></SortableTree>
+            </Allotment.Pane>
+            <Allotment.Pane visible={tabsBoxWrapperVisible}>
+              <TabsBoxWrapper treeItems={items} setTabsBoxWrapperVisible={setTabsBoxWrapperVisible}></TabsBoxWrapper>
+            </Allotment.Pane>
           </Allotment>
 
           <Allotment.Pane className={`${styles.bgStone50} ${styles.marginTop16} ${styles.hFull} `}>
