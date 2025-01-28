@@ -63,13 +63,9 @@ export default function Home() {
       </Header>
       <ContentWrapper>
         <Allotment vertical defaultSizes={[200, 100]}>
-          <Allotment defaultSizes={[100, 100]}>
-            <Allotment>
-              <SortableTree treeItems={items} setTreeItems={setItems} dnclValidation={dnclValidation} collapsible indicator removable ></SortableTree>
-            </Allotment>
-            <Allotment>
-              <TabsBoxWrapper treeItems={items}></TabsBoxWrapper>
-            </Allotment>
+          <Allotment>
+            <SortableTree treeItems={items} setTreeItems={setItems} dnclValidation={dnclValidation} collapsible indicator removable ></SortableTree>
+            <TabsBoxWrapper treeItems={items}></TabsBoxWrapper>
           </Allotment>
 
           <Allotment.Pane className={`${styles.bgStone50} ${styles.marginTop16} ${styles.hFull} `}>

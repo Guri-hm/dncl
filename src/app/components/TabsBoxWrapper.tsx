@@ -1,5 +1,5 @@
 import { FC, useEffect, useRef, useState } from "react";
-import { TabItemsObj, TreeItems } from "@/app/types";
+import { TabGroup, TabItem, TabItemsObj, TreeItems } from "@/app/types";
 import cmnStyles from './common.module.css'
 import { Allotment } from "allotment";
 import { TabsBox } from "./TabsBox";
@@ -10,44 +10,51 @@ import { VbaTab } from "./VbaTab";
 import { closestCenter, DndContext, DragEndEvent, DragOverEvent, MeasuringStrategy, UniqueIdentifier } from "@dnd-kit/core";
 import { arrayMove, SortableContext } from "@dnd-kit/sortable";
 import { restrictToHorizontalAxis } from "@dnd-kit/modifiers";
+import { Button } from "@mui/material";
 
 interface Props {
     treeItems: TreeItems;
 }
 
 export const TabsBoxWrapper: FC<Props> = ({ treeItems }) => {
-
+    const ref = useRef<any>(null);
     const [tabItemsObj, setTabItemsObj] = useState<TabItemsObj>({
-        group1: [
-            {
-                id: 4, label: 'DNCL', component: <DnclTab treeItems={treeItems}>
-                    DNCLのコード
-                </DnclTab>
-            },
-        ],
-        group2: [
-            {
-                id: 1, label: 'javascript', component: <JsTab treeItems={treeItems}>
-                    javascriptのコード
-                </JsTab>
-            },
-            {
-                id: 2, label: 'Python', component: <PythonTab treeItems={treeItems}>
-                    Pythonのコード
-                </PythonTab>
-            },
-            {
-                id: 3, label: 'VBA', component: <VbaTab treeItems={treeItems}>
-                    VBAのコード
-                </VbaTab>
-            },
-        ],
+        group1: {
+            visible: true, // or false, depending on the initial state
+            items: [
+                {
+                    id: 4, label: 'DNCL', component: <DnclTab treeItems={treeItems}>
+                        DNCLのコード
+                    </DnclTab>
+                },
+            ],
+        },
+        group2: {
+            visible: true, // or false, depending on the initial state
+            items: [
+                {
+                    id: 1, label: 'javascript', component: <JsTab treeItems={treeItems}>
+                        javascriptのコード
+                    </JsTab>
+                },
+                {
+                    id: 2, label: 'Python', component: <PythonTab treeItems={treeItems}>
+                        Pythonのコード
+                    </PythonTab>
+                },
+                {
+                    id: 3, label: 'VBA', component: <VbaTab treeItems={treeItems}>
+                        VBAのコード
+                    </VbaTab>
+                },
+            ],
+        },
     });
 
     useEffect(() => {
         // `treeItems` が変更されるたびに `tabItemsObj` の `component` 部分のみを更新
         setTabItemsObj(prevTabItemsObj => {
-            const updateComponents = (group: any) => group.map((item: any) => ({
+            const updateComponents = (group: TabGroup) => group.items.map((item: TabItem) => ({
                 ...item,
                 component: (() => {
                     switch (item.label) {
@@ -66,8 +73,14 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems }) => {
             }));
 
             return {
-                group1: updateComponents(prevTabItemsObj.group1),
-                group2: updateComponents(prevTabItemsObj.group2)
+                group1: {
+                    ...prevTabItemsObj.group1,
+                    items: updateComponents(prevTabItemsObj.group1)
+                },
+                group2: {
+                    ...prevTabItemsObj.group2,
+                    items: updateComponents(prevTabItemsObj.group2)
+                }
             };
         });
     }, [treeItems]);
@@ -86,7 +99,7 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems }) => {
             return id;
         }
         for (const key of Object.keys(tabItemsObj)) {
-            const foundItem = tabItemsObj[key].find(item => item.id === id);
+            const foundItem = tabItemsObj[key].items.find(item => item.id === id);
             if (foundItem) {
                 return key as UniqueIdentifier;
             }
@@ -108,15 +121,15 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems }) => {
             return;
         }
         if (activeContainer !== overContainer) {
-            setTabItemsObj((items) => {
-                const activeItems = items[activeContainer];
-                const overItems = items[overContainer];
+            setTabItemsObj((obj) => {
+                const activeItems = obj[activeContainer].items;
+                const overItems = obj[overContainer].items;
                 const activeIndex = activeItems.map(item => item.id).indexOf(active.id);
                 const overIndex = overItems.map(item => item.id).indexOf(overId);
 
                 let newIndex: number;
 
-                if (overId in items) {
+                if (overId in obj) {
                     newIndex = overItems.length + 1;
                 } else {
                     const isBelowOverItem =
@@ -134,18 +147,24 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems }) => {
                 recentlyMovedToNewContainer.current = true;
 
                 return {
-                    ...items,
-                    [activeContainer]: items[activeContainer].filter(
-                        (item) => item.id !== active.id
-                    ),
-                    [overContainer]: [
-                        ...items[overContainer].slice(0, newIndex),
-                        items[activeContainer][activeIndex],
-                        ...items[overContainer].slice(
-                            newIndex,
-                            items[overContainer].length
+                    ...obj,
+                    [activeContainer]: {
+                        ...obj[activeContainer],
+                        items: obj[activeContainer].items.filter(
+                            (item) => item.id !== active.id
                         ),
-                    ],
+                    },
+                    [overContainer]: {
+                        ...obj[overContainer],
+                        items: [
+                            ...obj[overContainer].items.slice(0, newIndex),
+                            obj[activeContainer].items[activeIndex],
+                            ...obj[overContainer].items.slice(
+                                newIndex,
+                                obj[overContainer].items.length
+                            ),
+                        ],
+                    },
                 };
             });
         }
@@ -185,17 +204,20 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems }) => {
 
         const overContainer = findContainer(overId);
         if (overContainer) {
-            const activeIndex = tabItemsObj[activeContainer].map(item => item.id).indexOf(active.id);
-            const overIndex = tabItemsObj[overContainer].map(item => item.id).indexOf(overId);
+            const activeIndex = tabItemsObj[activeContainer].items.map(item => item.id).indexOf(active.id);
+            const overIndex = tabItemsObj[overContainer].items.map(item => item.id).indexOf(overId);
 
             if (activeIndex !== overIndex) {
-                setTabItemsObj((items) => ({
-                    ...items,
-                    [overContainer]: arrayMove(
-                        items[overContainer],
-                        activeIndex,
-                        overIndex
-                    ),
+                setTabItemsObj((obj) => ({
+                    ...obj,
+                    [overContainer]: {
+                        ...obj[overContainer],
+                        items: arrayMove(
+                            obj[overContainer].items,
+                            activeIndex,
+                            overIndex
+                        ),
+                    },
                 }));
             }
         }
@@ -207,6 +229,25 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems }) => {
             recentlyMovedToNewContainer.current = false;
         });
     }, [tabItemsObj]);
+
+    // const isInitialRender = useRef(true);
+    // useEffect(() => {
+    //     if (isInitialRender.current) {
+    //         isInitialRender.current = false;
+    //         return;
+    //     }
+    //     const getVisibleArray = (obj: TabItemsObj) => {
+    //         return Object.keys(obj).map(key => obj[key].visible ? 300 : 0);
+    //     };
+
+    //     const visibleArray = getVisibleArray(tabItemsObj);
+
+    //     if (ref.current) {
+    //         //初回レンダリング時はminimumsizeが取得できないエラーがでる
+    //         ref.current.resize(visibleArray);
+    //     }
+
+    // }, Object.keys(tabItemsObj).map(key => tabItemsObj[key].visible));
 
     return (
         <DndContext
@@ -225,11 +266,15 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems }) => {
             }}
         >
             <SortableContext items={[...containers, PLACEHOLDER_ID]}>
-                <Allotment className={`${cmnStyles.hFull}`}>
+                <Button onClick={() => {
+                    console.log(ref.current)
+                    ref.current.resize([0]);
+                }}>aaaa</Button>
+                <Allotment minSize={0} className={`${cmnStyles.hFull}`} ref={ref}>
                     {containers.map((containerId) => {
-                        return <Allotment.Pane key={containerId} snap>
+                        return <Allotment.Pane minSize={0} snap visible={tabItemsObj[containerId].visible} key={containerId}>
                             <div key={containerId} className={`${cmnStyles.hFull}`} style={{ marginLeft: '16px' }}>
-                                <TabsBox tabItems={tabItemsObj[containerId]} disabled={isSortingContainer} containerId={containerId} />
+                                <TabsBox tabItems={tabItemsObj[containerId].items} disabled={isSortingContainer} containerId={containerId} setTabItemsObj={setTabItemsObj} />
                             </div>
                         </Allotment.Pane>
                     }

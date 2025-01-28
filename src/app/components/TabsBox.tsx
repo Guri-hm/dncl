@@ -7,11 +7,11 @@ import { Children, FC, forwardRef, useMemo, useRef, useState } from 'react';
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { AnimateLayoutChanges, defaultAnimateLayoutChanges, SortableContext, useSortable } from '@dnd-kit/sortable';
 import { CSS } from "@dnd-kit/utilities";
-import { TabItem } from '../types';
 import { CustomTabs } from './CustomTabs';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import MenuIcon from '@mui/icons-material/Menu';
+import { TabGroup, TabItem, TabItemsObj } from "@/app/types";
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -101,44 +101,45 @@ const TabFillerInner: FC<BoxProps> = ({ children }) => {
 type Props = {
     tabItems: TabItem[];
     disabled?: boolean;
-    containerId?: UniqueIdentifier
+    containerId?: UniqueIdentifier;
+    setTabItemsObj: any;
 }
 
 const animateLayoutChanges: AnimateLayoutChanges = (args) =>
     defaultAnimateLayoutChanges({ ...args, wasDragging: true });
 
-const TabPanelsWrapper: FC<BoxProps & { containerId: UniqueIdentifier, items: TabItem[], disabled?: boolean; }> = ({ children, containerId, items, disabled }) => {
-    const {
-        attributes,
-        isDragging,
-        listeners,
-        setNodeRef,
-        transition,
-        transform,
-    } = useSortable({
-        id: containerId,
-        data: {
-            type: "container",
-            children: items,
-        },
-        animateLayoutChanges,
-    });
-    return (
-        <Box className={`${styles.tabsWrapper} ${styles.dark}`} ref={disabled ? undefined : setNodeRef}
-            style={{
-                transition,
-                transform: CSS.Translate.toString(transform),
-                opacity: isDragging ? 0.5 : undefined,
-                cursor: isDragging ? 'grabbing' : 'grab'
-            }}
-            {...attributes}
-            {...listeners}>
-            {children}
-        </Box>
-    );
-};
+// const TabPanelsWrapper: FC<BoxProps & { containerId: UniqueIdentifier, items: TabItem[], disabled?: boolean; }> = ({ children, containerId, items, disabled }) => {
+//     const {
+//         attributes,
+//         isDragging,
+//         listeners,
+//         setNodeRef,
+//         transition,
+//         transform,
+//     } = useSortable({
+//         id: containerId,
+//         data: {
+//             type: "container",
+//             children: items,
+//         },
+//         animateLayoutChanges,
+//     });
+//     return (
+//         <Box className={`${styles.tabsWrapper} ${styles.dark}`} ref={disabled ? undefined : setNodeRef}
+//             style={{
+//                 transition,
+//                 transform: CSS.Translate.toString(transform),
+//                 opacity: isDragging ? 0.5 : undefined,
+//                 cursor: isDragging ? 'grabbing' : 'grab'
+//             }}
+//             {...attributes}
+//             {...listeners}>
+//             {children}
+//         </Box>
+//     );
+// };
 
-export const TabsBox = ({ tabItems, disabled, containerId = 'box', ...props }: Props) => {
+export const TabsBox = ({ tabItems, disabled, containerId = 'box', setTabItemsObj, handleResizeBox, ...props }: Props) => {
     const [value, setValue] = useState(0);
     const contentRef = useRef<HTMLDivElement | null>(null);
     const [snackbar, setSnackbar] = useState<{ open: boolean, duration: number, text: string }>({ open: false, duration: 3000, text: '' });
@@ -157,8 +158,62 @@ export const TabsBox = ({ tabItems, disabled, containerId = 'box', ...props }: P
     const handleCloseMenu = () => {
         setAnchorEl(null);
     };
+    const handleCloseBox = () => {
+        updateGroupVisibility(containerId, false);
+        handleCloseMenu();
+    }
+    const handleShowBoxs = () => {
+        toggleAllVisible(true);
+        handleCloseMenu();
+    }
+    const handleMaximumBox = () => {
+        updateOtherGroupsVisibility(containerId, false);
+        handleCloseMenu();
+    }
     const tabPanels: React.ReactNode[] = useMemo(() => tabItems.map(tabItem => tabItem.component), [tabItems]);
 
+    const updateGroupVisibility = (groupKey: UniqueIdentifier, isVisible: boolean) => {
+        setTabItemsObj((prevState: TabItemsObj) => ({
+            ...prevState,
+            [groupKey]: {
+                ...prevState[groupKey],
+                visible: isVisible,
+            },
+        }));
+    };
+
+    const updateOtherGroupsVisibility = (groupKey: UniqueIdentifier, isVisible: boolean) => {
+        setTabItemsObj((prevState: TabItemsObj) => {
+            const updatedObj: TabItemsObj = {};
+
+            for (const key in prevState) {
+                if (key !== groupKey) {
+                    updatedObj[key] = {
+                        ...prevState[key],
+                        visible: isVisible,
+                    };
+                } else {
+                    updatedObj[key] = {
+                        ...prevState[key],
+                    };
+                }
+            }
+
+            return updatedObj;
+        });
+    };
+    const toggleAllVisible = (newVisible: boolean) => {
+        setTabItemsObj((prevState: TabItemsObj) => {
+            const updatedObj: TabItemsObj = {};
+            for (const group in prevState) {
+                updatedObj[group] = {
+                    ...prevState[group],
+                    visible: newVisible,
+                };
+            }
+            return updatedObj;
+        });
+    };
     const {
         attributes,
         isDragging,
@@ -233,9 +288,9 @@ export const TabsBox = ({ tabItems, disabled, containerId = 'box', ...props }: P
                                         horizontal: 'left',
                                     }}
                                 >
-                                    <MenuItem onClick={handleCloseMenu}>Profile</MenuItem>
-                                    <MenuItem onClick={handleCloseMenu}>My account</MenuItem>
-                                    <MenuItem onClick={handleCloseMenu}>Logout</MenuItem>
+                                    <MenuItem onClick={handleCloseBox}>このパネルを閉じる</MenuItem>
+                                    <MenuItem onClick={handleMaximumBox}>このパネルを最大化</MenuItem>
+                                    <MenuItem onClick={handleShowBoxs}>再表示</MenuItem>
                                 </Menu>
                             </div>
                         </TabFillerInner>

@@ -61,6 +61,10 @@ export interface TabItem {
   label: string;
   component: React.ReactNode
 }
+export interface TabGroup {
+  visible: boolean;
+  items: TabItem[];
+}
 export interface TabItemsObj {
-  [key: UniqueIdentifier]: TabItem[];
+  [key: UniqueIdentifier]: TabGroup;
 }
