@@ -110,7 +110,7 @@ export function buildTree(flattenedItems: FlattenedItem[]): TreeItems {
   return root.children;
 }
 
-export function findItem(items: TreeItem[], itemId: string) {
+export function findItem(items: TreeItems, itemId: string) {
   return items.find(({ id }) => id === itemId);
 }
 
@@ -175,7 +175,7 @@ export function setProperty<T extends keyof TreeItem>(
   return [...items];
 }
 
-function countChildren(items: TreeItem[], count = 0): number {
+function countChildren(items: TreeItems, count = 0): number {
   return items.reduce((acc, { children }) => {
     if (children.length) {
       return countChildren(children, acc + 1);
@@ -211,7 +211,7 @@ export function removeChildrenOf(items: FlattenedItem[], ids: string[]) {
 }
 
 
-const findFromTreeItem = (items: TreeItem[], id: UniqueIdentifier): FlattenedItem | undefined => {
+const findFromTreeItem = (items: TreeItems, id: UniqueIdentifier): FlattenedItem | undefined => {
   const flattenedItems = flatten(items)
   return flattenedItems.find((item) => item.id === id)
 }
@@ -919,7 +919,7 @@ export function isReservedWord(str: string) {
   return reservedWords.some(reserved => reserved === str);
 }
 
-export function flattenTreeItems(treeItems: TreeItem[]): Statement[] {
+export function flattenTreeItems(treeItems: TreeItems): Statement[] {
   const result: { id: string, code: string, processIndex: number }[] = [];
 
   function flatten(treeItem: TreeItem) {
@@ -952,7 +952,7 @@ function filterByProcessIndex(statements: Statement[], targetProcessIndex: numbe
   return statements.filter(statement => statement.processIndex === targetProcessIndex);
 }
 
-export function getUserDefinedFunctionInfoArray(treeItems: TreeItem[]): UserDefinedFunctionInfo[] {
+export function getUserDefinedFunctionInfoArray(treeItems: TreeItems): UserDefinedFunctionInfo[] {
 
   function extractFuncName(input: string): string | null {
     const match = input.match(/関数(.*?)を/);
