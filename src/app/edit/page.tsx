@@ -71,6 +71,11 @@ export default function Home() {
             <Allotment.Pane visible={tabsBoxWrapperVisible}>
               <TabsBoxWrapper treeItems={items} setTabsBoxWrapperVisible={setTabsBoxWrapperVisible}></TabsBoxWrapper>
             </Allotment.Pane>
+            {tabsBoxWrapperVisible ? '' :
+              <Allotment.Pane>
+                <>aaaaaaaaaaaaaaaaaaaaaaああああああああああ</>
+              </Allotment.Pane>
+            }
           </Allotment>
 
           <Allotment.Pane className={`${styles.bgStone50} ${styles.marginTop16} ${styles.hFull} `}>
