@@ -42,6 +42,10 @@ import styles from './alloment-custom.module.css'
 import cmnStyles from './common.module.css'
 import { ArrowButton } from "./ArrowButton";
 import "./alloment-custom.css";
+import Image from "next/image";
+import { NextImage } from "./NextImage";
+import SpeechBubble from "./Test";
+import Grid from '@mui/material/Grid2';
 
 const statementEnumMap = {
   [StatementJpEnum.Output]: StatementEnum.Output,
@@ -225,27 +229,32 @@ export function SortableTree({
 
           <div className={`${cmnStyles.hFull}`} style={{ marginLeft: '17px', marginRight: '5px' }}>
             <Allotment.Pane ref={ref} className={`${styles.rightPane} ${cmnStyles.hFull} ${cmnStyles.overflowAuto}`} >
-
-              <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
-                {flattenedItems.map(({ id, children, collapsed, depth, line }, index) => (
-                  <SortableTreeItem
-                    key={id}
-                    id={id}
-                    value={line}
-                    depth={id === activeId && projected ? projected.depth : depth}
-                    indentationWidth={indentationWidth}
-                    indicator={indicator}
-                    collapsed={Boolean(collapsed && children.length)}
-                    onCollapse={
-                      collapsible && children.length
-                        ? () => handleCollapse(id)
-                        : undefined
-                    }
-                    onRemove={removable ? () => handleRemove(id) : undefined}
-                    isError={dnclValidation?.lineNum.includes(index + 1)}
-                  />
-                ))}
-              </SortableContext>
+              {flattenedItems.length > 0 ?
+                <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
+                  {flattenedItems.map(({ id, children, collapsed, depth, line }, index) => (
+                    <SortableTreeItem
+                      key={id}
+                      id={id}
+                      value={line}
+                      depth={id === activeId && projected ? projected.depth : depth}
+                      indentationWidth={indentationWidth}
+                      indicator={indicator}
+                      collapsed={Boolean(collapsed && children.length)}
+                      onCollapse={
+                        collapsible && children.length
+                          ? () => handleCollapse(id)
+                          : undefined
+                      }
+                      onRemove={removable ? () => handleRemove(id) : undefined}
+                      isError={dnclValidation?.lineNum.includes(index + 1)}
+                    />
+                  ))}
+                </SortableContext>
+                :
+          
+                  <SpeechBubble />
+                
+              }
               {/* <TabsBox tabLabels={['DNCL(編集用)', 'DNCL']}>
             </TabsBox> */}
 

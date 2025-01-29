@@ -118,7 +118,7 @@ export default function Home() {
             </Allotment.Pane>
             {tabsBoxWrapperVisible ? '' :
               <Allotment.Pane minSize={60} maxSize={60} className={styles.paneHover}>
-                <Tooltip title="パネルを表示したいですか？" arrow followCursor>
+                <Tooltip title="パネルを表示したいですか？" arrow followCursor placement="left">
                   <span onClick={handleShowTabsBoxWrapper} >
                     <NextImage src={"/door.svg"} alt={'ドアから覗く'} objectFit="cover" />
                   </span>
