@@ -99,8 +99,6 @@ export default function Home() {
             sx={{ backgroundColor: 'var(--stone-50)', marginLeft: 'auto', color: 'var(--foreground)' }}
             onClick={handleSaveItems}
             endIcon={<SaveIcon />}
-            loading={false}
-            loadingPosition="end"
             variant="contained"
           >
             保存

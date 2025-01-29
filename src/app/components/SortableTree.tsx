@@ -46,6 +46,7 @@ import Image from "next/image";
 import { NextImage } from "./NextImage";
 import SpeechBubble from "./Test";
 import Grid from '@mui/material/Grid2';
+import DropHere from "./DropHere";
 
 const statementEnumMap = {
   [StatementJpEnum.Output]: StatementEnum.Output,
@@ -229,7 +230,7 @@ export function SortableTree({
 
           <div className={`${cmnStyles.hFull}`} style={{ marginLeft: '17px', marginRight: '5px' }}>
             <Allotment.Pane ref={ref} className={`${styles.rightPane} ${cmnStyles.hFull} ${cmnStyles.overflowAuto}`} >
-              {flattenedItems.length > 0 ?
+              {(flattenedItems.length > 0) || editor.open ?
                 <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
                   {flattenedItems.map(({ id, children, collapsed, depth, line }, index) => (
                     <SortableTreeItem
@@ -251,13 +252,8 @@ export function SortableTree({
                   ))}
                 </SortableContext>
                 :
-          
-                  <SpeechBubble />
-                
+                <DropHere />
               }
-              {/* <TabsBox tabLabels={['DNCL(編集用)', 'DNCL']}>
-            </TabsBox> */}
-
               {createPortal(
                 <DragOverlay
                   dropAnimation={dropAnimation}

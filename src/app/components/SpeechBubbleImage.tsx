@@ -1,0 +1,54 @@
+import React from 'react';
+import Grid from '@mui/material/Grid2';
+
+interface Props {
+    children: React.ReactNode;
+    msg: string;
+}
+
+const SpeechBubbleImage = ({ children, msg }: Props) => {
+    return (
+        <Grid container
+            direction="row-reverse" sx={{
+                justifyContent: "center",
+                alignItems: "center", marginX: 'auto', maxWidth: 200, width: '100%', height: '100%', position: 'relative'
+            }}>
+            <Grid
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    height: 'auto',
+                    position: 'relative'
+                }}
+            >
+                <Grid
+                    sx={{
+                        position: 'absolute',
+                        width: '100%',
+                        top: 0,
+                        bgcolor: "var(--stone-50)",
+                        borderRadius: "10px",
+                        padding: "10px",
+                        boxShadow: "0px 2px 4px rgba(0,0,0,0.2)",
+                        '&::after': {
+                            content: '""',
+                            position: 'relative',
+                            top: '42px',
+                            right: '40px',
+                            borderWidth: '10px',
+                            borderStyle: 'solid',
+                            borderColor: 'var(--stone-50) transparent transparent transparent',
+                            boxShadow: "0px 2px 4px rgba(0,0,0,0.2)",
+                        },
+                    }}
+                >
+                    {msg}
+                </Grid>
+                {children}
+            </Grid>
+        </Grid>
+    );
+};
+
+export default SpeechBubbleImage;
