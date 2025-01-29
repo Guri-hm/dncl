@@ -35,7 +35,7 @@ export default function Home() {
   const [dnclValidation, setDnclValidation] = useState<DnclValidationType>({ hasError: false, errors: [], lineNum: [] });
   const [tmpMsg, setTmpMsg] = useState<string>('ここに出力結果が表示されます');
   const [openHowToDialog, setOpenHowToDialog] = useState(false);
-  const [tabsBoxWrapperVisible, setTabsBoxWrapperVisible] = useState(false);
+  const [tabsBoxWrapperVisible, setTabsBoxWrapperVisible] = useState(true);
   const [snackbar, setSnackbar] = useState<{ open: boolean, duration: number, text: string }>({ open: false, duration: 3000, text: '' });
 
   useEffect(() => {
