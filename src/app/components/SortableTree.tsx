@@ -212,7 +212,7 @@ export function SortableTree({
           </Allotment.Pane>
           <Allotment.Pane visible={visible} className={`${styles.leftPane} ${styles.paneBg}`} snap>
             <Box sx={{ padding: '10px' }} className={`${cmnStyles.hFull} ${cmnStyles.overflowAuto}`}>
-              <Box sx={{ fontSize: '1.125rem', fontWeight: 'bold', backgroundColor: '#cbd5e1' }} >ドラッグして行を追加</Box>
+              <Box sx={{ fontSize: '1.125rem', fontWeight: 'bold', backgroundColor: '#cbd5e1' }} >ドラッグしてリストに追加</Box>
               {fragments.map(({ id, line }) => (
                 <FragmentsListItem
                   key={id}

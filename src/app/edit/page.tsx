@@ -14,25 +14,36 @@ import { sampleFuncItems } from "@/app/components/SampleDncl";
 import { Header } from "@/app/components/Header";
 import { HeaderItem } from "@/app/components/HeaderItem";
 import { ContentWrapper } from "@/app/components/ContentWrapper";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TabsBoxWrapper } from "@/app/components/TabsBoxWrapper";
 import Button from '@mui/material/Button';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { HowToDialog } from "../components/Dialog";
-import { ArrowButton } from "../components/ArrowButton";
 import { NextImage } from "../components/NextImage";
-import { Box, Tooltip } from "@mui/material";
+import { Snackbar, Tooltip } from "@mui/material";
+import SaveIcon from '@mui/icons-material/Save';
+import { useTreeItems, loadTreeItems } from "@/app/components/TreeItemsLocalStrage";
 
 const initialItems: TreeItems = sampleFuncItems;
 
 export default function Home() {
 
+  const [itemsStrage, setItemsStrage] = useTreeItems([]);
   const [items, setItems] = useState(() => initialItems);
+  // const [items, setItems] = useState(() => initialItems);
   const [runResults, setRunResults] = useState<string[]>([]);
   const [dnclValidation, setDnclValidation] = useState<DnclValidationType>({ hasError: false, errors: [], lineNum: [] });
   const [tmpMsg, setTmpMsg] = useState<string>('ここに出力結果が表示されます');
   const [openHowToDialog, setOpenHowToDialog] = useState(false);
   const [tabsBoxWrapperVisible, setTabsBoxWrapperVisible] = useState(false);
+  const [snackbar, setSnackbar] = useState<{ open: boolean, duration: number, text: string }>({ open: false, duration: 3000, text: '' });
+
+  useEffect(() => {
+    const stragedItems: TreeItems | null = loadTreeItems();
+    if (stragedItems) {
+      setItems(stragedItems);
+    }
+  }, []);
 
   const handleClickOpen = () => {
     setOpenHowToDialog(true);
@@ -41,9 +52,27 @@ export default function Home() {
   const handleClose = () => {
     setOpenHowToDialog(false);
   };
+  const handleCloseSnackBar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
   const handleShowTabsBoxWrapper = () => {
     setTabsBoxWrapperVisible(true);
   };
+  const handleSaveItems = () => {
+    setItemsStrage(items);
+    setSnackbar({ ...snackbar, open: true, text: 'リストを保存しました' });
+  }
+  const handleLoadItems = () => {
+    const stragedItems: TreeItems | null = loadTreeItems();
+
+    if (stragedItems == null) {
+      console.log("ストレージなし")
+      return;
+    }
+
+    console.log("ストレージあり")
+    setSnackbar({ ...snackbar, open: true, text: 'リストを読み込みました' });
+  }
 
   return (
     <PageWrapper>
@@ -65,6 +94,16 @@ export default function Home() {
           </Typography>
           <Button sx={{ backgroundColor: 'var(--sky-500)', borderRadius: 5, position: 'absolute', right: '10px', bottom: '10px', zIndex: 20 }} variant="contained" onClick={handleClickOpen} startIcon={<HelpOutlineIcon />}>
             使い方
+          </Button>
+          <Button
+            sx={{ backgroundColor: 'var(--stone-50)', marginLeft: 'auto', color: 'var(--foreground)' }}
+            onClick={handleSaveItems}
+            endIcon={<SaveIcon />}
+            loading={false}
+            loadingPosition="end"
+            variant="contained"
+          >
+            保存
           </Button>
         </HeaderItem>
       </Header>
@@ -97,6 +136,13 @@ export default function Home() {
         </Allotment >
         <HowToDialog open={openHowToDialog} setOpen={setOpenHowToDialog}></HowToDialog>
       </ContentWrapper>
+      <Snackbar
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        autoHideDuration={snackbar.duration}
+        open={snackbar.open}
+        onClose={handleCloseSnackBar}
+        message={snackbar.text}
+      />
     </PageWrapper >
   );
 }
