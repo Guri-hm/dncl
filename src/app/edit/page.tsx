@@ -20,11 +20,15 @@ import Button from '@mui/material/Button';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { HowToDialog } from "../components/Dialog";
 import { NextImage } from "../components/NextImage";
-import { Snackbar } from "@mui/material";
+import { Box, Snackbar } from "@mui/material";
 import SaveIcon from '@mui/icons-material/Save';
 import { useTreeItems, loadTreeItems } from "@/app/components/TreeItemsLocalStrage";
 import { CustomTooltip } from "../components/CustomTooltip";
-
+import StarIcon from '@mui/icons-material/Star';
+import Grid from '@mui/material/Grid2';
+import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
+import ErrorIcon from '@mui/icons-material/Error';
+import ReportGmailerrorredIcon from '@mui/icons-material/ReportGmailerrorred';
 const initialItems: TreeItems = sampleFuncItems;
 
 export default function Home() {
@@ -91,9 +95,18 @@ export default function Home() {
             </ruby>
             いじる子
           </Typography>
-          <Button sx={{ backgroundColor: 'var(--sky-500)', borderRadius: 5, position: 'absolute', right: '10px', bottom: '10px', zIndex: 20 }} variant="contained" onClick={handleClickOpen} startIcon={<HelpOutlineIcon />}>
-            使い方
-          </Button>
+          <Grid container direction={"row"} columnSpacing={1} sx={{ position: 'absolute', right: '10px', bottom: '10px', zIndex: 20 }} >
+            <Grid>
+              <Button sx={{ backgroundColor: 'var(--sky-500)', borderRadius: 5 }} variant="contained" onClick={handleClickOpen} startIcon={<TipsAndUpdatesIcon />}>
+                構文のヒント
+              </Button>
+            </Grid>
+            <Grid>
+              <Button sx={{ backgroundColor: 'var(--sky-500)', borderRadius: 5 }} variant="contained" onClick={handleClickOpen} startIcon={<HelpOutlineIcon />}>
+                使い方
+              </Button>
+            </Grid>
+          </Grid>
           <Button
             sx={{ backgroundColor: 'var(--stone-50)', marginLeft: 'auto', color: 'var(--foreground)' }}
             onClick={handleSaveItems}

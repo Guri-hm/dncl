@@ -1,0 +1,45 @@
+.Contents {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--stone-50);
+    z-index: 9999;
+    transition: opacity 0.5s ease-out;
+}
+
+.Contents.FadeOut {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.LoadingArea p {
+    width: 200px;
+    border-right: 5px solid #000;
+    color: #353535;
+    font-size: 30px;
+    font-weight: bold;
+    text-transform: uppercase;
+    overflow: hidden;
+    white-space: nowrap;
+    line-height: 1.3;
+    animation: typing 3s steps(15) infinite, caret .2s step-end infinite alternate;
+}
+
+@keyframes typing {
+
+    15%,
+    50% {
+        width: 0;
+    }
+}
+
+@keyframes caret {
+    50% {
+        border-color: transparent;
+    }
+}
