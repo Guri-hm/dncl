@@ -129,24 +129,32 @@ export const JsTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props })
     useEffect(() => {
         if (shouldRunEffect) {
             const convertCode = async () => {
-                setNodes(renderNodes(treeItems, 0));
+                setNodes(await renderNodes(treeItems, 0));
             };
             setShouldRunEffect(false); // フラグをリセット
             convertCode();
         }
     }, [shouldRunEffect]);
 
-    const renderNodes = (nodes: TreeItems, depth: number): React.ReactNode => {
-        return nodes.map((node, index) => (
-            <Fragment key={node.id}>
-                <Box className={(index == 0 && depth != 0) ? styles.noCounter : ""}>{cnvToJs({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) })}</Box>
-                {node.children.length > 0 && (
-                    <ScopeBox nested={true} depth={depth + 1}>
-                        {renderNodes(node.children, depth + 1)}
-                    </ScopeBox>
-                )}
-            </Fragment>
-        ))
+    const renderNodes = async (nodes: TreeItems, depth: number): Promise<React.ReactNode> => {
+        const promises = nodes.map(async (node, index) => {
+            const convertedJs = await cnvToJs({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) });
+
+            return (
+                <Fragment key={node.id}>
+                    <Box className={(index === 0 && depth !== 0) ? styles.noCounter : ''}>
+                        {convertedJs}
+                    </Box>
+                    {node.children.length > 0 && (
+                        <ScopeBox nested={true} depth={depth + 1}>
+                            {await renderNodes(node.children, depth + 1)}
+                        </ScopeBox>
+                    )}
+                </Fragment>
+            );
+        });
+
+        return Promise.all(promises);
     }
 
     return (
