@@ -5,8 +5,6 @@ import "../components/alloment-custom.css";
 import { SortableTree } from "@/app/components/SortableTree";
 import styles from '@/app/components/common.module.css';
 import { DnclValidationType, TreeItems } from "@/app/types";
-import Image from "next/image";
-import Typography from '@mui/material/Typography';
 import { ConsoleBox } from "@/app/components/ConsoleBox";
 import { ConsoleTab } from "@/app/components/ConsoleTab";
 import { PageWrapper } from "@/app/components/PageWrapper";
@@ -18,18 +16,17 @@ import { useEffect, useState } from "react";
 import { TabsBoxWrapper } from "@/app/components/TabsBoxWrapper";
 import Button from '@mui/material/Button';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import { HowToDialog } from "../components/Dialog";
+import { FullScreenDialog } from "@/app/components/Dialog/FullScreenDialog";
 import { NextImage } from "../components/NextImage";
-import { Box, Snackbar } from "@mui/material";
+import { Snackbar } from "@mui/material";
 import SaveIcon from '@mui/icons-material/Save';
 import { useTreeItems, loadTreeItems } from "@/app/components/TreeItemsLocalStrage";
 import { CustomTooltip } from "../components/CustomTooltip";
-import StarIcon from '@mui/icons-material/Star';
 import Grid from '@mui/material/Grid2';
 import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
-import ErrorIcon from '@mui/icons-material/Error';
-import ReportGmailerrorredIcon from '@mui/icons-material/ReportGmailerrorred';
 import HeaderTitle from "../components/HeaderTitle";
+import InfoStepper from "../components/InfoStepper";
+import HintMenu from "../components/HintMenu";
 const initialItems: TreeItems = sampleFuncItems;
 
 export default function Home() {
@@ -41,6 +38,7 @@ export default function Home() {
   const [dnclValidation, setDnclValidation] = useState<DnclValidationType>({ hasError: false, errors: [], lineNum: [] });
   const [tmpMsg, setTmpMsg] = useState<string>('ここに出力結果が表示されます');
   const [openHowToDialog, setOpenHowToDialog] = useState(false);
+  const [openHintDialog, setOpenHintToDialog] = useState(false);
   const [tabsBoxWrapperVisible, setTabsBoxWrapperVisible] = useState(true);
   const [snackbar, setSnackbar] = useState<{ open: boolean, duration: number, text: string }>({ open: false, duration: 3000, text: '' });
 
@@ -51,13 +49,6 @@ export default function Home() {
     }
   }, []);
 
-  const handleClickOpen = () => {
-    setOpenHowToDialog(true);
-  };
-
-  const handleClose = () => {
-    setOpenHowToDialog(false);
-  };
   const handleCloseSnackBar = () => {
     setSnackbar({ ...snackbar, open: false });
   };
@@ -85,12 +76,12 @@ export default function Home() {
           <HeaderTitle />
           <Grid container direction={"row"} columnSpacing={1} sx={{ position: 'absolute', right: '10px', bottom: '10px', zIndex: 20 }} >
             <Grid>
-              <Button sx={{ backgroundColor: 'var(--sky-500)', borderRadius: 5 }} variant="contained" onClick={handleClickOpen} startIcon={<TipsAndUpdatesIcon />}>
+              <Button sx={{ backgroundColor: 'var(--sky-500)', borderRadius: 5 }} variant="contained" onClick={() => setOpenHintToDialog(true)} startIcon={<TipsAndUpdatesIcon />}>
                 構文のヒント
               </Button>
             </Grid>
             <Grid>
-              <Button sx={{ backgroundColor: 'var(--sky-500)', borderRadius: 5 }} variant="contained" onClick={handleClickOpen} startIcon={<HelpOutlineIcon />}>
+              <Button sx={{ backgroundColor: 'var(--sky-500)', borderRadius: 5 }} variant="contained" onClick={() => setOpenHowToDialog(true)} startIcon={<HelpOutlineIcon />}>
                 使い方
               </Button>
             </Grid>
@@ -132,7 +123,9 @@ export default function Home() {
             </ConsoleBox>
           </Allotment.Pane>
         </Allotment >
-        <HowToDialog open={openHowToDialog} setOpen={setOpenHowToDialog}></HowToDialog>
+        {openHintDialog && <FullScreenDialog title="構文のヒント" open={openHintDialog} setOpen={setOpenHintToDialog}><HintMenu /></FullScreenDialog>}
+        {openHowToDialog && <FullScreenDialog title="使い方" open={openHowToDialog} setOpen={setOpenHowToDialog}>
+          <InfoStepper /></FullScreenDialog>}
       </ContentWrapper>
       <Snackbar
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}

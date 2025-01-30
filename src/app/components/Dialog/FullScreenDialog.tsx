@@ -24,9 +24,11 @@ const Transition = React.forwardRef(function Transition(
 interface Props {
     open: boolean;
     setOpen: any;
+    title?: string;
+    children: React.ReactNode;
 }
 
-export const HowToDialog = ({ open, setOpen }: Props) => {
+export const FullScreenDialog = ({ open, setOpen, title = "",children }: Props) => {
 
     // const handleClickOpen = () => {
     //     setOpen(true);
@@ -56,7 +58,7 @@ export const HowToDialog = ({ open, setOpen }: Props) => {
                             <CloseIcon />
                         </IconButton>
                         <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-                            使い方
+                            {title}
                         </Typography>
                         {/* <Button autoFocus color="inherit" onClick={handleClose}>
                             save
@@ -69,7 +71,7 @@ export const HowToDialog = ({ open, setOpen }: Props) => {
                     alignItems="center"
                     height="100vh"
                 >
-                    <InfoStepper></InfoStepper>
+                    {children}
                 </Box>
             </Dialog>
         </React.Fragment>
