@@ -44,6 +44,7 @@ import { ArrowButton } from "./ArrowButton";
 import "./alloment-custom.css";
 import { NextImage } from "./NextImage";
 import DropHere from "./DropHere";
+import DoNotDrag from "./DoNotDrag";
 
 const statementEnumMap = {
   [StatementJpEnum.Output]: StatementEnum.Output,
@@ -185,7 +186,6 @@ export function SortableTree({
   }, [flattenedItems, offsetLeft]);
 
   const [visible, setVisible] = useState(true);
-  const [msgDoNotDrag, setMsgDoNotDrag] = useState('ドラッグして追加します');
   const ref = useRef<any>(null);
 
   if (!isClient) {
@@ -215,39 +215,7 @@ export function SortableTree({
           </Allotment.Pane>
           <Allotment.Pane visible={visible} className={`${styles.leftPane} ${styles.paneBg}`} snap>
             <Box sx={{ padding: '10px' }} className={`${cmnStyles.hFull} ${cmnStyles.overflowAuto}`}>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-
-                <Box
-                  sx={{
-                    marginLeft: 'auto',
-                    position: 'relative',
-                    backgroundColor: 'var(--stone-50)',
-                    borderRadius: '10px',
-                    padding: '10px',
-                    marginRight: '10px',
-                    boxShadow: '0px 2px 4px rgba(0,0,0,0.2)',
-                    '&::after': {
-                      content: '""',
-                      position: 'absolute',
-                      top: '50%',
-                      left: '100%',
-                      transform: 'translateY(-50%)',
-                      borderWidth: '10px',
-                      borderStyle: 'solid',
-                      borderColor: 'transparent transparent transparent var(--stone-50)',
-                    },
-                  }}
-                >
-                  {msgDoNotDrag}
-                </Box>
-                <Box sx={{ width: '80px', height: '80px' }}>
-                  <NextImage src={"/pointing.svg"} alt={'指差し'} objectFit="contain" onDragStart={(e: React.DragEvent<HTMLImageElement>) => {
-                    e.preventDefault();
-                    setMsgDoNotDrag('私はドラッグできませんよ!');
-                    setTimeout(() => setMsgDoNotDrag("ドラッグして追加します"), 3000);
-                  }} />
-                </Box>
-              </Box>
+              <DoNotDrag></DoNotDrag>
               {fragments.map(({ id, line }) => (
                 <FragmentsListItem
                   key={id}
@@ -255,7 +223,6 @@ export function SortableTree({
                   value={line}
                 />
               ))}
-
             </Box>
           </Allotment.Pane>
 

@@ -20,9 +20,10 @@ import Button from '@mui/material/Button';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { HowToDialog } from "../components/Dialog";
 import { NextImage } from "../components/NextImage";
-import { Snackbar, Tooltip } from "@mui/material";
+import { Snackbar } from "@mui/material";
 import SaveIcon from '@mui/icons-material/Save';
 import { useTreeItems, loadTreeItems } from "@/app/components/TreeItemsLocalStrage";
+import { CustomTooltip } from "../components/CustomTooltip";
 
 const initialItems: TreeItems = sampleFuncItems;
 
@@ -66,11 +67,9 @@ export default function Home() {
     const stragedItems: TreeItems | null = loadTreeItems();
 
     if (stragedItems == null) {
-      console.log("ストレージなし")
       return;
     }
 
-    console.log("ストレージあり")
     setSnackbar({ ...snackbar, open: true, text: 'リストを読み込みました' });
   }
 
@@ -116,11 +115,11 @@ export default function Home() {
             </Allotment.Pane>
             {tabsBoxWrapperVisible ? '' :
               <Allotment.Pane minSize={60} maxSize={60} className={styles.paneHover}>
-                <Tooltip title="パネルを表示したいですか？" arrow followCursor placement="left">
+                <CustomTooltip title="パネルを表示したいですか？" arrow followCursor placement="left">
                   <span onClick={handleShowTabsBoxWrapper} >
                     <NextImage src={"/door.svg"} alt={'ドアから覗く'} objectFit="cover" />
                   </span>
-                </Tooltip>
+                </CustomTooltip>
               </Allotment.Pane>
             }
           </Allotment>

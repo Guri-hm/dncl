@@ -1,4 +1,4 @@
-import React from 'react';
+    import React from 'react';
 import Spotlight from './Spotlight';
 import SpeechBubbleImage from './SpeechBubbleImage';
 
