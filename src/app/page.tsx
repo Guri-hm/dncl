@@ -49,7 +49,7 @@ export default function Home() {
             </Grid>
           </Grid>
           <Grid size={3} >
-            <img src={"/top.png"} alt={'指差し'} style={{ width: "100%" }} />
+            <img src={"/stand_by_the_desk.svg"} alt={'指差し'} style={{ width: "100%" }} />
           </Grid>
         </Grid>
       </ContentWrapper>

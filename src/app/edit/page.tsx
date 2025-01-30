@@ -82,7 +82,7 @@ export default function Home() {
     <PageWrapper>
       <Header>
         <HeaderItem>
-          <HeaderTitle/>
+          <HeaderTitle />
           <Grid container direction={"row"} columnSpacing={1} sx={{ position: 'absolute', right: '10px', bottom: '10px', zIndex: 20 }} >
             <Grid>
               <Button sx={{ backgroundColor: 'var(--sky-500)', borderRadius: 5 }} variant="contained" onClick={handleClickOpen} startIcon={<TipsAndUpdatesIcon />}>
