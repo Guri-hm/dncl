@@ -29,6 +29,7 @@ import Grid from '@mui/material/Grid2';
 import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
 import ErrorIcon from '@mui/icons-material/Error';
 import ReportGmailerrorredIcon from '@mui/icons-material/ReportGmailerrorred';
+import HeaderTitle from "../components/HeaderTitle";
 const initialItems: TreeItems = sampleFuncItems;
 
 export default function Home() {
@@ -81,20 +82,7 @@ export default function Home() {
     <PageWrapper>
       <Header>
         <HeaderItem>
-          <Image
-            aria-hidden
-            src="/logo.svg"
-            alt="logo"
-            width={50}
-            height={50}
-          />
-          <Typography variant="h1" sx={{ fontSize: '1.5rem', color: 'white', fontWeight: 800, padding: 1 }}>
-            <ruby style={{ rubyAlign: 'space-around' }}>
-              ぎじげんご
-              <rp>（</rp><rt>DNCL</rt><rp>）</rp>
-            </ruby>
-            いじる子
-          </Typography>
+          <HeaderTitle/>
           <Grid container direction={"row"} columnSpacing={1} sx={{ position: 'absolute', right: '10px', bottom: '10px', zIndex: 20 }} >
             <Grid>
               <Button sx={{ backgroundColor: 'var(--sky-500)', borderRadius: 5 }} variant="contained" onClick={handleClickOpen} startIcon={<TipsAndUpdatesIcon />}>

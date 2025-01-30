@@ -2,79 +2,58 @@
 
 "use client"
 import React, { useEffect, useState } from 'react';
-import Kuroshiro from 'kuroshiro';
-import KuromojiAnalyzer from '@sglkc/kuroshiro-analyzer-kuromoji';
-import { ESLint } from 'eslint';
+import { ContentWrapper } from './components/ContentWrapper';
+import { PageWrapper } from './components/PageWrapper';
+import { Header } from './components/Header';
+import { HeaderItem } from './components/HeaderItem';
+import { Box, Paper, Typography } from '@mui/material';
+import Image from 'next/image';
+import { NextImage } from './components/NextImage';
+import Container from '@mui/material/Container';
+import Grid from '@mui/material/Grid2';
+import BubblePaper from './components/BubblePaper';
+import Link from 'next/link';
+import HeaderTitle from './components/HeaderTitle';
 
 export default function Home() {
 
-  const [convertedText, setConvertedText] = useState('');
-  let text = "桜さく";
-  const [code, setCode] = useState('');
-  const [results, setLintResults] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false); // ローディング状態
-
-  const fetchLintResults = async () => {
-
-    try {
-      const response = await fetch('/api/lint', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ code }), // コードを送信
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Something went wrong');
-      }
-
-      const data = await response.json();
-      console.log(data)
-
-      setLintResults(data.resultText);
-    } catch (err: any) {
-      setLintResults(err.message || 'An unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
-
-  };
-
-  useEffect(() => {
-    const convertText = async () => {
-      const kuroshiro = new Kuroshiro();
-      await kuroshiro.init(new KuromojiAnalyzer({ dictPath: '/dict/' }));
-      const romaji = await kuroshiro.convert(text, { to: 'romaji' });
-      setConvertedText(romaji);
-    };
-
-    convertText();
-  }, [text]);
-
   return (
-    <>
-      <textarea
-        value={code}
-        onChange={(e) => setCode(e.target.value)}
-        rows={10}
-        cols={50}
-        placeholder="ここにコードを入力してください"
-      />
-      <button onClick={fetchLintResults} disabled={loading}>
-        {loading ? 'Linting...' : 'Lint Code'}
-      </button>
-      <div>
-        <p>Original: {text}</p>
-        <p>Converted: {convertedText}</p>
-      </div>
-      <div>
-        {
-          results
-        }
-      </div>
-    </>
+    <PageWrapper>
+      <Header>
+        <HeaderItem>
+          <HeaderTitle />
+        </HeaderItem>
+      </Header>
+      <ContentWrapper>
+        <Grid container direction={"column"} sx={{
+          justifyContent: "center",
+          alignItems: "center", height: '100%',
+          backgroundColor: 'var(--stone-50)'
+        }} >
+          <Grid container direction="row" spacing={3} size='auto'>
+            <Grid size="grow">
+              <BubblePaper top="50%" left="50%" href='./edit'>
+                <Typography variant="h5" component="div">
+                  チャレンジモード
+                </Typography>
+                <Typography sx={{ color: 'text.secondary', mb: 1.5 }}>課題に挑み，全問クリアを目指します</Typography>
+              </BubblePaper>
+            </Grid>
+            <Grid size="grow">
+              <BubblePaper top="50%" left="50%" href='./edit'>
+                <Typography variant="h5" component="div">
+                  エディタモード
+                </Typography>
+                <Typography sx={{ color: 'text.secondary', mb: 1.5 }}>自由にDNCLを操作します</Typography>
+              </BubblePaper>
+            </Grid>
+          </Grid>
+          <Grid size={3} >
+            <img src={"/top.png"} alt={'指差し'} style={{ width: "100%" }} />
+          </Grid>
+        </Grid>
+      </ContentWrapper>
+    </PageWrapper >
   );
 }
 
