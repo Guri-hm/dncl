@@ -130,7 +130,7 @@ export function SortableTree({
   //ツリー要素追加時はこの定数にアイテムが入る
   const additionItem = fragments.find(({ id }) => id == activeId);
 
-  const flattenedItems = useMemo(() => {
+  const flattenedItems: FlattenedItem[] = useMemo(() => {
     const flattenedTree = flattenTree(treeItems);
     const collapsedItems = flattenedTree.reduce<string[]>(
       (acc, { children, collapsed, id }) =>
@@ -148,6 +148,8 @@ export function SortableTree({
       activeId ? [activeId, ...collapsedItems] : collapsedItems
     );
   }, [activeId, treeItems]);
+
+  console.info(flattenedItems)
 
   const projected =
     activeId && overId
@@ -215,7 +217,7 @@ export function SortableTree({
           </Allotment.Pane>
           <Allotment.Pane visible={visible} className={`${styles.leftPane} ${styles.paneBg}`} snap>
             <Box sx={{ padding: '10px' }} className={`${cmnStyles.hFull} ${cmnStyles.overflowAuto}`}>
-              <DoNotDrag></DoNotDrag>
+              <DoNotDrag />
               {fragments.map(({ id, line }) => (
                 <FragmentsListItem
                   key={id}

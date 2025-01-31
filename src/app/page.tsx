@@ -1,18 +1,14 @@
 
 
 "use client"
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { ContentWrapper } from './components/ContentWrapper';
 import { PageWrapper } from './components/PageWrapper';
 import { Header } from './components/Header';
 import { HeaderItem } from './components/HeaderItem';
-import { Box, Paper, Typography } from '@mui/material';
-import Image from 'next/image';
-import { NextImage } from './components/NextImage';
-import Container from '@mui/material/Container';
+import { Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import BubblePaper from './components/BubblePaper';
-import Link from 'next/link';
 import HeaderTitle from './components/HeaderTitle';
 
 export default function Home() {

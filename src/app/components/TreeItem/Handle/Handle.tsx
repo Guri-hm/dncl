@@ -3,6 +3,7 @@ import React from 'react';
 import { Action, ActionProps } from '../Action';
 
 export function Handle({ cursor = "grab", ...props }: ActionProps) {
+
   return (
     <Action cursor={cursor} data-cypress="draggable-handle" {...props}>
       <svg viewBox="0 0 20 20" width="12">

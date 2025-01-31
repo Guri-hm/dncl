@@ -220,7 +220,6 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props)
                         }
                         if (!checkStatement(formJson, keyPrefixEnum.LeftSide, params.treeItems)) return;
                         if (!checkStatement(formJson, keyPrefixEnum.RigthSide, params.treeItems)) return;
-                        console.log(formJson)
                         setError([]);
 
                         const operator = getOperator(type);
@@ -310,7 +309,6 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props)
                         if (params.item) {
                             params.item = { ...params.item, line: processPhrase, lineTokens: tokens, processIndex: Number(formJson.processIndex), variables }
                         }
-                        console.log(params.item)
                         params.addItem({ newItem: params.item, overIndex: params.overIndex });
                         handleClose();
                     },

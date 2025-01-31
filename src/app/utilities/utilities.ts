@@ -1026,7 +1026,6 @@ export const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedIte
     case ProcessEnum.InitializeArray:
     case ProcessEnum.BulkAssignToArray: {
       if (targetItem.children.length > 0) {
-        console.log("aaaa")
         result = { errors: [`${lineNum}行目:この行には別の処理をぶら下げられません`], hasError: true };
         break;
       }

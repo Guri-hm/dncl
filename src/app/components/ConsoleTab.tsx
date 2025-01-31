@@ -193,6 +193,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
             const data = await response.json();
 
             if (data.messages.length == 0) {
+                setTmpMsg('プログラム実行中…');
                 execute(code);
             } else {
                 const formattedMessages = data.lineNumbers.map((lineNumber: number, index: number) => {
@@ -200,7 +201,6 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
                 });
                 const result: DnclValidationType = { color: Color.warnning, errors: formattedMessages, hasError: true, lineNum: data.lineNumbers };
                 setDnclValidation(result);
-
             }
 
         } catch (err: any) {

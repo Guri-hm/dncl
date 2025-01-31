@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
-import { List, ListItem, ListItemText, Box, Button } from '@mui/material';
-import { NextImage } from './NextImage';
-import Image from 'next/image';
+import { List, ListItem, ListItemText, Box, Button, Divider } from '@mui/material';
+import { AssignmentHint } from './AssignmentHint';
 
 const menuItems = [
     {
-        id: 1, text: '代入文', description:
-            <div style={{ width: '300%', height: '300%' }}><Image src={"/assignment.svg"} width={300} height={300} alt='代入' objectFit='contain'></Image></div>
+        id: 1, text: '代入文とは？「定義される前に使用されています」の場合は？', component: <AssignmentHint />
     },
-    { id: 2, text: 'アイテム 2', description: <div>アイテム 2 の説明</div> },
-    { id: 3, text: 'アイテム 3', description: <div>アイテム 3 の説明</div> },
+    { id: 2, text: 'アイテム 2', component: <div>アイテム 2 の説明</div> },
+    { id: 3, text: 'アイテム 3', component: <div>アイテム 3 の説明</div> },
 ];
 
 const HintMenu = () => {
@@ -24,21 +22,22 @@ const HintMenu = () => {
     };
 
     return (
-        <Box>
+        <Box sx={{ width: { sm: '100%', md: '50%' }, minWidth: '500px', height: '100%' }}>
             {selectedItem === null ? (
-                <>
-                    <List>
-                        {menuItems.map((item) => (
-                            <ListItem key={item.id} onClick={() => handleClick(item.id)}>
+                <List>
+                    {menuItems.map((item, index) => (
+                        <React.Fragment key={item.id}>
+                            {index != 0 ? <Divider component='li' /> : null}
+                            <ListItem onClick={() => handleClick(item.id)}>
                                 <ListItemText primary={item.text} />
                             </ListItem>
-                        ))}
-                    </List>
+                        </React.Fragment>
+                    ))}
+                </List >
 
-                </>
             ) : (
-                <Box>
-                    {menuItems.find(item => item.id === selectedItem)?.description}
+                <Box sx={{ width: { sm: '90%', md: '50%' }, minWidth: '500px', height: '100%', marginX: 'auto', marginTop: 2 }}>
+                    {menuItems.find(item => item.id === selectedItem)?.component}
                     <Button variant="contained" color="primary" onClick={handleClose}>
                         閉じる
                     </Button>
