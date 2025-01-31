@@ -1,5 +1,4 @@
 import * as React from 'react';
-import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
@@ -8,7 +7,6 @@ import Typography from '@mui/material/Typography';
 import CloseIcon from '@mui/icons-material/Close';
 import Slide from '@mui/material/Slide';
 import { TransitionProps } from '@mui/material/transitions';
-import InfoStepper from '../InfoStepper';
 import styles from '@/app/components/common.module.css';
 import { Box } from '@mui/material';
 
@@ -28,7 +26,7 @@ interface Props {
     children: React.ReactNode;
 }
 
-export const FullScreenDialog = ({ open, setOpen, title = "",children }: Props) => {
+export const FullScreenDialog = ({ open, setOpen, title = "", children }: Props) => {
 
     // const handleClickOpen = () => {
     //     setOpen(true);
@@ -47,7 +45,7 @@ export const FullScreenDialog = ({ open, setOpen, title = "",children }: Props) 
                 onClose={handleClose}
                 TransitionComponent={Transition}
             >
-                <AppBar sx={{ position: 'relative' }} className={styles.bgSlate900}>
+                <AppBar sx={{ position: 'relative', backgroundColor: 'var(--slate-900)' }}>
                     <Toolbar>
                         <IconButton
                             edge="start"

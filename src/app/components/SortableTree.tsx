@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { Allotment } from "allotment";
 import { createPortal } from "react-dom";
 import { DndContext, UniqueIdentifier } from '@dnd-kit/core';
@@ -252,8 +252,9 @@ export function SortableTree({
                   ))}
                 </SortableContext>
                 :
-                <DropHere />
+                null
               }
+              <DropHere visible={!((flattenedItems.length > 0) || editor.open)} />
               {createPortal(
                 <DragOverlay
                   dropAnimation={dropAnimation}
