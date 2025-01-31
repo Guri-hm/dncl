@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { List, ListItem, ListItemText, Box, Button, Divider } from '@mui/material';
 import { AssignmentHint } from './AssignmentHint';
+import { OutputHint } from './OutputHint';
 
 const menuItems = [
     {
         id: 1, text: '代入文とは？「定義される前に使用されています」の場合は？', component: <AssignmentHint />
     },
-    { id: 2, text: 'アイテム 2', component: <div>アイテム 2 の説明</div> },
+    { id: 2, text: '表示文とは？変数や配列の要素を確認するためには？', component: <OutputHint /> },
     { id: 3, text: 'アイテム 3', component: <div>アイテム 3 の説明</div> },
 ];
 

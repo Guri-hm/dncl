@@ -27,18 +27,17 @@ const sampleItems: FlattenedItem[] = [
     }
 ]
 
-export const AssignmentHint = () => {
+export const OutputHint = () => {
 
     return (
         <Box >
             <Box>
-                <p>変数や配列を使う場合，先行処理で変数や配列に値を代入しておく必要があります。</p>
+                <p>変数や配列の要素がどうなっているかは表示文で確認できます。</p>
                 <p>次のようにアイテムを並べると，コンソールに「こんにちは」と表示されます。</p>
                 <SampleTreeItems sampleItems={sampleItems} ></SampleTreeItems>
-                <p>変数名や配列名はある程度自由に決められます。ただし，処理の都合で規則が用意されています。規則内でなるべくわかりやすく命名しましょう。</p>
             </Box>
-            <Box sx={{ textAlign: 'center', marginX: 'auto', marginY: '10px', width: '50%' }}>
-                <img src={"/assignment.svg"} alt='代入文' style={{ maxWidth: '150px' }}></img>
+            <Box sx={{ textAlign: 'center', marginX: 'auto',marginY:'10px',  width: '50%' }}>
+                <img src={"/output.svg"} alt='表示文' style={{ maxWidth: '150px' }}></img>
             </Box>
         </Box>
     )
