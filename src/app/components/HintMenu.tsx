@@ -38,9 +38,11 @@ const HintMenu = () => {
             ) : (
                 <Box sx={{ width: { sm: '90%', md: '50%' }, minWidth: '500px', height: '100%', marginX: 'auto', marginTop: 2 }}>
                     {menuItems.find(item => item.id === selectedItem)?.component}
-                    <Button variant="contained" color="primary" onClick={handleClose}>
-                        閉じる
-                    </Button>
+                    <Box sx={{ width: '100%', textAlign: 'center' }}>
+                        <Button variant="contained" sx={{ backgroundColor: 'var(--slate-900)' }} onClick={handleClose}>
+                            閉じる
+                        </Button>
+                    </Box>
                 </Box>
             )}
         </Box>
