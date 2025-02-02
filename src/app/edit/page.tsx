@@ -98,7 +98,7 @@ export default function Home() {
       </Header>
       <ContentWrapper>
         <Allotment vertical defaultSizes={[200, 100]}>
-          <Allotment>
+          <Allotment separator={false}>
             <Allotment.Pane>
               <SortableTree treeItems={items} setTreeItems={setItems} dnclValidation={dnclValidation} collapsible indicator removable ></SortableTree>
             </Allotment.Pane>
