@@ -179,7 +179,7 @@ export const VbaTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }
         if (shouldRunEffect) {
             const convertCode = async () => {
                 //EndSubに変換するTreeItemを挿入
-                setNodes(renderNodes(setEndSubItem(treeItems), 0));
+                setNodes(await renderNodes(treeItems, 0));
             };
             setShouldRunEffect(false); // フラグをリセット
             convertCode();
@@ -187,19 +187,18 @@ export const VbaTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }
     }, [shouldRunEffect]);
 
     let isStartedSub: boolean = false;
-    const renderNodes = (nodes: TreeItems, depth: number): React.ReactNode => {
+    const renderNodes = async (nodes: TreeItems, depth: number): Promise<React.ReactNode> => {
 
-        const reactNodes = nodes.map((node, index) => {
-            [ProcessEnum.DefineFunction, ProcessEnum.Defined]
+        const promises: Promise<React.ReactNode>[] = nodes.map(async (node, index) => {
 
             //Subプロシージャの開始と終了を出力
             if (!isStartedSub && depth == 0 && ![ProcessEnum.DefineFunction, ProcessEnum.Defined].includes(Number(node.processIndex))) {
                 //再帰的に呼び出すときに分岐させる
                 isStartedSub = true;
                 const sub = <Fragment key={node.id}>
-                    <Box className={(index == 0 && depth != 0) ? styles.noCounter : ""}>{cnvToVba({ lineTokens: [], processIndex: ProcessEnum.Sub })}</Box>
-                    <ScopeBox nested={true} depth={depth + 1}>
-                        {renderNodes([node], depth + 1)}
+                    <Box className={(index == 0 && depth != 0) ? styles.noCounter : ""}>{await cnvToVba({ lineTokens: [], processIndex: ProcessEnum.Sub })}</Box>
+                    <ScopeBox key={node.id} nested={true} depth={depth + 1}>
+                        {await renderNodes([node], depth + 1)}
                     </ScopeBox>
                 </Fragment>
                 return sub;
@@ -212,10 +211,10 @@ export const VbaTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }
                 return (
                     <Fragment key={node.id}>
                         <ScopeBox nested={true} depth={depth + 1}>
-                            <Box className={styles.noCounter}>{cnvToVba({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) })}</Box>
+                            <Box className={styles.noCounter}>{await cnvToVba({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) })}</Box>
                             {node.children.length > 0 && (
                                 <ScopeBox nested={true} depth={depth + 1}>
-                                    {renderNodes(node.children, depth + 1)}
+                                    {await renderNodes(node.children, depth + 1)}
                                 </ScopeBox>
                             )}
                         </ScopeBox>
@@ -225,18 +224,31 @@ export const VbaTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }
             return (
 
                 <Fragment key={node.id}>
-                    <Box className={(index == 0 && depth != 0) ? styles.noCounter : ""}>{cnvToVba({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) })}</Box>
+                    <Box className={(index == 0 && depth != 0) ? styles.noCounter : ""}>{await cnvToVba({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) })}</Box>
                     {node.children.length > 0 && (
                         <ScopeBox nested={true} depth={depth + 1}>
-                            {renderNodes(node.children, depth + 1)}
+                            {await renderNodes(node.children, depth + 1)}
                         </ScopeBox>
                     )}
                 </Fragment>
             )
 
-        })
+        });
 
-        return reactNodes;
+        if (isStartedSub && depth == 0) {
+            const endsubPromise = new Promise<React.ReactNode>(async (resolve) => {
+                const endsub: React.ReactNode = (
+                    <Fragment>
+                        <Box>{await cnvToVba({ lineTokens: [], processIndex: ProcessEnum.EndSub })}</Box>
+                    </Fragment>
+                );
+                resolve(endsub);
+            });
+
+            promises.push(endsubPromise);
+        }
+
+        return Promise.all(promises);
     }
 
     return (
