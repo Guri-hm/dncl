@@ -1,5 +1,5 @@
 import TextField from '@mui/material/TextField';
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ValidationEnum } from "./Enum";
 import { SxProps, Theme } from '@mui/material/styles';
 
@@ -11,56 +11,64 @@ type Props = {
   isIMEOn?: boolean;
 }
 
-enum validationMessageEnum {
-  NamingConventions = '命名規則に違反します',
-  Error = '入力に誤りがあります',
-  VariableOrNumber = '値・変数名を入力してください',
-}
-
-// 逆引きマップを作成
-// const reverseValidationEnum = Object.entries(ValidationEnum).reduce((acc, [key, value]) => {
-//   acc[value] = key as keyof typeof ValidationEnum;
-//   return acc;
-// }, {} as Record<string, keyof typeof ValidationEnum>);
-
-// 値を使ってキーを取得する関数
-// function getKeyByValue(value: string): keyof typeof ValidationEnum | undefined {
-//   return reverseValidationEnum[value];
-// }
-
-// function getValueByKey(key: keyof typeof ValidationEnum | undefined): string | undefined {
-//   return validationMessageEnum[key as keyof typeof ValidationEnum];
-// }
-
-const getMsgByValidationEnum = (validation: ValidationEnum) => {
-
-  switch (validation) {
-
-    case ValidationEnum.Variable:
-    case ValidationEnum.Array:
-      return validationMessageEnum.NamingConventions;
-    case ValidationEnum.VariableOrNumber:
-      return validationMessageEnum.VariableOrNumber;
-    default:
-      return validationMessageEnum.Error
+const getErrorMessage = (value: string, pattern: string): string => {
+  const regex = new RegExp(pattern);
+  const match = value.match(regex);
+  if (match) {
+    return `入力値「${value}」はパターン「${pattern}」に一致しません`;
+  } else {
+    const diffIndex = getFirstMismatchIndex(value, pattern);
+    if (diffIndex !== -1) {
+      return `「${value[diffIndex]}」は使用できません`;
+    }
+    return `入力値に不適切な文字が使用されています`;
   }
-}
+};
+
+const getFirstMismatchIndex = (value: string, pattern: string): number => {
+  for (let i = 0; i < value.length; i++) {
+    const subStr = value.substring(0, i + 1);
+    const regex = new RegExp(`^${pattern}`);
+    if (!regex.test(subStr)) {
+      return i;
+    }
+  }
+  return -1;
+};
 
 export function ValidatedTextField({ sx = [], name, label, pattern, isIMEOn = false, ...params }: Props) {
 
   const [inputError, setInputError] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleChange = (event: any) => {
     const elm = event.target;
-    if (!elm.validity.valid) {
-      setInputError(true);
-    } else {
+    const regex = new RegExp(pattern);
+    if (elm.value === "" || regex.test(elm.value)) {
       setInputError(false);
+      setErrorMessage('');
+    } else {
+      setInputError(true);
+      setErrorMessage(getErrorMessage(elm.value, pattern));
     }
   };
 
+  useEffect(() => {
+    setInputError(false);
+    if (inputRef.current) {
+      const inputElement = inputRef.current;
+      const regex = new RegExp(pattern);
+      if (inputElement.value !== "" && !regex.test(inputElement.value)) {
+        setInputError(true);
+        setErrorMessage(getErrorMessage(inputElement.value, pattern));
+      }
+    }
+  }, [pattern]);
+
   return (
     <TextField
+      inputRef={inputRef}
       sx={[
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
@@ -77,11 +85,11 @@ export function ValidatedTextField({ sx = [], name, label, pattern, isIMEOn = fa
           pattern: pattern,
           inputMode: isIMEOn ? 'text' : 'none',
           maxLength: 15
-        }
-        ,
+        },
       }}
+
       name={name}
-      helperText={inputError && getMsgByValidationEnum(pattern)}
+      helperText={inputError && errorMessage}
       onChange={handleChange}
     />
   );
