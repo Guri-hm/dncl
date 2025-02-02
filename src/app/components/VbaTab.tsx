@@ -123,7 +123,7 @@ const cnvToVba = async (statement: { lineTokens: string[], processIndex: number 
             tmpLine = `${lineTokens[0]} `
             break;
         case ProcessEnum.Sub:
-            tmpLine = `${UserDefinedFunc.VbaSub}${BraketSymbolEnum.LeftBraket}${BraketSymbolEnum.RigthBraket} `
+            tmpLine = `${UserDefinedFunc.VbaSub} Main${BraketSymbolEnum.LeftBraket}${BraketSymbolEnum.RigthBraket} `
             break;
         case ProcessEnum.EndSub:
             tmpLine = `${UserDefinedFunc.VbaEndSub} `
