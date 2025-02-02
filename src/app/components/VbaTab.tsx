@@ -1,10 +1,11 @@
 import { Box, BoxProps } from "@mui/material";
-import { FC, useEffect, useState, Fragment } from "react";
-import { TreeItems } from "../types";
+import React, { FC, useEffect, useState, Fragment } from "react";
+import { TreeItem, TreeItems } from "../types";
 import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, LoopEnum, ArithmeticOperator, ArithmeticOperatorVba, ArrayForVBA } from "../enum";
 import { capitalizeTrueFalse, convertBracketsToParentheses, tryParseToVbaFunc } from "../utilities";
 import ScopeBox from "./ScopeBox";
 import styles from './tab.module.css';
+import { v4 as uuidv4 } from 'uuid'
 
 interface CustomBoxProps extends BoxProps {
     children: React.ReactNode;
@@ -160,7 +161,44 @@ const setEndSubItem = (nodes: TreeItems): TreeItems => {
     })
     return newItems;
 }
+// JSONのシリアライズとパースを使ってディープコピーを作成する関数
+function deepClone<T>(obj: T): T {
+    return JSON.parse(JSON.stringify(obj));
+}
+const moveElementsToEnd = (items: TreeItems): { movedItems: TreeItems; remainingItems: TreeItems } => {
+    // ディープコピーを作成
+    const clonedItems = deepClone(items);
 
+    const startIndex = clonedItems.findIndex(item => item.processIndex === ProcessEnum.DefineFunction);
+    const endIndex = clonedItems.findIndex(item => item.processIndex === ProcessEnum.Defined);
+
+    if (startIndex === -1 || endIndex === -1 || startIndex > endIndex) {
+        return { movedItems: [], remainingItems: clonedItems };
+    }
+
+    const elementsToMove = clonedItems.splice(startIndex, endIndex - startIndex + 1);
+    return { movedItems: elementsToMove, remainingItems: clonedItems };
+};
+
+const wrapRemainingItems = (remainingItems: TreeItems, movedItems: TreeItems): TreeItems => {
+    const newParent: TreeItem = {
+        id: uuidv4(),
+        line: "",
+        children: remainingItems,
+        lineTokens: [],
+        processIndex: ProcessEnum.Sub,
+        variables: [],
+    };
+    const endSub: TreeItem = {
+        id: uuidv4(),
+        line: "",
+        children: [],
+        lineTokens: [],
+        processIndex: ProcessEnum.EndSub,
+        variables: [],
+    };
+    return [...movedItems, newParent, endSub];
+};
 
 export const VbaTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }) => {
 
@@ -179,7 +217,10 @@ export const VbaTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }
         if (shouldRunEffect) {
             const convertCode = async () => {
                 //EndSubに変換するTreeItemを挿入
-                setNodes(await renderNodes(treeItems, 0));
+                const { movedItems, remainingItems } = moveElementsToEnd(treeItems);
+                const finalTreeItems = wrapRemainingItems(remainingItems, movedItems);
+                console.log(moveElementsToEnd(finalTreeItems))
+                setNodes(await renderNodes(finalTreeItems, 0));
             };
             setShouldRunEffect(false); // フラグをリセット
             convertCode();
@@ -191,62 +232,21 @@ export const VbaTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }
 
         const promises: Promise<React.ReactNode>[] = nodes.map(async (node, index) => {
 
-            //Subプロシージャの開始と終了を出力
-            if (!isStartedSub && depth == 0 && ![ProcessEnum.DefineFunction, ProcessEnum.Defined].includes(Number(node.processIndex))) {
-                //再帰的に呼び出すときに分岐させる
-                isStartedSub = true;
-                const sub = <Fragment key={node.id}>
-                    <Box className={(index == 0 && depth != 0) ? styles.noCounter : ""}>{await cnvToVba({ lineTokens: [], processIndex: ProcessEnum.Sub })}</Box>
-                    <ScopeBox key={node.id} nested={true} depth={depth + 1}>
-                        {await renderNodes([node], depth + 1)}
-                    </ScopeBox>
-                </Fragment>
-                return sub;
-            }
+            const convertedVba = await cnvToVba({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) });
 
-            if ([ProcessEnum.EndSub].includes(Number(node.processIndex))) {
-                isStartedSub = false;
-            }
-            if (isStartedSub && depth == 0) {
-                return (
-                    <Fragment key={node.id}>
-                        <ScopeBox nested={true} depth={depth + 1}>
-                            <Box className={styles.noCounter}>{await cnvToVba({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) })}</Box>
-                            {node.children.length > 0 && (
-                                <ScopeBox nested={true} depth={depth + 1}>
-                                    {await renderNodes(node.children, depth + 1)}
-                                </ScopeBox>
-                            )}
-                        </ScopeBox>
-                    </Fragment>
-                )
-            }
             return (
-
                 <Fragment key={node.id}>
-                    <Box className={(index == 0 && depth != 0) ? styles.noCounter : ""}>{await cnvToVba({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) })}</Box>
+                    <Box className={(index === 0 && depth !== 0) ? styles.noCounter : ''}>
+                        {convertedVba}
+                    </Box>
                     {node.children.length > 0 && (
                         <ScopeBox nested={true} depth={depth + 1}>
                             {await renderNodes(node.children, depth + 1)}
                         </ScopeBox>
                     )}
                 </Fragment>
-            )
-
+            );
         });
-
-        if (isStartedSub && depth == 0) {
-            const endsubPromise = new Promise<React.ReactNode>(async (resolve) => {
-                const endsub: React.ReactNode = (
-                    <Fragment>
-                        <Box>{await cnvToVba({ lineTokens: [], processIndex: ProcessEnum.EndSub })}</Box>
-                    </Fragment>
-                );
-                resolve(endsub);
-            });
-
-            promises.push(endsubPromise);
-        }
 
         return Promise.all(promises);
     }
@@ -259,3 +259,4 @@ export const VbaTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }
         </Box>
     );
 };
+
