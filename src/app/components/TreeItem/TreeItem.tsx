@@ -45,7 +45,6 @@ export const TreeItem = forwardRef<HTMLDivElement, Props>(
     },
     ref
   ) => {
-    // console.log(collapsed)
     return (
       <li
         className={classNames(
@@ -59,7 +58,7 @@ export const TreeItem = forwardRef<HTMLDivElement, Props>(
         ref={wrapperRef}
         style={
           {
-            "--spacing": `${indentationWidth * depth}px`
+            "--spacing": `${indentationWidth * depth}px`,
           } as React.CSSProperties
         }
         {...props}
