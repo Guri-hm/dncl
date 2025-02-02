@@ -44,8 +44,8 @@ export default function Home() {
               </BubblePaper>
             </Grid>
           </Grid>
-          <Grid size={3} >
-            <img src={"/stand_by_the_desk.svg"} alt={'指差し'} style={{ width: "100%" }} />
+          <Grid size={3} sx={{ textAlign: 'center' }}>
+            <img src={"/stand_by_the_desk.svg"} alt={'机と女の子'} style={{ width: "100%", maxWidth: "300px" }} />
           </Grid>
         </Grid>
       </ContentWrapper>
