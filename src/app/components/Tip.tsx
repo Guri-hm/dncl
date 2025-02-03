@@ -1,18 +1,28 @@
 import React from 'react';
 import Spotlight from './Spotlight';
 import SpeechBubbleImage from './SpeechBubbleImage';
-import { Box } from '@mui/material';
+import { Box, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 
 interface Props {
-    visible?: boolean;
+    onClose?: any;
 }
 
-const Tip = ({ visible = true }: Props) => {
+const Tip = ({ onClose }: Props) => {
     return (
-        <Box sx={{ display: `${visible ? 'block' : 'none'}` }}>
+        <Box>
 
             <Spotlight>
                 <SpeechBubbleImage msg='ここにヒントを表示します'>
+                    {onClose &&
+                        <IconButton aria-label="close" sx={{
+                            position: 'absolute',
+                            right: -10,
+                            top: -10,
+                        }} onClick={onClose}>
+                            <CloseIcon />
+                        </IconButton>
+                    }
                     <img src="/look_back.svg" alt="ヒントを出す" style={{ width: '100%' }}></img>
                 </SpeechBubbleImage>
             </Spotlight>

@@ -20,6 +20,8 @@ import { FooterOverlay } from "./FooterOverlay";
 import DoNotDrag from "./DoNotDrag";
 import DropHere from "./DropHere";
 import Tip from "./Tip";
+import { NextImage } from "./NextImage";
+import { CustomTooltip } from "./CustomTooltip";
 
 interface Props {
     initialItems: TreeItems;
@@ -30,6 +32,7 @@ export default function ChallengePage({ initialItems }: Props) {
     const [items, setItems] = useState(() => initialItems);
     const [dnclValidation, setDnclValidation] = useState<DnclValidationType>({ hasError: false, errors: [], lineNum: [] });
     const [snackbar, setSnackbar] = useState<{ open: boolean, duration: number, text: string }>({ open: false, duration: 3000, text: '' });
+    const [hintVisible, setHintVisible] = useState(true);
 
     const handleCloseSnackBar = () => {
         setSnackbar({ ...snackbar, open: false });
@@ -44,12 +47,20 @@ export default function ChallengePage({ initialItems }: Props) {
             </Header>
             <ContentWrapper>
                 <Allotment vertical defaultSizes={[200, 100]}>
-                    <Allotment separator={false}>
+                    <Allotment separator={false} defaultSizes={[100, 100]}>
                         <Allotment.Pane>
                             <SortableTree treeItems={items} setTreeItems={setItems} dnclValidation={dnclValidation} collapsible indicator removable ></SortableTree>
                         </Allotment.Pane>
-                        <Allotment.Pane>
-                            <Tip />
+
+                        <Allotment.Pane visible={hintVisible}>
+                            <Tip onClose={() => setHintVisible(false)} />
+                        </Allotment.Pane>
+                        <Allotment.Pane visible={!hintVisible} minSize={60} maxSize={60} className={styles.paneHover}>
+                            <CustomTooltip title="ヒントを表示したいですか？" arrow followCursor placement="left">
+                                <span onClick={() => setHintVisible(true)} >
+                                    <NextImage src={"/door.svg"} alt={'ドアから覗く'} objectFit="cover" />
+                                </span>
+                            </CustomTooltip>
                         </Allotment.Pane>
                     </Allotment>
                     <Allotment.Pane className={`${styles.bgStone50} ${styles.marginTop16} ${styles.hFull} `}>
