@@ -33,13 +33,13 @@ const SpeechBubbleImage = ({ children, msg }: Props) => {
                         boxShadow: "0px 2px 4px rgba(0,0,0,0.2)",
                         '&::after': {
                             content: '""',
-                            position: 'relative',
-                            top: '42px',
-                            right: '40px',
+                            position: 'absolute',
+                            bottom: '-19px', // 吹き出しの三角形を下側に配置する場合
+                            left: '70%', // 中央に配置
+                            transform: 'translateX(-50%)', // 真ん中に位置合わせ
                             borderWidth: '10px',
                             borderStyle: 'solid',
                             borderColor: 'var(--stone-50) transparent transparent transparent',
-                            boxShadow: "0px 2px 4px rgba(0,0,0,0.2)",
                         },
                     }}
                 >
