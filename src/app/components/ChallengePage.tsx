@@ -11,7 +11,7 @@ import { Header } from "@/app/components/Header";
 import { HeaderItem } from "@/app/components/HeaderItem";
 import { ContentWrapper } from "@/app/components/ContentWrapper";
 import { useEffect, useState } from "react";
-import { Snackbar } from "@mui/material";
+import { Box, Snackbar } from "@mui/material";
 import HeaderTitle from "./HeaderTitle";
 import { HintButton } from "./HintButton";
 import { HowToButton } from "./HowToButton";
@@ -19,6 +19,7 @@ import { ConsoleWrapper } from "./ConsoleWrapper";
 import { FooterOverlay } from "./FooterOverlay";
 import DoNotDrag from "./DoNotDrag";
 import DropHere from "./DropHere";
+import Tip from "./Tip";
 
 interface Props {
     initialItems: TreeItems;
@@ -48,9 +49,7 @@ export default function ChallengePage({ initialItems }: Props) {
                             <SortableTree treeItems={items} setTreeItems={setItems} dnclValidation={dnclValidation} collapsible indicator removable ></SortableTree>
                         </Allotment.Pane>
                         <Allotment.Pane>
-
-                            <DropHere />
-
+                            <Tip />
                         </Allotment.Pane>
                     </Allotment>
                     <Allotment.Pane className={`${styles.bgStone50} ${styles.marginTop16} ${styles.hFull} `}>
