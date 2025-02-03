@@ -5,8 +5,6 @@ import "../components/alloment-custom.css";
 import { SortableTree } from "@/app/components/SortableTree";
 import styles from '@/app/components/common.module.css';
 import { DnclValidationType, TreeItems } from "@/app/types";
-import { ConsoleBox } from "@/app/components/ConsoleBox";
-import { ConsoleTab } from "@/app/components/ConsoleTab";
 import { PageWrapper } from "@/app/components/PageWrapper";
 import { sampleFuncItems } from "@/app/components/SampleDncl";
 import { Header } from "@/app/components/Header";
@@ -15,30 +13,24 @@ import { ContentWrapper } from "@/app/components/ContentWrapper";
 import { useEffect, useState } from "react";
 import { TabsBoxWrapper } from "@/app/components/TabsBoxWrapper";
 import Button from '@mui/material/Button';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import { FullScreenDialog } from "@/app/components/Dialog/FullScreenDialog";
 import { NextImage } from "../components/NextImage";
 import { Snackbar } from "@mui/material";
 import SaveIcon from '@mui/icons-material/Save';
 import { useTreeItems, loadTreeItems } from "@/app/components/TreeItemsLocalStrage";
 import { CustomTooltip } from "../components/CustomTooltip";
-import Grid from '@mui/material/Grid2';
-import TipsAndUpdatesIcon from '@mui/icons-material/TipsAndUpdates';
 import HeaderTitle from "../components/HeaderTitle";
-import InfoStepper from "../components/InfoStepper";
-import HintMenu from "../components/HintMenu";
+import { HintButton } from "../components/HintButton";
+import { HowToButton } from "../components/HowToButton";
+import { ConsoleWrapper } from "../components/ConsoleWrapper";
+import { FooterOverlay } from "../components/FooterOverlay";
+
 const initialItems: TreeItems = sampleFuncItems;
 
 export default function Home() {
 
   const [itemsStrage, setItemsStrage] = useTreeItems([]);
   const [items, setItems] = useState(() => initialItems);
-  // const [items, setItems] = useState(() => initialItems);
-  const [runResults, setRunResults] = useState<string[]>([]);
   const [dnclValidation, setDnclValidation] = useState<DnclValidationType>({ hasError: false, errors: [], lineNum: [] });
-  const [tmpMsg, setTmpMsg] = useState<string>('ここに出力結果が表示されます');
-  const [openHowToDialog, setOpenHowToDialog] = useState(false);
-  const [openHintDialog, setOpenHintToDialog] = useState(false);
   const [tabsBoxWrapperVisible, setTabsBoxWrapperVisible] = useState(true);
   const [snackbar, setSnackbar] = useState<{ open: boolean, duration: number, text: string }>({ open: false, duration: 3000, text: '' });
 
@@ -59,33 +51,12 @@ export default function Home() {
     setItemsStrage(items);
     setSnackbar({ ...snackbar, open: true, text: 'リストを保存しました' });
   }
-  const handleLoadItems = () => {
-    const stragedItems: TreeItems | null = loadTreeItems();
-
-    if (stragedItems == null) {
-      return;
-    }
-
-    setSnackbar({ ...snackbar, open: true, text: 'リストを読み込みました' });
-  }
 
   return (
     <PageWrapper>
       <Header>
         <HeaderItem>
           <HeaderTitle />
-          <Grid container direction={"row"} columnSpacing={1} sx={{ position: 'absolute', right: '10px', bottom: '10px', zIndex: 20 }} >
-            <Grid>
-              <Button sx={{ backgroundColor: 'var(--sky-500)', borderRadius: 5 }} variant="contained" onClick={() => setOpenHintToDialog(true)} startIcon={<TipsAndUpdatesIcon />}>
-                構文のヒント
-              </Button>
-            </Grid>
-            <Grid>
-              <Button sx={{ backgroundColor: 'var(--sky-500)', borderRadius: 5 }} variant="contained" onClick={() => setOpenHowToDialog(true)} startIcon={<HelpOutlineIcon />}>
-                使い方
-              </Button>
-            </Grid>
-          </Grid>
           <Button
             sx={{ backgroundColor: 'var(--stone-50)', marginLeft: 'auto', color: 'var(--foreground)' }}
             onClick={handleSaveItems}
@@ -115,17 +86,10 @@ export default function Home() {
               </Allotment.Pane>
             }
           </Allotment>
-
           <Allotment.Pane className={`${styles.bgStone50} ${styles.marginTop16} ${styles.hFull} `}>
-
-            <ConsoleBox tabLabels={['コンソール']} setRunResults={setRunResults}>
-              <ConsoleTab treeItems={items} runResults={runResults} setRunResults={setRunResults} dnclValidation={dnclValidation} setDnclValidation={setDnclValidation} tmpMsg={tmpMsg} setTmpMsg={setTmpMsg}></ConsoleTab>
-            </ConsoleBox>
+            <ConsoleWrapper dnclValidation={dnclValidation} setDnclValidation={setDnclValidation} treeItems={items} />
           </Allotment.Pane>
         </Allotment >
-        {openHintDialog && <FullScreenDialog title="構文のヒント" open={openHintDialog} setOpen={setOpenHintToDialog}><HintMenu /></FullScreenDialog>}
-        {openHowToDialog && <FullScreenDialog title="使い方" open={openHowToDialog} setOpen={setOpenHowToDialog}>
-          <InfoStepper /></FullScreenDialog>}
       </ContentWrapper>
       <Snackbar
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
@@ -134,6 +98,10 @@ export default function Home() {
         onClose={handleCloseSnackBar}
         message={snackbar.text}
       />
+      <FooterOverlay>
+        <HintButton />
+        <HowToButton />
+      </FooterOverlay>
     </PageWrapper >
   );
 }

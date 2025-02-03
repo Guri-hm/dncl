@@ -12,8 +12,6 @@ interface CustomBoxProps extends BoxProps {
     runResults: string[];
     setRunResults: any;
     dnclValidation: DnclValidationType,
-    tmpMsg: string,
-    setTmpMsg: any,
     setDnclValidation: any,
 }
 type Err = {
@@ -165,9 +163,10 @@ const Color = {
     white: 'white'
 }
 
-export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, setRunResults, tmpMsg, setTmpMsg, setDnclValidation, dnclValidation }) => {
+export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, setRunResults, setDnclValidation, dnclValidation }) => {
 
     const [shouldRunEffect, setShouldRunEffect] = useState(false);
+    const [tmpMsg, setTmpMsg] = useState<string>('ここに出力結果が表示されます');
 
     const fetchLintResults = async (code: string) => {
 

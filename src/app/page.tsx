@@ -28,7 +28,7 @@ export default function Home() {
         }} >
           <Grid container direction="row" spacing={3} size='auto'>
             <Grid size="grow">
-              <BubblePaper top="50%" left="50%" href='./list'>
+              <BubblePaper top="50%" left="50%" href='./chlng'>
                 <Typography variant="h5" component="div">
                   チャレンジモード
                 </Typography>

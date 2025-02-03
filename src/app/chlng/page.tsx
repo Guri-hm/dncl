@@ -10,7 +10,6 @@ import HeaderTitle from "../components/HeaderTitle";
 import { Avatar, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, SvgIcon, Typography } from "@mui/material";
 import { styled } from '@mui/system';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import Link from "next/link";
 
 const CustomTypography = styled(Typography)(({ theme }) => ({
   position: 'relative',
@@ -62,7 +61,7 @@ export default function Home() {
             </CustomTypography>
             <List sx={{ width: '100%', maxWidth: 360 }}>
               <ListItem>
-                <ListItemButton component="a" href={`/list/${"1"}`}>
+                <ListItemButton component="a" href={`/chlng/${"1"}`}>
                   <ListItemAvatar>
                     <Avatar>
                       <AutoAwesomeIcon />
@@ -72,7 +71,7 @@ export default function Home() {
                 </ListItemButton>
               </ListItem>
               <ListItem>
-                <ListItemButton component="a" href={`/list/${"2"}`}>
+                <ListItemButton component="a" href={`/chlng/${"2"}`}>
                   <ListItemAvatar>
                     <Avatar>
                       <AutoAwesomeIcon />
