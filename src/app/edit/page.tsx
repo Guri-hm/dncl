@@ -34,6 +34,7 @@ export default function Home() {
   const [dnclValidation, setDnclValidation] = useState<DnclValidationType>({ hasError: false, errors: [], lineNum: [] });
   const [tabsBoxWrapperVisible, setTabsBoxWrapperVisible] = useState(true);
   const [snackbar, setSnackbar] = useState<{ open: boolean, duration: number, text: string }>({ open: false, duration: 3000, text: '' });
+  const [runResults, setRunResults] = useState<string[]>([]);
 
   useEffect(() => {
     const stragedItems: TreeItems | null = loadTreeItems();
@@ -81,7 +82,7 @@ export default function Home() {
             }
           </Allotment>
           <Allotment.Pane className={`${styles.bgStone50} ${styles.marginTop16} ${styles.hFull} `}>
-            <ConsoleWrapper dnclValidation={dnclValidation} setDnclValidation={setDnclValidation} treeItems={items} />
+            <ConsoleWrapper dnclValidation={dnclValidation} setDnclValidation={setDnclValidation} treeItems={items} runResults={runResults} setRunResults={setRunResults} />
           </Allotment.Pane>
         </Allotment >
       </ContentWrapper>

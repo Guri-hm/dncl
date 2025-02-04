@@ -1,0 +1,82 @@
+.kusudama-container {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+
+.kusudama {
+    position: relative;
+    width: 100px;
+    margin: 0 auto;
+}
+
+.kusudama .top {
+    position: relative;
+    width: 100px;
+    height: 100px;
+}
+
+.kusudama .left,
+.kusudama .right {
+    position: absolute;
+    width: 50px;
+    height: 100px;
+    background: red;
+    border: 2px solid gold;
+}
+
+.kusudama .left {
+    left: 0;
+    border-right: none;
+    border-radius: 50px 0 0 50px;
+}
+
+.kusudama .right {
+    right: 0;
+    border-left: none;
+    border-radius: 0 50px 50px 0;
+}
+
+.kusudama .strings {
+    position: absolute;
+    top: 100px;
+    width: 100%;
+    height: 100px;
+}
+
+.kusudama .string {
+    position: absolute;
+    width: 4px;
+    height: 100px;
+    background: gold;
+}
+
+.left-string {
+    left: 25%;
+}
+
+.right-string {
+    right: 25%;
+}
+
+.kusudama.animate .left {
+    animation: left-open 0.5s forwards;
+}
+
+.kusudama.animate .right {
+    animation: right-open 0.5s forwards;
+}
+
+@keyframes left-open {
+    to {
+        transform: rotate(-90deg);
+        left: -50px;
+    }
+}
+
+@keyframes right-open {
+    to {
+        transform: rotate(90deg);
+        right: -50px;
+    }
+}

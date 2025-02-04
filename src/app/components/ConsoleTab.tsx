@@ -5,6 +5,7 @@ import { DnclValidationType, FlattenedItem, TreeItems } from "../types";
 import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, LoopEnum, ArithmeticOperator } from "../enum";
 import { checkDNCLSyntax, cnvToDivision, cnvToRomaji, containsJapanese, flattenTree, tryParseToJsFunction } from "../utilities";
 import Divider from '@mui/material/Divider';
+import { ConsoleBox } from './ConsoleBox';
 
 interface CustomBoxProps extends BoxProps {
     children?: React.ReactNode;
@@ -13,7 +14,6 @@ interface CustomBoxProps extends BoxProps {
     setRunResults: any;
     dnclValidation: DnclValidationType,
     setDnclValidation: any,
-    answer?: string[],
 }
 
 const cnvToken = (token: string): string => {
@@ -160,7 +160,7 @@ const Color = {
     white: 'white'
 }
 
-export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, setRunResults, setDnclValidation, dnclValidation }) => {
+export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, setRunResults, setDnclValidation, dnclValidation, answer = [] }) => {
 
     const [shouldRunEffect, setShouldRunEffect] = useState(false);
     const [tmpMsg, setTmpMsg] = useState<string>('ここに出力結果が表示されます');

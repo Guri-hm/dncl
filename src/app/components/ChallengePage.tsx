@@ -19,6 +19,7 @@ import { FooterOverlay } from "./FooterOverlay";
 import Tip from "./Tip";
 import Door from "./Door";
 import { Question } from "./Question";
+import SuccessDialog from "./SuccessDialog";
 
 interface Props {
     challenge: Challenge;
@@ -30,10 +31,24 @@ export default function ChallengePage({ challenge }: Props) {
     const [dnclValidation, setDnclValidation] = useState<DnclValidationType>({ hasError: false, errors: [], lineNum: [] });
     const [snackbar, setSnackbar] = useState<{ open: boolean, duration: number, text: string }>({ open: false, duration: 3000, text: '' });
     const [hintVisible, setHintVisible] = useState(true);
+    const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
+    const [runResults, setRunResults] = useState<string[]>([]);
 
     const handleCloseSnackBar = () => {
         setSnackbar({ ...snackbar, open: false });
     };
+
+    const handleClose = () => {
+        setOpenSuccessDialog(false);
+    };
+
+    if (challenge.answer.length > 0 && !openSuccessDialog) {
+        runResults.map(result => {
+            if (result == challenge.answer.join('\n')) {
+                setOpenSuccessDialog(true);
+            }
+        })
+    }
 
     return (
         <PageWrapper>
@@ -59,7 +74,7 @@ export default function ChallengePage({ challenge }: Props) {
                         </Allotment.Pane>
                     </Allotment>
                     <Allotment.Pane className={`${styles.bgStone50} ${styles.marginTop16} ${styles.hFull} `}>
-                        <ConsoleWrapper answer={challenge.answer} dnclValidation={dnclValidation} setDnclValidation={setDnclValidation} treeItems={items} />
+                        <ConsoleWrapper dnclValidation={dnclValidation} setDnclValidation={setDnclValidation} treeItems={items} runResults={runResults} setRunResults={setRunResults} />
                     </Allotment.Pane>
                 </Allotment >
             </ContentWrapper>
@@ -70,6 +85,7 @@ export default function ChallengePage({ challenge }: Props) {
                 onClose={handleCloseSnackBar}
                 message={snackbar.text}
             />
+            <SuccessDialog open={openSuccessDialog} onClose={handleClose} message="問題をクリアしました！" />
             <FooterOverlay>
                 <HintButton />
                 <HowToButton />

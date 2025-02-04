@@ -31,7 +31,7 @@ const practiceAssignment: Challenge = {
   ],
   task: "コンソールに'30'と表示しましょう",
   hint: "代入文を使い，変数aに値を入れます.",
-  answer: ["30", "20"],
+  answer: ["30"],
 };
 
 

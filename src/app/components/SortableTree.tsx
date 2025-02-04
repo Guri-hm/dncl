@@ -149,8 +149,6 @@ export function SortableTree({
     );
   }, [activeId, treeItems]);
 
-  console.info(flattenedItems)
-
   const projected =
     activeId && overId
       ? getProjection(
