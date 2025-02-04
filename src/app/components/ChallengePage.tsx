@@ -9,7 +9,7 @@ import { PageWrapper } from "@/app/components/PageWrapper";
 import { Header } from "@/app/components/Header";
 import { HeaderItem } from "@/app/components/HeaderItem";
 import { ContentWrapper } from "@/app/components/ContentWrapper";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Snackbar } from "@mui/material";
 import HeaderTitle from "./HeaderTitle";
 import { HintButton } from "./HintButton";
@@ -20,6 +20,7 @@ import Tip from "./Tip";
 import Door from "./Door";
 import { Question } from "./Question";
 import SuccessDialog from "./SuccessDialog";
+import Confetti from 'react-confetti';
 
 interface Props {
     challenge: Challenge;
@@ -33,6 +34,19 @@ export default function ChallengePage({ challenge }: Props) {
     const [hintVisible, setHintVisible] = useState(true);
     const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
     const [runResults, setRunResults] = useState<string[]>([]);
+    const [showConfetti, setShowConfetti] = useState(false);
+
+    useEffect(() => {
+        if (openSuccessDialog) {
+            // 紙吹雪を開始
+            setTimeout(() => {
+                setShowConfetti(true);
+            }, 1000); // くす玉のアニメーション後に紙吹雪を開始
+        } else {
+            // ダイアログが閉じられたら紙吹雪を停止
+            setShowConfetti(false);
+        }
+    }, [openSuccessDialog]);
 
     const handleCloseSnackBar = () => {
         setSnackbar({ ...snackbar, open: false });
@@ -49,6 +63,18 @@ export default function ChallengePage({ challenge }: Props) {
             }
         })
     }
+
+    // ウィンドウサイズを取得
+    const [windowDimension, setWindowDimension] = useState({ width: window.innerWidth, height: window.innerHeight });
+
+    useEffect(() => {
+        const updateDimensions = () => {
+            setWindowDimension({ width: window.innerWidth, height: window.innerHeight });
+        };
+        window.addEventListener('resize', updateDimensions);
+
+        return () => window.removeEventListener('resize', updateDimensions);
+    }, []);
 
     return (
         <PageWrapper>
@@ -85,6 +111,14 @@ export default function ChallengePage({ challenge }: Props) {
                 onClose={handleCloseSnackBar}
                 message={snackbar.text}
             />
+            {showConfetti && (
+                <Confetti
+                    width={windowDimension.width}
+                    height={windowDimension.height}
+                    recycle={false}
+                    numberOfPieces={300}
+                />
+            )}
             <SuccessDialog open={openSuccessDialog} onClose={handleClose} message="問題をクリアしました！" />
             <FooterOverlay>
                 <HintButton />
