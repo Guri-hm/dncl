@@ -43,7 +43,7 @@ export default function ChallengePage({ challenge }: Props) {
                 </HeaderItem>
             </Header>
             <ContentWrapper>
-                <Question variant="h2" sx={{ fontSize: '1.7rem', color: 'white', fontWeight: 800, padding: 1 }}>
+                <Question>
                     問：{`${challenge.task}`}
                 </Question>
                 <Allotment vertical defaultSizes={[200, 100]}>
@@ -59,7 +59,7 @@ export default function ChallengePage({ challenge }: Props) {
                         </Allotment.Pane>
                     </Allotment>
                     <Allotment.Pane className={`${styles.bgStone50} ${styles.marginTop16} ${styles.hFull} `}>
-                        <ConsoleWrapper dnclValidation={dnclValidation} setDnclValidation={setDnclValidation} treeItems={items} />
+                        <ConsoleWrapper answer={challenge.answer} dnclValidation={dnclValidation} setDnclValidation={setDnclValidation} treeItems={items} />
                     </Allotment.Pane>
                 </Allotment >
             </ContentWrapper>

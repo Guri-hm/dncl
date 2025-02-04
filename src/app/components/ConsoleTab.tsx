@@ -13,10 +13,7 @@ interface CustomBoxProps extends BoxProps {
     setRunResults: any;
     dnclValidation: DnclValidationType,
     setDnclValidation: any,
-}
-type Err = {
-    msg: string,
-    color: string
+    answer?: string[],
 }
 
 const cnvToken = (token: string): string => {
@@ -284,7 +281,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
     };
 
     const renderCode = async (nodes: TreeItems): Promise<string> => {
-        const flatten = flattenTree(treeItems);
+        const flatten = flattenTree(nodes);
 
         const renderCodeArray = await Promise.all(flatten.map(async (node, index) => {
 

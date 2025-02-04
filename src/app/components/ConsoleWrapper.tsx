@@ -7,15 +7,16 @@ interface Props {
     treeItems: TreeItems;
     dnclValidation: DnclValidationType,
     setDnclValidation: any,
+    answer?: string[],
 }
 
-export const ConsoleWrapper: FC<Props> = ({ treeItems, dnclValidation, setDnclValidation }) => {
+export const ConsoleWrapper: FC<Props> = ({ ...props }) => {
 
     const [runResults, setRunResults] = useState<string[]>([]);
 
     return (
         <ConsoleBox tabLabels={['コンソール']} setRunResults={setRunResults}>
-            <ConsoleTab treeItems={treeItems} runResults={runResults} setRunResults={setRunResults} dnclValidation={dnclValidation} setDnclValidation={setDnclValidation}></ConsoleTab>
+            <ConsoleTab {...props} runResults={runResults} setRunResults={setRunResults}></ConsoleTab>
         </ConsoleBox>
     );
 };
