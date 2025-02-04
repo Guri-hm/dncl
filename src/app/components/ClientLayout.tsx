@@ -14,7 +14,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     useEffect(() => {
         const handleComplete = () => {
             setFadeOut(true);
-            setTimeout(() => setLoading(false), 500);
+            setTimeout(() => setLoading(true), 500);
         };
         handleComplete();
 

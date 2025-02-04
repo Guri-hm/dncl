@@ -11,6 +11,7 @@ export interface TreeItem {
   children: TreeItem[];
   collapsed?: boolean;
   processIndex?: number;
+  fixed?: boolean;
 }
 
 export type TreeItems = TreeItem[];
@@ -67,4 +68,11 @@ export interface TabGroup {
 }
 export interface TabItemsObj {
   [key: UniqueIdentifier]: TabGroup;
+}
+
+export interface Challenge {
+  items: TreeItems;
+  task: string;
+  hint: string;
+  answer: string[];
 }

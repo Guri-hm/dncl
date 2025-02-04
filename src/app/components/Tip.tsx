@@ -6,14 +6,15 @@ import CloseIcon from '@mui/icons-material/Close';
 
 interface Props {
     onClose?: any;
+    hint?: string
 }
 
-const Tip = ({ onClose }: Props) => {
+const Tip = ({ onClose, hint = "ヒントなし" }: Props) => {
     return (
         <Box>
 
             <Spotlight>
-                <SpeechBubbleImage msg='ここにヒントを表示します'>
+                <SpeechBubbleImage msg={hint}>
                     {onClose &&
                         <IconButton aria-label="close" sx={{
                             position: 'absolute',

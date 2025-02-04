@@ -232,7 +232,7 @@ export function SortableTree({
             <Allotment.Pane ref={ref} className={`${styles.rightPane} ${cmnStyles.hFull} ${cmnStyles.overflowAuto}`} >
               {(flattenedItems.length > 0) || editor.open ?
                 <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
-                  {flattenedItems.map(({ id, children, collapsed, depth, line }, index) => (
+                  {flattenedItems.map(({ id, children, collapsed, depth, line, fixed }, index) => (
                     <SortableTreeItem
                       key={id}
                       id={id}
@@ -248,6 +248,7 @@ export function SortableTree({
                       }
                       onRemove={removable ? () => handleRemove(id) : undefined}
                       isError={dnclValidation?.lineNum.includes(index + 1)}
+                      fixed={fixed}
                     />
                   ))}
                 </SortableContext>

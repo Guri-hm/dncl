@@ -12,13 +12,14 @@ export const SampleTreeItems = ({ sampleItems }: Props) => {
     return (
         <Box sx={{ width: '90%', marginX: 'auto' }}>
             {
-                sampleItems.map(({ id, depth, line }, index) => (
+                sampleItems.map(({ id, depth, line, fixed }, index) => (
                     <SortableTreeItem
                         key={id}
                         id={id}
                         value={line}
                         depth={depth}
                         indentationWidth={indentationWidth}
+                        fixed={fixed}
                     />
                 ))
             }

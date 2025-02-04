@@ -1,9 +1,7 @@
 import { Box } from "@mui/material"
-import { SortableTreeItem } from "./TreeItem";
 import { FlattenedItem } from "../types";
 import { v4 as uuidv4 } from 'uuid'
 import { SampleTreeItems } from "./SampleTreeItems";
-import { NextImage } from "./NextImage";
 
 
 const sampleItems: FlattenedItem[] = [
@@ -15,6 +13,7 @@ const sampleItems: FlattenedItem[] = [
         "parentId": null,
         "depth": 0,
         "processIndex": 1,
+        "fixed": true
     },
     {
         "id": uuidv4(),
@@ -24,6 +23,7 @@ const sampleItems: FlattenedItem[] = [
         "parentId": null,
         "depth": 0,
         "processIndex": 0,
+        "fixed": true
     }
 ]
 

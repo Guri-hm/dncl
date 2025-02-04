@@ -80,23 +80,12 @@ export default function Home() {
                   <ListItemText primary="条件式" secondary="未クリア" />
                 </ListItemButton>
               </ListItem>
-              <ListItem>
-                <ListItemAvatar>
-                  <Avatar>
-                    <AutoAwesomeIcon />
-                  </Avatar>
-                </ListItemAvatar>
-                <ListItemText primary="Vacation" secondary="July 20, 2014" />
-              </ListItem>
             </List>
           </Grid>
           <Grid spacing={3} size='auto'>
             <CustomTypography variant="h4">
               <span>問題</span>
             </CustomTypography>
-          </Grid>
-          <Grid size={3} sx={{ textAlign: 'center' }}>
-            <img src={"/stand_by_the_desk.svg"} alt={'机と女の子'} style={{ width: "100%", maxWidth: "300px" }} />
           </Grid>
         </Grid>
       </ContentWrapper>

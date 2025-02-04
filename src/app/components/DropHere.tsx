@@ -10,7 +10,6 @@ interface Props {
 const DropHere = ({ visible = true }: Props) => {
     return (
         <Box sx={{ display: `${visible ? 'block' : 'none'}` }}>
-
             <Spotlight>
                 <SpeechBubbleImage msg='ここにドロップします'>
                     <img src="/raise_one_hand.svg" alt="手をあげる" style={{ width: '100%' }}></img>

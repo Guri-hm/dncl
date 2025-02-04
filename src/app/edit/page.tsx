@@ -23,6 +23,7 @@ import { HintButton } from "../components/HintButton";
 import { HowToButton } from "../components/HowToButton";
 import { ConsoleWrapper } from "../components/ConsoleWrapper";
 import { FooterOverlay } from "../components/FooterOverlay";
+import Door from "../components/Door";
 
 const initialItems: TreeItems = sampleFuncItems;
 
@@ -43,9 +44,6 @@ export default function Home() {
 
   const handleCloseSnackBar = () => {
     setSnackbar({ ...snackbar, open: false });
-  };
-  const handleShowTabsBoxWrapper = () => {
-    setTabsBoxWrapperVisible(true);
   };
   const handleSaveItems = () => {
     setItemsStrage(items);
@@ -78,11 +76,7 @@ export default function Home() {
             </Allotment.Pane>
             {tabsBoxWrapperVisible ? '' :
               <Allotment.Pane minSize={60} maxSize={60} className={styles.paneHover}>
-                <CustomTooltip title="パネルを表示したいですか？" arrow followCursor placement="left">
-                  <span onClick={handleShowTabsBoxWrapper} >
-                    <NextImage src={"/door.svg"} alt={'ドアから覗く'} objectFit="cover" />
-                  </span>
-                </CustomTooltip>
+                <Door setVisible={() => setTabsBoxWrapperVisible(true)} title={"パネルを表示したいですか？"} />
               </Allotment.Pane>
             }
           </Allotment>
