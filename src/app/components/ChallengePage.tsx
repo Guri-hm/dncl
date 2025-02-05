@@ -27,7 +27,7 @@ interface Props {
 }
 
 export default function ChallengePage({ challenge }: Props) {
-
+    const [windowDimension, setWindowDimension] = useState({ width: 0, height: 0 });
     const [items, setItems] = useState(() => challenge.items);
     const [dnclValidation, setDnclValidation] = useState<DnclValidationType>({ hasError: false, errors: [], lineNum: [] });
     const [snackbar, setSnackbar] = useState<{ open: boolean, duration: number, text: string }>({ open: false, duration: 3000, text: '' });
@@ -64,17 +64,17 @@ export default function ChallengePage({ challenge }: Props) {
         })
     }
 
-    // ウィンドウサイズを取得
-    const [windowDimension, setWindowDimension] = useState({ width: window.innerWidth, height: window.innerHeight });
-
     useEffect(() => {
         const updateDimensions = () => {
             setWindowDimension({ width: window.innerWidth, height: window.innerHeight });
         };
+
+        updateDimensions(); // 初期値を設定
         window.addEventListener('resize', updateDimensions);
 
         return () => window.removeEventListener('resize', updateDimensions);
     }, []);
+
 
     return (
         <PageWrapper>
@@ -116,7 +116,7 @@ export default function ChallengePage({ challenge }: Props) {
                     width={windowDimension.width}
                     height={windowDimension.height}
                     recycle={false}
-                    numberOfPieces={300}
+                    numberOfPieces={400}
                 />
             )}
             <SuccessDialog open={openSuccessDialog} onClose={handleClose} message="問題をクリアしました！" />

@@ -1,0 +1,31 @@
+.spotlight {
+    position: fixed;
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 70%);
+    border-radius: 50%;
+    opacity: 0;
+    animation: moveSpotlight 5s forwards;
+}
+
+@keyframes moveSpotlight {
+    0% {
+        top: 0;
+        left: 0;
+        opacity: 1;
+    }
+
+    50% {
+        top: 50%;
+        left: 50%;
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+
+    100% {
+        top: 50%;
+        left: 50%;
+        opacity: 0;
+        transform: translate(-50%, -50%);
+    }
+}
