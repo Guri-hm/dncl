@@ -41,6 +41,8 @@ const FireworksEffect: React.FC = () => {
             containerRef.current?.appendChild(stars[N + 'r']!);
             for (let i = bits * N; i < bits + bits * N; i++) {
                 stars[i.toString()] = createDiv('*', 13);
+                //初期状態を非表示にしないとsetTimerの処理が始まるまで表示されてしまう
+                stars[i.toString()]!.style.visibility = "hidden"
                 containerRef.current?.appendChild(stars[i.toString()]!);
             }
         };
