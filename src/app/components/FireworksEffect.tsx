@@ -1,6 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 const FireworksEffect: React.FC = () => {
+    const containerRef = useRef<HTMLDivElement>(null);
+
     useEffect(() => {
         const bits = 80;
         const speed = 45;
@@ -17,11 +19,12 @@ const FireworksEffect: React.FC = () => {
         let decay: number[] = new Array(bits * bangs);
         let swide = window.innerWidth;
         let shigh = window.innerHeight;
-        let boddie: HTMLDivElement;
 
         const set_width = () => {
-            swide = window.innerWidth;
-            shigh = window.innerHeight;
+            if (containerRef.current) {
+                swide = containerRef.current.offsetWidth;
+                shigh = containerRef.current.offsetHeight;
+            }
         };
 
         const createDiv = (char: string, size: number): HTMLDivElement => {
@@ -35,10 +38,10 @@ const FireworksEffect: React.FC = () => {
 
         const write_fire = (N: number) => {
             stars[N * bits + bits] = createDiv('|', 12);
-            boddie.appendChild(stars[N * bits + bits]!);
+            containerRef.current?.appendChild(stars[N * bits + bits]!);
             for (let i = bits * N; i < bits + bits * N; i++) {
                 stars[i] = createDiv('*', 13);
-                boddie.appendChild(stars[i]!);
+                containerRef.current?.appendChild(stars[i]!);
             }
         };
 
@@ -104,15 +107,6 @@ const FireworksEffect: React.FC = () => {
         };
 
         const light_blue_touchpaper = () => {
-            boddie = document.createElement("div");
-            boddie.style.position = "fixed";
-            boddie.style.top = "0px";
-            boddie.style.left = "0px";
-            boddie.style.overflow = "visible";
-            boddie.style.width = "1px";
-            boddie.style.height = "1px";
-            boddie.style.backgroundColor = "transparent";
-            document.body.appendChild(boddie);
             set_width();
             for (let i = 0; i < bangs; i++) {
                 write_fire(i);
@@ -125,7 +119,7 @@ const FireworksEffect: React.FC = () => {
         window.onresize = set_width;
     }, []);
 
-    return null;
+    return <div ref={containerRef} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflow: 'hidden' }} />;
 };
 
 export default FireworksEffect;

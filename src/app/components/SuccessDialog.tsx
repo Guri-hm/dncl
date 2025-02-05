@@ -15,9 +15,9 @@ interface SuccessDialogProps {
 const SuccessDialog: React.FC<SuccessDialogProps> = ({ open, onClose, message }) => {
     return (
         <Dialog open={open} onClose={() => { }} fullWidth maxWidth="sm">
+            {open && <FireworksEffect />} {/* エフェクトの表示 */}
             <DialogTitle style={{ textAlign: 'center' }}>おめでとうございます！</DialogTitle>
             <DialogContent>
-                {open && <FireworksEffect />} {/* エフェクトの表示 */}
                 <p style={{ textAlign: 'center' }}>{message}</p>
             </DialogContent>
             <DialogActions>
