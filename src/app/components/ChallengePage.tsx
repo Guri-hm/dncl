@@ -10,7 +10,7 @@ import { Header } from "@/app/components/Header";
 import { HeaderItem } from "@/app/components/HeaderItem";
 import { ContentWrapper } from "@/app/components/ContentWrapper";
 import { useEffect, useState } from "react";
-import { Snackbar } from "@mui/material";
+import { Button, Snackbar } from "@mui/material";
 import HeaderTitle from "./HeaderTitle";
 import { HintButton } from "./HintButton";
 import { HowToButton } from "./HowToButton";
@@ -56,13 +56,13 @@ export default function ChallengePage({ challenge }: Props) {
         setOpenSuccessDialog(false);
     };
 
-    if (challenge.answer.length > 0 && !openSuccessDialog) {
-        runResults.map(result => {
-            if (result == challenge.answer.join('\n')) {
-                setOpenSuccessDialog(true);
-            }
-        })
-    }
+    // if (challenge.answer.length > 0 && !openSuccessDialog) {
+    //     runResults.map(result => {
+    //         if (result == challenge.answer.join('\n')) {
+    //             setOpenSuccessDialog(true);
+    //         }
+    //     })
+    // }
 
     useEffect(() => {
         const updateDimensions = () => {
@@ -86,6 +86,7 @@ export default function ChallengePage({ challenge }: Props) {
             <ContentWrapper>
                 <Question>
                     問：{`${challenge.task}`}
+                    <Button onClick={() => setOpenSuccessDialog(true)}>aaa</Button>
                 </Question>
                 <Allotment vertical defaultSizes={[200, 100]}>
                     <Allotment separator={false} defaultSizes={[100, 100]}>
