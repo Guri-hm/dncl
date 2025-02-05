@@ -4,7 +4,8 @@ const FireworksEffect: React.FC = () => {
     const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const bits = 80;
+        const bits = 1;
+        // const bits = 80;
         const speed = 45;
         const bangs = 5;
         const colours = ["#03f", "#f03", "#0e0", "#93f", "#0cf", "#f93", "#f0c"];
@@ -37,9 +38,10 @@ const FireworksEffect: React.FC = () => {
         };
 
         const write_fire = (N: number) => {
-            stars[N * bits + bits] = createDiv('|', 12);
-            containerRef.current?.appendChild(stars[N * bits + bits]!);
+            // stars[N * bits + bits] = createDiv('|', 12);
+            // containerRef.current?.appendChild(stars[N * bits + bits]!);
             for (let i = bits * N; i < bits + bits * N; i++) {
+                console.log(i)
                 stars[i] = createDiv('*', 13);
                 containerRef.current?.appendChild(stars[i]!);
             }
@@ -60,11 +62,16 @@ const FireworksEffect: React.FC = () => {
         const bang = (N: number) => {
             let A = 0;
             for (let i = bits * N; i < bits + bits * N; i++) {
+                if (!stars[i]) {
+                    console.error(`Star ${i} is undefined`);
+                    continue;
+                }
                 const Z = stars[i]!.style;
                 Z.left = Xpos[i] + "px";
                 Z.top = Ypos[i] + "px";
                 if (decay[i]) decay[i]--;
                 else A++;
+                // console.log(`Star ${i}: decay=${decay[i]}, visibility=${Z.visibility}`);
                 if (decay[i] === 15) Z.fontSize = "7px";
                 else if (decay[i] === 7) Z.fontSize = "2px";
                 else if (decay[i] === 1) Z.visibility = "hidden";
@@ -110,7 +117,7 @@ const FireworksEffect: React.FC = () => {
             set_width();
             for (let i = 0; i < bangs; i++) {
                 write_fire(i);
-                launch(i);
+                // launch(i);
                 setInterval(() => stepthrough(i), speed);
             }
         };
