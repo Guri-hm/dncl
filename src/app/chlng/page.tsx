@@ -7,9 +7,23 @@ import { HeaderItem } from "@/app/components/HeaderItem";
 import { ContentWrapper } from "@/app/components/ContentWrapper";
 import Grid from '@mui/material/Grid2';
 import HeaderTitle from "../components/HeaderTitle";
-import { Avatar, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, SvgIcon, Typography } from "@mui/material";
+import { Avatar, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Typography } from "@mui/material";
 import { styled } from '@mui/system';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import CheckedIcon from "../components/CheckedIcon";
+import UnachievedIcon from "../components/UnachievedIcon";
+
+interface Task {
+  taskId: number;
+  taskTitle: string;
+  isAchieved: boolean;
+  achievedDate: Date | null;
+}
+
+const tasks: Task[] = [
+  { taskId: 1, taskTitle: '代入文', isAchieved: true, achievedDate: new Date('2025-01-01') },
+  { taskId: 2, taskTitle: '表示文', isAchieved: false, achievedDate: null },
+  // 他の達成状況を追加
+];
 
 const CustomTypography = styled(Typography)(({ theme }) => ({
   position: 'relative',
@@ -30,14 +44,6 @@ const CustomTypography = styled(Typography)(({ theme }) => ({
     background: 'var(--stone-50)',
   },
 }));
-
-function CrownIcon(props) {
-  return (
-    <SvgIcon {...props} viewBox="0 0 24 24">
-      <path d="M5 16h14v2H5zm0-4 2-2 2.5 3 2.5-3 2.5 3L17 10l2 2v4H5zm0-2 3-3 2 2.5L12 8l1.5 2L15 8l3 3V5H5z" />
-    </SvgIcon>
-  );
-}
 
 
 export default function Home() {
@@ -60,26 +66,24 @@ export default function Home() {
               <span>練習</span>
             </CustomTypography>
             <List sx={{ width: '100%', maxWidth: 360 }}>
-              <ListItem>
-                <ListItemButton component="a" href={`/chlng/${"1"}`}>
-                  <ListItemAvatar>
-                    <Avatar>
-                      <AutoAwesomeIcon />
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText primary="代入文" secondary="未クリア" />
-                </ListItemButton>
-              </ListItem>
-              <ListItem>
-                <ListItemButton component="a" href={`/chlng/${"2"}`}>
-                  <ListItemAvatar>
-                    <Avatar>
-                      <AutoAwesomeIcon />
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText primary="条件式" secondary="未クリア" />
-                </ListItemButton>
-              </ListItem>
+
+              {tasks.map((task, index) =>
+                <ListItem key={index}>
+                  <ListItemButton component="a" href={`/chlng/${task.taskId}`}>
+                    <ListItemAvatar>
+                      <Avatar sx={{ bgcolor: 'black' }}>
+                        {task.isAchieved
+                          ?
+                          <CheckedIcon sx={{ color: 'rgb(73, 204, 57)' }} />
+                          :
+                          <UnachievedIcon />
+                        }
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText primary={task.taskTitle} secondary={task.achievedDate ? task.achievedDate.toString() : ''} />
+                  </ListItemButton>
+                </ListItem>
+              )}
             </List>
           </Grid>
           <Grid spacing={3} size='auto'>

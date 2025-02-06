@@ -21,8 +21,11 @@ const SuccessDialog: React.FC<SuccessDialogProps> = ({ open, onClose, message })
                 <p style={{ textAlign: 'center' }}>{message}</p>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose} color="primary" autoFocus>
+                <Button onClick={onClose} color="primary">
                     閉じる
+                </Button>
+                <Button onClick={onClose} variant="outlined" color="primary" autoFocus>
+                    一覧へ戻る
                 </Button>
             </DialogActions>
         </Dialog>

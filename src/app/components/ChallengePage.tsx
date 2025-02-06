@@ -56,13 +56,15 @@ export default function ChallengePage({ challenge }: Props) {
         setOpenSuccessDialog(false);
     };
 
-    // if (challenge.answer.length > 0 && !openSuccessDialog) {
-    //     runResults.map(result => {
-    //         if (result == challenge.answer.join('\n')) {
-    //             setOpenSuccessDialog(true);
-    //         }
-    //     })
-    // }
+    useEffect(() => {
+        if (challenge.answer.length > 0) {
+            runResults.map(result => {
+                if (result == challenge.answer.join('\n')) {
+                    setOpenSuccessDialog(true);
+                }
+            })
+        }
+    }, [runResults]);
 
     useEffect(() => {
         const updateDimensions = () => {
