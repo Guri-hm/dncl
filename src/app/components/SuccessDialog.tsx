@@ -5,6 +5,8 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import FireworksEffect from './FireworksEffect';
+import { NextImage } from './NextImage';
+import { Box } from '@mui/material';
 
 interface SuccessDialogProps {
     open: boolean;
@@ -15,10 +17,15 @@ interface SuccessDialogProps {
 const SuccessDialog: React.FC<SuccessDialogProps> = ({ open, onClose, message }) => {
     return (
         <Dialog open={open} onClose={() => { }} fullWidth maxWidth="sm">
-            {open && <FireworksEffect />} {/* エフェクトの表示 */}
+            {open &&
+                <FireworksEffect />
+            }
             <DialogTitle style={{ textAlign: 'center' }}>おめでとうございます！</DialogTitle>
             <DialogContent>
                 <p style={{ textAlign: 'center' }}>{message}</p>
+                <Box sx={{ textAlign: 'center' }}>
+                    <img src={"/joy.svg"} alt={'指差し'} style={{ width: '80%', maxWidth: '200px' }} ></img>
+                </Box>
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose} color="primary">

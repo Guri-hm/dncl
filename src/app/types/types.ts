@@ -71,6 +71,7 @@ export interface TabItemsObj {
 }
 
 export interface Challenge {
+  title: string;
   items: TreeItems;
   task: string;
   hint: string;

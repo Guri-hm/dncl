@@ -11,17 +11,18 @@ import { Avatar, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, T
 import { styled } from '@mui/system';
 import CheckedIcon from "../components/CheckedIcon";
 import UnachievedIcon from "../components/UnachievedIcon";
+import { allChallengesItems } from "../components/Challenges";
+import { Challenge } from "../types";
 
-interface Task {
-  taskId: number;
-  taskTitle: string;
+interface Achievement {
+  id: number;
   isAchieved: boolean;
   achievedDate: Date | null;
 }
 
-const tasks: Task[] = [
-  { taskId: 1, taskTitle: '代入文', isAchieved: true, achievedDate: new Date('2025-01-01') },
-  { taskId: 2, taskTitle: '表示文', isAchieved: false, achievedDate: null },
+const achievements: Achievement[] = [
+  { id: 1, isAchieved: true, achievedDate: new Date('2025-01-01') },
+  { id: 2, isAchieved: false, achievedDate: null },
   // 他の達成状況を追加
 ];
 
@@ -45,6 +46,7 @@ const CustomTypography = styled(Typography)(({ theme }) => ({
   },
 }));
 
+const allChallengesItemsArray: (Challenge | null)[] = Object.values(allChallengesItems);
 
 export default function Home() {
 
@@ -63,13 +65,12 @@ export default function Home() {
         }} >
           <Grid spacing={3} size='auto'>
             <CustomTypography variant="h4">
-              <span>練習</span>
+              <span>基本</span>
             </CustomTypography>
             <List sx={{ width: '100%', maxWidth: 360 }}>
-
-              {tasks.map((task, index) =>
+              {allChallengesItemsArray.map((challenge, index) => (
                 <ListItem key={index}>
-                  <ListItemButton component="a" href={`/chlng/${task.taskId}`}>
+                  <ListItemButton component="a" href={`/chlng/${index}`}>
                     <ListItemAvatar>
                       <Avatar sx={{ bgcolor: 'black' }}>
                         {task.isAchieved
@@ -83,12 +84,13 @@ export default function Home() {
                     <ListItemText primary={task.taskTitle} secondary={task.achievedDate ? task.achievedDate.toString() : ''} />
                   </ListItemButton>
                 </ListItem>
-              )}
+
+              ))}
             </List>
           </Grid>
           <Grid spacing={3} size='auto'>
             <CustomTypography variant="h4">
-              <span>問題</span>
+              <span>初級</span>
             </CustomTypography>
           </Grid>
         </Grid>
