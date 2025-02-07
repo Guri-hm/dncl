@@ -7,24 +7,25 @@ import { HeaderItem } from "@/app/components/HeaderItem";
 import { ContentWrapper } from "@/app/components/ContentWrapper";
 import Grid from '@mui/material/Grid2';
 import HeaderTitle from "../components/HeaderTitle";
-import { Avatar, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Typography } from "@mui/material";
+import { Avatar, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Typography } from "@mui/material";
 import { styled } from '@mui/system';
 import CheckedIcon from "../components/CheckedIcon";
 import UnachievedIcon from "../components/UnachievedIcon";
 import { allChallengesItems } from "../components/Challenges";
-import { Challenge } from "../types";
+import useAchievements, { Achievement, storageKey } from "../hooks/useAchievements";
+import ClearAllIcon from '@mui/icons-material/ClearAll';
+import { useState } from "react";
 
-interface Achievement {
-  id: number;
-  isAchieved: boolean;
-  achievedDate: Date | null;
-}
+// interface Achievement {
+//   isAchieved: boolean;
+//   achievedDate: string;
+// }
 
-const achievements: Achievement[] = [
-  { id: 1, isAchieved: true, achievedDate: new Date('2025-01-01') },
-  { id: 2, isAchieved: false, achievedDate: null },
-  // 他の達成状況を追加
-];
+// const achievements: { [key: string]: Achievement } =
+// {
+//   "1": { isAchieved: true, achievedDate: '2025/01/01' },
+//   // 他の達成状況を追加
+// }
 
 const CustomTypography = styled(Typography)(({ theme }) => ({
   position: 'relative',
@@ -46,15 +47,36 @@ const CustomTypography = styled(Typography)(({ theme }) => ({
   },
 }));
 
-const allChallengesItemsArray: (Challenge | null)[] = Object.values(allChallengesItems);
 
 export default function Home() {
+
+  const { achievements, clearAchievements } = useAchievements(storageKey);
+  const [open, setOpen] = useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+  const handleClose = () => {
+    setOpen(false);
+  };
+  const handleClear = () => {
+    clearAchievements();
+    setOpen(false);
+  };
 
   return (
     <PageWrapper>
       <Header>
         <HeaderItem>
           <HeaderTitle />
+          <Button
+            sx={{ backgroundColor: 'var(--stone-50)', marginLeft: 'auto', color: 'var(--foreground)' }}
+            onClick={handleClickOpen}
+            endIcon={<ClearAllIcon />}
+            variant="contained"
+          >
+            記録のリセット
+          </Button>
         </HeaderItem>
       </Header>
       <ContentWrapper>
@@ -68,12 +90,12 @@ export default function Home() {
               <span>基本</span>
             </CustomTypography>
             <List sx={{ width: '100%', maxWidth: 360 }}>
-              {allChallengesItemsArray.map((challenge, index) => (
+              {allChallengesItems.map((challenge, index) => (
                 <ListItem key={index}>
-                  <ListItemButton component="a" href={`/chlng/${index}`}>
+                  <ListItemButton component="a" href={`/chlng/${challenge.id}`}>
                     <ListItemAvatar>
                       <Avatar sx={{ bgcolor: 'black' }}>
-                        {task.isAchieved
+                        {achievements[challenge.id] && achievements[challenge.id].isAchieved
                           ?
                           <CheckedIcon sx={{ color: 'rgb(73, 204, 57)' }} />
                           :
@@ -81,7 +103,7 @@ export default function Home() {
                         }
                       </Avatar>
                     </ListItemAvatar>
-                    <ListItemText primary={task.taskTitle} secondary={task.achievedDate ? task.achievedDate.toString() : ''} />
+                    <ListItemText primary={challenge.title} secondary={achievements[challenge.id] ? achievements[challenge.id].achievedDate : ''} />
                   </ListItemButton>
                 </ListItem>
 
@@ -94,6 +116,28 @@ export default function Home() {
             </CustomTypography>
           </Grid>
         </Grid>
+
+        <Dialog
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            記録をリセットしますか？
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              リセットすると元に戻せません
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} autoFocus>キャンセル</Button>
+            <Button onClick={handleClear} color="error" variant="outlined" >
+              削除
+            </Button>
+          </DialogActions>
+        </Dialog>
       </ContentWrapper>
     </PageWrapper >
   );

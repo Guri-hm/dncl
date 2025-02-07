@@ -5,7 +5,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import FireworksEffect from './FireworksEffect';
-import { NextImage } from './NextImage';
+import { useRouter } from 'next/navigation'
 import { Box } from '@mui/material';
 
 interface SuccessDialogProps {
@@ -15,6 +15,11 @@ interface SuccessDialogProps {
 }
 
 const SuccessDialog: React.FC<SuccessDialogProps> = ({ open, onClose, message }) => {
+
+    const router = useRouter();
+    const handleRedirect = () => {
+        router.push('/chlng');
+    };
     return (
         <Dialog open={open} onClose={() => { }} fullWidth maxWidth="sm">
             {open &&
@@ -31,7 +36,7 @@ const SuccessDialog: React.FC<SuccessDialogProps> = ({ open, onClose, message })
                 <Button onClick={onClose} color="primary">
                     閉じる
                 </Button>
-                <Button onClick={onClose} variant="outlined" color="primary" autoFocus>
+                <Button onClick={handleRedirect} variant="outlined" color="primary" autoFocus>
                     一覧へ戻る
                 </Button>
             </DialogActions>

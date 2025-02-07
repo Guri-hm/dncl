@@ -21,6 +21,7 @@ import Door from "./Door";
 import { Question } from "./Question";
 import SuccessDialog from "./SuccessDialog";
 import Confetti from 'react-confetti';
+import useAchievements, { storageKey } from '../hooks/useAchievements';
 
 interface Props {
     challenge: Challenge;
@@ -35,6 +36,7 @@ export default function ChallengePage({ challenge }: Props) {
     const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
     const [runResults, setRunResults] = useState<string[]>([]);
     const [showConfetti, setShowConfetti] = useState(false);
+    const { achievements, addAchievement } = useAchievements(storageKey);
 
     useEffect(() => {
         if (openSuccessDialog) {
@@ -58,8 +60,10 @@ export default function ChallengePage({ challenge }: Props) {
 
     useEffect(() => {
         if (challenge.answer.length > 0) {
+            const answerString = challenge.answer.join('\n');
             runResults.map(result => {
-                if (result == challenge.answer.join('\n')) {
+                if (result == answerString) {
+                    addAchievement(challenge.id, { isAchieved: true });
                     setOpenSuccessDialog(true);
                 }
             })
@@ -71,7 +75,7 @@ export default function ChallengePage({ challenge }: Props) {
             setWindowDimension({ width: window.innerWidth, height: window.innerHeight });
         };
 
-        updateDimensions(); // 初期値を設定
+        updateDimensions();
         window.addEventListener('resize', updateDimensions);
 
         return () => window.removeEventListener('resize', updateDimensions);

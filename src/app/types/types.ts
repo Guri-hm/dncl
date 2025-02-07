@@ -76,4 +76,5 @@ export interface Challenge {
   task: string;
   hint: string;
   answer: string[];
+  id: string;
 }

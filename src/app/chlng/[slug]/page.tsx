@@ -1,5 +1,5 @@
 import ChallengePage from '@/app/components/ChallengePage';
-import { allChallengesItems } from '@/app/components/Challenges';
+import { getChallengeById } from '@/app/components/Challenges';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
@@ -23,7 +23,7 @@ export default async function SlugPage({ params }: SlugPageProps) {
     return notFound();
   }
 
-  const challenge = allChallengesItems[slug];
+  const challenge = getChallengeById(slug);
   if (!challenge) {
     return notFound();
   }

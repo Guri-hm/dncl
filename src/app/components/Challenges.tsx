@@ -3,6 +3,7 @@ import { Challenge } from "../types";
 import { v4 as uuidv4 } from 'uuid'
 
 const practiceAssignment: Challenge = {
+    id: "1",
     items: [
         {
             id: uuidv4(),
@@ -13,12 +14,13 @@ const practiceAssignment: Challenge = {
             fixed: true
         }
     ],
-    title: '代入文',
+    title: '代入文の基本',
     task: "コンソールに'30'と表示しましょう",
     hint: "代入文を使い，変数aに値を入れます",
     answer: ["30"],
 };
 const practiceOutput: Challenge = {
+    id: "2",
     items: [
         {
             id: uuidv4(),
@@ -35,7 +37,12 @@ const practiceOutput: Challenge = {
     answer: ["30"],
 };
 
-export const allChallengesItems: { [key: string]: Challenge | null } = {
-    "1": practiceAssignment,
-    "2": practiceOutput
+export const allChallengesItems: Challenge[] = [
+    practiceAssignment,
+    practiceOutput
+];
+
+export const getChallengeById = (id: string) => {
+    return allChallengesItems.find(item => item.id === id);
 };
+

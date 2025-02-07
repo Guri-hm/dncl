@@ -5,6 +5,10 @@ import type { FlattenedItem, TreeItem, TreeItems, ErrObj } from '../types';
 import { BraketSymbolEnum, ReturnFuncDncl, ProcessEnum, UserDefinedFuncDncl, VoidFuncDncl } from '@/app/enum';
 import { inputTypeEnum, keyPrefixEnum, ValidationEnum } from '../components/Dialog/Enum';
 
+import Kuroshiro from 'kuroshiro';
+import KuromojiAnalyzer from '@sglkc/kuroshiro-analyzer-kuromoji';
+
+
 function getDragDepth(offset: number, indentationWidth: number) {
   return Math.round(offset / indentationWidth);
 }
@@ -982,9 +986,6 @@ export function getUserDefinedFunctionInfoArray(treeItems: TreeItems): UserDefin
   return getUserDefinedFunctionInfoArray(filtered);
 
 }
-
-import Kuroshiro from 'kuroshiro';
-import KuromojiAnalyzer from '@sglkc/kuroshiro-analyzer-kuromoji';
 
 export const cnvToRomaji = async (text = '') => {
   const kuroshiro = new Kuroshiro();
