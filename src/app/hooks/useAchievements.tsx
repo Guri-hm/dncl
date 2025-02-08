@@ -18,7 +18,7 @@ const useAchievements = (storageKey: string) => {
     const addAchievement = (pageId: string, achievement: Achievement) => {
         const formattedAchievement = {
             ...achievement,
-            achievedDate: achievement.achievedDate ? formatDate(new Date(achievement.achievedDate)) : null
+            achievedDate: achievement.achievedDate ? formatDate(new Date(achievement.achievedDate)) : formatDate(new Date())
         };
 
         setAchievements(prevAchievements => {
