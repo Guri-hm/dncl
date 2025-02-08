@@ -21,7 +21,16 @@ const practiceAssignment: Challenge = {
 };
 const practiceOutput: Challenge = {
     id: "2",
-    items: [],
+    items: [
+        {
+            id: uuidv4(),
+            line: "a ← \"こんにちは\"",
+            children: [],
+            lineTokens: ["a", "\"こんにちは\"",],
+            processIndex: ProcessEnum.SetValToVariableOrArray,
+            fixed: true
+        }
+    ],
     title: '表示文の使い方',
     task: "コンソールに'こんにちは'と表示しましょう",
     hint: "表示文で変数または文字列を表示します",
