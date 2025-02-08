@@ -35,6 +35,7 @@ export default function Home() {
   const [tabsBoxWrapperVisible, setTabsBoxWrapperVisible] = useState(true);
   const [snackbar, setSnackbar] = useState<{ open: boolean, duration: number, text: string }>({ open: false, duration: 3000, text: '' });
   const [runResults, setRunResults] = useState<string[]>([]);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   useEffect(() => {
     const stragedItems: TreeItems | null = loadTreeItems();
@@ -43,13 +44,30 @@ export default function Home() {
     }
   }, []);
 
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [hasUnsavedChanges]);
+
   const handleCloseSnackBar = () => {
     setSnackbar({ ...snackbar, open: false });
   };
   const handleSaveItems = () => {
     setItemsStrage(items);
     setSnackbar({ ...snackbar, open: true, text: 'リストを保存しました' });
-  }
+    setHasUnsavedChanges(false);
+  };
+  const handleItemsChange = (newItems: TreeItems) => {
+    setItems(newItems);
+    setHasUnsavedChanges(true);
+  };
 
   return (
     <PageWrapper>
@@ -70,7 +88,7 @@ export default function Home() {
         <Allotment vertical defaultSizes={[200, 100]}>
           <Allotment separator={false}>
             <Allotment.Pane>
-              <SortableTree treeItems={items} setTreeItems={setItems} dnclValidation={dnclValidation} collapsible indicator removable ></SortableTree>
+              <SortableTree treeItems={items} setTreeItems={handleItemsChange} dnclValidation={dnclValidation} collapsible indicator removable ></SortableTree>
             </Allotment.Pane>
             <Allotment.Pane visible={tabsBoxWrapperVisible}>
               <TabsBoxWrapper treeItems={items} tabsBoxWrapperVisible={tabsBoxWrapperVisible} setTabsBoxWrapperVisible={setTabsBoxWrapperVisible}></TabsBoxWrapper>
