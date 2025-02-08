@@ -14,7 +14,7 @@ const practiceAssignment: Challenge = {
             fixed: true
         }
     ],
-    title: '代入文の基本',
+    title: '代入文の使い方',
     task: "コンソールに'30'と表示しましょう",
     hint: "代入文を使い，変数aに値を入れます",
     answer: ["30"],

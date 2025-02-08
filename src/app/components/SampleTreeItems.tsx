@@ -10,7 +10,7 @@ interface Props {
 
 export const SampleTreeItems = ({ sampleItems }: Props) => {
     return (
-        <Box sx={{ width: '90%', marginX: 'auto' }}>
+        <Box sx={{ width: '90%', marginX: 'auto', marginY: '10px' }}>
             {
                 sampleItems.map(({ id, depth, line, fixed }, index) => (
                     <SortableTreeItem

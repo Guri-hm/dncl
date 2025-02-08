@@ -188,6 +188,7 @@ export function SortableTree({
   const [visible, setVisible] = useState(true);
   const ref = useRef<any>(null);
 
+  console.log(flattenedItems)
   if (!isClient) {
     //documentオブジェクトはクライアントサイドでしか利用できないため、サーバサイドのエラーが発生する
     // サーバーサイドでは何もレンダリングしない
