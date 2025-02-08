@@ -11,7 +11,7 @@ import { StatementDesc } from './StatementDesc';
 import { EditorBox } from './EditorBox';
 import { keyPrefixEnum } from './Enum';
 import { ArithmeticOperatorDncl, ArithmeticOperator, BooleanDncl, BooleanJpDncl, ComparisonOperatorDncl, ComparisonOperator, SimpleAssignmentOperator, ReturnFuncDncl, ReturnFuncJpDncl, StatementEnum, UserDefinedFuncDncl, UserDefinedFuncJpDncl, VoidFuncDncl, VoidFuncJpDncl, ProcessEnum, BraketSymbolEnum } from '@/app/enum';
-import { checkBraketPair, cnvAndOrOperator, cnvObjToArray, cnvToDivision, escapeHtml, getOperandsMaxIndex, getVariableNames, replaceToAmpersand, sanitizeInput, sanitizeJsonValues, transformNegation, tryParseToJsFunction, updateToWithSquareBrackets, ValidateObjValue } from '@/app/utilities';
+import { checkBraketPair, cnvAndOrOperator, cnvObjToArray, cnvToDivision, escapeHtml, getOperandsMaxIndex, getVariableNames, replaceToConcatenation, sanitizeInput, sanitizeJsonValues, transformNegation, tryParseToJsFunction, updateToWithSquareBrackets, ValidateObjValue } from '@/app/utilities';
 import { ErrorMsgBox } from './ErrorMsgBox';
 import * as babelParser from '@babel/parser';
 
@@ -92,7 +92,7 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props)
         }
 
         //サニタイジングの後で実行
-        statement = replaceToAmpersand(statement);
+        statement = replaceToConcatenation(statement);
 
         //Function関数で実行し、エラーがあるかチェック
         // result = isValidExpression(statement);

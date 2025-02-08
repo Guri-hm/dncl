@@ -3,9 +3,8 @@ import { Box, BoxProps } from "@mui/material";
 import { useEffect, useState, Fragment } from "react";
 import { DnclValidationType, FlattenedItem, TreeItems } from "../types";
 import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, LoopEnum, ArithmeticOperator } from "../enum";
-import { checkDNCLSyntax, cnvToDivision, cnvToRomaji, containsJapanese, flattenTree, tryParseToJsFunction } from "../utilities";
+import { checkDNCLSyntax, cnvToDivision, containsJapanese, flattenTree, tryParseToJsFunction } from "../utilities";
 import Divider from '@mui/material/Divider';
-import { ConsoleBox } from './ConsoleBox';
 
 interface CustomBoxProps extends BoxProps {
     children?: React.ReactNode;
@@ -53,7 +52,6 @@ const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }
 
     const lineTokens: string[] = statement.lineTokens.map(token => { return cnvToken(token) });
     let tmpLine: string = '';
-
     switch (statement.processIndex) {
         case ProcessEnum.SetValToVariableOrArray:
             tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]};`
@@ -160,7 +158,7 @@ const Color = {
     white: 'white'
 }
 
-export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, setRunResults, setDnclValidation, dnclValidation, answer = [] }) => {
+export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, setRunResults, setDnclValidation, dnclValidation }) => {
 
     const [shouldRunEffect, setShouldRunEffect] = useState(false);
     const [tmpMsg, setTmpMsg] = useState<string>('ここに出力結果が表示されます');
