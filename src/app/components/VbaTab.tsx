@@ -2,7 +2,7 @@ import { Box, BoxProps } from "@mui/material";
 import React, { FC, useEffect, useState, Fragment } from "react";
 import { TreeItem, TreeItems } from "../types";
 import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, LoopEnum, ArithmeticOperator, ArithmeticOperatorVba, ArrayForVBA } from "../enum";
-import { capitalizeTrueFalse, convertBracketsToParentheses, tryParseToVbaFunc } from "../utilities";
+import { capitalizeTrueFalse, convertBracketsToParentheses, replaceToVbaConcatenation, tryParseToVbaFunc } from "../utilities";
 import ScopeBox from "./ScopeBox";
 import styles from './tab.module.css';
 import { v4 as uuidv4 } from 'uuid'
@@ -63,7 +63,7 @@ const cnvToVba = async (statement: { lineTokens: string[], processIndex: number 
 
         case ProcessEnum.Output:
 
-            tmpLine = `${OutputEnum.Vba}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket} `
+            tmpLine = `${OutputEnum.Vba}${BraketSymbolEnum.LeftBraket}${replaceToVbaConcatenation(lineTokens[0])}${BraketSymbolEnum.RigthBraket} `
             break;
 
         case ProcessEnum.If:
@@ -227,7 +227,6 @@ export const VbaTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }
         }
     }, [shouldRunEffect]);
 
-    let isStartedSub: boolean = false;
     const renderNodes = async (nodes: TreeItems, depth: number): Promise<React.ReactNode> => {
 
         const promises: Promise<React.ReactNode>[] = nodes.map(async (node, index) => {

@@ -311,6 +311,7 @@ export const cnvAndOrOperator = (targetString: string) => {
   const replacements = [
     { regex: /\s*または\s*/g, replacement: ' || ' },
     { regex: /\s*かつ\s*/g, replacement: ' && ' },
+    { regex: /(?<=\s)と(?=\s)/g, replacement: ' + ' },
     // { regex: /でない/g, replacement: '!' }
   ];
 
@@ -596,8 +597,11 @@ export const isValidExpression = (targetString: string): { errorMsgArray: string
 
 //表示文では「と」が入るので、Function関数が実行できない
 //サニタイジング後に「と」は「&」に置換する
-export const replaceToAmpersand = (targetString: string) => {
-  return targetString.replace(/ と /g, ' & ')
+export const replaceToConcatenation = (targetString: string) => {
+  return targetString.replace(/ と /g, ' + ')
+};
+export const replaceToVbaConcatenation = (targetString: string) => {
+  return targetString.replace(/\s*\+\s*/g, ' & ')
 };
 
 const toEmptyIfNull = (targetString: string | undefined) => {
