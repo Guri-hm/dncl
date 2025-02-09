@@ -78,3 +78,17 @@ export interface Challenge {
   answer: string[];
   id: string;
 }
+
+export interface ASTNode {
+  type: string;
+  id?: { name: string };
+  init?: { declarations: { id: { name: string }, init: { value: string } }[] };
+  test?: { left: { name: string }, operator: string, right: { value: string } };
+  update?: { argument: { name: string } };
+  discriminant?: { name: string };
+  cases?: { test?: { value: string }, consequent: ASTNode[] }[];
+  body?: ASTNode[] | { body: ASTNode[] };
+  expression?: { callee: { object: { name: string }, property: { name: string } }, arguments: { value: string }[] };
+  consequent?: { body: ASTNode[] };
+  alternate?: { body: ASTNode[] };
+}

@@ -1,80 +1,68 @@
+'use client'
+import { useEffect, useRef, useState } from 'react';
+import DrawioEmbed from './DrawioEmbed';
 
-
-"use client"
-import React, { useEffect, useState } from 'react';
-import Kuroshiro from 'kuroshiro';
-import KuromojiAnalyzer from '@sglkc/kuroshiro-analyzer-kuromoji';
-import { ESLint } from 'eslint';
-
-export default function Home() {
-
-  const [convertedText, setConvertedText] = useState('');
-  let text = "桜さく";
-  const [code, setCode] = useState('');
-  const [results, setLintResults] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false); // ローディング状態
-
-  const fetchLintResults = async () => {
-
-    try {
-      const response = await fetch('/api/lint', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ code }), // コードを送信
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Something went wrong');
-      }
-
-      const data = await response.json();
-
-      setLintResults(data.resultText);
-    } catch (err: any) {
-      setLintResults(err.message || 'An unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
-
-  };
+const Home: React.FC = () => {
+  const iframeRef = useRef(null);
 
   useEffect(() => {
-    const convertText = async () => {
-      const kuroshiro = new Kuroshiro();
-      await kuroshiro.init(new KuromojiAnalyzer({ dictPath: '/dict/' }));
-      const romaji = await kuroshiro.convert(text, { to: 'romaji' });
-      setConvertedText(romaji);
+    const xml = `
+      <mxfile host="app.diagrams.net">
+        <diagram name="Page-1">
+          <mxGraphModel>
+            <root>
+              <mxCell id="0" />
+              <mxCell id="1" parent="0" />
+              <mxCell id="2" value="開始" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                <mxGeometry x="240" y="30" width="80" height="40" as="geometry" />
+              </mxCell>
+              <mxCell id="3" value="処理" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                <mxGeometry x="240" y="130" width="80" height="40" as="geometry" />
+              </mxCell>
+              <mxCell id="4" value="終了" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                <mxGeometry x="240" y="230" width="80" height="40" as="geometry" />
+              </mxCell>
+              <mxCell id="5" edge="1" parent="1" source="2" target="3">
+                <mxGeometry relative="1" as="geometry" />
+              </mxCell>
+              <mxCell id="6" edge="1" parent="1" source="3" target="4">
+                <mxGeometry relative="1" as="geometry" />
+              </mxCell>
+            </root>
+          </mxGraphModel>
+        </diagram>
+      </mxfile>
+    `;
+
+    const handleMessage = (event) => {
+      if (event.data === 'ready') {
+        iframeRef.current.contentWindow.postMessage(xml, '*');
+      }
     };
 
-    convertText();
-  }, [text]);
+    window.addEventListener('message', handleMessage);
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+  }, []);
 
   return (
-    <>
-      <textarea
-        value={code}
-        onChange={(e) => setCode(e.target.value)}
-        rows={10}
-        cols={50}
-        placeholder="ここにコードを入力してください"
-      />
-      <button onClick={fetchLintResults} disabled={loading}>
-        {loading ? 'Linting...' : 'Lint Code'}
-      </button>
+    <div>
+      <h1>JavaScript Code to Flowchart</h1>
       <div>
-        <p>Original: {text}</p>
-        <p>Converted: {convertedText}</p>
+        <iframe
+          id="embed-diagram"
+          src='https://embed.diagrams.net/?spin=1&embed=1&ExitsaveAndExit=0&noSaveBtn=1&noExitBtn=1'
+          width="80%"
+          height="600px"
+          ref={iframeRef}
+          title="Draw.io Diagram"
+        ></iframe>
+
       </div>
-      <div>
-        {
-          results
-        }
-      </div>
-    </>
+    </div>
   );
-}
+};
 
-
+export default Home;

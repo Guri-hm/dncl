@@ -10,6 +10,7 @@ import { VbaTab } from "./VbaTab";
 import { closestCenter, DndContext, DragEndEvent, DragOverEvent, MeasuringStrategy, UniqueIdentifier } from "@dnd-kit/core";
 import { arrayMove, SortableContext } from "@dnd-kit/sortable";
 import { restrictToHorizontalAxis } from "@dnd-kit/modifiers";
+import { FlowTab } from "./FlowTab";
 
 interface Props {
     treeItems: TreeItems;
@@ -27,6 +28,11 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, se
                     id: 4, label: 'DNCL', component: <DnclTab treeItems={treeItems}>
                         DNCLのコード
                     </DnclTab>
+                },
+                {
+                    id: 5, label: 'フロー図', component: <FlowTab treeItems={treeItems}>
+                        フロー図
+                    </FlowTab>
                 },
             ],
         },

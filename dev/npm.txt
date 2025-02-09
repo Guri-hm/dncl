@@ -15,8 +15,8 @@ npm install @sglkc/kuroshiro-analyzer-kuromoji --legacy-peer-deps
 npm install eslint --legacy-peer-deps
 npm install @types/eslint --legacy-peer-deps
 npm install strip-ansi --legacy-peer-deps
-npm install isolated-vm --legacy-peer-deps
 npm install react-confetti --legacy-peer-deps
+npm install acorn --legacy-peer-deps
 
 *allotmentのバージョンが古く、「 --legacy-peer-deps」を付与してインストールした
 ⇒他のライブラリのインストール時にもこのオプション付与を要求されるようになった

@@ -12,7 +12,6 @@ import { CustomBox } from "./CustomBox";
 import Grid from '@mui/material/Grid2';
 import { TreeItems } from "@/app/types";
 import { WrapText } from "./WrapText";
-import { Arguments } from "./Arguments";
 
 type Props = {
     statementType: StatementEnum
