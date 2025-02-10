@@ -25,11 +25,13 @@ export const generateFlowchartXML = (ast: ASTNode) => {
     };
 
     const createEdge = (source: number, target: number) => {
-        return `
+        const edge = `
     <mxCell id="${nodeId}" edge="1" parent="1" source="${source}" target="${target}">
       <mxGeometry relative="1" as="geometry" />
     </mxCell>
     `;
+        nodeId++;
+        return edge;
     };
 
     let y = 30;
