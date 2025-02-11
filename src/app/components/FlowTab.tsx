@@ -25,6 +25,11 @@ export const FlowTab: React.FC<CustomBoxProps> = ({ treeItems }) => {
   const generateFlowchart = () => {
     const code = `
     a = 2
+    if(a > 0){
+      b = 1
+    }else{
+      b = 0
+    }
 `;
     const ast = parseCode(code);
     console.log(ast)

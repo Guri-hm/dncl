@@ -14,6 +14,8 @@ export const generateFlowchartXML = (ast: ASTNode) => {
   `;
 
     let nodeId = 2;
+    let edgeId = 1000; // エッジ用のIDを別に管理
+
     let previousNodeId: number | null = null;
 
     const createNode = (value: string, style: string, x: number, y: number) => {
@@ -26,15 +28,15 @@ export const generateFlowchartXML = (ast: ASTNode) => {
         return node;
     };
 
-    const createEdge = (source: number, target: number) => {
+    const createEdge = (source: number, target: number): string => {
         const edge = `
-    <mxCell id="${nodeId}" style="exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="${source}" target="${target}">
+    <mxCell id="${edgeId}" style="exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="${source}" target="${target}">
       <mxGeometry relative="1" as="geometry">
         <mxPoint x="300" y="200" as="sourcePoint" />
       </mxGeometry>
     </mxCell>
     `;
-        nodeId++;
+        edgeId++;
         return edge;
     };
 
@@ -62,14 +64,15 @@ export const generateFlowchartXML = (ast: ASTNode) => {
     if (Array.isArray(ast.body)) {
         ast.body.forEach((node: ASTNode) => {
             if (node.type === 'ExpressionStatement' && node.expression) {
-                if (node.expression.type === 'AssignmentExpression') {
-                    const expressionString = getExpressionString(node.expression);
+                const expression = node.expression as any; // 型を明示的に指定
+                if (expression.type === 'AssignmentExpression') {
+                    const expressionString = getExpressionString(expression);
                     addNode(expressionString, 'endArrow=none;html=1;rounded=0;entryX=0.5;entryY=0.5;entryDx=0;entryDy=15;entryPerimeter=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;');
                 }
-                else if (node.expression.type === 'CallExpression') {
-                    const calleeObject = node.expression.callee.object.name;
-                    const calleeProperty = node.expression.callee.property.name;
-                    const args = node.expression.arguments.map((arg: any) => arg.value).join(', ');
+                else if (expression.type === 'CallExpression') {
+                    const calleeObject = expression.callee.object.name;
+                    const calleeProperty = expression.callee.property.name;
+                    const args = expression.arguments.map((arg: any) => arg.value).join(', ');
                     addNode(`${calleeObject}.${calleeProperty}(${args})`, 'endArrow=none;html=1;rounded=0;entryX=0.5;entryY=0.5;entryDx=0;entryDy=15;entryPerimeter=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;');
                 }
             }
