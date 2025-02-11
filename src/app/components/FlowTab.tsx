@@ -9,10 +9,10 @@ interface CustomBoxProps extends BoxProps {
 }
 
 export const FlowTab: React.FC<CustomBoxProps> = ({ treeItems }) => {
-  const [codeString, setCodeString] = useState('');
   const [xml, setXml] = useState('');
 
   useEffect(() => {
+    generateFlowchart();
     const script = document.createElement('script');
     script.src = 'https://viewer.diagrams.net/js/viewer-static.min.js';
     script.async = true;
@@ -20,13 +20,14 @@ export const FlowTab: React.FC<CustomBoxProps> = ({ treeItems }) => {
     return () => {
       document.body.removeChild(script);
     };
-  }, [xml]);
+  },);
 
   const generateFlowchart = () => {
     const code = `
     a = 2
 `;
     const ast = parseCode(code);
+    console.log(ast)
     const flowchartXml = generateFlowchartXML(ast);
 
     console.log(flowchartXml)
