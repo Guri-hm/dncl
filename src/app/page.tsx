@@ -45,7 +45,7 @@ export default function Home() {
             </Grid>
           </Grid>
           <Grid size={3} sx={{ textAlign: 'center' }}>
-            <img src={"/stand_by_the_desk.svg"} alt={'机と女の子'} style={{ width: "100%", maxWidth: "300px" }} />
+            <img src={"/front.svg"} alt={'女の子の真正面'} style={{ width: "100%", maxWidth: "300px" }} />
           </Grid>
         </Grid>
       </ContentWrapper>
