@@ -20,7 +20,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
     let edgeId = 1000; // エッジ用のIDを別に管理
 
     //ノードの真下
-    let exitXY: { x: number, y: number } = bottomCenter;
+    let exitXY: { x: number, y: number } | null = null;
     let lastNodeId: number;
 
     const createNode = (value: string, style: string, x: number, y: number, width: number = 120, height: number = 60): string => {
@@ -37,27 +37,33 @@ export const generateFlowchartXML = (ast: ASTNode) => {
     const createEdge = (source: number, target: number, style: string = ''): string => {
 
         let relay = '';
-        switch (exitXY) {
-            case rightCenter:
-                relay = `<Array as="points">
-                    <mxPoint x="460" y="290" />
-                    </Array>
-                `
-                break;
-        }
+        // switch (exitXY) {
+        //     case rightCenter:
+        //         relay = `<Array as="points">
+        //             <mxPoint x="460" y="290" />
+        //             </Array>
+        //         `;
+        //         break;
+        // }
 
         const edge = `
-    <mxCell id="${edgeId}" style="orthogonalEdgeStyle;${style}${exitXY ? `exitX=${exitXY.x};exitY=${exitXY.y};` : ''};rounded=0;curved=0;" edge="1" parent="1" source="${source}" target="${target}">
+    <mxCell id="${edgeId}" style="${style}${exitXY ? `exitX=${exitXY.x};exitY=${exitXY.y};` : 'orthogonalEdgeStyle'};rounded=0;curved=0;" edge="1" parent="1" source="${source}" target="${target}">
       <mxGeometry relative="1" as="geometry">
         <mxPoint x="300" y="200" as="sourcePoint" />
         ${relay}
       </mxGeometry>
     </mxCell>
     `;
-        if (exitXY != bottomCenter) {
-            //先行ノードの下部中央との結合を標準にする
-            exitXY = bottomCenter;
-        }
+        //     const edge = `
+        // <mxCell id="${edgeId}" style="${style}${exitXY ? `exitX=${exitXY.x};exitY=${exitXY.y};` : 'orthogonalEdgeStyle'};rounded=0;curved=0;" edge="1" parent="1" source="${source}" target="${target}">
+        //   <mxGeometry relative="1" as="geometry">
+        //     <mxPoint x="300" y="200" as="sourcePoint" />
+        //     ${relay}
+        //   </mxGeometry>
+        // </mxCell>
+        // `;
+        //先行ノードの下部中央との結合を標準にする
+        exitXY = null;
         edgeId++;
         return edge;
     };
@@ -112,24 +118,20 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 });
                 nodeIds.push(lastNodeId);
 
-                // 偽の分岐
+                // 偽の分岐（`else` または `else if`）
                 if (node.alternate) {
                     exitXY = rightCenter;
-                    node.alternate.body.forEach((alternateNode: ASTNode, index: number) => {
-                        processNode(alternateNode, x + 160, y + 120 * (index + 1), index == 0 ? ifNodeId : nodeId - 1);
-                        lastNodeId = nodeId - 1;
-                    });
-                    nodeIds.push(lastNodeId);
+                    processAlternate(node.alternate, x + 160, y, ifNodeId, nodeIds);
                 }
 
-                // 収束ノード
-                addNode('', 'endArrow=none;html=1;rounded=0;entryX=0;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=0.5;exitDx=0;exitDy=-30;exitPerimeter=0;strokeColor=#FF3333;', x + 80, y + 240, null, 0, 0);
+                // ダミーノード(分岐を収束させる)
+                addNode('', 'shape=ellipse;whiteSpace=wrap;html=1;', x + 80, y + 240, null, 0, 0);
                 const mergeNodeId = nodeId - 1;
 
                 // 真と偽のノードから収束ノードへのエッジを追加
-                nodeIds.map(id => {
-                    xml += createEdge(id, mergeNodeId);
-                })
+                nodeIds.forEach(id => {
+                    xml += createEdge(id, mergeNodeId, 'endArrow=none;');
+                });
                 nodeIds = [];
 
                 break;
@@ -148,6 +150,22 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 break;
             default:
                 break;
+        }
+    };
+
+    const processAlternate = (node: ASTNode, x: number, y: number, parentNodeId: number, nodeIds: number[]) => {
+        if (node.type === 'IfStatement') {
+            processNode(node, x, y, parentNodeId);
+            //呼び出し先のダミーノードのid
+            //これが呼び出し元のダミーノードのidと結ばれることでメインの流れに処理が戻る
+            lastNodeId = nodeId - 1;
+            nodeIds.push(lastNodeId);
+        } else {
+            node.body.forEach((alternateNode: ASTNode, index: number) => {
+                processNode(alternateNode, x, y + 120 * (index + 1), index == 0 ? parentNodeId : nodeId - 1);
+                lastNodeId = nodeId - 1;
+            });
+            nodeIds.push(lastNodeId);
         }
     };
 

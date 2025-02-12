@@ -34,9 +34,12 @@ export const FlowTab: React.FC<CustomBoxProps> = ({ treeItems }) => {
     // `;
     const code = `
         a = 2
-        if(a > 0){
+        if(a > 5){
           b = 1
-        }else{
+        }else if(a > 0){
+          b = 0
+        }
+          else{
           b = 2
           a = 2
         }
@@ -81,11 +84,11 @@ export const FlowTab: React.FC<CustomBoxProps> = ({ treeItems }) => {
 
   return (
     <div style={{ backgroundColor: 'white' }}>
-      {/* <div className="mxgraph" style={{ maxWidth: '100%' }}
+      <div className="mxgraph" style={{ maxWidth: '100%' }}
         data-mxgraph={xml}>
       </div>
-      <button onClick={generateFlowchart}>Generate Flowchart</button> */}
-      <div>
+      <button onClick={generateFlowchart}>Generate Flowchart</button>
+      {/* <div>
         <iframe
           id="embed-diagram"
           src='https://embed.diagrams.net/?spin=1&embed=1&ExitsaveAndExit=0&noSaveBtn=1&noExitBtn=1'
@@ -95,7 +98,7 @@ export const FlowTab: React.FC<CustomBoxProps> = ({ treeItems }) => {
           title="Draw.io Diagram"
         ></iframe>
 
-      </div>
+      </div> */}
     </div>
   );
 }
