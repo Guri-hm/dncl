@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { parseCode, generateFlowchartXML } from '../utilities';
 import { BoxProps } from '@mui/material';
 import { TreeItems } from '../types';
@@ -9,6 +9,8 @@ interface CustomBoxProps extends BoxProps {
 }
 
 export const FlowTab: React.FC<CustomBoxProps> = ({ treeItems }) => {
+  const iframeRef = useRef(null);
+
   const [xml, setXml] = useState('');
 
   useEffect(() => {
@@ -63,14 +65,37 @@ export const FlowTab: React.FC<CustomBoxProps> = ({ treeItems }) => {
     });
 
     setXml(dataMxgraph);
+
+    const handleMessage = (event) => {
+      if (event.data === 'ready') {
+        iframeRef.current.contentWindow.postMessage(flowchartXml, '*');
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
   };
 
   return (
     <div style={{ backgroundColor: 'white' }}>
-      <div className="mxgraph" style={{ maxWidth: '100%' }}
+      {/* <div className="mxgraph" style={{ maxWidth: '100%' }}
         data-mxgraph={xml}>
       </div>
-      <button onClick={generateFlowchart}>Generate Flowchart</button>
+      <button onClick={generateFlowchart}>Generate Flowchart</button> */}
+      <div>
+        <iframe
+          id="embed-diagram"
+          src='https://embed.diagrams.net/?spin=1&embed=1&ExitsaveAndExit=0&noSaveBtn=1&noExitBtn=1'
+          width="80%"
+          height="600px"
+          ref={iframeRef}
+          title="Draw.io Diagram"
+        ></iframe>
+
+      </div>
     </div>
   );
 }
