@@ -86,39 +86,17 @@ export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props 
 
     setXml(dataMxgraph);
 
-    const handleMessage = (event) => {
-      if (event.data === 'ready') {
-        iframeRef.current.contentWindow.postMessage(flowchartXml, '*');
-      }
-    };
+    const flowChartNodes = <div className="mxgraph" style={{ maxWidth: '100%' }} data-mxgraph={dataMxgraph}></div>
 
-    window.addEventListener('message', handleMessage);
-
-    return () => {
-      window.removeEventListener('message', handleMessage);
-    };
+    setNodes(flowChartNodes);
   };
 
   return (
     <>
-      {nodes}
       <div style={{ backgroundColor: 'white' }}>
-
-        <div className="mxgraph" style={{ maxWidth: '100%' }}
-          data-mxgraph={xml}>
-        </div>
+        {nodes}
         <button onClick={generateFlowchart}>Generate Flowchart</button>
-        {/* <div>
-        <iframe
-        id="embed-diagram"
-        src='https://embed.diagrams.net/?spin=1&embed=1&ExitsaveAndExit=0&noSaveBtn=1&noExitBtn=1'
-        width="80%"
-        height="600px"
-        ref={iframeRef}
-        title="Draw.io Diagram"
-        ></iframe>
-        
-        </div> */}
+
       </div>
     </>
   );
