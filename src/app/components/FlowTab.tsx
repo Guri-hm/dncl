@@ -25,19 +25,25 @@ export const FlowTab: React.FC<CustomBoxProps> = ({ treeItems }) => {
   },);
 
   const generateFlowchart = () => {
-    // const code = `
-    //     if (x > 0) {
-    //         while (y < 10) {
-    //             y++;
-    //         }
-    //     }
-    // `;
     const code = `
-        a = 2
-        if(a > 5){
-          b = 1
+        if (x > 0) {
+            while (y < 10) {
+                y++;
+            }
         }
     `;
+    // const code = `
+    //     a = 2
+    //     if(a > 5){
+    //       b = 1
+    //     }else if(a > 0){
+    //       b = 0
+    //     }
+    //       else{
+    //       b = 2
+    //       a = 2
+    //     }
+    // `;
     const ast = parseCode(code);
     console.log(ast)
     const flowchartXml = generateFlowchartXML(ast);

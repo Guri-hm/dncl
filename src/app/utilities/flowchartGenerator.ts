@@ -41,34 +41,17 @@ export const generateFlowchartXML = (ast: ASTNode) => {
         return node;
     };
 
-    const createEdge = (source: number, target: number, style: string = ''): string => {
-
-        let relay = '';
-        // switch (exitXY) {
-        //     case rightCenter:
-        //         relay = `<Array as="points">
-        //             <mxPoint x="460" y="290" />
-        //             </Array>
-        //         `;
-        //         break;
-        // }
+    const createEdge = (source: number, target: number, style: string = '', wayPoints: string = ''): string => {
 
         const edge = `
     <mxCell id="${edgeId}" style="${style}${exitXY ? `exitX=${exitXY.x};exitY=${exitXY.y};` : 'orthogonalEdgeStyle'};rounded=0;curved=0;" edge="1" parent="1" source="${source}" target="${target}">
       <mxGeometry relative="1" as="geometry">
         <mxPoint x="300" y="200" as="sourcePoint" />
-        ${relay}
+        ${wayPoints}
       </mxGeometry>
     </mxCell>
     `;
-        //     const edge = `
-        // <mxCell id="${edgeId}" style="${style}${exitXY ? `exitX=${exitXY.x};exitY=${exitXY.y};` : 'orthogonalEdgeStyle'};rounded=0;curved=0;" edge="1" parent="1" source="${source}" target="${target}">
-        //   <mxGeometry relative="1" as="geometry">
-        //     <mxPoint x="300" y="200" as="sourcePoint" />
-        //     ${relay}
-        //   </mxGeometry>
-        // </mxCell>
-        // `;
+
         //先行ノードの下部中央との結合を標準にする
         exitXY = null;
         edgeId++;
@@ -107,6 +90,10 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                         const calleeProperty = expression.callee.property.name;
                         const args = expression.arguments.map((arg: any) => arg.value).join(', ');
                         addNode(`${calleeObject}.${calleeProperty}(${args})`, 'endArrow=none;html=1;rounded=0;entryX=0.5;entryY=0.5;entryDx=0;entryDy=15;entryPerimeter=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
+                    } else if (expression.type === 'UpdateExpression') {
+                        const argument = expression.argument.name;
+                        const operator = expression.operator;
+                        addNode(`${argument}${operator}`, 'endArrow=none;html=1;rounded=0;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
                     }
                 }
                 break;
@@ -131,15 +118,10 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 if (node.alternate) {
                     exitXY = rightCenter;
                     processAlternate(node.alternate as ASTNode, x + 160, y, ifNodeId, nodeIds);
-                } else {
-                    //ifのみでも分岐の線を引く
-                    exitXY = rightCenter;
-                    addNode('', 'shape=ellipse;whiteSpace=wrap;html=1;', x + 160, y + 240, ifNodeId, 0, 0);
-                    nodeIds.push(nodeId - 1);
                 }
 
                 // ダミーノード(分岐を収束させる)
-                addNode('', 'shape=ellipse;whiteSpace=wrap;html=1;', x + 80, y + 240, null, 0, 0);
+                addNode('', 'shape=ellipse;whiteSpace=wrap;html=1;', x + 60, y + 240, null, 0, 0);
                 const mergeNodeId = nodeId - 1;
 
                 // 真と偽のノードから収束ノードへのエッジを追加
@@ -147,6 +129,17 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                     xml += createEdge(id, mergeNodeId, 'endArrow=none;');
                 });
                 nodeIds = [];
+
+                //ifのみでも分岐の線を引く
+                if (!node.alternate) {
+                    const wayPoint = `
+                            <Array as="points">
+                            <mxPoint x="400" y="290" />
+                            <mxPoint x="400" y="500" />
+                            </Array>
+                    `
+                    xml += createEdge(ifNodeId, mergeNodeId, 'endArrow=none;', wayPoint);
+                }
 
                 break;
 
@@ -157,20 +150,22 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 // ループ開始端子
                 addNode(`${whileTestString}の間`, 'strokeWidth=1;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;', x, y + 60, nodeId - 1);
 
+                let bodyLength: number = 0;
                 if (node.body) {
                     if (Array.isArray(node.body)) {
                         node.body.forEach((bodyNode: ASTNode, index: number) => {
                             processNode(bodyNode, x, y + 120 * (index + 1), null);
                         });
+                        bodyLength = node.body.length;
                     } else if (Array.isArray(node.body.body)) {
                         node.body.body.forEach((bodyNode: ASTNode, index: number) => {
                             processNode(bodyNode, x, y + 120 * (index + 1), null);
                         });
+                        bodyLength = node.body.body.length;
                     }
                 };
-
                 // ループ終了端子
-                addNode('ループ終了', 'strokeWidth=1;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;flipH=0;flipV=1;', x, y + 120 * (node.body.body.length + 1), nodeId - 1);
+                addNode('', 'strokeWidth=1;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;flipH=0;flipV=1;', x, y + 120 * (bodyLength + 1), nodeId - 1);
 
                 break;
             default:
