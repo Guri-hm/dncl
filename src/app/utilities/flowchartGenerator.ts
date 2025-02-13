@@ -7,6 +7,13 @@ export const parseCode = (code: string) => {
 
 const bottomCenter: { x: number, y: number } = { x: 0.5, y: 1 };
 const rightCenter: { x: number, y: number } = { x: 1, y: 0.5 };
+const escape = (str: string): string => {
+    return str.replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+};
 
 export const generateFlowchartXML = (ast: ASTNode) => {
     let xml = `
@@ -25,7 +32,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
 
     const createNode = (value: string, style: string, x: number, y: number, width: number = 120, height: number = 60): string => {
         const node = `
-    <mxCell id="${nodeId}" value="${value}" style="${style}" vertex="1" parent="1">
+    <mxCell id="${nodeId}" value="${escape(value)}" style="${style}" vertex="1" parent="1">
       <mxGeometry x="${x}" y="${y}" width="${width}" height="${height}" as="geometry" />
     </mxCell>
     `;
@@ -112,16 +119,18 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 let nodeIds: number[] = [];
 
                 // 真の分岐
-                node.consequent.body.forEach((consequentNode: ASTNode, index: number) => {
-                    processNode(consequentNode, x, y + 120 * (index + 1), index == 0 ? ifNodeId : nodeId - 1);
-                    lastNodeId = nodeId - 1;
-                });
-                nodeIds.push(lastNodeId);
+                if (node.consequent && node.consequent.body) {
+                    node.consequent.body.forEach((consequentNode: ASTNode, index: number) => {
+                        processNode(consequentNode, x, y + 120 * (index + 1), index == 0 ? ifNodeId : nodeId - 1);
+                        lastNodeId = nodeId - 1;
+                    });
+                    nodeIds.push(lastNodeId);
+                }
 
                 // 偽の分岐（`else` または `else if`）
                 if (node.alternate) {
                     exitXY = rightCenter;
-                    processAlternate(node.alternate, x + 160, y, ifNodeId, nodeIds);
+                    processAlternate(node.alternate as ASTNode, x + 160, y, ifNodeId, nodeIds);
                 }
 
                 // ダミーノード(分岐を収束させる)
@@ -135,18 +144,29 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 nodeIds = [];
 
                 break;
+
             case 'WhileStatement':
                 const whileTest = node.test as any;
                 const whileTestString = `${whileTest.left.name} ${whileTest.operator} ${whileTest.right.value}`;
-                addNode(whileTestString, 'ellipse;whiteSpace=wrap;html=1;', x, y, parentNodeId);
 
-                const whileNodeId = nodeId - 1;
+                // ループ開始端子
+                addNode(`${whileTestString}の間`, 'strokeWidth=1;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;', x, y + 60, nodeId - 1);
 
-                node.body.body.forEach((bodyNode: ASTNode, index: number) => {
-                    processNode(bodyNode, x, y + 120 * (index + 1), whileNodeId);
-                });
+                if (node.body) {
+                    if (Array.isArray(node.body)) {
+                        node.body.forEach((bodyNode: ASTNode, index: number) => {
+                            processNode(bodyNode, x, y + 120 * (index + 1), null);
+                        });
+                    } else if (Array.isArray(node.body.body)) {
+                        node.body.body.forEach((bodyNode: ASTNode, index: number) => {
+                            processNode(bodyNode, x, y + 120 * (index + 1), null);
+                        });
+                    }
+                };
 
-                xml += createEdge(nodeId - 1, whileNodeId, 'exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;'); // ループの戻りエッジ
+                // ループ終了端子
+                addNode('ループ終了', 'strokeWidth=1;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;flipH=0;flipV=1;', x, y + 120 * (node.body.body.length + 1), nodeId - 1);
+
                 break;
             default:
                 break;
@@ -160,7 +180,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
             //これが呼び出し元のダミーノードのidと結ばれることでメインの流れに処理が戻る
             lastNodeId = nodeId - 1;
             nodeIds.push(lastNodeId);
-        } else {
+        } else if (node.body && Array.isArray(node.body)) {
             node.body.forEach((alternateNode: ASTNode, index: number) => {
                 processNode(alternateNode, x, y + 120 * (index + 1), index == 0 ? parentNodeId : nodeId - 1);
                 lastNodeId = nodeId - 1;
