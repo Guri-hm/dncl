@@ -86,18 +86,15 @@ export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props 
 
     setXml(dataMxgraph);
 
-    const flowChartNodes = <div className="mxgraph" style={{ maxWidth: '100%' }} data-mxgraph={dataMxgraph}></div>
+    const flowChartNodes = <div className="mxgraph" style={{ maxWidth: '100%', backgroundColor: 'white' }} data-mxgraph={dataMxgraph}></div>
 
     setNodes(flowChartNodes);
   };
 
   return (
     <>
-      <div style={{ backgroundColor: 'white' }}>
-        {nodes}
-        <button onClick={generateFlowchart}>Generate Flowchart</button>
-
-      </div>
+      {nodes}
+      <button onClick={generateFlowchart}>Generate Flowchart</button>
     </>
   );
 }
