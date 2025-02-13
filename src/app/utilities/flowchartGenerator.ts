@@ -131,6 +131,11 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 if (node.alternate) {
                     exitXY = rightCenter;
                     processAlternate(node.alternate as ASTNode, x + 160, y, ifNodeId, nodeIds);
+                } else {
+                    //ifのみでも分岐の線を引く
+                    exitXY = rightCenter;
+                    addNode('', 'shape=ellipse;whiteSpace=wrap;html=1;', x + 160, y + 240, ifNodeId, 0, 0);
+                    nodeIds.push(nodeId - 1);
                 }
 
                 // ダミーノード(分岐を収束させる)
