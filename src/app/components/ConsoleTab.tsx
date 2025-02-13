@@ -48,7 +48,7 @@ function extractJapaneseAndNonJapanese(text: string) {
     };
 }
 
-const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }) => {
+export const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }) => {
 
     const lineTokens: string[] = statement.lineTokens.map(token => { return cnvToken(token) });
     let tmpLine: string = '';

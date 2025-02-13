@@ -5,8 +5,8 @@ export const parseCode = (code: string) => {
     return acorn.parse(code, { ecmaVersion: 2020 }) as ASTNode;
 };
 
-const bottomCenter: { x: number, y: number } = { x: 0.5, y: 1 };
 const rightCenter: { x: number, y: number } = { x: 1, y: 0.5 };
+
 const escape = (str: string): string => {
     return str.replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
@@ -34,11 +34,11 @@ export const generateFlowchartXML = (ast: ASTNode) => {
 
     const createNode = (value: string, style: string, x: number, y: number, width: number = 120, height: number = nodeDefaultHeight): string => {
         const node = `
-    <mxCell id="${nodeId}" value="${escape(value)}" style="${style}" vertex="1" parent="1">
+    <mxCell id="${nodeId}" value="${escape(value)}" style="whiteSpace=wrap;${style}" vertex="1" parent="1">
       <mxGeometry x="${x}" y="${y}" width="${width}" height="${height}" as="geometry" />
     </mxCell>
     `;
-        maxY = y;
+        maxY = y > maxY ? y : maxY;
         nodeId++;
         lastNodeId = nodeId;
         return node;
@@ -89,10 +89,10 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                         const expressionString = getExpressionString(expression);
                         addNode(expressionString, 'endArrow=none;html=1;rounded=0;entryX=0.5;entryY=0.5;entryDx=0;entryDy=15;entryPerimeter=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
                     } else if (expression.type === 'CallExpression') {
-                        const calleeObject = expression.callee.object.name;
-                        const calleeProperty = expression.callee.property.name;
+                        // const calleeObject = expression.callee.object.name;
+                        // const calleeProperty = expression.callee.property.name;
                         const args = expression.arguments.map((arg: any) => arg.value).join(', ');
-                        addNode(`${calleeObject}.${calleeProperty}(${args})`, 'endArrow=none;html=1;rounded=0;entryX=0.5;entryY=0.5;entryDx=0;entryDy=15;entryPerimeter=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
+                        addNode(`"${args}"を表示する`, 'endArrow=none;html=1;rounded=0;entryX=0.5;entryY=0.5;entryDx=0;entryDy=15;entryPerimeter=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
                     } else if (expression.type === 'UpdateExpression') {
                         const argument = expression.argument.name;
                         const operator = expression.operator;
@@ -125,7 +125,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 }
 
                 // ダミーノード(分岐を収束させる)
-                addNode('', 'shape=ellipse;whiteSpace=wrap;html=1;', x + 60, y + 240, null, 0, 0);
+                addNode('', 'shape=ellipse;whiteSpace=wrap;html=1;', x + 60, maxY + 60, null, 0, 0);
                 const mergeNodeId = nodeId - 1;
 
                 // 真と偽のノードから収束ノードへのエッジを追加
@@ -160,22 +160,22 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 if (node.body) {
                     if (Array.isArray(node.body)) {
                         node.body.forEach((bodyNode: ASTNode, index: number) => {
-                            console.log(`ループ内要素${(index + 1)}の開始y:${y + 90 * (index + 1)}`)
-                            processNode(bodyNode, x, y + 90 * (index + 1), null);
+                            console.log(`ループ内要素${(index + 1)}の開始y:${y + 30 + 60 * (index + 1)}`)
+                            processNode(bodyNode, x, y + 30 + 60 * (index + 1), null);
                         });
                         bodyLength = node.body.length;
                     } else if (Array.isArray(node.body.body)) {
                         node.body.body.forEach((bodyNode: ASTNode, index: number) => {
-                            console.log(`ループ内要素${(index + 1)}の開始y:${y + 90 * (index + 1)}`)
-                            processNode(bodyNode, x, y + 90 * (index + 1), null);
+                            console.log(`ループ内要素${(index + 1)}の開始y:${y + 30 + 60 * (index + 1)}`)
+                            processNode(bodyNode, x, y + 30 + 60 * (index + 1), null);
                         });
                         bodyLength = node.body.body.length;
                     }
                 };
 
                 // ループ終了端子
-                console.log(`ループ開始y:${y + 60 + 90 * (bodyLength)}`)
-                addNode('', 'strokeWidth=1;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;flipH=0;flipV=1;', x, y + 60 + 90 * (bodyLength), nodeId - 1);
+                console.log(`ループ終了y:${y + 90 + 60 * (bodyLength)}`)
+                addNode('', 'strokeWidth=1;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;flipH=0;flipV=1;', x, y + 90 + 60 * (bodyLength), nodeId - 1);
 
                 break;
             default:
@@ -207,7 +207,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
         });
     }
 
-    addNode('終了', 'html=1;dashed=0;whiteSpace=wrap;shape=mxgraph.dfd.start', drawX, maxY + 30, nodeId - 1);
+    addNode('終了', 'html=1;dashed=0;whiteSpace=wrap;shape=mxgraph.dfd.start', drawX, maxY + 60, nodeId - 1);
     xml += `
   </root>
 </mxGraphModel>

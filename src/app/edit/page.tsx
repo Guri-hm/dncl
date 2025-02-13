@@ -30,19 +30,19 @@ const initialItems: TreeItems = sampleFuncItems;
 export default function Home() {
 
   const [itemsStrage, setItemsStrage] = useTreeItems([]);
-  const [items, setItems] = useState(() => initialItems);
+  const [items, setItems] = useState(() => loadTreeItems() ? loadTreeItems() : initialItems);
   const [dnclValidation, setDnclValidation] = useState<DnclValidationType>({ hasError: false, errors: [], lineNum: [] });
   const [tabsBoxWrapperVisible, setTabsBoxWrapperVisible] = useState(true);
   const [snackbar, setSnackbar] = useState<{ open: boolean, duration: number, text: string }>({ open: false, duration: 3000, text: '' });
   const [runResults, setRunResults] = useState<string[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  useEffect(() => {
-    const stragedItems: TreeItems | null = loadTreeItems();
-    if (stragedItems) {
-      setItems(stragedItems);
-    }
-  }, []);
+  // useEffect(() => {
+  //   const stragedItems: TreeItems | null = loadTreeItems();
+  //   if (stragedItems) {
+  //     setItems(stragedItems);
+  //   }
+  // }, []);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
