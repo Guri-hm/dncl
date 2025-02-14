@@ -30,7 +30,7 @@ const initialItems: TreeItems = sampleFuncItems;
 export default function Home() {
 
   const [itemsStrage, setItemsStrage] = useTreeItems([]);
-  const [items, setItems] = useState(() => loadTreeItems() ? loadTreeItems() : initialItems);
+  const [items, setItems] = useState(() => loadTreeItems() ? initialItems : initialItems);
   const [dnclValidation, setDnclValidation] = useState<DnclValidationType>({ hasError: false, errors: [], lineNum: [] });
   const [tabsBoxWrapperVisible, setTabsBoxWrapperVisible] = useState(true);
   const [snackbar, setSnackbar] = useState<{ open: boolean, duration: number, text: string }>({ open: false, duration: 3000, text: '' });

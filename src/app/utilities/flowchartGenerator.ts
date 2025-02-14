@@ -26,6 +26,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
     let nodeId = 2;
     let edgeId = 1000; // エッジ用のIDを別に管理
     let maxY = 0; //ノード追加時にy座標を記録
+    let mainFlowlasNodetId = 0;
     const drawX = 240;
     const nodeDefaultHeight = 30;
     //ノードの真下
@@ -262,15 +263,16 @@ export const generateFlowchartXML = (ast: ASTNode) => {
             case 'FunctionDeclaration':
             case 'FunctionExpression':
 
+                mainFlowlasNodetId = nodeId - 1;
                 const functionName = node.id ? node.id.name : (node.key ? node.key.name : null);
                 if (functionName) {
                     // 定義済み関数の場合はノードを作成しない
-                    addNode(`関数${functionName}`, 'shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;', x, y, null);
+                    addNode(`関数${functionName}`, 'html=1;dashed=0;whiteSpace=wrap;shape=mxgraph.dfd.start;', x + 400, y, null);
 
                     // 関数のボディを再帰的に処理
                     if (node.body && Array.isArray(node.body.body)) {
                         node.body.body.forEach((bodyNode: ASTNode, index: number) => {
-                            processNode(bodyNode, x, y + 30 * (index + 1), nodeId - 1);
+                            processNode(bodyNode, x, y + 30 * (index + 1), null);
                         });
                     }
 

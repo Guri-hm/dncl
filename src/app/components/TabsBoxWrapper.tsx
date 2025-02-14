@@ -37,7 +37,7 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, se
             ],
         },
         group2: {
-            visible: true, // or false, depending on the initial state
+            visible: false, // or false, depending on the initial state
             items: [
                 {
                     id: 1, label: 'javascript', component: <JsTab treeItems={treeItems}>
