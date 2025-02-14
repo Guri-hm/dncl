@@ -251,7 +251,11 @@ export const TabsBox = ({ tabItems, disabled, containerId = 'box', setTabItemsOb
                             <IconButton size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: 'var(--stone-50)' } }} aria-label="clipboard" onClick={() => {
                                 if (contentRef.current) {
                                     const replaceDivWithNewline = (html: string) => {
-                                        return html.replace(/<div[^>]*>/g, '\n').replace(/<\/div>/g, '');
+                                        // divタグを改行コードに変換
+                                        let formattedText = html.replace(/<div[^>]*>/g, '\n').replace(/<\/div>/g, '');
+                                        // 不要な空行を削除
+                                        formattedText = formattedText.replace(/\n\s*\n/g, '\n').trim();
+                                        return formattedText;
                                     }
                                     const innerHTML = contentRef.current.innerHTML;
                                     // const content = contentRef.current.textContent;
