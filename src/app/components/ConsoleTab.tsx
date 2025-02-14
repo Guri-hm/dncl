@@ -30,6 +30,9 @@ const convertToHexadecimal = (str: string): string => {
 const makeVariableName = (hexStr: string): string => {
     return 'var_' + hexStr.replace(/[^a-zA-Z0-9_]/g, '');
 }
+const makeFuncName = (hexStr: string): string => {
+    return 'func_' + hexStr.replace(/[^a-zA-Z0-9_]/g, '');
+}
 function extractJapaneseAndNonJapanese(text: string) {
     // 日本語の文字を表す正規表現
     const japanesePattern = /[\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\uFF00-\uFFEF]/g;
@@ -125,8 +128,8 @@ export const cnvToJs = async (statement: { lineTokens: string[], processIndex: n
                 // tmpLine = await cnvToRomaji(tmpLine);
                 const extracted = extractJapaneseAndNonJapanese(funcName);
                 const hexStr = convertToHexadecimal(extracted.japanese);
-                const variableName = makeVariableName(hexStr);
-                funcName = variableName + extracted.nonJapanese;
+                const prefix = makeFuncName(hexStr);
+                funcName = prefix + extracted.nonJapanese;
             }
             tmpLine = `${UserDefinedFunc.Js} ${funcName} ${BraketSymbolEnum.OpenBrace}`
             break;
@@ -137,8 +140,8 @@ export const cnvToJs = async (statement: { lineTokens: string[], processIndex: n
                 // tmpLine = await cnvToRomaji(tmpLine);
                 const extracted = extractJapaneseAndNonJapanese(tmpLine);
                 const hexStr = convertToHexadecimal(extracted.japanese);
-                const variableName = makeVariableName(hexStr);
-                tmpLine = variableName + extracted.nonJapanese;
+                const prefix = makeFuncName(hexStr);
+                tmpLine = prefix + extracted.nonJapanese;
             }
             break;
 

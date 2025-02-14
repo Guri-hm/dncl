@@ -329,7 +329,6 @@ export function SortableTree({
       clonedItems.push(itemParams.newItem);
       const overIndex = clonedItems.findIndex(({ id }) => id === itemParams.overIndex);
       const activeIndex = clonedItems.findIndex(({ id }) => id === active.id);
-      console.log(itemParams.overIndex)
       const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
       const newItems = buildTree(sortedItems);
 

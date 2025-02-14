@@ -71,11 +71,29 @@ export const generateFlowchartXML = (ast: ASTNode) => {
     };
 
     const getExpressionString = (expression: any): string => {
-        if (expression && expression.left && expression.right) {
-            const left = expression.left.name || "";
-            const operator = expression.operator || "";
-            const right = expression.right.value || "";
-            return `${left} ${operator} ${right}`;
+        if (expression) {
+            switch (expression.type) {
+                case 'AssignmentExpression':
+                    const left = getExpressionString(expression.left);
+                    const operator = expression.operator || "";
+                    const right = getExpressionString(expression.right);
+                    return `${left} ${operator} ${right}`;
+                case 'UpdateExpression':
+                    const argument = getExpressionString(expression.argument);
+                    const updateOperator = expression.operator || "";
+                    return `${argument}${updateOperator}`;
+                case 'BinaryExpression':
+                    const leftBinary = getExpressionString(expression.left);
+                    const operatorBinary = expression.operator || "";
+                    const rightBinary = getExpressionString(expression.right);
+                    return `${leftBinary} ${operatorBinary} ${rightBinary}`;
+                case 'Identifier':
+                    return expression.name;
+                case 'Literal':
+                    return expression.value;
+                default:
+                    return "";
+            }
         }
         return "";
     };
@@ -89,10 +107,30 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                         const expressionString = getExpressionString(expression);
                         addNode(expressionString, 'endArrow=none;html=1;rounded=0;entryX=0.5;entryY=0.5;entryDx=0;entryDy=15;entryPerimeter=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
                     } else if (expression.type === 'CallExpression') {
-                        // const calleeObject = expression.callee.object.name;
-                        // const calleeProperty = expression.callee.property.name;
-                        const args = expression.arguments.map((arg: any) => arg.value).join(', ');
-                        addNode(`"${args}"を表示する`, 'endArrow=none;html=1;rounded=0;entryX=0.5;entryY=0.5;entryDx=0;entryDy=15;entryPerimeter=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
+                        //関数の実行やconsole.logは「CallExpression」
+                        const callee = expression.callee;
+                        let calleeName = '';
+
+                        if (callee.type === 'Identifier') {
+                            calleeName = callee.name;
+                        } else if (callee.type === 'MemberExpression') {
+                            calleeName = callee.object.name;
+                        }
+
+                        const args = expression.arguments.map((arg: any) => {
+                            if (arg.value !== undefined) {
+                                return `"${arg.value}"`;
+                            } else {
+                                return arg.name;
+                            }
+                        }).join(', ');
+
+                        if (calleeName === 'console' && callee.property.name === 'log') {
+                            addNode(`${args}を表示する`, 'endArrow=none;html=1;rounded=0;entryX=0.5;entryY=0.5;entryDx=0;entryDy=15;entryPerimeter=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
+                        } else {
+                            // 定義済み関数の呼び出しの場合の処理
+                            addNode(`${calleeName}(${args})を実行する`, 'shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
+                        }
                     } else if (expression.type === 'UpdateExpression') {
                         const argument = expression.argument.name;
                         const operator = expression.operator;
@@ -178,6 +216,71 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 addNode('', 'strokeWidth=1;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;flipH=0;flipV=1;', x, y + 90 + 60 * (bodyLength), nodeId - 1);
 
                 break;
+            case 'ForStatement':
+
+                const parseExpression = (expression: string): { operator: string, rightSide: string } => {
+                    const match = expression.match(/([+-])\s*(.*)/);
+                    if (match) {
+                        const operator = match[1];
+                        const rightSide = match[2].trim();
+                        return { operator, rightSide };
+                    }
+                    return { operator: '', rightSide: '' };
+                };
+
+                const forInit = node.init ? getExpressionString(node.init) : '';
+                const [variable, fromNum] = forInit.split('=').map(str => str.trim());
+                const forTest = node.test ? getExpressionString(node.test) : '';
+                console.log(forTest)
+                const [, toNum] = forTest.split('<=').map(str => str.trim());
+                const forUpdate = node.update ? getExpressionString(node.update) : '';
+                const result = parseExpression(forUpdate);
+                // ループ開始端子
+                addNode(`${variable}を${fromNum}から${toNum}まで${result.rightSide}ずつ${result.operator == '+' ? '増やしながら' : '減らしながら'}`, 'strokeWidth=1;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;', x, y + 30, nodeId - 1);
+
+                let forBodyLength: number = 0;
+
+                if (node.body) {
+                    if (Array.isArray(node.body)) {
+                        node.body.forEach((bodyNode: ASTNode, index: number) => {
+                            processNode(bodyNode, x, y + 30 + 60 * (index + 1), null);
+                        });
+                        forBodyLength = node.body.length;
+                    } else if (Array.isArray(node.body.body)) {
+                        node.body.body.forEach((bodyNode: ASTNode, index: number) => {
+                            processNode(bodyNode, x, y + 30 + 60 * (index + 1), null);
+                        });
+                        forBodyLength = node.body.body.length;
+                    }
+                };
+
+                // ループ終了端子
+                addNode('', 'strokeWidth=1;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;flipH=0;flipV=1;', x, y + 90 + 60 * (forBodyLength), nodeId - 1);
+
+                break;
+
+            case 'FunctionDeclaration':
+            case 'FunctionExpression':
+
+                const functionName = node.id ? node.id.name : (node.key ? node.key.name : null);
+                if (functionName) {
+                    // 定義済み関数の場合はノードを作成しない
+                    addNode(`関数${functionName}`, 'shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;', x, y, null);
+
+                    // 関数のボディを再帰的に処理
+                    if (node.body && Array.isArray(node.body.body)) {
+                        node.body.body.forEach((bodyNode: ASTNode, index: number) => {
+                            processNode(bodyNode, x, y + 30 * (index + 1), nodeId - 1);
+                        });
+                    }
+
+                    // 関数の終了ノードを追加
+                    addNode(`関数 ${functionName} の終了`, 'shape=ellipse;whiteSpace=wrap;html=1;', x, maxY + 60, nodeId - 1);
+                    return;
+
+                }
+                break;
+
             default:
                 break;
         }

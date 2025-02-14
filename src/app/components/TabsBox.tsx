@@ -139,7 +139,7 @@ const animateLayoutChanges: AnimateLayoutChanges = (args) =>
 //     );
 // };
 
-export const TabsBox = ({ tabItems, disabled, containerId = 'box', setTabItemsObj, handleResizeBox, ...props }: Props) => {
+export const TabsBox = ({ tabItems, disabled, containerId = 'box', setTabItemsObj, ...props }: Props) => {
     const [value, setValue] = useState(0);
     const contentRef = useRef<HTMLDivElement | null>(null);
     const [snackbar, setSnackbar] = useState<{ open: boolean, duration: number, text: string }>({ open: false, duration: 3000, text: '' });

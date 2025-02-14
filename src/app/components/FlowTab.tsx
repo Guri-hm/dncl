@@ -10,12 +10,11 @@ interface CustomBoxProps extends BoxProps {
 }
 
 export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }) => {
-  const iframeRef = useRef(null);
 
+  const [jscode, setJsCode] = useState('');
   const [xml, setXml] = useState('');
   const [shouldRunEffect, setShouldRunEffect] = useState(false);
   const [nodes, setNodes] = useState<React.ReactNode>(children);
-  const [code, setCode] = useState<string>('');
 
   useEffect(() => {
     setNodes("変換中");
@@ -40,33 +39,57 @@ export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props 
     if (shouldRunEffect) {
       const convertCode = async () => {
         const jsCode = await renderCode(treeItems);
-        setCode(jsCode)
+        fetchLintResults(jsCode);
+        setJsCode(jsCode);
       };
-      setShouldRunEffect(false); // フラグをリセット
+      setShouldRunEffect(false);
       convertCode();
     };
   }, [shouldRunEffect]);
 
-  useEffect(() => {
-    if (code == '') return;
-    console.log(code)
-    generateFlowchart();
-    const script = document.createElement('script');
-    script.src = 'https://viewer.diagrams.net/js/viewer-static.min.js';
-    script.async = true;
-    document.body.appendChild(script);
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, [code]);
+  const fetchLintResults = async (code: string) => {
 
-  const generateFlowchart = () => {
+    if (!code || code == '') {
+      setNodes("");
+
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/lint', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code }), // コードを送信
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Something went wrong');
+      }
+
+      const data = await response.json();
+
+      if (data.messages.length == 0) {
+        generateFlowchart(code);
+      } else {
+        setNodes("プログラムに誤りがあります");
+      }
+
+    } catch (err: any) {
+    } finally {
+
+    }
+
+  };
+
+  const generateFlowchart = (code: string) => {
 
     const ast = parseCode(code);
     console.log(ast)
 
     const flowchartXml = generateFlowchartXML(ast);
-    console.log(flowchartXml);
     const mxfile = `
       <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 Edg/132.0.0.0" version="26.0.11">
           <diagram name="ページ1" id="-Ry5r97N3-jTHmX2WoBb">
@@ -84,17 +107,32 @@ export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props 
       xml: mxfile
     });
 
-    setXml(dataMxgraph);
+    setXml(flowchartXml);
 
     const flowChartNodes = <div className="mxgraph" style={{ maxWidth: '100%', backgroundColor: 'white' }} data-mxgraph={dataMxgraph}></div>
 
     setNodes(flowChartNodes);
+
+    const script = document.createElement('script');
+    script.src = 'https://viewer.diagrams.net/js/viewer-static.min.js';
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
+    };
   };
+
+  const handleCopyXML = () => {
+    navigator.clipboard.writeText(xml);
+    alert("クリップボードにコピーしました");
+  }
 
   return (
     <>
       {nodes}
-      <button onClick={generateFlowchart}>Generate Flowchart</button>
+      {jscode}
+      <button onClick={handleCopyXML}>mxGraphModelのコピー</button>
+
     </>
   );
 }

@@ -73,6 +73,8 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, se
                             return <PythonTab treeItems={treeItems}>Pythonのコード</PythonTab>;
                         case 'VBA':
                             return <VbaTab treeItems={treeItems}>VBAのコード</VbaTab>;
+                        case 'フロー図':
+                            return <FlowTab treeItems={treeItems}>フロー図</FlowTab>;
                         default:
                             return item.component;
                     }
