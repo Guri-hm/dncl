@@ -26,7 +26,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
     let nodeId = 2;
     let edgeId = 1000; // エッジ用のIDを別に管理
     let maxY = 0; //ノード追加時にy座標を記録
-    let mainFlowlasNodetId = 0;
+    let mainFlowlastNodetId = 0;
     const drawX = 240;
     const nodeDefaultHeight = 30;
     //ノードの真下
@@ -45,7 +45,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
         return node;
     };
 
-    const createEdge = (source: number, target: number, style: string = '', wayPoints: string = ''): string => {
+    const createEdge = (source: number, target: number, style: string = 'endArrow=none;', wayPoints: string = ''): string => {
 
         const edge = `
     <mxCell id="${edgeId}" style="${style}${exitXY ? `exitX=${exitXY.x};exitY=${exitXY.y};` : 'orthogonalEdgeStyle'};rounded=0;curved=0;" edge="1" parent="1" source="${source}" target="${target}">
@@ -181,7 +181,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                             <mxPoint x="${x + 200}" y="${maxY}" />
                             </Array>
                     `
-                    xml += createEdge(ifNodeId, mergeNodeId, 'endArrow=none;', wayPoint);
+                    xml += createEdge(ifNodeId, mergeNodeId, 'endArrow=block;', wayPoint);
                 }
 
                 break;
@@ -232,52 +232,69 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 const forInit = node.init ? getExpressionString(node.init) : '';
                 const [variable, fromNum] = forInit.split('=').map(str => str.trim());
                 const forTest = node.test ? getExpressionString(node.test) : '';
-                console.log(forTest)
                 const [, toNum] = forTest.split('<=').map(str => str.trim());
                 const forUpdate = node.update ? getExpressionString(node.update) : '';
                 const result = parseExpression(forUpdate);
                 // ループ開始端子
-                addNode(`${variable}を${fromNum}から${toNum}まで${result.rightSide}ずつ${result.operator == '+' ? '増やしながら' : '減らしながら'}`, 'strokeWidth=1;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;', x, y + 30, nodeId - 1);
+                addNode(`${variable}を${fromNum}から${toNum}まで${result.rightSide}ずつ${result.operator == '+' ? '増やしながら' : '減らしながら'}`, 'strokeWidth=1;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;', x, y, nodeId - 1);
 
                 let forBodyLength: number = 0;
 
                 if (node.body) {
                     if (Array.isArray(node.body)) {
                         node.body.forEach((bodyNode: ASTNode, index: number) => {
-                            processNode(bodyNode, x, y + 30 + 60 * (index + 1), null);
+                            processNode(bodyNode, x, y + 60 * (index + 1), null);
                         });
                         forBodyLength = node.body.length;
                     } else if (Array.isArray(node.body.body)) {
                         node.body.body.forEach((bodyNode: ASTNode, index: number) => {
-                            processNode(bodyNode, x, y + 30 + 60 * (index + 1), null);
+                            processNode(bodyNode, x, y + 60 * (index + 1), null);
                         });
                         forBodyLength = node.body.body.length;
                     }
                 };
 
                 // ループ終了端子
-                addNode('', 'strokeWidth=1;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;flipH=0;flipV=1;', x, y + 90 + 60 * (forBodyLength), nodeId - 1);
+                addNode('', 'strokeWidth=1;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;flipH=0;flipV=1;', x, y + 60 + 60 * (forBodyLength), nodeId - 1);
 
                 break;
 
             case 'FunctionDeclaration':
             case 'FunctionExpression':
 
-                mainFlowlasNodetId = nodeId - 1;
+                mainFlowlastNodetId = nodeId - 1;
+                const mainFlowMaxY = maxY;
                 const functionName = node.id ? node.id.name : (node.key ? node.key.name : null);
                 if (functionName) {
                     // 定義済み関数の場合はノードを作成しない
                     addNode(`関数${functionName}`, 'html=1;dashed=0;whiteSpace=wrap;shape=mxgraph.dfd.start;', x + 400, y, null);
 
+                    // let bodyLength: number = 0;
+
                     // 関数のボディを再帰的に処理
-                    if (node.body && Array.isArray(node.body.body)) {
-                        node.body.body.forEach((bodyNode: ASTNode, index: number) => {
-                            processNode(bodyNode, x, y + 30 * (index + 1), null);
-                        });
+                    if (node.body) {
+                        if (Array.isArray(node.body)) {
+                            node.body.forEach((bodyNode: ASTNode, index: number) => {
+                                console.log(`関数の子要素${(index + 1)}y:${maxY + 60}`)
+                                processNode(bodyNode, x + 400, maxY + 60, null);
+                            });
+                            // bodyLength = node.body.length;
+                        } else if (Array.isArray(node.body.body)) {
+                            node.body.body.forEach((bodyNode: ASTNode, index: number) => {
+                                console.log(`関数の子要素${(index + 1)}y:${maxY + 60}`)
+                                processNode(bodyNode, x + 400, maxY + 60, null);
+                            });
+                            // bodyLength = node.body.body.length;
+                        }
                     }
 
                     // 関数の終了ノードを追加
-                    addNode(`関数 ${functionName} の終了`, 'shape=ellipse;whiteSpace=wrap;html=1;', x, maxY + 60, nodeId - 1);
+                    addNode(`終了`, 'html=1;dashed=0;whiteSpace=wrap;shape=mxgraph.dfd.start;', x + 400, maxY + 60, nodeId - 1);
+
+                    // ダミーノード(関数は主フローと切り離すため，このダミーノードで主フローのエッジ連結に軌道修正)
+                    addNode('', 'shape=ellipse;whiteSpace=wrap;html=1;', x + 60, y, mainFlowlastNodetId, 0, 0);
+                    // 主フローの最深Yに戻す
+                    maxY = mainFlowMaxY;
                     return;
 
                 }

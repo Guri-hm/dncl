@@ -1,6 +1,6 @@
-import { FC, useEffect, useRef, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { parseCode, generateFlowchartXML, flattenTree } from '../utilities';
-import { BoxProps } from '@mui/material';
+import { Box, BoxProps, Button } from '@mui/material';
 import { TreeItems } from '../types';
 import { cnvToJs } from './ConsoleTab';
 
@@ -11,7 +11,6 @@ interface CustomBoxProps extends BoxProps {
 
 export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }) => {
 
-  const [jscode, setJsCode] = useState('');
   const [xml, setXml] = useState('');
   const [shouldRunEffect, setShouldRunEffect] = useState(false);
   const [nodes, setNodes] = useState<React.ReactNode>(children);
@@ -40,7 +39,6 @@ export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props 
       const convertCode = async () => {
         const jsCode = await renderCode(treeItems);
         fetchLintResults(jsCode);
-        setJsCode(jsCode);
       };
       setShouldRunEffect(false);
       convertCode();
@@ -109,7 +107,24 @@ export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props 
 
     setXml(flowchartXml);
 
-    const flowChartNodes = <div className="mxgraph" style={{ maxWidth: '100%', backgroundColor: 'white' }} data-mxgraph={dataMxgraph}></div>
+    const flowChartNodes = <>
+      <Box className="mxgraph" sx={{ maxWidth: '100%', backgroundColor: 'var(--stone-50)' }} data-mxgraph={dataMxgraph}></Box><Box sx={{ textAlign: 'center', paddingY: 1 }}>
+        <Button
+          sx={{ backgroundColor: 'var(--stone-50)', marginLeft: 'auto', color: 'var(--foreground)', textTransform: "none" }}
+          onClick={handleCopyXML}
+          variant="contained"
+        >
+          mxGraphModelのコピー
+        </Button>
+        <Button
+          sx={{ backgroundColor: 'var(--stone-50)', marginLeft: '1rem', color: 'var(--foreground)', textTransform: "none" }}
+          onClick={handleDownloadSVG}
+          variant="contained"
+        >
+          SVGをダウンロード
+        </Button>
+      </Box>
+    </>
 
     setNodes(flowChartNodes);
 
@@ -126,13 +141,20 @@ export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props 
     navigator.clipboard.writeText(xml);
     alert("クリップボードにコピーしました");
   }
-
+  const handleDownloadSVG = () => {
+    const svgBlob = new Blob([xml], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'flowchart.svg';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
   return (
     <>
       {nodes}
-      {jscode}
-      <button onClick={handleCopyXML}>mxGraphModelのコピー</button>
-
     </>
   );
 }

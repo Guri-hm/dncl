@@ -250,11 +250,16 @@ export const TabsBox = ({ tabItems, disabled, containerId = 'box', setTabItemsOb
                         <TabFillerInner>
                             <IconButton size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: 'var(--stone-50)' } }} aria-label="clipboard" onClick={() => {
                                 if (contentRef.current) {
-                                    const content = contentRef.current.textContent;
-                                    if (!content) {
+                                    const replaceDivWithNewline = (html: string) => {
+                                        return html.replace(/<div[^>]*>/g, '\n').replace(/<\/div>/g, '');
+                                    }
+                                    const innerHTML = contentRef.current.innerHTML;
+                                    // const content = contentRef.current.textContent;
+                                    if (!innerHTML) {
                                         return;
                                     }
-                                    navigator.clipboard.writeText(content).then(() => {
+                                    const formattedText = replaceDivWithNewline(innerHTML);
+                                    navigator.clipboard.writeText(formattedText).then(() => {
                                         setSnackbar({ ...snackbar, open: true, text: 'クリップボードにコピーしました' });
                                     }, (err) => {
                                         console.error(err);

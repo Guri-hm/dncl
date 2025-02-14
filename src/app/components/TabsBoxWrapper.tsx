@@ -30,14 +30,14 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, se
                     </DnclTab>
                 },
                 {
-                    id: 5, label: 'フロー図', component: <FlowTab treeItems={treeItems}>
-                        フロー図
+                    id: 5, label: 'フローチャート', component: <FlowTab treeItems={treeItems}>
+                        フローチャート
                     </FlowTab>
                 },
             ],
         },
         group2: {
-            visible: false, // or false, depending on the initial state
+            visible: true, // or false, depending on the initial state
             items: [
                 {
                     id: 1, label: 'javascript', component: <JsTab treeItems={treeItems}>
@@ -73,8 +73,8 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, se
                             return <PythonTab treeItems={treeItems}>Pythonのコード</PythonTab>;
                         case 'VBA':
                             return <VbaTab treeItems={treeItems}>VBAのコード</VbaTab>;
-                        case 'フロー図':
-                            return <FlowTab treeItems={treeItems}>フロー図</FlowTab>;
+                        case 'フローチャート':
+                            return <FlowTab treeItems={treeItems}>フローチャート</FlowTab>;
                         default:
                             return item.component;
                     }
