@@ -4,6 +4,9 @@ import { ASTNode } from '../types';
 export const parseCode = (code: string) => {
     return acorn.parse(code, { ecmaVersion: 2020 }) as ASTNode;
 };
+interface ExtendedASTNode extends ASTNode {
+    key?: { name?: string };
+}
 
 const rightCenter: { x: number, y: number } = { x: 1, y: 0.5 };
 
@@ -150,7 +153,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 // 真の分岐
                 if (node.consequent && node.consequent.body) {
                     node.consequent.body.forEach((consequentNode: ASTNode, index: number) => {
-                        console.log(`条件分岐y:${y + 30 * (index + 1)}`)
+                        // console.log(`条件分岐y:${y + 30 * (index + 1)}`)
                         processNode(consequentNode, x, y + 30 * (index + 1), index == 0 ? ifNodeId : nodeId - 1);
                         lastNodeId = nodeId - 1;
                     });
@@ -191,7 +194,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 const whileTestString = `${whileTest.left.name} ${whileTest.operator} ${whileTest.right.value}`;
 
                 // ループ開始端子
-                console.log(`ループ開始y:${y + 30}`)
+                // console.log(`ループ開始y:${y + 30}`)
                 addNode(`${whileTestString}の間`, 'strokeWidth=1;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;', x, y + 30, nodeId - 1);
 
                 let bodyLength: number = 0;
@@ -199,13 +202,13 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 if (node.body) {
                     if (Array.isArray(node.body)) {
                         node.body.forEach((bodyNode: ASTNode, index: number) => {
-                            console.log(`ループ内要素${(index + 1)}の開始y:${y + 30 + 60 * (index + 1)}`)
+                            // console.log(`ループ内要素${(index + 1)}の開始y:${y + 30 + 60 * (index + 1)}`)
                             processNode(bodyNode, x, y + 30 + 60 * (index + 1), null);
                         });
                         bodyLength = node.body.length;
                     } else if (Array.isArray(node.body.body)) {
                         node.body.body.forEach((bodyNode: ASTNode, index: number) => {
-                            console.log(`ループ内要素${(index + 1)}の開始y:${y + 30 + 60 * (index + 1)}`)
+                            // console.log(`ループ内要素${(index + 1)}の開始y:${y + 30 + 60 * (index + 1)}`)
                             processNode(bodyNode, x, y + 30 + 60 * (index + 1), null);
                         });
                         bodyLength = node.body.body.length;
@@ -213,7 +216,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 };
 
                 // ループ終了端子
-                console.log(`ループ終了y:${y + 90 + 60 * (bodyLength)}`)
+                // console.log(`ループ終了y:${y + 90 + 60 * (bodyLength)}`)
                 addNode('', 'strokeWidth=1;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;flipH=0;flipV=1;', x, y + 90 + 60 * (bodyLength), nodeId - 1);
 
                 break;
@@ -264,7 +267,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
 
                 mainFlowlastNodetId = nodeId - 1;
                 const mainFlowMaxY = maxY;
-                const functionName = node.id ? node.id.name : (node.key ? node.key.name : null);
+                const functionName = (node as ExtendedASTNode).id?.name || (node as ExtendedASTNode).key?.name || null;
                 if (functionName) {
                     // 定義済み関数の場合はノードを作成しない
                     addNode(`関数${functionName}`, 'html=1;dashed=0;whiteSpace=wrap;shape=mxgraph.dfd.start;', x + 400, y, null);
@@ -275,13 +278,13 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                     if (node.body) {
                         if (Array.isArray(node.body)) {
                             node.body.forEach((bodyNode: ASTNode, index: number) => {
-                                console.log(`関数の子要素${(index + 1)}y:${maxY + 60}`)
+                                // console.log(`関数の子要素${(index + 1)}y:${maxY + 60}`)
                                 processNode(bodyNode, x + 400, maxY + 60, null);
                             });
                             // bodyLength = node.body.length;
                         } else if (Array.isArray(node.body.body)) {
                             node.body.body.forEach((bodyNode: ASTNode, index: number) => {
-                                console.log(`関数の子要素${(index + 1)}y:${maxY + 60}`)
+                                // console.log(`関数の子要素${(index + 1)}y:${maxY + 60}`)
                                 processNode(bodyNode, x + 400, maxY + 60, null);
                             });
                             // bodyLength = node.body.body.length;
