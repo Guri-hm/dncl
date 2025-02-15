@@ -248,31 +248,33 @@ export const TabsBox = ({ tabItems, disabled, containerId = 'box', setTabItemsOb
                     />
                     <TabFillerContainer>
                         <TabFillerInner>
-                            <IconButton size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: 'var(--stone-50)' } }} aria-label="clipboard" onClick={() => {
-                                if (contentRef.current) {
-                                    const replaceDivWithNewline = (html: string) => {
-                                        // divタグを改行コードに変換
-                                        let formattedText = html.replace(/<div[^>]*>/g, '\n').replace(/<\/div>/g, '');
-                                        // 不要な空行を削除
-                                        formattedText = formattedText.replace(/\n\s*\n/g, '\n').trim();
-                                        return formattedText;
+                            {tabItems[value].label == 'フローチャート' ? '' :
+                                <IconButton size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: 'var(--stone-50)' } }} aria-label="clipboard" onClick={() => {
+                                    if (contentRef.current) {
+                                        const replaceDivWithNewline = (html: string) => {
+                                            // divタグを改行コードに変換
+                                            let formattedText = html.replace(/<div[^>]*>/g, '\n').replace(/<\/div>/g, '');
+                                            // 不要な空行を削除
+                                            formattedText = formattedText.replace(/\n\s*\n/g, '\n').trim();
+                                            return formattedText;
+                                        }
+                                        const innerHTML = contentRef.current.innerHTML;
+                                        // const content = contentRef.current.textContent;
+                                        if (!innerHTML) {
+                                            return;
+                                        }
+                                        const formattedText = replaceDivWithNewline(innerHTML);
+                                        navigator.clipboard.writeText(formattedText).then(() => {
+                                            setSnackbar({ ...snackbar, open: true, text: 'クリップボードにコピーしました' });
+                                        }, (err) => {
+                                            console.error(err);
+                                            setSnackbar({ ...snackbar, open: true, text: '失敗しました' });
+                                        });
                                     }
-                                    const innerHTML = contentRef.current.innerHTML;
-                                    // const content = contentRef.current.textContent;
-                                    if (!innerHTML) {
-                                        return;
-                                    }
-                                    const formattedText = replaceDivWithNewline(innerHTML);
-                                    navigator.clipboard.writeText(formattedText).then(() => {
-                                        setSnackbar({ ...snackbar, open: true, text: 'クリップボードにコピーしました' });
-                                    }, (err) => {
-                                        console.error(err);
-                                        setSnackbar({ ...snackbar, open: true, text: '失敗しました' });
-                                    });
-                                }
-                            }}>
-                                <AssignmentIcon />
-                            </IconButton>
+                                }}>
+                                    <AssignmentIcon />
+                                </IconButton>
+                            }
                             <IconButton size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: 'var(--stone-50)' } }} aria-label="clipboard" ref={setActivatorNodeRef} {...attributes} {...listeners} style={{
                                 cursor: isDragging ? 'grabbing' : 'grab'
                             }}>
