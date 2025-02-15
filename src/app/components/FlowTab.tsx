@@ -142,34 +142,27 @@ export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props 
     alert("クリップボードにコピーしました");
   }
   const handleDownloadSVG = () => {
-    setTimeout(() => {
-      // mxgraphクラスの要素を取得
-      const svgElement = document.querySelector('.mxgraph svg');
-      if (!svgElement) {
-        alert('SVGファイルが見つかりません');
-        return;
-      }
+    // mxgraphクラスの要素を取得
+    const svgElement = document.querySelector('.mxgraph svg');
+    if (!svgElement) {
+      alert('SVGファイルが見つかりません');
+      return;
+    }
 
-      // SVGの内容を取得してBlobを作成
-      const serializer = new XMLSerializer();
-      const svgString = serializer.serializeToString(svgElement);
+    // SVGの内容を取得してBlobを作成
+    const serializer = new XMLSerializer();
+    const svgString = serializer.serializeToString(svgElement);
 
-      // 内容をコンソールに出力
-      console.log(svgString);
+    const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
 
-      const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-      const url = URL.createObjectURL(svgBlob);
-
-      // ダウンロードリンクを作成してクリック
-      const a = document.createElement('a');
-      document.body.appendChild(a);
-      a.href = url;
-      a.download = 'flowchart.svg';
-      a.style.display = 'none'; // 見えないようにする
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    }, 1000); // 1秒待機してからダウンロード処理を実行
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'flowchart.svg';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
   return (
     <>
