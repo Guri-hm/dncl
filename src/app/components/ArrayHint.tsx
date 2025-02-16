@@ -38,14 +38,19 @@ export const ArrayHint = () => {
                 <Box sx={{ textAlign: 'center', marginX: 'auto', marginY: '10px', width: '50%' }}>
                     <img src={"/array.svg"} alt='配列' style={{ maxWidth: '150px' }}></img>
                 </Box>
+
                 <p>DNCLでは次のように配列を用意します。この処理を「初期化」と呼びます。</p>
                 <SampleTreeItems sampleItems={initiarized} ></SampleTreeItems>
 
-                <p>箱にあたる一つ一つの変数は要素と呼ばれます。特定の要素を指すときは，配列名と箱の番号を使います。この番号は添字と呼ばれます。添字は0からカウントする場合と，1からカウントする場合があります。</p>
+                <p>箱にあたる１つ１つの変数は要素と呼ばれます。特定の要素を指すときは，配列名と箱の番号を使います。この番号は添字と呼ばれます。添字は0からカウントする場合と，1からカウントする場合があります。</p>
                 <p>添字を0からカウントする場合，次のように配列名と添字を書くと，配列の中から「花子」を指定したことになります。</p>
 
                 <SampleTreeItems sampleItems={sampleItems} ></SampleTreeItems>
 
+                <p>余談ですが，配列の例えにはマンションが使われることもあります。要素はマンションの各部屋，添字は部屋番号です。</p>
+                <Box sx={{ textAlign: 'center', marginX: 'auto', marginY: '10px', width: '50%' }}>
+                    <img src={"/apartment.webp"} alt='配列の例え' style={{ maxWidth: '150px' }}></img>
+                </Box>
             </Box>
         </Box>
     )
