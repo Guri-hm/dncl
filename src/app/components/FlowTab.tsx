@@ -112,14 +112,14 @@ export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props 
     const flowChartNodes = <>
       <Box className="mxgraph" sx={{ maxWidth: '100%', backgroundColor: 'var(--stone-50)' }} data-mxgraph={dataMxgraph}></Box><Box sx={{ textAlign: 'center', paddingY: 1 }}>
         <Button
-          sx={{ backgroundColor: 'var(--stone-50)', marginLeft: 'auto', color: 'var(--foreground)', textTransform: "none" }}
+          sx={{ backgroundColor: 'var(--stone-50)', margin: '0.5rem', color: 'var(--foreground)', textTransform: "none" }}
           onClick={handleCopyXML}
           variant="contained"
         >
           mxGraphModelのコピー
         </Button>
         <Button
-          sx={{ backgroundColor: 'var(--stone-50)', marginLeft: '1rem', color: 'var(--foreground)', textTransform: "none" }}
+          sx={{ backgroundColor: 'var(--stone-50)', margin: '0.5rem', color: 'var(--foreground)', textTransform: "none" }}
           onClick={handleDownloadSVG}
           variant="contained"
         >
