@@ -1062,7 +1062,7 @@ export const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedIte
 
     case ProcessEnum.Else: {
       //開始要素が同じ深度・同じ親IDで前の要素
-      let hasItem = prevItem?.processIndex == ProcessEnum.If || nextItem?.processIndex == ProcessEnum.ElseIf;
+      let hasItem = prevItem?.processIndex == ProcessEnum.If || prevItem?.processIndex == ProcessEnum.ElseIf;
       if (!hasItem || !prevItem) {
         result = { errors: [`${lineNum}行目:先行処理に「もし<条件>ならば」「を実行し，そうでなくもし<条件>ならば」のいずれかを配置してください`], hasError: true };
       }
@@ -1076,7 +1076,8 @@ export const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedIte
 
     case ProcessEnum.EndIf: {
       //開始要素が同じ深度・同じ親IDで前の要素
-      let hasItem = prevItem?.processIndex == ProcessEnum.If || nextItem?.processIndex == ProcessEnum.ElseIf || nextItem?.processIndex == ProcessEnum.Else;
+      let hasItem = prevItem?.processIndex == ProcessEnum.If || prevItem?.processIndex == ProcessEnum.ElseIf || prevItem?.processIndex == ProcessEnum.Else;
+      console.log(hasItem)
       if (!hasItem || !prevItem) {
         result = { errors: [`${lineNum}行目:先行処理に「もし<条件>ならば」「を実行し，そうでなくもし<条件>ならば」「を実行し，そうでなければ」のいずれかを配置してください`], hasError: true };
         break;
