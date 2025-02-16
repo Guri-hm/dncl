@@ -5,6 +5,7 @@ import { OutputHint } from './OutputHint';
 import { WaitHint } from './WaitHint';
 import { VariableHint } from './VariableHint';
 import { ArrayHint } from './ArrayHint';
+import { IfHint } from './IfHint';
 
 const menuItems = [
     { id: 1, text: '変数とは？', component: <VariableHint></VariableHint> },
@@ -13,7 +14,8 @@ const menuItems = [
         id: 3, text: '代入文とは？「定義される前に使用されています」の場合は？', component: <AssignmentHint />
     },
     { id: 4, text: '表示文とは？変数や配列の要素を確認するためには？', component: <OutputHint /> },
-    { id: 5, text: 'コンソールにすぐ表示されない', component: <WaitHint></WaitHint> },
+    { id: 5, text: '条件分岐文とは？', component: <IfHint></IfHint> },
+    { id: 6, text: 'コンソールにすぐ表示されない', component: <WaitHint></WaitHint> },
 ];
 
 const HintMenu = () => {
@@ -28,7 +30,7 @@ const HintMenu = () => {
     };
 
     return (
-        <Box sx={{ width: { sm: '100%', md: '50%' }, minWidth: '500px', height: '100%' }}>
+        <Box sx={{ width: { xs: '90%', md: '50%' }, height: '100%', maxWidth: '600px' }}>
             {selectedItem === null ? (
                 <List>
                     {menuItems.map((item, index) => (
@@ -42,10 +44,10 @@ const HintMenu = () => {
                 </List >
 
             ) : (
-                <Box sx={{ width: { sm: '90%', md: '50%' }, minWidth: '500px', height: '100%', marginX: 'auto', marginTop: 2, paddingBottom: '30px' }}>
+                <Box sx={{ display: 'block', paddingBottom: '30px' }}>
                     {menuItems.find(item => item.id === selectedItem)?.component}
-                    <Box sx={{ width: '100%', textAlign: 'center', marginY: '30px' }}>
-                        <Button variant="contained" sx={{ backgroundColor: 'var(--slate-900)' }} onClick={handleClose}>
+                    <Box sx={{ textAlign: 'center' }}>
+                        <Button variant="contained" sx={{ flex: 1, backgroundColor: 'var(--slate-900)' }} onClick={handleClose}>
                             閉じる
                         </Button>
                     </Box>

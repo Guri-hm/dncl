@@ -184,7 +184,7 @@ export function SortableTree({
       offset: offsetLeft
     };
   }, [flattenedItems, offsetLeft]);
-
+  console.log(flattenedItems);
   const [visible, setVisible] = useState(true);
   const ref = useRef<any>(null);
 
