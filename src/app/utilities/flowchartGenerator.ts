@@ -35,6 +35,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
     //ノードの真下
     let exitXY: { x: number, y: number } | null = null;
     let lastNodeId: number;
+    let label: string = '';
 
     const createNode = (value: string, style: string, x: number, y: number, width: number = 120, height: number = nodeDefaultHeight): string => {
         const node = `
@@ -51,7 +52,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
     const createEdge = (source: number, target: number, style: string = 'endArrow=none;', wayPoints: string = ''): string => {
 
         const edge = `
-    <mxCell id="${edgeId}" style="${style}${exitXY ? `exitX=${exitXY.x};exitY=${exitXY.y};` : 'orthogonalEdgeStyle'};rounded=0;curved=0;" edge="1" parent="1" source="${source}" target="${target}">
+    <mxCell id="${edgeId}" value="${label}" style="${style}${exitXY ? `exitX=${exitXY.x};exitY=${exitXY.y};` : 'orthogonalEdgeStyle'};rounded=0;curved=0;" edge="1" parent="1" source="${source}" target="${target}">
       <mxGeometry relative="1" as="geometry">
         <mxPoint x="300" y="200" as="sourcePoint" />
         ${wayPoints}
@@ -62,6 +63,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
         //先行ノードの下部中央との結合を標準にする
         exitXY = null;
         edgeId++;
+        label = '';
         return edge;
     };
 
@@ -152,9 +154,10 @@ export const generateFlowchartXML = (ast: ASTNode) => {
 
                 // 真の分岐
                 if (node.consequent && node.consequent.body) {
+                    label = 'はい';
                     node.consequent.body.forEach((consequentNode: ASTNode, index: number) => {
                         // console.log(`条件分岐y:${y + 30 * (index + 1)}`)
-                        processNode(consequentNode, x, y + 30 * (index + 1), index == 0 ? ifNodeId : nodeId - 1);
+                        processNode(consequentNode, x, y + 60 * (index + 1), index == 0 ? ifNodeId : nodeId - 1);
                         lastNodeId = nodeId - 1;
                     });
                     nodeIds.push(lastNodeId);
@@ -163,6 +166,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 // 偽の分岐（`else` または `else if`）
                 if (node.alternate) {
                     exitXY = rightCenter;
+                    label = 'いいえ';
                     processAlternate(node.alternate as ASTNode, x + 160, y, ifNodeId, nodeIds);
                 }
 
@@ -184,6 +188,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                             <mxPoint x="${x + 200}" y="${maxY}" />
                             </Array>
                     `
+                    label = 'いいえ';
                     xml += createEdge(ifNodeId, mergeNodeId, 'endArrow=block;', wayPoint);
                 }
 
@@ -328,7 +333,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
 
     if (Array.isArray(ast.body)) {
         ast.body.forEach((node: ASTNode, index: number) => {
-            processNode(node, drawX, 90 * (index + 1), null);
+            processNode(node, drawX, 30 + 60 * (index + 1), null);
         });
     }
 

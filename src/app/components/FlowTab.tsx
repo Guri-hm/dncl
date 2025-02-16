@@ -11,7 +11,6 @@ interface CustomBoxProps extends BoxProps {
 
 export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }) => {
 
-  const [xml, setXml] = useState('');
   const [shouldRunEffect, setShouldRunEffect] = useState(false);
   const [nodes, setNodes] = useState<React.ReactNode>(children);
 
@@ -105,7 +104,10 @@ export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props 
       xml: mxfile
     });
 
-    setXml(flowchartXml);
+    const handleCopyXML = () => {
+      navigator.clipboard.writeText(flowchartXml);
+      alert("クリップボードにコピーしました");
+    }
 
     const flowChartNodes = <>
       <Box className="mxgraph" sx={{ maxWidth: '100%', backgroundColor: 'var(--stone-50)' }} data-mxgraph={dataMxgraph}></Box><Box sx={{ textAlign: 'center', paddingY: 1 }}>
@@ -137,10 +139,7 @@ export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props 
     };
   };
 
-  const handleCopyXML = () => {
-    navigator.clipboard.writeText(xml);
-    alert("クリップボードにコピーしました");
-  }
+
   const handleDownloadSVG = () => {
     // mxgraphクラスの要素を取得
     const svgElement = document.querySelector('.mxgraph svg');
