@@ -22,8 +22,10 @@ import { HowToButton } from "../components/HowToButton";
 import { ConsoleWrapper } from "../components/ConsoleWrapper";
 import { FooterOverlay } from "../components/FooterOverlay";
 import Door from "../components/Door";
-import { statementEnumMap, StatementJpEnum } from "../enum";
-import { v4 as uuidv4 } from "uuid";
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
+import SwipeableDrawerExample from "../components/SwipeableDrawer";
+import { SwiperTab } from "../components/SwiperTab";
 
 const initialItems: TreeItems = sampleFuncItems;
 
@@ -36,13 +38,8 @@ export default function Home() {
   const [snackbar, setSnackbar] = useState<{ open: boolean, duration: number, text: string }>({ open: false, duration: 3000, text: '' });
   const [runResults, setRunResults] = useState<string[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-
-  // useEffect(() => {
-  //   const stragedItems: TreeItems | null = loadTreeItems();
-  //   if (stragedItems) {
-  //     setItems(stragedItems);
-  //   }
-  // }, []);
+  const theme = useTheme();
+  const isSm = useMediaQuery(theme.breakpoints.up('sm'));//600px以上
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -85,24 +82,30 @@ export default function Home() {
         </HeaderItem>
       </Header>
       <ContentWrapper>
-        <Allotment vertical defaultSizes={[200, 100]}>
-          <Allotment separator={false}>
-            <Allotment.Pane>
-              <SortableTree treeItems={items} setTreeItems={handleItemsChange} dnclValidation={dnclValidation} collapsible indicator removable ></SortableTree>
-            </Allotment.Pane>
-            <Allotment.Pane visible={tabsBoxWrapperVisible}>
-              <TabsBoxWrapper treeItems={items} tabsBoxWrapperVisible={tabsBoxWrapperVisible} setTabsBoxWrapperVisible={setTabsBoxWrapperVisible}></TabsBoxWrapper>
-            </Allotment.Pane>
-            {tabsBoxWrapperVisible ? '' :
-              <Allotment.Pane minSize={60} maxSize={60} className={styles.paneHover}>
-                <Door setVisible={() => setTabsBoxWrapperVisible(true)} title={"パネルを表示したいですか？"} />
+        {
+          isSm ?
+
+            <Allotment vertical defaultSizes={[200, 100]}>
+              <Allotment separator={false}>
+                <Allotment.Pane>
+                  <SortableTree treeItems={items} setTreeItems={handleItemsChange} dnclValidation={dnclValidation} collapsible indicator removable ></SortableTree>
+                </Allotment.Pane>
+                <Allotment.Pane visible={tabsBoxWrapperVisible}>
+                  <TabsBoxWrapper treeItems={items} tabsBoxWrapperVisible={tabsBoxWrapperVisible} setTabsBoxWrapperVisible={setTabsBoxWrapperVisible}></TabsBoxWrapper>
+                </Allotment.Pane>
+                {tabsBoxWrapperVisible ? '' :
+                  <Allotment.Pane minSize={60} maxSize={60} className={styles.paneHover}>
+                    <Door setVisible={() => setTabsBoxWrapperVisible(true)} title={"パネルを表示したいですか？"} />
+                  </Allotment.Pane>
+                }
+              </Allotment>
+              <Allotment.Pane className={`${styles.bgStone50} ${styles.marginTop16} ${styles.hFull} `}>
+                <ConsoleWrapper dnclValidation={dnclValidation} setDnclValidation={setDnclValidation} treeItems={items} runResults={runResults} setRunResults={setRunResults} />
               </Allotment.Pane>
-            }
-          </Allotment>
-          <Allotment.Pane className={`${styles.bgStone50} ${styles.marginTop16} ${styles.hFull} `}>
-            <ConsoleWrapper dnclValidation={dnclValidation} setDnclValidation={setDnclValidation} treeItems={items} runResults={runResults} setRunResults={setRunResults} />
-          </Allotment.Pane>
-        </Allotment >
+            </Allotment >
+            :
+            <SwiperTab></SwiperTab>
+        }
       </ContentWrapper>
       <Snackbar
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}

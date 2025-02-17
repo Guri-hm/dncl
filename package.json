@@ -26,6 +26,7 @@
     "react-confetti": "^6.2.2",
     "react-dom": "^19.0.0",
     "strip-ansi": "^7.1.0",
+    "swiper": "^11.2.4",
     "uuid": "^11.0.3",
     "wanakana": "^5.3.1"
   },
