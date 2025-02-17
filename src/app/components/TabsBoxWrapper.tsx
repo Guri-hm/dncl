@@ -11,6 +11,8 @@ import { closestCenter, DndContext, DragEndEvent, DragOverEvent, MeasuringStrate
 import { arrayMove, SortableContext } from "@dnd-kit/sortable";
 import { restrictToHorizontalAxis } from "@dnd-kit/modifiers";
 import { FlowTab } from "./FlowTab";
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 
 interface Props {
     treeItems: TreeItems;
@@ -20,7 +22,10 @@ interface Props {
 
 export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, setTabsBoxWrapperVisible }) => {
     const ref = useRef<any>(null);
-    const [tabItemsObj, setTabItemsObj] = useState<TabItemsObj>({
+    const theme = useTheme();
+    const isMd = useMediaQuery(theme.breakpoints.up('md'));//900px以上
+
+    const [tabItemsObj, setTabItemsObj] = useState<TabItemsObj>(isMd ? {
         group1: {
             visible: true, // or false, depending on the initial state
             items: [
@@ -56,7 +61,40 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, se
                 },
             ],
         },
-    });
+    } :
+        {
+            group1: {
+                visible: true, // or false, depending on the initial state
+                items: [
+                    {
+                        id: 4, label: 'DNCL', component: <DnclTab treeItems={treeItems}>
+                            DNCLのコード
+                        </DnclTab>
+                    },
+                    {
+                        id: 5, label: 'フローチャート', component: <FlowTab treeItems={treeItems}>
+                            フローチャート
+                        </FlowTab>
+                    },
+                    {
+                        id: 1, label: 'javascript', component: <JsTab treeItems={treeItems}>
+                            javascriptのコード
+                        </JsTab>
+                    },
+                    {
+                        id: 2, label: 'Python', component: <PythonTab treeItems={treeItems}>
+                            Pythonのコード
+                        </PythonTab>
+                    },
+                    {
+                        id: 3, label: 'VBA', component: <VbaTab treeItems={treeItems}>
+                            VBAのコード
+                        </VbaTab>
+                    },
+                ]
+            }
+        }
+    );
 
     useEffect(() => {
         // `treeItems` が変更されるたびに `tabItemsObj` の `component` 部分のみを更新
@@ -81,16 +119,21 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, se
                 })()
             }));
 
-            return {
+            const updatedTabItemsObj: TabItemsObj = {
                 group1: {
                     ...prevTabItemsObj.group1,
                     items: updateComponents(prevTabItemsObj.group1)
-                },
-                group2: {
-                    ...prevTabItemsObj.group2,
-                    items: updateComponents(prevTabItemsObj.group2)
                 }
             };
+
+            if (prevTabItemsObj.group2) {
+                updatedTabItemsObj.group2 = {
+                    ...prevTabItemsObj.group2,
+                    items: updateComponents(prevTabItemsObj.group2)
+                };
+            }
+
+            return updatedTabItemsObj;
         });
     }, [treeItems]);
 

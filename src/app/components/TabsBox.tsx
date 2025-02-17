@@ -248,7 +248,7 @@ export const TabsBox = ({ tabItems, disabled, containerId = 'box', setTabItemsOb
                     />
                     <TabFillerContainer>
                         <TabFillerInner>
-                            {tabItems[value].label == 'フローチャート' ? '' :
+                            {tabItems[value] && tabItems[value].label == 'フローチャート' ? '' :
                                 <IconButton size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: 'var(--stone-50)' } }} aria-label="clipboard" onClick={() => {
                                     if (contentRef.current) {
                                         const replaceDivWithNewline = (html: string) => {
