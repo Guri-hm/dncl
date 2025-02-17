@@ -64,7 +64,6 @@ export default function Home() {
     setOpen(false);
   };
 
-  console.log(achievements)
   return (
     <PageWrapper>
       <Header>

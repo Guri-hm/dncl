@@ -2,15 +2,15 @@
 import { Allotment } from "allotment";
 import "allotment/dist/style.css";
 import "../components/alloment-custom.css";
-import { SortableTree } from "@/app/components/SortableTree";
+import { defaultFragments, SortableTree } from "@/app/components/SortableTree";
 import styles from '@/app/components/common.module.css';
-import { Challenge, DnclValidationType } from "@/app/types";
+import { Challenge, DnclValidationType, FragmentItems, TreeItems } from "@/app/types";
 import { PageWrapper } from "@/app/components/PageWrapper";
 import { Header } from "@/app/components/Header";
 import { HeaderItem } from "@/app/components/HeaderItem";
 import { ContentWrapper } from "@/app/components/ContentWrapper";
 import { useEffect, useState } from "react";
-import { Button, Snackbar } from "@mui/material";
+import { Snackbar } from "@mui/material";
 import HeaderTitle from "./HeaderTitle";
 import { HintButton } from "./HintButton";
 import { HowToButton } from "./HowToButton";
@@ -22,9 +22,44 @@ import { Question } from "./Question";
 import SuccessDialog from "./SuccessDialog";
 import Confetti from 'react-confetti';
 import useAchievements, { storageKey } from '../hooks/useAchievements';
+import { statementEnumMap, StatementJpEnum } from "../enum";
+import { v4 as uuidv4 } from "uuid";
 
 interface Props {
     challenge: Challenge;
+}
+
+const getLines = (treeItems: TreeItems): string[] => {
+    let lines: string[] = [];
+
+    const traverse = (items: TreeItems) => {
+        for (const item of items) {
+            lines.push(item.line);
+            if (item.children && item.children.length > 0) {
+                traverse(item.children);
+            }
+        }
+    }
+
+    traverse(treeItems);
+    return lines;
+}
+
+const arraysHaveSameElements = (arr1: string[], arr2: string[]): boolean => {
+    if (arr1.length !== arr2.length) {
+        return false;
+    }
+
+    const sortedArr1 = arr1.slice().sort();
+    const sortedArr2 = arr2.slice().sort();
+
+    for (let i = 0; i < sortedArr1.length; i++) {
+        if (sortedArr1[i] !== sortedArr2[i]) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 export default function ChallengePage({ challenge }: Props) {
@@ -37,6 +72,18 @@ export default function ChallengePage({ challenge }: Props) {
     const [runResults, setRunResults] = useState<string[]>([]);
     const [showConfetti, setShowConfetti] = useState(false);
     const { achievements, addAchievement } = useAchievements(storageKey);
+
+    const fragments: FragmentItems = challenge.usableItems ? challenge.usableItems.map((item, index) => ({
+        id: uuidv4(),
+        line: item,
+        children: [],
+        index: 0,
+        parentId: null,
+        depth: 0,
+        statementType: statementEnumMap[item]
+    }))
+        :
+        defaultFragments;
 
     useEffect(() => {
         if (openSuccessDialog) {
@@ -63,6 +110,16 @@ export default function ChallengePage({ challenge }: Props) {
             const answerString = challenge.answer.join('\n');
             runResults.map(result => {
                 if (result == answerString) {
+                    if (challenge.requiredItems) {
+                        const lines = getLines(items);
+                        const allMatched = challenge.requiredItems.every(item => {
+                            return lines.some(line => arraysHaveSameElements(item.line.split(' '), line.split(' ')));
+                        });
+                        if (!allMatched) {
+                            setSnackbar({ ...snackbar, open: true, text: '適切な答えと一致しません' });
+                            return;
+                        }
+                    }
                     addAchievement(challenge.id, { isAchieved: true });
                     setOpenSuccessDialog(true);
                 }
@@ -81,23 +138,21 @@ export default function ChallengePage({ challenge }: Props) {
         return () => window.removeEventListener('resize', updateDimensions);
     }, []);
 
-
     return (
         <PageWrapper>
             <Header>
                 <HeaderItem>
                     <HeaderTitle />
                 </HeaderItem>
-            </Header>
-            <ContentWrapper>
                 <Question>
                     問：{`${challenge.task}`}
-                    <Button onClick={() => setOpenSuccessDialog(true)}>aaa</Button>
                 </Question>
+            </Header>
+            <ContentWrapper>
                 <Allotment vertical defaultSizes={[200, 100]}>
                     <Allotment separator={false} defaultSizes={[100, 100]}>
                         <Allotment.Pane>
-                            <SortableTree treeItems={items} setTreeItems={setItems} dnclValidation={dnclValidation} collapsible indicator removable ></SortableTree>
+                            <SortableTree treeItems={items} setTreeItems={setItems} dnclValidation={dnclValidation} fragments={fragments} collapsible indicator removable ></SortableTree>
                         </Allotment.Pane>
                         <Allotment.Pane visible={hintVisible}>
                             <Tip onClose={() => setHintVisible(false)} hint={challenge.hint} />

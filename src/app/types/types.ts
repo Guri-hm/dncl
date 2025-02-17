@@ -1,5 +1,5 @@
 import type { RefObject } from 'react';
-import { StatementEnum } from "@/app/enum";
+import { StatementEnum, StatementJpEnum } from "@/app/enum";
 import { UniqueIdentifier } from '@dnd-kit/core';
 
 export interface TreeItem {
@@ -77,6 +77,8 @@ export interface Challenge {
   hint: string;
   answer: string[];
   id: string;
+  requiredItems?: TreeItems
+  usableItems?: StatementJpEnum[]
 }
 
 export interface ASTNode {
@@ -92,3 +94,4 @@ export interface ASTNode {
   consequent?: { body: ASTNode[] };
   alternate?: { body: ASTNode[] };
 }
+

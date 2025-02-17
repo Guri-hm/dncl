@@ -12,7 +12,7 @@ interface SlugPageProps {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   return {
-    title: `Page ${slug}`,
+    title: `課題 ${slug}`,
   };
 }
 

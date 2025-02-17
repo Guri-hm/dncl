@@ -4,7 +4,7 @@ import "allotment/dist/style.css";
 import "../components/alloment-custom.css";
 import { SortableTree } from "@/app/components/SortableTree";
 import styles from '@/app/components/common.module.css';
-import { DnclValidationType, TreeItems } from "@/app/types";
+import { DnclValidationType, FragmentItems, TreeItems } from "@/app/types";
 import { PageWrapper } from "@/app/components/PageWrapper";
 import { sampleFuncItems } from "@/app/components/SampleDncl";
 import { Header } from "@/app/components/Header";
@@ -13,17 +13,17 @@ import { ContentWrapper } from "@/app/components/ContentWrapper";
 import { useEffect, useState } from "react";
 import { TabsBoxWrapper } from "@/app/components/TabsBoxWrapper";
 import Button from '@mui/material/Button';
-import { NextImage } from "../components/NextImage";
 import { Snackbar } from "@mui/material";
 import SaveIcon from '@mui/icons-material/Save';
 import { useTreeItems, loadTreeItems } from "@/app/components/TreeItemsLocalStrage";
-import { CustomTooltip } from "../components/CustomTooltip";
 import HeaderTitle from "../components/HeaderTitle";
 import { HintButton } from "../components/HintButton";
 import { HowToButton } from "../components/HowToButton";
 import { ConsoleWrapper } from "../components/ConsoleWrapper";
 import { FooterOverlay } from "../components/FooterOverlay";
 import Door from "../components/Door";
+import { statementEnumMap, StatementJpEnum } from "../enum";
+import { v4 as uuidv4 } from "uuid";
 
 const initialItems: TreeItems = sampleFuncItems;
 

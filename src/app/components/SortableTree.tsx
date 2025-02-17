@@ -36,48 +36,14 @@ import {
 import { FlattenedItem, SensorContext, TreeItems, FragmentItems, FragmentItem, DnclEditorProps, DnclValidationType } from "@/app/types";
 import { SortableTreeItem, FragmentsListItem, DnclEditDialog } from "../components";
 import { v4 as uuidv4 } from "uuid";
-import { StatementEnum, StatementJpEnum } from "@/app/enum";
+import { allStatementItems, statementEnumMap } from "@/app/enum";
 import { Box } from "@mui/material";
 import styles from './alloment-custom.module.css'
 import cmnStyles from './common.module.css'
 import { ArrowButton } from "./ArrowButton";
 import "./alloment-custom.css";
-import { NextImage } from "./NextImage";
 import DropHere from "./DropHere";
 import DoNotDrag from "./DoNotDrag";
-
-const statementEnumMap = {
-  [StatementJpEnum.Output]: StatementEnum.Output,
-  [StatementJpEnum.Input]: StatementEnum.Input,
-  [StatementJpEnum.Condition]: StatementEnum.Condition,
-  [StatementJpEnum.ConditionalLoopPreTest]: StatementEnum.ConditionalLoopPreTest,
-  [StatementJpEnum.ConditionalLoopPostTest]: StatementEnum.ConditionalLoopPostTest,
-  [StatementJpEnum.SequentialIteration]: StatementEnum.SequentialIteration,
-  [StatementJpEnum.UserDefinedfunction]: StatementEnum.UserDefinedfunction,
-  [StatementJpEnum.ExecuteUserDefinedFunction]: StatementEnum.ExecuteUserDefinedFunction,
-};
-
-
-const statementItems: (keyof typeof statementEnumMap)[] = [
-  StatementJpEnum.Output,
-  StatementJpEnum.Input,
-  StatementJpEnum.Condition,
-  StatementJpEnum.ConditionalLoopPreTest,
-  StatementJpEnum.ConditionalLoopPostTest,
-  StatementJpEnum.SequentialIteration,
-  StatementJpEnum.UserDefinedfunction,
-  StatementJpEnum.ExecuteUserDefinedFunction,
-];
-
-const fragments: FragmentItems = statementItems.map((item, index) => ({
-  id: uuidv4(),
-  line: item,
-  children: [],
-  index: 0,
-  parentId: null,
-  depth: 0,
-  statementType: statementEnumMap[item]
-}));
 
 const measuring = {
   droppable: {
@@ -96,6 +62,16 @@ const dropAnimation: DropAnimation = {
   }),
 };
 
+export const defaultFragments: FragmentItems = allStatementItems.map((item, index) => ({
+  id: uuidv4(),
+  line: item,
+  children: [],
+  index: 0,
+  parentId: null,
+  depth: 0,
+  statementType: statementEnumMap[item]
+}));
+
 interface Props {
   collapsible?: boolean;
   treeItems: TreeItems;
@@ -104,6 +80,7 @@ interface Props {
   indicator?: boolean;
   removable?: boolean;
   dnclValidation: DnclValidationType,
+  fragments?: FragmentItems
 }
 
 export function SortableTree({
@@ -113,7 +90,8 @@ export function SortableTree({
   indicator,
   indentationWidth = 30, //ツリー子要素の左インデント
   removable,
-  dnclValidation
+  dnclValidation,
+  fragments = defaultFragments
 }: Props) {
 
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -335,7 +313,7 @@ export function SortableTree({
       setTreeItems(newItems);
       refrash();
     }
-
+    console.log(flattenedItems)
     if (projected && over) {
       const { depth, parentId } = projected;
       const clonedItems: FlattenedItem[] = structuredClone(flattenTree(treeItems));

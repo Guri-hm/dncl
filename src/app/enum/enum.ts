@@ -253,3 +253,25 @@ export enum ProcessEnum {
   EndSub,
   // EndPhase = '区切り',
 }
+
+export const statementEnumMap = {
+  [StatementJpEnum.Output]: StatementEnum.Output,
+  [StatementJpEnum.Input]: StatementEnum.Input,
+  [StatementJpEnum.Condition]: StatementEnum.Condition,
+  [StatementJpEnum.ConditionalLoopPreTest]: StatementEnum.ConditionalLoopPreTest,
+  [StatementJpEnum.ConditionalLoopPostTest]: StatementEnum.ConditionalLoopPostTest,
+  [StatementJpEnum.SequentialIteration]: StatementEnum.SequentialIteration,
+  [StatementJpEnum.UserDefinedfunction]: StatementEnum.UserDefinedfunction,
+  [StatementJpEnum.ExecuteUserDefinedFunction]: StatementEnum.ExecuteUserDefinedFunction,
+};
+
+export const allStatementItems: (keyof typeof statementEnumMap)[] = [
+  StatementJpEnum.Output,
+  StatementJpEnum.Input,
+  StatementJpEnum.Condition,
+  StatementJpEnum.ConditionalLoopPreTest,
+  StatementJpEnum.ConditionalLoopPostTest,
+  StatementJpEnum.SequentialIteration,
+  StatementJpEnum.UserDefinedfunction,
+  StatementJpEnum.ExecuteUserDefinedFunction,
+];

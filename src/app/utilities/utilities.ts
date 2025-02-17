@@ -1221,3 +1221,4 @@ export const convertBracketsToParentheses = (input: string): string => {
 export const capitalizeTrueFalse = (str: string): string => {
   return str.replace(/\b(true|false)\b/g, match => match.charAt(0).toUpperCase() + match.slice(1));
 }
+
