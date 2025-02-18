@@ -10,10 +10,10 @@ import Grid from '@mui/material/Grid2';
 interface Props {
     children?: React.ReactNode;
     labels: string[];
-    specialElementRef?: RefObject<HTMLDivElement | null>;
+    specialElementsRefs?: RefObject<HTMLDivElement | null>[];
 }
 
-export const SwiperTabs = forwardRef<HTMLDivElement, Props>(({ children, labels, specialElementRef }, ref) => {
+export const SwiperTabs = forwardRef<HTMLDivElement, Props>(({ children, labels, specialElementsRefs }, ref) => {
     const [swiper, setSwiper] = useState<any>(null);
     const [value, setValue] = useState<number>(0);
 
@@ -28,18 +28,23 @@ export const SwiperTabs = forwardRef<HTMLDivElement, Props>(({ children, labels,
 
     useEffect(() => {
         const handleTouchStart = (event: TouchEvent) => {
-            if (!specialElementRef) {
+            if (!specialElementsRefs) {
                 return;
             }
-            if (specialElementRef.current && specialElementRef.current.contains(event.target as Node)) {
-                swiper.allowTouchMove = false;
-            } else {
-                swiper.allowTouchMove = true;
-            }
-        };
 
+            let shouldAllowTouchMove = true;
+            for (const ref of specialElementsRefs) {
+                if (ref.current && ref.current.contains(event.target as Node)) {
+                    shouldAllowTouchMove = false;
+                    console.log("スワイプ禁止")
+                    break;
+                }
+            }
+
+            swiper.allowTouchMove = shouldAllowTouchMove;
+        };
         if (swiper) {
-            swiper.el.addEventListener('touchstart', handleTouchStart);
+            swiper.el.addEventListener('touchstart', handleTouchStart, { passive: true });
         }
 
         return () => {
@@ -47,7 +52,7 @@ export const SwiperTabs = forwardRef<HTMLDivElement, Props>(({ children, labels,
                 swiper.el.removeEventListener('touchstart', handleTouchStart);
             }
         };
-    }, [swiper]);
+    }, [swiper, specialElementsRefs]);
 
     return (
         <>

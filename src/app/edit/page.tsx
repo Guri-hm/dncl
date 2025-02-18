@@ -40,7 +40,8 @@ export default function Home() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const theme = useTheme();
   const isSm = useMediaQuery(theme.breakpoints.up('sm'));//600px以上
-  const specialElementRef = useRef<HTMLDivElement | null>(null);
+  const specialElementRef1 = useRef<HTMLDivElement | null>(null);
+  const specialElementRef2 = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -105,9 +106,9 @@ export default function Home() {
               </Allotment.Pane>
             </Allotment >
             :
-            <SwiperTabs labels={['プログラム', 'その他']} specialElementRef={specialElementRef}>
-              <SwiperSlide style={{ paddingLeft: '75px' }}>
-                <SortableTree treeItems={items} setTreeItems={handleItemsChange} dnclValidation={dnclValidation} specialElementRef={specialElementRef} collapsible indicator removable ></SortableTree>
+            <SwiperTabs labels={['プログラム', 'その他']} specialElementsRefs={[specialElementRef1, specialElementRef2]}>
+              <SwiperSlide >
+                <SortableTree treeItems={items} setTreeItems={handleItemsChange} dnclValidation={dnclValidation} specialElementsRefs={[specialElementRef1, specialElementRef2]} collapsible indicator removable ></SortableTree>
               </SwiperSlide>
               <SwiperSlide>
                 <TabsBoxWrapper treeItems={items} tabsBoxWrapperVisible={tabsBoxWrapperVisible} setTabsBoxWrapperVisible={setTabsBoxWrapperVisible}></TabsBoxWrapper>

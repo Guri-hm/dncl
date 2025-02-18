@@ -84,7 +84,7 @@ interface Props {
   removable?: boolean;
   dnclValidation: DnclValidationType,
   fragments?: FragmentItems,
-  specialElementRef?: RefObject<HTMLDivElement | null>;
+  specialElementsRefs?: RefObject<HTMLDivElement | null>[];
 }
 
 export function SortableTree({
@@ -96,7 +96,7 @@ export function SortableTree({
   removable,
   dnclValidation,
   fragments = defaultFragments,
-  specialElementRef
+  specialElementsRefs
 }: Props) {
 
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -263,8 +263,8 @@ export function SortableTree({
           </Allotment>
           :
           <>
-            <SlideMenu>
-              <Box ref={specialElementRef}>
+            <SlideMenu activeId={activeId}>
+              <Box ref={specialElementsRefs && specialElementsRefs[0]} >
                 {fragments.map(({ id, line }) => (
                   <FragmentsListItem
                     key={id}
@@ -275,25 +275,27 @@ export function SortableTree({
               </Box>
             </SlideMenu>
             <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
-              {flattenedItems.map(({ id, children, collapsed, depth, line, fixed }, index) => (
-                <SortableTreeItem
-                  key={id}
-                  id={id}
-                  value={line}
-                  depth={id === activeId && projected ? projected.depth : depth}
-                  indentationWidth={indentationWidth}
-                  indicator={indicator}
-                  collapsed={Boolean(collapsed && children.length)}
-                  onCollapse={
-                    collapsible && children.length
-                      ? () => handleCollapse(id)
-                      : undefined
-                  }
-                  onRemove={removable ? () => handleRemove(id) : undefined}
-                  isError={dnclValidation?.lineNum.includes(index + 1)}
-                  fixed={fixed}
-                />
-              ))}
+              <Box sx={{ paddingLeft: '75px' }} ref={specialElementsRefs && specialElementsRefs[1]}>
+                {flattenedItems.map(({ id, children, collapsed, depth, line, fixed }, index) => (
+                  <SortableTreeItem
+                    key={id}
+                    id={id}
+                    value={line}
+                    depth={id === activeId && projected ? projected.depth : depth}
+                    indentationWidth={indentationWidth}
+                    indicator={indicator}
+                    collapsed={Boolean(collapsed && children.length)}
+                    onCollapse={
+                      collapsible && children.length
+                        ? () => handleCollapse(id)
+                        : undefined
+                    }
+                    onRemove={removable ? () => handleRemove(id) : undefined}
+                    isError={dnclValidation?.lineNum.includes(index + 1)}
+                    fixed={fixed}
+                  />
+                ))}
+              </Box>
             </SortableContext>
           </>
         }
@@ -356,7 +358,6 @@ export function SortableTree({
       setTreeItems(newItems);
       refrash();
     }
-    console.log(flattenedItems)
     if (projected && over) {
       const { depth, parentId } = projected;
       const clonedItems: FlattenedItem[] = structuredClone(flattenTree(treeItems));

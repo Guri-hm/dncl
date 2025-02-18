@@ -45,106 +45,70 @@ interface AppBarProps extends MuiAppBarProps {
     open?: boolean;
 }
 
-const AppBar = styled(MuiAppBar, {
-    shouldForwardProp: (prop) => prop !== 'open',
-})<AppBarProps>(({ theme }) => ({
-    zIndex: theme.zIndex.drawer + 1,
-    transition: theme.transitions.create(['width', 'margin'], {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.leavingScreen,
-    }),
-    variants: [
-        {
-            props: ({ open }) => open,
-            style: {
-                marginLeft: drawerWidth,
-                width: `calc(100% - ${drawerWidth}px)`,
-                transition: theme.transitions.create(['width', 'margin'], {
-                    easing: theme.transitions.easing.sharp,
-                    duration: theme.transitions.duration.enteringScreen,
-                }),
-            },
-        },
-    ],
-}));
+
 
 const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
-    ({ theme }) => ({
+    ({ theme, open }) => ({
         width: drawerWidth,
         flexShrink: 0,
         whiteSpace: 'nowrap',
         boxSizing: 'border-box',
-        variants: [
-            {
-                props: ({ open }) => open,
-                style: {
-                    ...openedMixin(theme),
-                    '& .MuiDrawer-paper': openedMixin(theme),
-                },
-            },
-            {
-                props: ({ open }) => !open,
-                style: {
-                    ...closedMixin(theme),
-                    '& .MuiDrawer-paper': closedMixin(theme),
-                },
-            },
-        ],
+        ...(open && {
+            ...openedMixin(theme),
+            '& .MuiDrawer-paper': openedMixin(theme),
+        }),
+        ...(!open && {
+            ...closedMixin(theme),
+            '& .MuiDrawer-paper': closedMixin(theme),
+        }),
     }),
 );
 
+const Overlay = styled('div')<{ open: boolean }>(({ theme, open }) => ({
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: theme.zIndex.drawer - 1,
+    display: open ? 'block' : 'none',
+}));
 interface MiniDrawerProps {
     children?: React.ReactNode;
+    activeId?: string | null;//親コンポーネントでドラッグ中は文字列が入る
 }
 
 
-const MiniDrawer: React.FC<MiniDrawerProps> = ({ children }) => {
+const MiniDrawer: React.FC<MiniDrawerProps> = ({ children, activeId }) => {
     const theme = useTheme();
     const [open, setOpen] = React.useState(false);
 
-    const handleDrawerOpen = () => {
-        setOpen(true);
+    const toggleDrawer = (newOpen: boolean) => () => {
+        setOpen(newOpen);
     };
 
-    const handleDrawerClose = () => {
-        setOpen(false);
-    };
+    React.useEffect(() => {
+        if (activeId) {
+            setOpen(false);
+        }
+    }, [activeId]);
 
     return (
         <Box sx={{ display: 'flex' }}>
             <CssBaseline />
-            {/* <AppBar position="fixed" open={open}>
-                <Toolbar>
-                    <IconButton
-                        color="inherit"
-                        aria-label="open drawer"
-                        onClick={handleDrawerOpen}
-                        edge="start"
-                        sx={[
-                            {
-                                marginRight: 5,
-                            },
-                            open && { display: 'none' },
-                        ]}
-                    >
-                        <MenuIcon />
-                    </IconButton>
-                    <Typography variant="h6" noWrap component="div">
-                        Mini variant drawer
-                    </Typography>
-                </Toolbar>
-            </AppBar> */}
+            <Overlay open={open} onClick={toggleDrawer(false)} />
             <Drawer variant="permanent" open={open}>
                 <DrawerHeader>
                     {open ?
-                        <IconButton onClick={handleDrawerClose}>
+                        <IconButton onClick={toggleDrawer(false)}>
                             {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
                         </IconButton>
                         :
                         <IconButton
                             color="inherit"
                             aria-label="open drawer"
-                            onClick={handleDrawerOpen}
+                            onClick={toggleDrawer(true)}
                             edge="start"
 
                         >
@@ -152,7 +116,9 @@ const MiniDrawer: React.FC<MiniDrawerProps> = ({ children }) => {
                         </IconButton>
                     }
                 </DrawerHeader>
-                {children}
+                <Box>
+                    {children}
+                </Box>
             </Drawer>
         </Box>
     );
