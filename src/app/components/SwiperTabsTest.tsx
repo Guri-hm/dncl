@@ -1,108 +1,73 @@
-import React, { RefObject, useEffect, forwardRef, useState } from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
+import React, { useRef, useEffect } from 'react';
+import Swiper from 'swiper';
+import { DndContext, useDraggable, DragStartEvent, DragEndEvent } from '@dnd-kit/core';
 
-import Box from "@mui/material/Box";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
-import { DndContext, useDraggable } from "@dnd-kit/core";
-
-interface Props {
-    children?: React.ReactNode;
-    labels: string[];
-    specialElementsRefs?: RefObject<HTMLDivElement | null>[];
+interface DraggableItemProps {
+    id: string;
 }
 
-const DraggableItem: React.FC = () => {
-    const { attributes, listeners, setNodeRef } = useDraggable({
-        id: 'draggable',
+const DraggableItem: React.FC<DraggableItemProps> = ({ id }) => {
+    const { attributes, listeners, setNodeRef, transform } = useDraggable({
+        id,
     });
+
+    const style: React.CSSProperties = transform
+        ? {
+            transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+        }
+        : undefined;
 
     return (
         <div
             ref={setNodeRef}
-            {...attributes}
+            style={{
+                ...style,
+                width: '100px',
+                height: '100px',
+                backgroundColor: 'lightblue',
+                cursor: 'move',
+            }}
             {...listeners}
-            className="draggable-item"
-            onTouchStart={(e) => e.stopPropagation()}
-            onTouchMove={(e) => e.stopPropagation()}
-            onMouseDown={(e) => e.stopPropagation()}
-            style={{ width: '100px', height: '100px', backgroundColor: 'lightblue' }}
+            {...attributes}
         >
-            ドラッグできるアイテム
+            ドラッグ可能な要素
         </div>
     );
 };
 
-export const SwiperTabs = forwardRef<HTMLDivElement, Props>(({ children, labels, specialElementsRefs }, ref) => {
-    const [swiper, setSwiper] = useState<any>(null);
-    const [value, setValue] = useState<number>(0);
-
-    const slideChange = (index: any) => {
-        setValue(index.activeIndex);
-    };
-
-    const tabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
-        setValue(newValue);
-        if (swiper) {
-            swiper.slideTo(newValue);
-        }
-    };
+const MySwiper: React.FC = () => {
+    const swiperRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
-        const handleTouchStart = (event: TouchEvent) => {
-            if (!specialElementsRefs) {
-                return;
-            }
-
-            let shouldAllowTouchMove = true;
-            for (const ref of specialElementsRefs) {
-                if (ref.current && ref.current.contains(event.target as Node)) {
-                    shouldAllowTouchMove = false;
-                    break;
-                }
-            }
-
-            if (swiper) {
-                swiper.allowTouchMove = shouldAllowTouchMove;
-            }
-        };
-
-        if (swiper) {
-            swiper.el.addEventListener('touchstart', handleTouchStart, { passive: true });
-        }
+        const swiperInstance = new Swiper(swiperRef.current!, {
+            // Swiperの設定
+            allowTouchMove: false, // スワイプを無効化
+        });
 
         return () => {
-            if (swiper) {
-                swiper.el.removeEventListener('touchstart', handleTouchStart);
-            }
+            swiperInstance.destroy(true, true);
         };
-    }, [swiper, specialElementsRefs]);
+    }, []);
+
+    const handleDragStart = (event: DragStartEvent) => {
+        console.log('Drag started:', event);
+    };
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        console.log('Drag ended:', event);
+    };
 
     return (
-        <>
-            <Box sx={{ width: "100%", bgcolor: "background.paper", flex: '0 1 auto', }}>
-                <Tabs value={value} onChange={tabChange} centered>
-                    {labels.map((label, index) => (
-                        <Tab key={index} label={label} value={index} />
-                    ))}
-                </Tabs>
-            </Box>
-            <Swiper
-                spaceBetween={50}
-                slidesPerView={1}
-                onSlideChange={slideChange}
-                onSwiper={setSwiper}
-                style={{ backgroundColor: 'var(--stone-50)', flex: 1, height: 'calc(100% - 48px)' }}
-            >
-                <SwiperSlide>
-                    <div>ここではスワイプできる</div>
-                    <DndContext>
-                        <DraggableItem />
+        <div ref={swiperRef} className="swiper-container">
+            <div className="swiper-wrapper">
+                <div className="swiper-slide">
+                    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+                        <DraggableItem id="item1" />
                     </DndContext>
-                </SwiperSlide>
-                <SwiperSlide>ここでもスワイプできる</SwiperSlide>
-            </Swiper>
-        </>
+                </div>
+            </div>
+        </div>
     );
-});
+};
+
+export default MySwiper;
