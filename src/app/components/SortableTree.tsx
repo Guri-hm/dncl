@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import React, { Fragment, RefObject, useEffect, useMemo, useRef, useState } from "react";
 import { Allotment } from "allotment";
 import { createPortal } from "react-dom";
 import { DndContext, UniqueIdentifier } from '@dnd-kit/core';
@@ -44,6 +44,9 @@ import { ArrowButton } from "./ArrowButton";
 import "./alloment-custom.css";
 import DropHere from "./DropHere";
 import DoNotDrag from "./DoNotDrag";
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
+import SlideMenu from "./SlideMenu";
 
 const measuring = {
   droppable: {
@@ -80,7 +83,8 @@ interface Props {
   indicator?: boolean;
   removable?: boolean;
   dnclValidation: DnclValidationType,
-  fragments?: FragmentItems
+  fragments?: FragmentItems,
+  specialElementRef?: RefObject<HTMLDivElement | null>;
 }
 
 export function SortableTree({
@@ -91,7 +95,8 @@ export function SortableTree({
   indentationWidth = 30, //ツリー子要素の左インデント
   removable,
   dnclValidation,
-  fragments = defaultFragments
+  fragments = defaultFragments,
+  specialElementRef
 }: Props) {
 
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -99,11 +104,12 @@ export function SortableTree({
   const [overId, setOverId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
   const [editor, setEditor] = useState<DnclEditorProps>({ addItem: null, open: false, overIndex: 0, treeItems: treeItems, setItems: setTreeItems });
-
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
     setIsClient(true);
   }, []);
+  const theme = useTheme();
+  const isSm = useMediaQuery(theme.breakpoints.up('sm'));//600px以上
 
   //ツリー要素追加時はこの定数にアイテムが入る
   const additionItem = fragments.find(({ id }) => id == activeId);
@@ -185,75 +191,112 @@ export function SortableTree({
         onDragCancel={handleDragCancel}
       >
         <DnclEditDialog {...editor}></DnclEditDialog>
-        <Allotment separator={false} defaultSizes={[100, 100]} className={styles.splitViewContainer} onVisibleChange={(_index, value) => {
-          setVisible(value);
-        }}>
-          <Allotment.Pane maxSize={50} minSize={50} className={`${styles.paneBg}`}>
-            <ArrowButton setVisible={setVisible} visible={visible}></ArrowButton>
-          </Allotment.Pane>
-          <Allotment.Pane visible={visible} className={`${styles.leftPane} ${styles.paneBg}`} snap>
-            <Box sx={{ padding: '10px' }} className={`${cmnStyles.hFull} ${cmnStyles.overflowAuto}`}>
-              <DoNotDrag />
-              {fragments.map(({ id, line }) => (
-                <FragmentsListItem
+        {isSm ?
+          <Allotment separator={false} defaultSizes={[100, 100]} className={styles.splitViewContainer} onVisibleChange={(_index, value) => {
+            setVisible(value);
+          }}>
+            <Allotment.Pane maxSize={50} minSize={50} className={`${styles.paneBg}`}>
+              <ArrowButton setVisible={setVisible} visible={visible}></ArrowButton>
+            </Allotment.Pane>
+            <Allotment.Pane visible={visible} className={`${styles.leftPane} ${styles.paneBg}`} snap>
+              <Box sx={{ padding: '10px' }} className={`${cmnStyles.hFull} ${cmnStyles.overflowAuto}`}>
+                <DoNotDrag />
+                {fragments.map(({ id, line }) => (
+                  <FragmentsListItem
+                    key={id}
+                    id={id}
+                    value={line}
+                  />
+                ))}
+              </Box>
+            </Allotment.Pane>
+
+            <div className={`${cmnStyles.hFull}`} style={{ marginLeft: '17px', marginRight: '5px' }}>
+              <Allotment.Pane ref={ref} className={`${styles.rightPane} ${cmnStyles.hFull} ${cmnStyles.overflowAuto}`} >
+                {(flattenedItems.length > 0) || editor.open ?
+                  <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
+                    {flattenedItems.map(({ id, children, collapsed, depth, line, fixed }, index) => (
+                      <SortableTreeItem
+                        key={id}
+                        id={id}
+                        value={line}
+                        depth={id === activeId && projected ? projected.depth : depth}
+                        indentationWidth={indentationWidth}
+                        indicator={indicator}
+                        collapsed={Boolean(collapsed && children.length)}
+                        onCollapse={
+                          collapsible && children.length
+                            ? () => handleCollapse(id)
+                            : undefined
+                        }
+                        onRemove={removable ? () => handleRemove(id) : undefined}
+                        isError={dnclValidation?.lineNum.includes(index + 1)}
+                        fixed={fixed}
+                      />
+                    ))}
+                  </SortableContext>
+                  :
+                  null
+                }
+                <DropHere visible={!((flattenedItems.length > 0) || editor.open)} />
+                {createPortal(
+                  <DragOverlay
+                    dropAnimation={dropAnimation}
+                    modifiers={indicator ? [adjustTranslate] : undefined}
+                  >
+                    {activeId && activeItem ? (
+                      <SortableTreeItem
+                        id={activeId}
+                        depth={activeItem.depth}
+                        clone
+                        childCount={getChildCount(treeItems, activeId) + 1}
+                        value={activeCode ? activeCode : ""}
+                        indentationWidth={indentationWidth}
+                      />
+                    ) : null}
+                  </DragOverlay>,
+                  document.body
+                )}
+              </Allotment.Pane>
+
+            </div>
+          </Allotment>
+          :
+          <>
+            <SlideMenu>
+              <Box ref={specialElementRef}>
+                {fragments.map(({ id, line }) => (
+                  <FragmentsListItem
+                    key={id}
+                    id={id}
+                    value={line}
+                  />
+                ))}
+              </Box>
+            </SlideMenu>
+            <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
+              {flattenedItems.map(({ id, children, collapsed, depth, line, fixed }, index) => (
+                <SortableTreeItem
                   key={id}
                   id={id}
                   value={line}
+                  depth={id === activeId && projected ? projected.depth : depth}
+                  indentationWidth={indentationWidth}
+                  indicator={indicator}
+                  collapsed={Boolean(collapsed && children.length)}
+                  onCollapse={
+                    collapsible && children.length
+                      ? () => handleCollapse(id)
+                      : undefined
+                  }
+                  onRemove={removable ? () => handleRemove(id) : undefined}
+                  isError={dnclValidation?.lineNum.includes(index + 1)}
+                  fixed={fixed}
                 />
               ))}
-            </Box>
-          </Allotment.Pane>
-
-          <div className={`${cmnStyles.hFull}`} style={{ marginLeft: '17px', marginRight: '5px' }}>
-            <Allotment.Pane ref={ref} className={`${styles.rightPane} ${cmnStyles.hFull} ${cmnStyles.overflowAuto}`} >
-              {(flattenedItems.length > 0) || editor.open ?
-                <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
-                  {flattenedItems.map(({ id, children, collapsed, depth, line, fixed }, index) => (
-                    <SortableTreeItem
-                      key={id}
-                      id={id}
-                      value={line}
-                      depth={id === activeId && projected ? projected.depth : depth}
-                      indentationWidth={indentationWidth}
-                      indicator={indicator}
-                      collapsed={Boolean(collapsed && children.length)}
-                      onCollapse={
-                        collapsible && children.length
-                          ? () => handleCollapse(id)
-                          : undefined
-                      }
-                      onRemove={removable ? () => handleRemove(id) : undefined}
-                      isError={dnclValidation?.lineNum.includes(index + 1)}
-                      fixed={fixed}
-                    />
-                  ))}
-                </SortableContext>
-                :
-                null
-              }
-              <DropHere visible={!((flattenedItems.length > 0) || editor.open)} />
-              {createPortal(
-                <DragOverlay
-                  dropAnimation={dropAnimation}
-                  modifiers={indicator ? [adjustTranslate] : undefined}
-                >
-                  {activeId && activeItem ? (
-                    <SortableTreeItem
-                      id={activeId}
-                      depth={activeItem.depth}
-                      clone
-                      childCount={getChildCount(treeItems, activeId) + 1}
-                      value={activeCode ? activeCode : ""}
-                      indentationWidth={indentationWidth}
-                    />
-                  ) : null}
-                </DragOverlay>,
-                document.body
-              )}
-            </Allotment.Pane>
-
-          </div>
-        </Allotment>
+            </SortableContext>
+          </>
+        }
       </DndContext >
     </>
   );

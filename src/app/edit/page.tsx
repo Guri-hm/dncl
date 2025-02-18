@@ -1,31 +1,31 @@
 "use client"
 import { Allotment } from "allotment";
 import "allotment/dist/style.css";
-import "../components/alloment-custom.css";
+import "@/app/components/alloment-custom.css";
 import { SortableTree } from "@/app/components/SortableTree";
 import styles from '@/app/components/common.module.css';
-import { DnclValidationType, FragmentItems, TreeItems } from "@/app/types";
+import { DnclValidationType, TreeItems } from "@/app/types";
 import { PageWrapper } from "@/app/components/PageWrapper";
 import { sampleFuncItems } from "@/app/components/SampleDncl";
 import { Header } from "@/app/components/Header";
 import { HeaderItem } from "@/app/components/HeaderItem";
 import { ContentWrapper } from "@/app/components/ContentWrapper";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { TabsBoxWrapper } from "@/app/components/TabsBoxWrapper";
 import Button from '@mui/material/Button';
 import { Snackbar } from "@mui/material";
 import SaveIcon from '@mui/icons-material/Save';
 import { useTreeItems, loadTreeItems } from "@/app/components/TreeItemsLocalStrage";
-import HeaderTitle from "../components/HeaderTitle";
-import { HintButton } from "../components/HintButton";
-import { HowToButton } from "../components/HowToButton";
-import { ConsoleWrapper } from "../components/ConsoleWrapper";
-import { FooterOverlay } from "../components/FooterOverlay";
-import Door from "../components/Door";
+import HeaderTitle from "@/app/components/HeaderTitle";
+import { HintButton } from "@/app/components/HintButton";
+import { HowToButton } from "@/app/components/HowToButton";
+import { ConsoleWrapper } from "@/app/components/ConsoleWrapper";
+import { FooterOverlay } from "@/app/components/FooterOverlay";
+import Door from "@/app/components/Door";
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
-import SwipeableDrawerExample from "../components/SwipeableDrawer";
-import { SwiperTab } from "../components/SwiperTab";
+import { SwiperTabs } from "@/app/components/SwiperTabs";
+import { SwiperSlide } from "swiper/react";
 
 const initialItems: TreeItems = sampleFuncItems;
 
@@ -40,6 +40,7 @@ export default function Home() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const theme = useTheme();
   const isSm = useMediaQuery(theme.breakpoints.up('sm'));//600px以上
+  const specialElementRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -104,7 +105,14 @@ export default function Home() {
               </Allotment.Pane>
             </Allotment >
             :
-            <SwiperTab></SwiperTab>
+            <SwiperTabs labels={['プログラム', 'その他']} specialElementRef={specialElementRef}>
+              <SwiperSlide style={{ paddingLeft: '75px' }}>
+                <SortableTree treeItems={items} setTreeItems={handleItemsChange} dnclValidation={dnclValidation} specialElementRef={specialElementRef} collapsible indicator removable ></SortableTree>
+              </SwiperSlide>
+              <SwiperSlide>
+                <TabsBoxWrapper treeItems={items} tabsBoxWrapperVisible={tabsBoxWrapperVisible} setTabsBoxWrapperVisible={setTabsBoxWrapperVisible}></TabsBoxWrapper>
+              </SwiperSlide>
+            </SwiperTabs>
         }
       </ContentWrapper>
       <Snackbar
