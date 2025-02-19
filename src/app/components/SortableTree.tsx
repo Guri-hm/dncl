@@ -278,29 +278,33 @@ export function SortableTree({
                 ))}
               </Box>
             </SlideMenu>
-            <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
-              <Box sx={{ paddingLeft: '75px' }} ref={specialElementsRefs && specialElementsRefs[1]}>
-                {flattenedItems.map(({ id, children, collapsed, depth, line, fixed }, index) => (
-                  <SortableTreeItem
-                    key={id}
-                    id={id}
-                    value={line}
-                    depth={id === activeId && projected ? projected.depth : depth}
-                    indentationWidth={indentationWidth}
-                    indicator={indicator}
-                    collapsed={Boolean(collapsed && children.length)}
-                    onCollapse={
-                      collapsible && children.length
-                        ? () => handleCollapse(id)
-                        : undefined
-                    }
-                    onRemove={removable ? () => handleRemove(id) : undefined}
-                    isError={dnclValidation?.lineNum.includes(index + 1)}
-                    fixed={fixed}
-                  />
-                ))}
-              </Box>
-            </SortableContext>
+            {(flattenedItems.length > 0) || editor.open ?
+              <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
+                <Box sx={{ paddingLeft: '75px' }} ref={specialElementsRefs && specialElementsRefs[1]}>
+                  {flattenedItems.map(({ id, children, collapsed, depth, line, fixed }, index) => (
+                    <SortableTreeItem
+                      key={id}
+                      id={id}
+                      value={line}
+                      depth={id === activeId && projected ? projected.depth : depth}
+                      indentationWidth={indentationWidth}
+                      indicator={indicator}
+                      collapsed={Boolean(collapsed && children.length)}
+                      onCollapse={
+                        collapsible && children.length
+                          ? () => handleCollapse(id)
+                          : undefined
+                      }
+                      onRemove={removable ? () => handleRemove(id) : undefined}
+                      isError={dnclValidation?.lineNum.includes(index + 1)}
+                      fixed={fixed}
+                    />
+                  ))}
+                </Box>
+              </SortableContext>
+              :
+              null}
+            <DropHere visible={!((flattenedItems.length > 0) || editor.open)} />
           </>
         }
       </DndContext >

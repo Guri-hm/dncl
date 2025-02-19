@@ -41,12 +41,6 @@ const DrawerHeader = styled('div')(({ theme }) => ({
     ...theme.mixins.toolbar,
 }));
 
-interface AppBarProps extends MuiAppBarProps {
-    open?: boolean;
-}
-
-
-
 const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
     ({ theme, open }) => ({
         width: drawerWidth,
@@ -99,7 +93,7 @@ const MiniDrawer: React.FC<MiniDrawerProps> = ({ children, activeId, open, setOp
         <Box sx={{ display: 'flex' }}>
             <CssBaseline />
             <Overlay open={open} onClick={toggleDrawer(false)} />
-            <Drawer variant="permanent" open={open}>
+            <Drawer variant="permanent" open={open} sx={{ bgcolor: 'var(--stone-50)' }}>
                 <DrawerHeader>
                     {open ?
                         <IconButton onClick={toggleDrawer(false)}>
@@ -121,7 +115,7 @@ const MiniDrawer: React.FC<MiniDrawerProps> = ({ children, activeId, open, setOp
                     {children}
                 </Box>
             </Drawer>
-        </Box>
+        </Box >
     );
 }
 
