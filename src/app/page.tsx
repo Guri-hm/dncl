@@ -26,7 +26,7 @@ export default function Home() {
           alignItems: "center", height: '100%',
           backgroundColor: 'var(--stone-50)'
         }} >
-          <Grid container direction="row" spacing={3} size='auto'>
+          <Grid container direction={{ xs: 'column', sm: 'row' }} spacing={3} size='auto'>
             <Grid size="grow">
               <BubblePaper top="50%" left="50%" href='./chlng'>
                 <Typography variant="h5" component="div">
@@ -44,7 +44,7 @@ export default function Home() {
               </BubblePaper>
             </Grid>
           </Grid>
-          <Grid size={3} sx={{ textAlign: 'center' }}>
+          <Grid size={{ xs: 8, md: 3 }} sx={{ textAlign: 'center' }}>
             <img src={"/front.svg"} alt={'女の子の真正面'} style={{ width: "100%", maxWidth: "300px" }} />
           </Grid>
         </Grid>
