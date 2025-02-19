@@ -43,12 +43,12 @@ export const SwiperTabs = forwardRef<HTMLDivElement, Props>(({ children, labels,
             bottomSwiper.allowTouchMove = shouldAllowTouchMove;
         };
 
-        if (bottomSwiper) {
+        if (bottomSwiper && bottomSwiper.el) {
             bottomSwiper.el.addEventListener('touchstart', handleTouchStart, { passive: true });
         }
 
         return () => {
-            if (bottomSwiper) {
+            if (bottomSwiper && bottomSwiper.el) {
                 bottomSwiper.el.removeEventListener('touchstart', handleTouchStart);
             }
         };
@@ -83,7 +83,7 @@ export const SwiperTabs = forwardRef<HTMLDivElement, Props>(({ children, labels,
 
     return (
         <>
-            <Box sx={{ width: "100%", bgcolor: "background.paper", flex: '0 1 auto', }} >
+            <Box sx={{ width: "100%", bgcolor: 'var(--stone-50)', flex: '0 1 auto', }} >
                 <Swiper onTouchEnd={handleTouchEnd}>
                     <SwiperSlide>
                         <Tabs value={value} onChange={tabChange} centered>
@@ -102,7 +102,7 @@ export const SwiperTabs = forwardRef<HTMLDivElement, Props>(({ children, labels,
                 onSlideChange={slideChange}
                 onSwiper={setBottomSwiper}
                 onTouchEnd={(handleSetFalse)}
-                style={{ backgroundColor: 'var(--stone-50)', flex: 1, height: 'calc(100% - 48px)', }}
+                style={{ flex: 1, height: 'calc(100% - 48px)', }}
             >
                 {children}
             </Swiper >
