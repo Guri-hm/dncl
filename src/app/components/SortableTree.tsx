@@ -47,6 +47,7 @@ import DoNotDrag from "./DoNotDrag";
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import SlideMenu from "./SlideMenu";
+import { LineIconItem } from "./TreeItem/LineIconItem";
 
 const measuring = {
   droppable: {
@@ -110,6 +111,7 @@ export function SortableTree({
   }, []);
   const theme = useTheme();
   const isSm = useMediaQuery(theme.breakpoints.up('sm'));//600px以上
+  const [openDrawer, setOpenDrawer] = React.useState(false);
 
   //ツリー要素追加時はこの定数にアイテムが入る
   const additionItem = fragments.find(({ id }) => id == activeId);
@@ -263,13 +265,15 @@ export function SortableTree({
           </Allotment>
           :
           <>
-            <SlideMenu activeId={activeId}>
+            <SlideMenu activeId={activeId} open={openDrawer} setOpen={setOpenDrawer}>
               <Box ref={specialElementsRefs && specialElementsRefs[0]} >
-                {fragments.map(({ id, line }) => (
-                  <FragmentsListItem
+                {fragments.map(({ id, line, statementType }) => (
+                  <LineIconItem
                     key={id}
                     id={id}
                     value={line}
+                    statementType={statementType}
+                    isIcon={!openDrawer}
                   />
                 ))}
               </Box>

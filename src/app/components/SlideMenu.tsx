@@ -2,7 +2,7 @@ import * as React from 'react';
 import { styled, useTheme, Theme, CSSObject } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import MuiDrawer from '@mui/material/Drawer';
-import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
+import { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
 import CssBaseline from '@mui/material/CssBaseline';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -77,12 +77,13 @@ const Overlay = styled('div')<{ open: boolean }>(({ theme, open }) => ({
 interface MiniDrawerProps {
     children?: React.ReactNode;
     activeId?: string | null;//親コンポーネントでドラッグ中は文字列が入る
+    open: boolean;
+    setOpen: any;
 }
 
 
-const MiniDrawer: React.FC<MiniDrawerProps> = ({ children, activeId }) => {
+const MiniDrawer: React.FC<MiniDrawerProps> = ({ children, activeId, open, setOpen }) => {
     const theme = useTheme();
-    const [open, setOpen] = React.useState(false);
 
     const toggleDrawer = (newOpen: boolean) => () => {
         setOpen(newOpen);
