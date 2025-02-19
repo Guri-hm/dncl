@@ -106,9 +106,12 @@ export default function Home() {
               </Allotment.Pane>
             </Allotment >
             :
-            <SwiperTabs labels={['プログラム', 'その他']} specialElementsRefs={[specialElementRef1, specialElementRef2]}>
+            <SwiperTabs labels={['プログラム', 'コンソール', 'その他']} specialElementsRefs={[specialElementRef1, specialElementRef2]}>
               <SwiperSlide >
                 <SortableTree treeItems={items} setTreeItems={handleItemsChange} dnclValidation={dnclValidation} specialElementsRefs={[specialElementRef1, specialElementRef2]} collapsible indicator removable ></SortableTree>
+              </SwiperSlide>
+              <SwiperSlide>
+                <ConsoleWrapper dnclValidation={dnclValidation} setDnclValidation={setDnclValidation} treeItems={items} runResults={runResults} setRunResults={setRunResults} />
               </SwiperSlide>
               <SwiperSlide>
                 <TabsBoxWrapper treeItems={items} tabsBoxWrapperVisible={tabsBoxWrapperVisible} setTabsBoxWrapperVisible={setTabsBoxWrapperVisible}></TabsBoxWrapper>
