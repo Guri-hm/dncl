@@ -33,7 +33,7 @@ const DoNotDrag = () => {
                 {msgDoNotDrag}
             </Box>
             <Box sx={{ width: '80px', height: '80px' }}>
-                <NextImage src={"/pointing.svg"} alt={'指差し'} objectFit="contain" onDragStart={(e: React.DragEvent<HTMLImageElement>) => {
+                <NextImage src={"/pointing.svg"} alt={'指差し'} style={{ objectFit: 'contain' }} onDragStart={(e: React.DragEvent<HTMLImageElement>) => {
                     e.preventDefault();
                     setMsgDoNotDrag('私はドラッグできませんよ!');
                     setTimeout(() => setMsgDoNotDrag("ドラッグして追加します"), 3000);

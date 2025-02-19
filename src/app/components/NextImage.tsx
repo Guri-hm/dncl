@@ -6,12 +6,12 @@ type NextImageProps = {
     src: string;
     alt: string;
     size?: string | undefined;
-    objectFit?: string;
     sx?: SxProps<Theme>;
+    style?: React.CSSProperties;
     onDragStart?: (event: React.DragEvent<HTMLImageElement>) => void;
 };
 
-export const NextImage: FC<NextImageProps> = ({ src, alt, size = "100vw", sx, objectFit = "cover", ...props }) => {
+export const NextImage: FC<NextImageProps> = ({ src, alt, size = "100vw", sx, style = { objectFit: 'cover' }, ...props }) => {
     return (
         <Box
             sx={{
@@ -22,7 +22,7 @@ export const NextImage: FC<NextImageProps> = ({ src, alt, size = "100vw", sx, ob
                 ...sx
             }}
         >
-            <Image src={src} alt={alt} fill sizes={size} objectFit={objectFit} {...props} />
+            <Image src={src} alt={alt} fill sizes={size} style={{ ...style }} {...props} />
         </Box>
     );
 };

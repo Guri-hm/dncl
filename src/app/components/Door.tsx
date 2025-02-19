@@ -11,7 +11,7 @@ const Door = ({ setVisible, title = '' }: Props) => {
     return (
         <CustomTooltip title={title} arrow followCursor placement="left">
             <span onClick={setVisible} >
-                <NextImage src={"/door.svg"} alt={'ドアから覗く'} objectFit="cover" />
+                <NextImage src={"/door.svg"} alt={'ドアから覗く'} style={{ objectFit: 'cover' }} />
             </span>
         </CustomTooltip>
     );
