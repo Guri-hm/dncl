@@ -281,12 +281,12 @@ export const TabsBox = ({ tabItems, disabled, containerId = 'box', setTabItemsOb
                                 <SwapHorizIcon />
                             </IconButton>
                             <div>
-                                <IconButton id="demo-positioned-button" aria-controls={open ? 'demo-positioned-menu' : undefined} aria-haspopup="true" aria-expanded={open ? 'true' : undefined} onClick={handleClickMenu} size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: 'var(--stone-50)' } }}>
+                                <IconButton id="positioned-button" aria-controls={open ? 'positioned-menu' : undefined} aria-haspopup="true" aria-expanded={open ? 'true' : undefined} onClick={handleClickMenu} size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: 'var(--stone-50)' } }}>
                                     <MenuIcon />
                                 </IconButton>
                                 <Menu
-                                    id="demo-positioned-menu"
-                                    aria-labelledby="demo-positioned-button"
+                                    id="positioned-menu"
+                                    aria-labelledby="positioned-button"
                                     anchorEl={anchorEl}
                                     open={open}
                                     onClose={handleCloseMenu}

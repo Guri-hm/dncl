@@ -1,7 +1,7 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import { BoxProps, styled } from '@mui/system';
-import { Button, IconButton } from '@mui/material';
+import { BoxProps, useMediaQuery, useTheme } from '@mui/system';
+import { Button } from '@mui/material';
 import cmnStyles from '@/app/components/common.module.css';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
 import Grid from '@mui/material/Grid2';
@@ -49,17 +49,16 @@ type Props = {
     tabLabels: string[];
     setRunResults: any;
 }
-export const ConsoleBox = ({ children, tabLabels, setRunResults }: Props) => {
-    const [value, setValue] = React.useState(0);
 
-    const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-        setValue(newValue);
-    };
+
+export const ConsoleBox = ({ children, tabLabels, setRunResults }: Props) => {
+    const theme = useTheme();
+    const isSm = useMediaQuery(theme.breakpoints.up('sm'));//600px以上
 
     return (
         <StyledBox>
             <Grid size="auto" className={`${cmnStyles.bgSlate900} ${cmnStyles.colorWhite} ${cmnStyles.w100}`} sx={{
-                paddingX: 1, paddingY: 0.5, flexBasis: '0%'
+                paddingX: 1, paddingY: isSm ? 0.5 : 1, flexBasis: '0%'
             }} container direction="row" justifyContent="space-between" alignItems="center">
                 <Grid>
                     <Box>
@@ -67,7 +66,7 @@ export const ConsoleBox = ({ children, tabLabels, setRunResults }: Props) => {
                     </Box>
                 </Grid>
                 <Grid>
-                    <Button variant="contained" startIcon={<ClearAllIcon sx={{ fontSize: '10px' }} />} sx={{ paddingLeft: '6px', paddingRight: '4px', paddingTop: '2px', paddingBottom: '2px', fontSize: '10px', backgroundColor: 'var(--darkgray)', color: 'white' }}
+                    <Button size={isSm ? 'small' : 'medium'} variant="contained" startIcon={<ClearAllIcon />} sx={{ paddingLeft: '6px', paddingRight: '4px', paddingTop: '2px', paddingBottom: '2px', backgroundColor: 'var(--darkgray)', color: 'white' }}
                         onClick={() => {
                             setRunResults([]);
                         }}>
@@ -76,7 +75,7 @@ export const ConsoleBox = ({ children, tabLabels, setRunResults }: Props) => {
                 </Grid>
             </Grid>
             {React.Children.map(children, (child, index) => (
-                <TabPanel index={index} value={value} key={index}>
+                <TabPanel index={index} value={0} key={index}>
                     {child}
                 </TabPanel>
             ))}

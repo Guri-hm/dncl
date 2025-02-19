@@ -13,6 +13,7 @@ import { restrictToHorizontalAxis } from "@dnd-kit/modifiers";
 import { FlowTab } from "./FlowTab";
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
+import { TabsSingleBox } from "./TabsSingleBox";
 
 interface Props {
     treeItems: TreeItems;
@@ -24,6 +25,7 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, se
     const ref = useRef<any>(null);
     const theme = useTheme();
     const isMd = useMediaQuery(theme.breakpoints.up('md'));//900px以上
+    const isSm = useMediaQuery(theme.breakpoints.up('sm'));//600px以上
 
     const [tabItemsObj, setTabItemsObj] = useState<TabItemsObj>(isMd ? {
         group1: {
@@ -328,38 +330,44 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, se
 
     return (
         <>
-            {tabsBoxWrapperVisible ?
-                <DndContext
-                    // 衝突検知を collisionDetection={closestCenter} にすると、全エリアでDropOver扱いになる
-                    collisionDetection={closestCenter}
-                    onDragStart={({ active }) => {
-                        setActiveId(active.id);
-                    }}
-                    onDragOver={handleDragOver}
-                    onDragEnd={handleDragEnd}
-                    modifiers={[restrictToHorizontalAxis]}
-                    measuring={{
-                        droppable: {
-                            strategy: MeasuringStrategy.Always,
-                        },
-                    }}
-                >
+            {isMd ?
+                tabsBoxWrapperVisible ?
+                    <DndContext
+                        // 衝突検知を collisionDetection={closestCenter} にすると、全エリアでDropOver扱いになる
+                        collisionDetection={closestCenter}
+                        onDragStart={({ active }) => {
+                            setActiveId(active.id);
+                        }}
+                        onDragOver={handleDragOver}
+                        onDragEnd={handleDragEnd}
+                        modifiers={[restrictToHorizontalAxis]}
+                        measuring={{
+                            droppable: {
+                                strategy: MeasuringStrategy.Always,
+                            },
+                        }}
+                    >
 
-                    <SortableContext items={[...containers, PLACEHOLDER_ID]}>
-                        <Allotment minSize={0} className={`${cmnStyles.hFull}`} ref={ref}>
-                            {containers.map((containerId) => {
-                                return <Allotment.Pane minSize={0} snap visible={tabItemsObj[containerId].visible} key={containerId}>
-                                    <div key={containerId} className={`${cmnStyles.hFull}`} style={{ marginLeft: '16px' }}>
-                                        <TabsBox tabItems={tabItemsObj[containerId].items} disabled={isSortingContainer} containerId={containerId} setTabItemsObj={setTabItemsObj} />
-                                    </div>
-                                </Allotment.Pane>
-                            }
-                            )}
-                        </Allotment>
-                    </SortableContext>
-                </DndContext>
-                : null
+                        <SortableContext items={[...containers, PLACEHOLDER_ID]}>
+                            <Allotment minSize={0} className={`${cmnStyles.hFull}`} ref={ref}>
+                                {containers.map((containerId) => {
+                                    return <Allotment.Pane minSize={0} snap visible={tabItemsObj[containerId].visible} key={containerId}>
+                                        <div key={containerId} className={`${cmnStyles.hFull}`} style={{ marginLeft: '16px' }}>
+                                            <TabsBox tabItems={tabItemsObj[containerId].items} disabled={isSortingContainer} containerId={containerId} setTabItemsObj={setTabItemsObj} />
+                                        </div>
+                                    </Allotment.Pane>
+                                }
+                                )}
+                            </Allotment>
+                        </SortableContext>
+                    </DndContext>
+                    : null
+                :
+                <div className={`${cmnStyles.hFull}`}>
+                    <TabsSingleBox tabItems={tabItemsObj['group1'].items} />
+                </div>
             }
+
         </>
     );
 };
