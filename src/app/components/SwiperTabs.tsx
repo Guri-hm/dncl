@@ -36,14 +36,13 @@ export const SwiperTabs = forwardRef<HTMLDivElement, Props>(({ children, labels,
             for (const ref of specialElementsRefs) {
                 if (ref.current && ref.current.contains(event.target as Node)) {
                     shouldAllowTouchMove = false;
-                    console.log("スワイプ禁止")
                     break;
                 }
             }
 
             bottomSwiper.allowTouchMove = shouldAllowTouchMove;
         };
-        console.log("実行")
+
         if (bottomSwiper) {
             bottomSwiper.el.addEventListener('touchstart', handleTouchStart, { passive: true });
         }
@@ -74,6 +73,14 @@ export const SwiperTabs = forwardRef<HTMLDivElement, Props>(({ children, labels,
         }
     };
 
+    const handleSetFalse = (swiper: any) => {
+        //スワイプ後にスワイプ無効化
+        //デフォルトをtrueにしていると，ドラッグ可能要素の初回処理がうまく動作しない
+        if (bottomSwiper) {
+            bottomSwiper.allowTouchMove = false;
+        }
+    }
+
     return (
         <>
             <Box sx={{ width: "100%", bgcolor: "background.paper", flex: '0 1 auto', }} >
@@ -89,10 +96,12 @@ export const SwiperTabs = forwardRef<HTMLDivElement, Props>(({ children, labels,
 
             </Box>
             <Swiper
+                allowTouchMove={false}
                 spaceBetween={50}
                 slidesPerView={1}
                 onSlideChange={slideChange}
                 onSwiper={setBottomSwiper}
+                onTouchEnd={(handleSetFalse)}
                 style={{ backgroundColor: 'var(--stone-50)', flex: 1, height: 'calc(100% - 48px)', }}
             >
                 {children}
