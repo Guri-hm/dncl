@@ -1,73 +1,76 @@
-import React, { useRef, useEffect } from 'react';
-import Swiper from 'swiper';
-import { DndContext, useDraggable, DragStartEvent, DragEndEvent } from '@dnd-kit/core';
+import * as React from 'react';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Box from '@mui/material/Box';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
 
-interface DraggableItemProps {
-    id: string;
+interface TabPanelProps {
+    children?: React.ReactNode;
+    index: number;
+    value: number;
 }
 
-const DraggableItem: React.FC<DraggableItemProps> = ({ id }) => {
-    const { attributes, listeners, setNodeRef, transform } = useDraggable({
-        id,
-    });
-
-    const style: React.CSSProperties = transform
-        ? {
-            transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-        }
-        : undefined;
+function CustomTabPanel(props: TabPanelProps) {
+    const { children, value, index, ...other } = props;
 
     return (
         <div
-            ref={setNodeRef}
-            style={{
-                ...style,
-                width: '100px',
-                height: '100px',
-                backgroundColor: 'lightblue',
-                cursor: 'move',
-            }}
-            {...listeners}
-            {...attributes}
+            role="tabpanel"
+            hidden={value !== index}
+            id={`simple-tabpanel-${index}`}
+            aria-labelledby={`simple-tab-${index}`}
+            {...other}
         >
-            ドラッグ可能な要素
+            {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
         </div>
     );
-};
+}
 
-const MySwiper: React.FC = () => {
-    const swiperRef = useRef<HTMLDivElement | null>(null);
+function a11yProps(index: number) {
+    return {
+        id: `simple-tab-${index}`,
+        'aria-controls': `simple-tabpanel-${index}`,
+    };
+}
 
-    useEffect(() => {
-        const swiperInstance = new Swiper(swiperRef.current!, {
-            // Swiperの設定
-            allowTouchMove: false, // スワイプを無効化
-        });
+export default function BasicTabs() {
+    const [value, setValue] = React.useState(0);
 
-        return () => {
-            swiperInstance.destroy(true, true);
-        };
-    }, []);
-
-    const handleDragStart = (event: DragStartEvent) => {
-        console.log('Drag started:', event);
+    const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+        setValue(newValue);
     };
 
-    const handleDragEnd = (event: DragEndEvent) => {
-        console.log('Drag ended:', event);
+    const handleTouchEnd = (swiper: any) => {
+        const diff = swiper.touches.diff;
+        if (diff > 0) {
+            alert('右');
+        } else if (diff < 0) {
+            alert('左');
+        }
     };
 
     return (
-        <div ref={swiperRef} className="swiper-container">
-            <div className="swiper-wrapper">
-                <div className="swiper-slide">
-                    <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-                        <DraggableItem id="item1" />
-                    </DndContext>
-                </div>
-            </div>
-        </div>
+        <Box sx={{ width: '100%' }}>
+            <Swiper onTouchEnd={handleTouchEnd}>
+                <SwiperSlide>
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                        <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
+                            <Tab label="Item One" {...a11yProps(0)} />
+                            <Tab label="Item Two" {...a11yProps(1)} />
+                            <Tab label="Item Three" {...a11yProps(2)} />
+                        </Tabs>
+                    </Box>
+                </SwiperSlide>
+            </Swiper>
+            <CustomTabPanel value={value} index={0}>
+                Item One
+            </CustomTabPanel>
+            <CustomTabPanel value={value} index={1}>
+            </CustomTabPanel>
+            <CustomTabPanel value={value} index={2}>
+                Item Three
+            </CustomTabPanel>
+        </Box>
     );
-};
-
-export default MySwiper;
+}
