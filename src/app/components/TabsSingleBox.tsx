@@ -37,7 +37,7 @@ const TabPanel = forwardRef<HTMLDivElement, TabPanelProps>(({ children, index, v
 type Props = {
     tabItems: TabItem[];
     containerId?: UniqueIdentifier;
-    setTabItemsObj: any;
+    setTabItemsObj?: any;
 }
 const StyledBox: React.FC<BoxProps> = ({ children }) => {
     return (<Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', border: '1px solid var(--slategray)', position: 'relative', zIndex: 10, gridColumn: 'span 3', backgroundColor: '#1e293b', boxShadow: '0 10px 15px rgba(0, 0, 0, 0.1)', '@xl': { marginLeft: 0 } }}>
@@ -117,11 +117,14 @@ export const TabsSingleBox = ({ tabItems, setTabItemsObj, containerId = 'box', .
                                 </MenuItem>
                             ))
                         }
-                        <MenuItem onClick={handleCloseBox}>
-                            <ListItemIcon>
-                                <CloseIcon fontSize="small" />
-                            </ListItemIcon>
-                            閉じる</MenuItem>
+                        {setTabItemsObj &&
+                            <MenuItem onClick={handleCloseBox}>
+                                <ListItemIcon>
+                                    <CloseIcon fontSize="small" />
+                                </ListItemIcon>
+                                閉じる
+                            </MenuItem>
+                        }
                     </Menu>
                 </Grid>
             </Grid>

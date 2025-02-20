@@ -371,7 +371,7 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, se
                     : null
                 :
                 <div className={`${cmnStyles.hFull}`}>
-                    <TabsSingleBox tabItems={tabItemsObj['group1'].items} containerId={'group1'} setTabItemsObj={setTabItemsObj} />
+                    <TabsSingleBox tabItems={tabItemsObj['group1'].items} />
                 </div>
             }
 
