@@ -12,20 +12,10 @@ import { styled } from '@mui/system';
 import CheckedIcon from "../components/CheckedIcon";
 import UnachievedIcon from "../components/UnachievedIcon";
 import { allChallengesItems } from "../components/Challenges";
-import useAchievements, { Achievement, storageKey } from "../hooks/useAchievements";
-import ClearAllIcon from '@mui/icons-material/ClearAll';
-import { useState } from "react";
+import useAchievements, { storageKey } from "../hooks/useAchievements";
+import { useRef, useState } from "react";
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
-// interface Achievement {
-//   isAchieved: boolean;
-//   achievedDate: string;
-// }
-
-// const achievements: { [key: string]: Achievement } =
-// {
-//   "1": { isAchieved: true, achievedDate: '2025/01/01' },
-//   // 他の達成状況を追加
-// }
 
 const CustomTypography = styled(Typography)(({ theme }) => ({
   position: 'relative',
@@ -52,12 +42,17 @@ export default function Home() {
 
   const { achievements, clearAchievements } = useAchievements(storageKey);
   const [open, setOpen] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
 
   const handleClickOpen = () => {
     setOpen(true);
   };
   const handleClose = () => {
     setOpen(false);
+    if (buttonRef.current) {
+      // ダイアログを閉じた後にフォーカスを戻す(area-hiddenのエラー回避)
+      buttonRef.current.focus();
+    }
   };
   const handleClear = () => {
     clearAchievements();
@@ -69,24 +64,25 @@ export default function Home() {
       <Header>
         <HeaderItem>
           <HeaderTitle />
-          <Button
+          <Button ref={buttonRef}
             sx={{ backgroundColor: 'var(--stone-50)', marginLeft: 'auto', color: 'var(--foreground)' }}
             onClick={handleClickOpen}
-            endIcon={<ClearAllIcon />}
+            endIcon={<RestartAltIcon />}
             variant="contained"
           >
-            記録のリセット
+            リセット
           </Button>
         </HeaderItem>
       </Header>
       <ContentWrapper>
         <Grid container direction={"column"} sx={{
-          justifyContent: "center",
-          alignItems: "center", height: '100%',
+          justifyContent: "flex-start",
+          alignItems: "center",
+          height: '100%',
           backgroundColor: 'var(--stone-50)'
         }} >
-          <Grid spacing={3} size='auto'>
-            <CustomTypography variant="h4">
+          <Grid spacing={3} size='auto' sx={{ margin: 2 }}>
+            <CustomTypography variant="h2">
               <span>基本</span>
             </CustomTypography>
             <List sx={{ width: '100%', maxWidth: 360 }}>
@@ -110,8 +106,8 @@ export default function Home() {
               ))}
             </List>
           </Grid>
-          <Grid spacing={3} size='auto'>
-            <CustomTypography variant="h4">
+          <Grid spacing={3} size='auto' sx={{ margin: 2 }}>
+            <CustomTypography variant="h2">
               <span>初級</span>
             </CustomTypography>
           </Grid>

@@ -4,6 +4,10 @@ import { useState, useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import Loading from './Loading';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import theme from '@/app/theme';
+import { Typography } from '@mui/material';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(true);
@@ -28,9 +32,13 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
     return (
         <>
+
             {loading && <Loading fadeOut={fadeOut} />}
             <Suspense fallback={<Loading />}>
-                {children}
+                <ThemeProvider theme={theme}>
+                    <CssBaseline />
+                    {children}
+                </ThemeProvider>
             </Suspense>
         </>
     );

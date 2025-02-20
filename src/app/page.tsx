@@ -29,18 +29,18 @@ export default function Home() {
           <Grid container direction={{ xs: 'column', sm: 'row' }} spacing={3} size='auto'>
             <Grid size="grow">
               <BubblePaper top="50%" left="50%" href='./chlng'>
-                <Typography variant="h5" component="div">
+                <Typography variant="h2">
                   チャレンジモード
                 </Typography>
-                <Typography sx={{ color: 'text.secondary', mb: 1.5 }}>課題に挑み，全問クリアを目指します</Typography>
+                <Typography sx={{ color: 'text.secondary', mb: 1.5, marginTop: 0.5 }}>課題に挑み，全問クリアを目指します</Typography>
               </BubblePaper>
             </Grid>
             <Grid size="grow">
               <BubblePaper top="50%" left="50%" href='./edit'>
-                <Typography variant="h5" component="div">
+                <Typography variant="h2">
                   エディタモード
                 </Typography>
-                <Typography sx={{ color: 'text.secondary', mb: 1.5 }}>自由にDNCLを操作します</Typography>
+                <Typography sx={{ color: 'text.secondary', mb: 1.5, marginTop: 0.5 }}>自由にDNCLを操作します</Typography>
               </BubblePaper>
             </Grid>
           </Grid>
