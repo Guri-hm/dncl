@@ -29,7 +29,7 @@ export default function Home() {
           <Grid container direction={{ xs: 'column', sm: 'row' }} spacing={3} size='auto'>
             <Grid size="grow">
               <BubblePaper top="50%" left="50%" href='./chlng'>
-                <Typography variant="h2">
+                <Typography variant="h2" sx={{ whiteSpace: 'nowrap' }}>
                   チャレンジモード
                 </Typography>
                 <Typography sx={{ color: 'text.secondary', mb: 1.5, marginTop: 0.5 }}>課題に挑み，全問クリアを目指します</Typography>

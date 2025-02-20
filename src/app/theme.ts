@@ -5,13 +5,13 @@ let theme = createTheme({
         h1: {
             fontSize: '1.9rem !important',
             '@media (min-width:600px)': {
-                fontSize: '2.5rem !important',
+                fontSize: '2.4rem !important',
             },
         },
         h2: {
-            fontSize: '1.6rem !important',
+            fontSize: '1.5rem !important',
             '@media (min-width:600px)': {
-                fontSize: '2.1rem !important',
+                fontSize: '2.0rem !important',
             },
         },
         h3: {
