@@ -9,7 +9,7 @@ import { PageWrapper } from "@/app/components/PageWrapper";
 import { Header } from "@/app/components/Header";
 import { HeaderItem } from "@/app/components/HeaderItem";
 import { ContentWrapper } from "@/app/components/ContentWrapper";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Snackbar } from "@mui/material";
 import HeaderTitle from "./HeaderTitle";
 import { HintButton } from "./HintButton";
@@ -22,8 +22,13 @@ import { Question } from "./Question";
 import SuccessDialog from "./SuccessDialog";
 import Confetti from 'react-confetti';
 import useAchievements, { storageKey } from '../hooks/useAchievements';
-import { statementEnumMap, StatementJpEnum } from "../enum";
+import { statementEnumMap } from "../enum";
 import { v4 as uuidv4 } from "uuid";
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
+import { SwiperTabs } from "./SwiperTabs";
+import { SwiperSlide } from "swiper/react";
+import Divider from '@mui/material/Divider';
 
 interface Props {
     challenge: Challenge;
@@ -72,6 +77,10 @@ export default function ChallengePage({ challenge }: Props) {
     const [runResults, setRunResults] = useState<string[]>([]);
     const [showConfetti, setShowConfetti] = useState(false);
     const { achievements, addAchievement } = useAchievements(storageKey);
+    const theme = useTheme();
+    const isSm = useMediaQuery(theme.breakpoints.up('sm'));//600px以上
+    const specialElementRef1 = useRef<HTMLDivElement | null>(null);
+    const specialElementRef2 = useRef<HTMLDivElement | null>(null);
 
     const fragments: FragmentItems = challenge.usableItems ? challenge.usableItems.map((item, index) => ({
         id: uuidv4(),
@@ -144,27 +153,43 @@ export default function ChallengePage({ challenge }: Props) {
                 <HeaderItem>
                     <HeaderTitle />
                 </HeaderItem>
+                <Divider sx={{ borderColor: 'var(--slategray)' }} />
                 <Question>
                     問：{`${challenge.task}`}
                 </Question>
             </Header>
             <ContentWrapper>
-                <Allotment vertical defaultSizes={[200, 100]}>
-                    <Allotment separator={false} defaultSizes={[100, 100]}>
-                        <Allotment.Pane>
-                            <SortableTree treeItems={items} setTreeItems={setItems} dnclValidation={dnclValidation} fragments={fragments} collapsible indicator removable ></SortableTree>
+                {isSm ?
+                    <Allotment vertical defaultSizes={[200, 100]}>
+                        <Allotment separator={false} defaultSizes={[100, 100]}>
+                            <Allotment.Pane>
+                                <SortableTree treeItems={items} setTreeItems={setItems} dnclValidation={dnclValidation} fragments={fragments} collapsible indicator removable ></SortableTree>
+                            </Allotment.Pane>
+                            <Allotment.Pane visible={hintVisible}>
+                                <Tip onClose={() => setHintVisible(false)} hint={challenge.hint} />
+                            </Allotment.Pane>
+                            <Allotment.Pane visible={!hintVisible} minSize={60} maxSize={60} className={styles.paneHover}>
+                                <Door setVisible={() => setHintVisible(true)} title={"ヒントを表示したいですか？"} />
+                            </Allotment.Pane>
+                        </Allotment>
+                        <Allotment.Pane className={`${styles.bgStone50} ${styles.marginTop16} ${styles.hFull} `}>
+                            <ConsoleWrapper dnclValidation={dnclValidation} setDnclValidation={setDnclValidation} treeItems={items} runResults={runResults} setRunResults={setRunResults} />
                         </Allotment.Pane>
-                        <Allotment.Pane visible={hintVisible}>
-                            <Tip onClose={() => setHintVisible(false)} hint={challenge.hint} />
-                        </Allotment.Pane>
-                        <Allotment.Pane visible={!hintVisible} minSize={60} maxSize={60} className={styles.paneHover}>
-                            <Door setVisible={() => setHintVisible(true)} title={"ヒントを表示したいですか？"} />
-                        </Allotment.Pane>
-                    </Allotment>
-                    <Allotment.Pane className={`${styles.bgStone50} ${styles.marginTop16} ${styles.hFull} `}>
-                        <ConsoleWrapper dnclValidation={dnclValidation} setDnclValidation={setDnclValidation} treeItems={items} runResults={runResults} setRunResults={setRunResults} />
-                    </Allotment.Pane>
-                </Allotment >
+                    </Allotment >
+                    :
+                    <SwiperTabs labels={['プログラム', 'コンソール', 'ヒント']} specialElementsRefs={[specialElementRef1, specialElementRef2]}>
+                        <SwiperSlide >
+                            <SortableTree treeItems={items} setTreeItems={setItems} dnclValidation={dnclValidation} specialElementsRefs={[specialElementRef1, specialElementRef2]} collapsible indicator removable ></SortableTree>
+                        </SwiperSlide>
+                        <SwiperSlide>
+                            <ConsoleWrapper dnclValidation={dnclValidation} setDnclValidation={setDnclValidation} treeItems={items} runResults={runResults} setRunResults={setRunResults} />
+                        </SwiperSlide>
+                        <SwiperSlide>
+                            <Tip onClose={() => setHintVisible(false)} hint={challenge.hint} open={hintVisible} />
+                        </SwiperSlide>
+
+                    </SwiperTabs>
+                }
             </ContentWrapper>
             <Snackbar
                 anchorOrigin={{ vertical: 'top', horizontal: 'center' }}

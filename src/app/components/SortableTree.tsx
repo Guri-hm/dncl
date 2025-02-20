@@ -194,7 +194,7 @@ export function SortableTree({
       >
         <DnclEditDialog {...editor}></DnclEditDialog>
         {isSm ?
-          <Allotment separator={false} defaultSizes={[100, 100]} className={styles.splitViewContainer} onVisibleChange={(_index, value) => {
+          <Allotment separator={false} defaultSizes={[100, 100, 100]} className={styles.splitViewContainer} onVisibleChange={(_index, value) => {
             setVisible(value);
           }}>
             <Allotment.Pane maxSize={50} minSize={50} className={`${styles.paneBg}`}>

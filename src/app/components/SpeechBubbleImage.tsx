@@ -4,9 +4,10 @@ import Grid from '@mui/material/Grid2';
 interface Props {
     children: React.ReactNode;
     msg: string;
+    open?: boolean
 }
 
-const SpeechBubbleImage = ({ children, msg }: Props) => {
+const SpeechBubbleImage = ({ children, msg, open = true }: Props) => {
     return (
         <Grid container
             direction="row-reverse" sx={{
@@ -24,9 +25,10 @@ const SpeechBubbleImage = ({ children, msg }: Props) => {
             >
                 <Grid
                     sx={{
+                        textAlign: open ? 'left' : 'center',
                         position: 'absolute',
                         width: '100%',
-                        top: 0,
+                        top: '-10px',
                         bgcolor: "var(--stone-50)",
                         borderRadius: "10px",
                         padding: "10px",

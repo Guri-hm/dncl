@@ -10,7 +10,7 @@ interface Props {
 const Door = ({ setVisible, title = '' }: Props) => {
     return (
         <CustomTooltip title={title} arrow followCursor placement="left">
-            <span onClick={setVisible} >
+            <span onClick={setVisible} style={{ height: '100%' }}>
                 <NextImage src={"/door.svg"} alt={'ドアから覗く'} style={{ objectFit: 'cover' }} />
             </span>
         </CustomTooltip>

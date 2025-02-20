@@ -12,6 +12,7 @@
   --error: #FF4500;
   --warnning: #FFFF00;
   --darkgray: #424242;
+  --slategray: #4b5563;
 }
 
 @media (prefers-color-scheme: dark) {
