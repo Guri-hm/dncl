@@ -2,14 +2,12 @@
 
 "use client"
 import React from 'react';
-import { ContentWrapper } from './components/ContentWrapper';
-import { PageWrapper } from './components/PageWrapper';
-import { Header } from './components/Header';
-import { HeaderItem } from './components/HeaderItem';
+import { ContentWrapper } from '@/app/components/ContentWrapper';
+import { PageWrapper } from '@/app/components/PageWrapper';
 import { Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import BubblePaper from './components/BubblePaper';
-import HeaderTitle from './components/HeaderTitle';
+import { BubblePaper } from '@/app/components/Bubble';
+import { Header, HeaderItem, HeaderTitle } from '@/app/components/Header';
 
 export default function Home() {
 

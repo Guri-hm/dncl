@@ -1,6 +1,6 @@
 import { Paper } from '@mui/material';
 import { useState } from 'react';
-import './BubblePaper.css'; // CSSファイルをインポート
+import './BubblePaper.css';
 import Link from 'next/link';
 
 interface BubblePaperProps {

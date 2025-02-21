@@ -2,11 +2,11 @@
 
 "use client"
 import { PageWrapper } from "@/app/components/PageWrapper";
-import { Header } from "@/app/components/Header";
-import { HeaderItem } from "@/app/components/HeaderItem";
+import { Header } from "@/app/components/Header/Header";
+import { HeaderItem } from "@/app/components/Header/HeaderItem";
 import { ContentWrapper } from "@/app/components/ContentWrapper";
 import Grid from '@mui/material/Grid2';
-import HeaderTitle from "../components/HeaderTitle";
+import HeaderTitle from "../components/Header/HeaderTitle";
 import { Avatar, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Typography } from "@mui/material";
 import { styled } from '@mui/system';
 import CheckedIcon from "../components/CheckedIcon";

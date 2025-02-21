@@ -3,13 +3,13 @@ import { Typography } from '@mui/material';
 import Image from 'next/image';
 import Link from 'next/link';
 
-const HeaderTitle = () => {
+export const HeaderTitle = () => {
     return (
         <Link href='/' passHref style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
             <Image
                 aria-hidden
                 src="/logo.svg"
-                alt="logo"
+                alt="ロゴ"
                 width={50}
                 height={50}
             />
@@ -26,5 +26,3 @@ const HeaderTitle = () => {
         </Link>
     );
 };
-
-export default HeaderTitle;
