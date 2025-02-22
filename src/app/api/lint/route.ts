@@ -4,7 +4,8 @@ import stripAnsi from 'strip-ansi';
 
 export async function POST(req: NextRequest) {
     const { code } = await req.json();
-    const eslint = new ESLint();
+    // const eslint = new ESLint();
+    const eslint = new ESLint({ overrideConfigFile: '.eslintrc.js' }); // 設定ファイルを指定
 
     try {
         // let test = "a = [1, 2, 4, 5];\nconsole.log(a);\na.fill(a[2]);"
@@ -69,7 +70,7 @@ export async function POST(req: NextRequest) {
         // 型アサーションで Error 型にキャスト
         const errorMessage = (error as Error).message;
         return NextResponse.json(
-            { error: errorMessage },
+            { error: [errorMessage] },
             {
                 status: 500,
                 headers: {

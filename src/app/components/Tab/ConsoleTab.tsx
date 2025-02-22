@@ -201,7 +201,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
             }
 
         } catch (err: any) {
-            const result: DnclValidationType = { color: Color.error, errors: err.message || 'An unexpected error occurred', hasError: true, lineNum: [] };
+            const result: DnclValidationType = { color: Color.error, errors: [err.message], hasError: true, lineNum: [] };
             setDnclValidation(result);
         } finally {
             setTmpMsg('');

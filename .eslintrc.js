@@ -1,4 +1,5 @@
-{
+const isBuildMode = process.env.ESLINT_MODE === 'build';
+module.exports = {
   "extends": [
     "next/core-web-vitals",
     "next/typescript"
@@ -8,7 +9,7 @@
     "react"
   ],
   "rules": {
-    "custom-rules/no-use-before-assign": "error",
+    'custom-rules/no-use-before-assign': isBuildMode ? 'off' : 'error',
     "react/react-in-jsx-scope": "off",
     "react/prop-types": "off",
     "no-undef": "off", // no-undef ルールを無効化
