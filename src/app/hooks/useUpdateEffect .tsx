@@ -1,4 +1,4 @@
-import { useEffect, useRef, DependencyList } from 'react';
+import { useEffect, useRef, DependencyList, useCallback } from 'react';
 
 export const useUpdateEffect = (callback: () => void, dependencies: DependencyList) => {
     const isFirstRender = useRef(true);
@@ -9,7 +9,7 @@ export const useUpdateEffect = (callback: () => void, dependencies: DependencyLi
             return;
         }
 
-        return callback();
+        callback();
 
-    }, dependencies);
-}
+    }, [callback, ...dependencies]);
+};

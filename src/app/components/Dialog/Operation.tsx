@@ -9,6 +9,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { useUpdateEffect } from '@/app/hooks';
 import { checkParenthesesBalance, enumsToObjects, getValueByKey } from "@/app/utilities";
 import { TreeItems } from "@/app/types";
+import { useCallback } from 'react';
 
 type Props = {
     children?: ReactNode;
@@ -36,14 +37,9 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [] }) 
     const [activeId, setActiveId] = useState<string>("");
     const [braketError, setBraketError] = useState<string[]>([]);
 
-    //初回レンダリング時に実行しない
-    useUpdateEffect(() => {
-        checkBraketPair();
-    }, [operandComponents]);
-
     const draggableStringList = enumsToObjects([BraketSymbolEnum, OperatorTypeJpEnum]);
 
-    const checkBraketPair = () => {
+    const checkBraketPair = useCallback(() => {
 
         let errorArray: string[] = [];
 
@@ -69,7 +65,10 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [] }) 
             errorArray.push(`『 ${BraketSymbolEnum.LeftBraket} 』と『 ${BraketSymbolEnum.RigthBraket} 』の内側には要素が必要です`);
         }
         setBraketError(errorArray);
-    }
+    }, [])
+
+    //初回レンダリング時に実行しない
+    useUpdateEffect(checkBraketPair, [operandComponents]);
 
     const addOperandComponent = () => {
         setOperandComponents([...operandComponents, { name: keyPrefixEnum.RigthSide }]);
