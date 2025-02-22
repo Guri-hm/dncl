@@ -1,5 +1,5 @@
 import { Box, BoxProps } from "@mui/material";
-import React, { FC, useEffect, useState, Fragment } from "react";
+import React, { FC, useEffect, useState, Fragment, useCallback } from "react";
 import { TreeItem, TreeItems } from "@/app/types";
 import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, LoopEnum, ArithmeticOperator, ArithmeticOperatorVba } from "@/app/enum";
 import { capitalizeTrueFalse, replaceToVbaConcatenation, tryParseToVbaFunc } from "@/app/utilities";
@@ -190,24 +190,9 @@ export const VbaTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }
         return () => clearTimeout(timer); // クリーンアップ
     }, [treeItems]);
 
-    useEffect(() => {
-        if (shouldRunEffect) {
-            const convertCode = async () => {
-                //EndSubに変換するTreeItemを挿入
-                const { movedItems, remainingItems } = moveElementsToEnd(treeItems);
-                const finalTreeItems = wrapRemainingItems(remainingItems, movedItems);
-                console.log(moveElementsToEnd(finalTreeItems))
-                setNodes(await renderNodes(finalTreeItems, 0));
-            };
-            setShouldRunEffect(false); // フラグをリセット
-            convertCode();
-        }
-    }, [shouldRunEffect]);
 
-    const renderNodes = async (nodes: TreeItems, depth: number): Promise<React.ReactNode> => {
-
+    const renderNodes = useCallback(async (nodes: TreeItems, depth: number): Promise<React.ReactNode> => {
         const promises: Promise<React.ReactNode>[] = nodes.map(async (node, index) => {
-
             const convertedVba = await cnvToVba({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) });
 
             return (
@@ -225,7 +210,21 @@ export const VbaTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }
         });
 
         return Promise.all(promises);
-    }
+    }, []);
+
+    useEffect(() => {
+        if (shouldRunEffect) {
+            const convertCode = async () => {
+                //EndSubに変換するTreeItemを挿入
+                const { movedItems, remainingItems } = moveElementsToEnd(treeItems);
+                const finalTreeItems = wrapRemainingItems(remainingItems, movedItems);
+                console.log(moveElementsToEnd(finalTreeItems))
+                setNodes(await renderNodes(finalTreeItems, 0));
+            };
+            setShouldRunEffect(false); // フラグをリセット
+            convertCode();
+        }
+    }, [shouldRunEffect, renderNodes, treeItems]);
 
     return (
         <Box className={styles.codeContainer} sx={{
