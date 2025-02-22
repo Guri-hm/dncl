@@ -7,7 +7,7 @@ export const HintMenu = () => {
 
     const menuItems = [
         { id: 1, text: '変数とは？', component: <VariableHint></VariableHint> },
-        { id: 1, text: '配列とは？', component: <ArrayHint></ArrayHint> },
+        { id: 2, text: '配列とは？', component: <ArrayHint></ArrayHint> },
         {
             id: 3, text: '代入文とは？「定義される前に使用されています」の場合は？', component: <AssignmentHint />
         },
