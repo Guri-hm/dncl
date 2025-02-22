@@ -2,7 +2,7 @@ import { Box, BoxProps } from "@mui/material";
 import { TreeItems } from "@/app/types";
 import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, ComparisonOperatorDncl, LoopEnum, ArithmeticOperator, BreakEnum, ArithmeticOperatorPython } from "@/app/enum";
 import { capitalizeTrueFalse, cnvToRomaji, containsJapanese, tryParseToPyFunc } from "@/app/utilities";
-import { FC, Fragment, ReactNode, useEffect, useState } from "react";
+import { FC, Fragment, ReactNode, useCallback, useEffect, useState } from "react";
 import { ScopeBox } from "@/app/components/Tab";
 import styles from "./tab.module.css"
 
@@ -134,7 +134,6 @@ const cnvToPython = async (statement: { lineTokens: string[], processIndex: numb
 interface GuardedBoxProps {
     className?: string;
     children?: ReactNode;
-    [key: string]: any;
 }
 
 const GuardedBox: React.FC<GuardedBoxProps> = ({ className, children, ...props }) => {
@@ -163,28 +162,16 @@ export const PythonTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...prop
         return () => clearTimeout(timer); // クリーンアップ
     }, [treeItems]);
 
-    useEffect(() => {
-        if (shouldRunEffect) {
-            const convertCode = async () => {
-                setNodes(await renderNodes(treeItems, 0));
-            };
-            setShouldRunEffect(false); // フラグをリセット
-            convertCode();
-        }
-    }, [shouldRunEffect]);
-
-    const renderNodes = async (nodes: TreeItems, depth: number): Promise<ReactNode> => {
+    const renderNodes = useCallback(async (nodes: TreeItems, depth: number): Promise<ReactNode> => {
         const renderedNodes = await Promise.all(nodes.map(async (node, index) => {
             const content = await cnvToPython({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) });
 
-            if (Number(node.processIndex) == ProcessEnum.EndDoWhile) {
+            if (Number(node.processIndex) === ProcessEnum.EndDoWhile) {
                 const items: TreeItems = [
                     {
                         id: node.id, children: [
                             {
-                                id: node.id, children: [
-
-                                ], line: '', lineTokens: [], processIndex: ProcessEnum.Break
+                                id: node.id, children: [], line: '', lineTokens: [], processIndex: ProcessEnum.Break
                             }
                         ], line: '', lineTokens: node.lineTokens, processIndex: ProcessEnum.If
                     }];
@@ -199,8 +186,9 @@ export const PythonTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...prop
                             </ScopeBox>
                         )}
                     </Fragment>
-                )
+                );
             }
+
             return (
                 <Fragment key={node.id}>
                     <GuardedBox className={(index === 0 && depth !== 0) ? styles.noCounter : ""}>
@@ -216,9 +204,17 @@ export const PythonTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...prop
         }));
 
         return renderedNodes;
-    }
+    }, []);
 
-
+    useEffect(() => {
+        if (shouldRunEffect) {
+            const convertCode = async () => {
+                setNodes(await renderNodes(treeItems, 0));
+            };
+            setShouldRunEffect(false); // フラグをリセット
+            convertCode();
+        }
+    }, [shouldRunEffect, renderNodes, treeItems]);
 
     return (
         <Box className={styles.codeContainer} sx={{

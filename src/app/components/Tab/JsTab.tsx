@@ -1,5 +1,5 @@
 import { Box, BoxProps } from "@mui/material";
-import { FC, useEffect, useState, Fragment } from "react";
+import { FC, useCallback, useEffect, useState, Fragment } from "react";
 import { TreeItems } from "@/app/types";
 import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, LoopEnum, ArithmeticOperator } from "@/app/enum";
 import { cnvToDivision, cnvToRomaji, containsJapanese, tryParseToJsFunction } from "@/app/utilities";
@@ -127,17 +127,7 @@ export const JsTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props })
         return () => clearTimeout(timer); // クリーンアップ
     }, [treeItems]);
 
-    useEffect(() => {
-        if (shouldRunEffect) {
-            const convertCode = async () => {
-                setNodes(await renderNodes(treeItems, 0));
-            };
-            setShouldRunEffect(false); // フラグをリセット
-            convertCode();
-        }
-    }, [shouldRunEffect]);
-
-    const renderNodes = async (nodes: TreeItems, depth: number): Promise<React.ReactNode> => {
+    const renderNodes = useCallback(async (nodes: TreeItems, depth: number): Promise<React.ReactNode> => {
         const promises = nodes.map(async (node: TreeItem, index: number) => {
             const convertedJs = await cnvToJs({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) });
 
@@ -156,7 +146,17 @@ export const JsTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props })
         });
 
         return Promise.all(promises);
-    }
+    }, []);
+
+    useEffect(() => {
+        if (shouldRunEffect) {
+            const convertCode = async () => {
+                setNodes(await renderNodes(treeItems, 0));
+            };
+            setShouldRunEffect(false); // フラグをリセット
+            convertCode();
+        }
+    }, [shouldRunEffect, renderNodes, treeItems]);
 
     return (
         <Box className={styles.codeContainer} sx={{

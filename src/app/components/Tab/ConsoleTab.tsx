@@ -226,7 +226,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
             // フラグをリセット
             setShouldRunEffect(false);
 
-            let result: DnclValidationType = { errors: [], hasError: false, lineNum: [] };
+            const result: DnclValidationType = { errors: [], hasError: false, lineNum: [] };
             const flatten = flattenTree(treeItems);
             flatten.map((item: FlattenedItem, index) => {
                 const { hasError, errors } = checkDNCLSyntax(flatten, item, index + 1);

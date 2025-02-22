@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect, useState } from 'react';
 import { parseCode, generateFlowchartXML, flattenTree } from '@/app/utilities';
 import { Box, BoxProps, Button } from '@mui/material';
 import { TreeItem, TreeItems } from '@/app/types';
@@ -22,33 +22,20 @@ export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props 
     return () => clearTimeout(timer); // クリーンアップ
   }, [treeItems]);
 
-  const renderCode = async (nodes: TreeItems): Promise<string> => {
+  const renderCode = useCallback(async (nodes: TreeItems): Promise<string> => {
     const flatten = flattenTree(nodes);
-
-    const renderCodeArray = await Promise.all(flatten.map(async (node: TreeItem, index: number) => {
-
-      const content = await cnvToJs({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) });
-      return content
-    }));
+    const renderCodeArray = await Promise.all(
+      flatten.map(async (node: TreeItem, index: number) => {
+        const content = await cnvToJs({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) });
+        return content;
+      })
+    );
     return renderCodeArray.join('\n');
-  }
+  }, []);
 
-  useEffect(() => {
-    if (shouldRunEffect) {
-      const convertCode = async () => {
-        const jsCode = await renderCode(treeItems);
-        fetchLintResults(jsCode);
-      };
-      setShouldRunEffect(false);
-      convertCode();
-    };
-  }, [shouldRunEffect]);
-
-  const fetchLintResults = async (code: string) => {
-
-    if (!code || code == '') {
+  const fetchLintResults = useCallback(async (code: string) => {
+    if (!code || code === '') {
       setNodes("");
-
       return;
     }
 
@@ -68,18 +55,20 @@ export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props 
 
       const data = await response.json();
 
-      if (data.messages.length == 0) {
+      if (data.messages.length === 0) {
         generateFlowchart(code);
       } else {
         setNodes("プログラムに誤りがあります");
       }
-
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.error(err.message);
+      } else {
+        console.error('Unexpected error', err);
+      }
     } finally {
-
     }
-
-  };
+  }, []);
 
   const generateFlowchart = (code: string) => {
 
@@ -88,12 +77,12 @@ export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props 
 
     const flowchartXml = generateFlowchartXML(ast);
     const mxfile = `
-      <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 Edg/132.0.0.0" version="26.0.11">
+    <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 Edg/132.0.0.0" version="26.0.11">
           <diagram name="ページ1" id="-Ry5r97N3-jTHmX2WoBb">
-    ${flowchartXml}
+          ${flowchartXml}
           </diagram>
-        </mxfile>
-      `;
+          </mxfile>
+          `;
 
     const dataMxgraph = JSON.stringify({
       highlight: "#0000ff",
@@ -163,6 +152,18 @@ export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props 
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
+
+  useEffect(() => {
+    if (shouldRunEffect) {
+      const convertCode = async () => {
+        const jsCode = await renderCode(treeItems);
+        fetchLintResults(jsCode);
+      };
+      setShouldRunEffect(false);
+      convertCode();
+    }
+  }, [shouldRunEffect, renderCode, fetchLintResults, treeItems]);
+
   return (
     <>
       {nodes}
