@@ -25,7 +25,7 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: 'Noto Sans JP', Arial, Helvetica, sans-serif;
+  font-family: YakuHanJPs, Roboto, "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3", Arial, nc3Jp, sans-serif !important;
 }
 
 html,
