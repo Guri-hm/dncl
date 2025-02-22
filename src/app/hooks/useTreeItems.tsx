@@ -12,7 +12,7 @@ export const useTreeItems = (defaultValue: TreeItems): [items: TreeItems, setIte
     const [itemsInternal, setItemsInternal] = useState(defaultValue);
 
     useEffect(() => {
-        let json: string = localStorage.getItem(STORAGE_KEY_ALL_STROKES) || "";
+        const json: string = localStorage.getItem(STORAGE_KEY_ALL_STROKES) || "";
         if (json && json !== "undefined") {
             setItemsInternal(JSON.parse(json) as TreeItems);
         }
@@ -31,7 +31,7 @@ export const useTreeItems = (defaultValue: TreeItems): [items: TreeItems, setIte
 
 export const loadTreeItems = (): TreeItems | null => {
     if (typeof window !== 'undefined') {
-        let json: string = localStorage.getItem(STORAGE_KEY_ALL_STROKES) || "";
+        const json: string = localStorage.getItem(STORAGE_KEY_ALL_STROKES) || "";
         if (json && json !== "undefined") {
             return JSON.parse(json) as TreeItems;
         }
