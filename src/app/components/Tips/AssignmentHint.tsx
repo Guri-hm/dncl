@@ -2,6 +2,7 @@ import { Box } from "@mui/material"
 import { FlattenedItem } from "@/app/types";
 import { v4 as uuidv4 } from 'uuid'
 import { SampleTreeItems } from "./SampleTreeItems";
+import Image from "next/image";
 
 
 const sampleItems: FlattenedItem[] = [
@@ -38,7 +39,13 @@ export const AssignmentHint = () => {
                 <p>変数名や配列名はある程度自由に決められます。ただし，処理の都合で規則が用意されています。規則内でなるべくわかりやすく命名しましょう。</p>
             </Box>
             <Box sx={{ textAlign: 'center', marginX: 'auto', marginY: '10px', width: '50%' }}>
-                <img src={"/assignment.svg"} alt='代入文' style={{ maxWidth: '150px' }}></img>
+                <Image
+                    src="/assignment.svg"
+                    alt="代入文"
+                    width={300}
+                    height={300}
+                    style={{ width: "100%", maxWidth: "150px" }}
+                />
             </Box>
         </Box>
     )
