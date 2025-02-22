@@ -1,6 +1,7 @@
 import type { RefObject } from 'react';
 import { StatementEnum, StatementJpEnum } from "@/app/enum";
 import { UniqueIdentifier } from '@dnd-kit/core';
+import { Dispatch, SetStateAction } from 'react';
 
 export interface TreeItem {
   id: string;
@@ -15,6 +16,10 @@ export interface TreeItem {
 }
 
 export type TreeItems = TreeItem[];
+
+export interface NewItemParams {
+  newItem: FlattenedItem; overIndex: UniqueIdentifier;
+}
 
 //?付与でオプション扱い(デフォルトはundefined)
 export interface FlattenedItem extends TreeItem {
@@ -38,13 +43,13 @@ export type FragmentItems = FragmentItem[];
 export type DnclEditorProps = {
   item?: FlattenedItem,
   treeItems: TreeItems,
-  setItems: any,
-  setEditor?: any,
+  setItems: Dispatch<SetStateAction<TreeItems>>,
+  setEditor?: Dispatch<SetStateAction<DnclEditorProps>> | null,
   open: boolean,
-  addItem: any,
+  addItem: ((itemParams: NewItemParams) => void) | null;
   type?: StatementEnum,
   overIndex: UniqueIdentifier,
-  refresh?: any,
+  refresh?: () => void,
 }
 
 export type ErrObj = {

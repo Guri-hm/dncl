@@ -191,8 +191,13 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props)
 
     const handleClose = () => {
         setError([]);
-        params.setEditor((prevState: DnclEditorProps) => ({ ...prevState, open: false }));
-        params.refresh();
+        if (params.setEditor) {
+            params.setEditor((prevState: DnclEditorProps) => ({ ...prevState, open: false }));
+        }
+
+        if (params.refresh) {
+            params.refresh();
+        }
     };
 
     return (
@@ -306,7 +311,12 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props)
                         if (params.item) {
                             params.item = { ...params.item, line: processPhrase, lineTokens: tokens, processIndex: Number(formJson.processIndex), variables }
                         }
-                        params.addItem({ newItem: params.item, overIndex: params.overIndex });
+
+                        if (params.addItem) {
+                            if (params.item) {
+                                params.addItem({ newItem: params.item, overIndex: params.overIndex });
+                            }
+                        }
                         handleClose();
                     },
                 }}

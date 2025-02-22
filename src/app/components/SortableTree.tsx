@@ -33,7 +33,7 @@ import {
   removeChildrenOf,
   setProperty,
 } from "@/app/utilities";
-import { FlattenedItem, SensorContext, TreeItems, FragmentItems, FragmentItem, DnclEditorProps, DnclValidationType } from "@/app/types";
+import { FlattenedItem, SensorContext, TreeItems, FragmentItems, FragmentItem, DnclEditorProps, DnclValidationType, NewItemParams } from "@/app/types";
 import { DnclEditDialog } from "@/app/components/Dialog";
 import { v4 as uuidv4 } from "uuid";
 import { allStatementItems, statementEnumMap } from "@/app/enum";
@@ -348,10 +348,6 @@ export function SortableTree({
 
   function handleDragEnd({ active, over }: DragEndEvent) {
     resetState();
-
-    interface NewItemParams {
-      newItem: FlattenedItem; overIndex: UniqueIdentifier;
-    }
 
     const addItemToTree = (itemParams: NewItemParams) => {
       const clonedItems: FlattenedItem[] = structuredClone(flattenTree(treeItems));
