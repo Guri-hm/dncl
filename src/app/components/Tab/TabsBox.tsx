@@ -2,41 +2,16 @@ import Box from '@mui/material/Box';
 import styles from './tabs-box.module.css'
 import { BoxProps } from '@mui/system';
 import { IconButton, Menu, MenuItem, Snackbar } from '@mui/material';
-import cmnStyles from '@/app/components/common.module.css';
-import { Children, FC, forwardRef, useMemo, useRef, useState } from 'react';
+import { Children, Dispatch, FC, SetStateAction, useMemo, useRef, useState } from 'react';
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { AnimateLayoutChanges, defaultAnimateLayoutChanges, SortableContext, useSortable } from '@dnd-kit/sortable';
 import { CSS } from "@dnd-kit/utilities";
-import { CustomTabs } from '@/app/components/Tab';
+import { CustomTabs, TabPanel } from '@/app/components/Tab';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import MenuIcon from '@mui/icons-material/Menu';
 import { TabItem, TabItemsObj } from "@/app/types";
 
-interface TabPanelProps {
-    children?: React.ReactNode;
-    index: number;
-    value: number;
-}
-
-//refを渡すときはforwardRef
-const TabPanel = forwardRef<HTMLDivElement, TabPanelProps>(({ children, index, value }, ref) => {
-    return (
-        <>
-            {value === index &&
-                <Box className={`${cmnStyles.overflowAuto}`} sx={{
-                    wordBreak: 'break-all',
-                    flex: 1,
-                    color: 'white',
-                    margin: '15px'
-                }} role="tabpanel"
-                    hidden={value !== index}
-                    id={`simple-tabpanel-${index}`}
-                    aria-labelledby={`simple-tab-${index}`} ref={ref}>{children}</Box>
-            }
-        </>
-    );
-});
 
 //a11yはaccessibilityの略記
 export function a11yProps(index: number) {
@@ -102,7 +77,7 @@ type Props = {
     tabItems: TabItem[];
     disabled?: boolean;
     containerId?: UniqueIdentifier;
-    setTabItemsObj: any;
+    setTabItemsObj?: Dispatch<SetStateAction<TabItemsObj>>;
 }
 
 const animateLayoutChanges: AnimateLayoutChanges = (args) =>
@@ -139,7 +114,7 @@ const animateLayoutChanges: AnimateLayoutChanges = (args) =>
 //     );
 // };
 
-export const TabsBox = ({ tabItems, disabled, containerId = 'box', setTabItemsObj, ...props }: Props) => {
+const TabsBox = ({ tabItems, disabled, containerId = 'box', setTabItemsObj, ...props }: Props) => {
     const [value, setValue] = useState(0);
     const contentRef = useRef<HTMLDivElement | null>(null);
     const [snackbar, setSnackbar] = useState<{ open: boolean, duration: number, text: string }>({ open: false, duration: 3000, text: '' });
@@ -173,6 +148,7 @@ export const TabsBox = ({ tabItems, disabled, containerId = 'box', setTabItemsOb
     const tabPanels: React.ReactNode[] = useMemo(() => tabItems.map(tabItem => tabItem.component), [tabItems]);
 
     const updateGroupVisibility = (groupKey: UniqueIdentifier, isVisible: boolean) => {
+        if (!setTabItemsObj) return;
         setTabItemsObj((prevState: TabItemsObj) => ({
             ...prevState,
             [groupKey]: {
@@ -183,6 +159,7 @@ export const TabsBox = ({ tabItems, disabled, containerId = 'box', setTabItemsOb
     };
 
     const updateOtherGroupsVisibility = (groupKey: UniqueIdentifier, isVisible: boolean) => {
+        if (!setTabItemsObj) return;
         setTabItemsObj((prevState: TabItemsObj) => {
             const updatedObj: TabItemsObj = {};
 
@@ -203,6 +180,7 @@ export const TabsBox = ({ tabItems, disabled, containerId = 'box', setTabItemsOb
         });
     };
     const toggleAllVisible = (newVisible: boolean) => {
+        if (!setTabItemsObj) return;
         setTabItemsObj((prevState: TabItemsObj) => {
             const updatedObj: TabItemsObj = {};
             for (const group in prevState) {
@@ -325,3 +303,7 @@ export const TabsBox = ({ tabItems, disabled, containerId = 'box', setTabItemsOb
         </TabsWrapper >
     );
 }
+
+TabsBox.displayName = "TabsBox";
+
+export default TabsBox;

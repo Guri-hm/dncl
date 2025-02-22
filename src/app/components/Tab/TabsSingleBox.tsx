@@ -2,37 +2,14 @@ import Box from '@mui/material/Box';
 import { BoxProps } from '@mui/system';
 import { IconButton, ListItemIcon, Menu, MenuItem, Snackbar } from '@mui/material';
 import cmnStyles from '@/app/components/common.module.css';
-import { Children, Dispatch, forwardRef, SetStateAction, useMemo, useRef, useState } from 'react';
+import { Children, Dispatch, SetStateAction, useMemo, useRef, useState } from 'react';
 import MenuIcon from '@mui/icons-material/Menu';
 import { TabItem, TabItemsObj } from "@/app/types";
 import Grid from '@mui/material/Grid2';
 import { UniqueIdentifier } from '@dnd-kit/core';
 import CloseIcon from '@mui/icons-material/Close';
+import { TabPanel } from '@/app/components/Tab';
 
-interface TabPanelProps {
-    children?: React.ReactNode;
-    index: number;
-    value: number;
-}
-
-//refを渡すときはforwardRef
-const TabPanel = forwardRef<HTMLDivElement, TabPanelProps>(({ children, index, value }, ref) => {
-    return (
-        <>
-            {value === index &&
-                <Box className={`${cmnStyles.overflowAuto}`} sx={{
-                    wordBreak: 'break-all',
-                    flex: 1,
-                    color: 'white',
-                    margin: '15px'
-                }} role="tabpanel"
-                    hidden={value !== index}
-                    id={`simple-tabpanel-${index}`}
-                    aria-labelledby={`simple-tab-${index}`} ref={ref}>{children}</Box>
-            }
-        </>
-    );
-});
 
 type Props = {
     tabItems: TabItem[];

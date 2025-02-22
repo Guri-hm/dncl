@@ -4,6 +4,7 @@ import "swiper/css";
 import Box from "@mui/material/Box";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
+import { Swiper as SwiperInstance } from 'swiper'
 
 interface Props {
     children?: React.ReactNode;
@@ -11,17 +12,17 @@ interface Props {
     specialElementsRefs?: RefObject<HTMLDivElement | null>[];
 }
 
-export const SwiperTabs = forwardRef<HTMLDivElement, Props>(({ children, labels, specialElementsRefs }, ref) => {
+const SwiperTabs = forwardRef<HTMLDivElement, Props>(({ children, labels, specialElementsRefs }, ref) => {
     const [value, setValue] = useState<number>(0);
-    const [bottomSwiper, setBottomSwiper] = useState<any>(null);
+    const [bottomSwiper, setBottomSwiper] = useState<SwiperInstance | null>(null);
 
-    const slideChange = (index: any) => {
-        setValue(index.activeIndex);
+    const slideChange = (swiper: SwiperInstance) => {
+        setValue(swiper.activeIndex);
     };
 
-    const tabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+    const tabChange = (event:  React.SyntheticEvent, newValue: number) => {
         setValue(newValue);
-        bottomSwiper.slideTo(newValue);
+        bottomSwiper?.slideTo(newValue);
     };
 
     useEffect(() => {
@@ -37,8 +38,9 @@ export const SwiperTabs = forwardRef<HTMLDivElement, Props>(({ children, labels,
                     break;
                 }
             }
-
-            bottomSwiper.allowTouchMove = shouldAllowTouchMove;
+            if (bottomSwiper) {
+                bottomSwiper.allowTouchMove = shouldAllowTouchMove;
+            }
         };
 
         if (bottomSwiper && bottomSwiper.el) {
@@ -52,7 +54,7 @@ export const SwiperTabs = forwardRef<HTMLDivElement, Props>(({ children, labels,
         };
     }, [bottomSwiper, specialElementsRefs]);
 
-    const handleTouchEnd = (swiper: any) => {
+    const handleTouchEnd = (swiper: SwiperInstance) => {
         const diff = swiper.touches.diff;
         if (diff < 0) {
             if (labels.length - 1 > value) {
@@ -71,7 +73,7 @@ export const SwiperTabs = forwardRef<HTMLDivElement, Props>(({ children, labels,
         }
     };
 
-    const handleSetFalse = (swiper: any) => {
+    const handleSetFalse = (swiper: SwiperInstance) => {
         //スワイプ後にスワイプ無効化
         //デフォルトをtrueにしていると，ドラッグ可能要素の初回処理がうまく動作しない
         if (bottomSwiper) {
@@ -108,3 +110,7 @@ export const SwiperTabs = forwardRef<HTMLDivElement, Props>(({ children, labels,
     );
 });
 
+
+SwiperTabs.displayName = "SwiperTabs";
+
+export default SwiperTabs;
