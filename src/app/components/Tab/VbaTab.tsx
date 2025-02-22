@@ -138,29 +138,6 @@ const cnvToVba = async (statement: { lineTokens: string[], processIndex: number 
     return tmpLine;
 }
 
-const setEndSubItem = (nodes: TreeItems): TreeItems => {
-
-    let newItems: TreeItems = [];
-    let isSub: boolean = false;
-    nodes.map((item, index) => {
-
-        newItems.push(item);
-
-        if (![ProcessEnum.DefineFunction, ProcessEnum.Defined].includes(Number(item.processIndex))) {
-            isSub = true;
-        }
-        const nextItem = nodes[index + 1];
-        if (isSub && !nextItem) {
-            newItems.push({ id: String(Math.random()), children: [], line: '', processIndex: ProcessEnum.EndSub });
-        }
-
-        if (isSub && nextItem && [ProcessEnum.DefineFunction, ProcessEnum.Defined].includes(Number(nextItem.processIndex))) {
-            newItems.push({ id: String(Math.random()), children: [], line: '', processIndex: ProcessEnum.EndSub });
-        }
-
-    })
-    return newItems;
-}
 // JSONのシリアライズとパースを使ってディープコピーを作成する関数
 function deepClone<T>(obj: T): T {
     return JSON.parse(JSON.stringify(obj));
