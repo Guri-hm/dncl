@@ -48,9 +48,9 @@ export default function Home() {
             <Image
               src="/front.svg"
               alt="女の子の真正面"
-              layout="responsive"
               width={300}
               height={300}
+              priority
               style={{ width: "100%", maxWidth: "300px" }}
             />
           </Grid>
