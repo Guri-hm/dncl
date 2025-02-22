@@ -1,0 +1,31 @@
+// components/ScopeBox.tsx
+import React from 'react';
+import Box, { BoxProps } from '@mui/material/Box';
+import { ScopeBox } from '@/app/components/Tab';
+import styles from './tab.module.css';
+import { TreeItem, TreeItems } from '@/app/types';
+
+interface CustomBoxProps extends BoxProps {
+    children?: React.ReactNode;
+    treeItems: TreeItems;
+}
+
+const renderNodes = (nodes: TreeItems, depth: number): React.ReactNode => {
+    return nodes.map((node: TreeItem, index: number) => (
+        <React.Fragment key={node.id}>
+            <Box className={(index == 0 && depth != 0) ? styles.noCounter : ""}>{node.line}
+            </Box>
+            {node.children.length > 0 && (
+                <ScopeBox nested={true} depth={depth + 1}>
+                    {renderNodes(node.children, depth + 1)}
+                </ScopeBox>
+            )}
+        </React.Fragment>
+    ))
+}
+
+export const DnclTab: React.FC<CustomBoxProps> = ({ treeItems }) => {
+    return <Box className={styles.codeContainer}>
+        {renderNodes(treeItems, 0)}
+    </Box>
+};

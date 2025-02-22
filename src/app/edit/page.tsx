@@ -7,24 +7,19 @@ import styles from '@/app/components/common.module.css';
 import { DnclValidationType, TreeItems } from "@/app/types";
 import { PageWrapper } from "@/app/components/PageWrapper";
 import { sampleFuncItems } from "@/app/components/SampleDncl";
-import { Header } from "@/app/components/Header/Header";
-import { HeaderItem } from "@/app/components/Header/HeaderItem";
 import { ContentWrapper } from "@/app/components/ContentWrapper";
 import { useEffect, useRef, useState } from "react";
-import { TabsBoxWrapper } from "@/app/components/TabsBoxWrapper";
-import Button from '@mui/material/Button';
+import { TabsBoxWrapper } from "@/app/components/Tab";
 import { Snackbar } from "@mui/material";
 import SaveIcon from '@mui/icons-material/Save';
-import { useTreeItems, loadTreeItems } from "@/app/components/TreeItemsLocalStrage";
-import HeaderTitle from "@/app/components/Header/HeaderTitle";
-import { HintButton } from "@/app/components/HintButton";
-import { HowToButton } from "@/app/components/HowToButton";
+import { useTreeItems, loadTreeItems } from "@/app/hooks";
+import { Header, HeaderButton, HeaderItem, HeaderTitle } from '@/app/components/Header';
+import { HintButton, HowToButton, Door } from "@/app/components/Tips";
 import { ConsoleWrapper } from "@/app/components/ConsoleWrapper";
-import { FooterOverlay } from "@/app/components/FooterOverlay";
-import Door from "@/app/components/Door";
+import { FooterOverlay } from "@/app/components/Footer";
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
-import { SwiperTabs } from "@/app/components/SwiperTabs";
+import { SwiperTabs } from "@/app/components/Tab";
 import { SwiperSlide } from "swiper/react";
 
 const initialItems: TreeItems = sampleFuncItems;
@@ -73,14 +68,7 @@ export default function Home() {
       <Header>
         <HeaderItem>
           <HeaderTitle />
-          <Button
-            sx={{ backgroundColor: 'var(--stone-50)', marginLeft: 'auto', color: 'var(--foreground)' }}
-            onClick={handleSaveItems}
-            endIcon={<SaveIcon />}
-            variant="contained"
-          >
-            保存
-          </Button>
+          <HeaderButton onClick={handleSaveItems} endIcon={<SaveIcon />}>保存</HeaderButton>
         </HeaderItem>
       </Header>
       <ContentWrapper>
@@ -127,7 +115,7 @@ export default function Home() {
         message={snackbar.text}
       />
       <FooterOverlay>
-        <HintButton />
+        {/* <HintButton /> */}
         <HowToButton />
       </FooterOverlay>
     </PageWrapper >

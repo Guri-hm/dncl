@@ -2,19 +2,13 @@ import { defaultDropAnimationSideEffects, DndContext, DragOverlay } from "@dnd-k
 import { FC, ReactNode, useState } from "react";
 import { Box, Button, Divider, FormHelperText, IconButton, Stack } from '@mui/material';
 import BackspaceIcon from '@mui/icons-material/Backspace';
-import { DraggableItem } from "./DraggableItem";
-import { DnclTextField, DnclTextFieldProps } from "./DnclTextField";
-import { Operator } from "./Operator";
-import { Droppable } from "../Droppable";
+import { Operator, Droppable, DroppableOperator, ErrorMsgBox, DraggableItem, DnclTextField, DnclTextFieldProps, EmphasiseBox } from '@/app/components/Dialog';
 import { bracketEnum, inputTypeEnum, keyPrefixEnum } from "./Enum";
-import { BraketSymbolEnum, OperationEnum, OperatorTypeJpEnum, ProcessEnum, StatementEnum } from "@/app/enum";
+import { BraketSymbolEnum, OperationEnum, OperatorTypeJpEnum, ProcessEnum } from "@/app/enum";
 import AddIcon from '@mui/icons-material/Add';
-import { useUpdateEffect } from './useUpdateEffect ';
+import { useUpdateEffect } from '@/app/hooks';
 import { checkParenthesesBalance, enumsToObjects, getValueByKey } from "@/app/utilities";
-import { DroppableOperator } from "../DroppableOperator";
-import { ErrorMsgBox } from "./ErrorMsgBox";
 import { TreeItems } from "@/app/types";
-import { EmphasiseBox } from "./EmphasiseBox";
 
 type Props = {
     children?: ReactNode;

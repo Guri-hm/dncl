@@ -6,13 +6,11 @@ import { Header } from "@/app/components/Header/Header";
 import { HeaderItem } from "@/app/components/Header/HeaderItem";
 import { ContentWrapper } from "@/app/components/ContentWrapper";
 import Grid from '@mui/material/Grid2';
-import HeaderTitle from "../components/Header/HeaderTitle";
+import { HeaderTitle } from "../components/Header";
 import { Avatar, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Typography } from "@mui/material";
 import { styled } from '@mui/system';
-import CheckedIcon from "../components/CheckedIcon";
-import UnachievedIcon from "../components/UnachievedIcon";
-import { allChallengesItems } from "../components/Challenges";
-import useAchievements, { storageKey } from "../hooks/useAchievements";
+import { CheckedIcon, allChallengesItems, UnachievedIcon } from "@/app/components/Challenge";
+import { useAchievements, storageKey } from "@/app/hooks";
 import { useRef, useState } from "react";
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 

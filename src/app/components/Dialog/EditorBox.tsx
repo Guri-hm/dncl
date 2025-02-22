@@ -2,16 +2,12 @@ import { useState } from "react";
 import { ReactElement } from "react";
 import Box from '@mui/material/Box';
 import { DnclTextField } from "./DnclTextField";
-import { Operator } from "./Operator";
 import { keyPrefixEnum, inputTypeEnum } from "./Enum";
-import { NowrapText } from "./NowrapText";
 import { OperationEnum, StatementEnum, ProcessEnum, DnclStatement } from "@/app/enum";
-import { Operation } from "./Operation";
 import { Divider, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
-import { CustomBox } from "./CustomBox";
 import Grid from '@mui/material/Grid2';
 import { TreeItems } from "@/app/types";
-import { WrapText } from "./WrapText";
+import { Operator, Operation, CustomBox, WrapText, NowrapText } from '@/app/components/Dialog';
 
 type Props = {
     statementType: StatementEnum

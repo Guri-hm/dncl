@@ -1,5 +1,4 @@
-import ChallengePage from '@/app/components/ChallengePage';
-import { getChallengeById } from '@/app/components/Challenges';
+import { ChallengePage, getChallengeById } from '@/app/components/Challenge';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 

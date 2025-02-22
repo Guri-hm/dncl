@@ -1,7 +1,7 @@
 import { useDraggable } from "@dnd-kit/core";
 import { FC } from "react";
 import Paper from '@mui/material/Paper';
-import { Handle } from "../TreeItem/Handle";
+import { Handle } from '@/app/components/TreeItem/Handle';
 import { SxProps, Theme } from '@mui/material';
 import { CSSProperties } from 'react';
 

@@ -1,7 +1,6 @@
 import { FC } from "react";
 import { DnclValidationType, TreeItems } from "@/app/types";
-import { ConsoleBox } from "./ConsoleBox";
-import { ConsoleTab } from "./ConsoleTab";
+import { ConsoleBox, ConsoleTab } from '@/app/components/Tab';
 
 interface Props {
     treeItems: TreeItems;

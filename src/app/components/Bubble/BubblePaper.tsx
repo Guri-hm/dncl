@@ -5,12 +5,10 @@ import Link from 'next/link';
 
 interface BubblePaperProps {
     children: React.ReactNode;
-    top: string;
-    left: string;
     href: string;
 }
 
-export default function BubblePaper({ children, top, left, href }: BubblePaperProps) {
+export default function BubblePaper({ children, href }: BubblePaperProps) {
     const [hovered, setHovered] = useState(false);
 
     return (

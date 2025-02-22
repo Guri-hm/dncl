@@ -1,32 +1,40 @@
 import { useDroppable } from "@dnd-kit/core";
-import { Box, Stack, Typography } from "@mui/material";
 import { FC, ReactNode } from "react";
+import { blue } from '@mui/material/colors';
+import Button from '@mui/material/Button';
+import Grid from '@mui/material/Grid2';
 
 type DroppableProp = {
-    id: string;
     children: ReactNode;
+    id: string
+    isDragging: boolean;
+    onClick?: any;
+    stringArray?: string[];
 };
 
-export const Droppable: FC<DroppableProp> = ({ children, id }) => {
-    const { setNodeRef, isOver } = useDroppable({
+export const Droppable: FC<DroppableProp> = ({ children, id, isDragging, onClick, stringArray = [] }) => {
+    const {
+        setNodeRef,
+        isOver
+    } = useDroppable({
         id
-    });
+    })
+    //Buttonコンポーネントはmin-widthが64pxに設定されているので明示的に0pxに再設定する
     return (
-        <Box
+        <Grid size="auto"
             ref={setNodeRef}
             sx={{
-                width: "200px",
-                bgcolor: isOver ? "lightGreen" : undefined,
-                minHeight: "300px",
-                overflowX: "auto",
-                padding: 2,
-                border: "1px solid black"
+                whiteSpace: 'nowrap',
+                display: 'grid',
+                height: '40px',
+                alignItems: 'center',
+                backgroundColor: isOver && isDragging ? blue[700] : (isDragging ? blue[100] : ""),
+                paddingLeft: isDragging ? '10px' : 0,
+                paddingRight: isDragging ? '10px' : 0,
             }}
         >
-            <Stack spacing={2}>
-                <Typography sx={{ fontWeight: "bold" }}>ドロップエリア</Typography>
-                {children}
-            </Stack>
-        </Box>
-    );
-};
+            <Button onClick={onClick} size="large" sx={{ paddingLeft: isDragging || stringArray.length > 0 ? '8px' : 0, paddingRight: isDragging || stringArray.length > 0 ? '8px' : 0, minWidth: 0, fontWeight: 700 }}>{children}</Button>
+            <input type="hidden" name={id} value={`${stringArray.join(' ')}`} />
+        </Grid>
+    )
+}

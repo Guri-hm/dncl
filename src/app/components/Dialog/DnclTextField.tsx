@@ -6,11 +6,9 @@ import { useState } from "react";
 import Box from '@mui/material/Box';
 import { keyPrefixEnum, inputTypeEnum, ValidationEnum } from "./Enum";
 import Grid from '@mui/material/Grid2';
-import { ValidatedTextField } from "./ValidatedTextField";
-import { FixedHeightGrid } from './FixedHeightGrid';
-import { FormControlLabel, FormHelperText, makeStyles, Radio, RadioGroup, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { FormControlLabel, Radio, RadioGroup, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { InputTypeJpEnum, OperationEnum } from '@/app/enum';
-import { FunctionField } from './FunctionField';
+import { FunctionField, ValidatedTextField, FixedHeightGrid } from '@/app/components/Dialog';
 import { TreeItems } from '@/app/types';
 
 export interface DnclTextFieldProps {

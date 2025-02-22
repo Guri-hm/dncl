@@ -3,15 +3,14 @@ import Box from '@mui/material/Box';
 import { InputTypeJpEnum, ReturnFuncDncl, UserDefinedFuncDncl, VoidFuncDncl } from '@/app/enum';
 import { ReactElement } from "react";
 import IconButton from '@mui/material/IconButton';
-import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon';
+import { SvgIconProps } from '@mui/material/SvgIcon';
 import { inputTypeEnum, keyPrefixEnum, ValidationEnum } from "./Enum";
 import { FormControl, FormHelperText, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from "@mui/material";
 import NotInterestedIcon from '@mui/icons-material/NotInterested';
 import Grid from '@mui/material/Grid2';
-import { FixedHeightGrid } from "./FixedHeightGrid";
-import { ValidatedTextField } from "./ValidatedTextField";
 import { TreeItems } from "@/app/types";
 import { getUserDefinedFunctionInfoArray, UserDefinedFunctionInfo } from "@/app/utilities";
+import { FixedHeightGrid, ValidatedTextField } from '@/app/components/Dialog';
 
 const TextIcon: React.FC<any & { text: string }> = ({ text, ...props }) => (
   <Typography noWrap {...props}>{text}</Typography>

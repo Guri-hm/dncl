@@ -26,7 +26,7 @@ export default function Home() {
         }} >
           <Grid container direction={{ xs: 'column', sm: 'row' }} spacing={3} size='auto'>
             <Grid size="grow">
-              <BubblePaper top="50%" left="50%" href='./chlng'>
+              <BubblePaper href='./chlng'>
                 <Typography variant="h2" sx={{ whiteSpace: 'nowrap' }}>
                   チャレンジモード
                 </Typography>
@@ -34,7 +34,7 @@ export default function Home() {
               </BubblePaper>
             </Grid>
             <Grid size="grow">
-              <BubblePaper top="50%" left="50%" href='./edit'>
+              <BubblePaper href='./edit'>
                 <Typography variant="h2">
                   エディタモード
                 </Typography>

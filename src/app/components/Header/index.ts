@@ -1,3 +1,4 @@
-export {HeaderTitle} from './HeaderTitle';
+export { HeaderTitle } from './HeaderTitle';
 export { Header } from './Header';
 export { HeaderItem } from './HeaderItem';
+export { HeaderButton } from './HeaderButton'

@@ -7,8 +7,25 @@ import {
   DroppableContainer,
 } from '@dnd-kit/core';
 
-import type { SensorContext } from '../types/treeItem';
-import { getProjection } from '../utilities';
+import type { SensorContext } from '@/app/types';
+import { getProjection } from '@/app/utilities';
+
+
+type UniqueIdentifier = string | number;
+type ClientRect = {
+  top: number;
+  left: number;
+  right: number;
+  bottom: number;
+  width: number;
+  height: number;
+};
+
+// `RectMap` を `Map<UniqueIdentifier, ClientRect>` に変更
+const droppableRects: Map<UniqueIdentifier, ClientRect> = new Map([
+  ["container1", { top: 0, left: 0, right: 100, bottom: 100, width: 100, height: 100 }],
+  ["container2", { top: 100, left: 100, right: 200, bottom: 200, width: 100, height: 100 }],
+]);
 
 const directions: string[] = [
   KeyboardCode.Down,
@@ -109,6 +126,7 @@ export const sortableTreeKeyboardCoordinates: (
       collisionRect: collisionRect,
       pointerCoordinates: null,
       droppableContainers: containers,
+      droppableRects: droppableRects
     });
     const closestId = getFirstCollision(collisions, 'id');
 

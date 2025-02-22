@@ -32,22 +32,21 @@ import {
   removeItem,
   removeChildrenOf,
   setProperty,
-} from "../utilities";
+} from "@/app/utilities";
 import { FlattenedItem, SensorContext, TreeItems, FragmentItems, FragmentItem, DnclEditorProps, DnclValidationType } from "@/app/types";
-import { SortableTreeItem, FragmentsListItem, DnclEditDialog } from "../components";
+import { DnclEditDialog } from "@/app/components/Dialog";
 import { v4 as uuidv4 } from "uuid";
 import { allStatementItems, statementEnumMap } from "@/app/enum";
 import { Box } from "@mui/material";
-import styles from './alloment-custom.module.css'
-import cmnStyles from './common.module.css'
-import { ArrowButton } from "./ArrowButton";
-import "./alloment-custom.css";
-import DropHere from "./DropHere";
-import DoNotDrag from "./DoNotDrag";
+import styles from '@/app/components/alloment-custom.module.css'
+import cmnStyles from '@/app/components/common.module.css'
+import { ArrowButton } from "@/app/components/ArrowButton";
+import "@/app/components/alloment-custom.css";
+import { DropHere, DoNotDrag } from "@/app/components/Tips";
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
-import SlideMenu from "./SlideMenu";
-import { LineIconItem } from "./TreeItem/LineIconItem";
+import SlideMenu from "@/app/components/SlideMenu";
+import { LineIconItem, FragmentsListItem, SortableTreeItem } from "@/app/components/TreeItem";
 
 const measuring = {
   droppable: {
