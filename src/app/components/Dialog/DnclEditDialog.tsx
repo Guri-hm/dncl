@@ -57,7 +57,7 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props)
             return false;
         }
 
-        let strArray: string[] = cnvObjToArray(updatedObj, operandsMaxIndex, keyword);
+        const strArray: string[] = cnvObjToArray(updatedObj, operandsMaxIndex, keyword);
         // console.log(updatedObj);
         // console.log(strArray);
 
@@ -143,7 +143,7 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props)
         }
         //添字は前後に[]をつける
         const updatedObj = updateToWithSquareBrackets(sanitizedObj);
-        let strArray: string[] = cnvObjToArray(updatedObj, operandsMaxIndex, keyword);
+        const strArray: string[] = cnvObjToArray(updatedObj, operandsMaxIndex, keyword);
         const statement = getDnclStatement(strArray);
         const tokens = getTokens(strArray)
 
@@ -153,7 +153,7 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props)
     const getDnclStatement = (strArray: string[]): string => {
 
         //もとの配列が置換されないように別配列に入れる
-        let replacedArray: string[] = [];
+        const replacedArray: string[] = [];
         for (let i = 0; i < strArray.length; i++) {
             replacedArray.push(strArray[i]
                 .replace(ComparisonOperator.EqualToOperator, ComparisonOperatorDncl.EqualToOperator)

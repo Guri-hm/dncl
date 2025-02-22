@@ -8,15 +8,15 @@ export const FireworksEffect: React.FC = () => {
         const speed = 45;
         const bangs = 5;
         const colours = ["#03f", "#f03", "#0e0", "#93f", "#0cf", "#f93", "#f0c"];
-        let bangheight: number[] = new Array(bangs);
-        let intensity: number[] = new Array(bangs);
-        let colour: number[] = new Array(bangs);
-        let Xpos: { [key: string]: number } = {};
-        let Ypos: { [key: string]: number } = {};
-        let dX: { [key: string]: number } = {};
-        let dY: { [key: string]: number } = {};
-        let stars: { [key: string]: HTMLElement | undefined } = {};
-        let decay: { [key: string]: number } = {};
+        const bangheight: number[] = new Array(bangs);
+        const intensity: number[] = new Array(bangs);
+        const colour: number[] = new Array(bangs);
+        const Xpos: { [key: string]: number } = {};
+        const Ypos: { [key: string]: number } = {};
+        const dX: { [key: string]: number } = {};
+        const dY: { [key: string]: number } = {};
+        const stars: { [key: string]: HTMLElement | undefined } = {};
+        const decay: { [key: string]: number } = {};
         let swide = window.innerWidth;
         let shigh = window.innerHeight;
 

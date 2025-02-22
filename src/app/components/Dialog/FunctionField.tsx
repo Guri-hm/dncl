@@ -92,7 +92,6 @@ export function FunctionField({ name = "", parentIndex = 0, event, funcType, tre
     setSelectedValue(event.target.value as string);
   };
 
-  let SvgIconButton: any;
   let newIndex: number = operatorIndex;
 
   if (operatorIndex > funcs.length - 1) {
@@ -100,7 +99,7 @@ export function FunctionField({ name = "", parentIndex = 0, event, funcType, tre
     newIndex = 0;
   }
 
-  SvgIconButton = funcs.map(func => func.icon)[newIndex];
+  const SvgIconButton = funcs.map(func => func.icon)[newIndex];
 
   const ArgumentFields: React.ReactNode[] = [];
   const userDefinedFunctionInfoArray: UserDefinedFunctionInfo[] = getUserDefinedFunctionInfoArray(treeItems);

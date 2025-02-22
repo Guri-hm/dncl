@@ -30,7 +30,7 @@ interface Props {
 }
 
 const getLines = (treeItems: TreeItems): string[] => {
-    let lines: string[] = [];
+    const lines: string[] = [];
 
     const traverse = (items: TreeItems) => {
         for (const item of items) {

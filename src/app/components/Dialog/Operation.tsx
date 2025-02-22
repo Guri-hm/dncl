@@ -41,7 +41,7 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [] }) 
 
     const checkBraketPair = useCallback(() => {
 
-        let errorArray: string[] = [];
+        const errorArray: string[] = [];
 
         let tmpCode: string[] = [];
         for (let i = 0; i < operandComponents.length; i++) {
