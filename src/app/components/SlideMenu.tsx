@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { styled, useTheme, Theme, CSSObject } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-import MuiDrawer from '@mui/material/Drawer';
-import CssBaseline from '@mui/material/CssBaseline';
+import MuiDrawer, { DrawerProps as MuiDrawerProps } from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import { ArrowButton } from './ArrowButton';
 
 const drawerWidth = 240;
 
@@ -35,27 +35,39 @@ const DrawerHeader = styled('div')(({ theme }) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'flex-end',
-    padding: theme.spacing(0, 1),
+    // padding: theme.spacing(0, 1),
     // necessary for content to be below app bar
     ...theme.mixins.toolbar,
 }));
 
-const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
-    ({ theme, open }) => ({
-        width: drawerWidth,
-        flexShrink: 0,
-        whiteSpace: 'nowrap',
-        boxSizing: 'border-box',
-        ...(open && {
+interface DrawerProps extends MuiDrawerProps {
+    open: boolean;
+    sx?: any;
+}
+
+
+const Drawer = styled(MuiDrawer, {
+    shouldForwardProp: (prop) => prop !== 'open' && prop !== 'sx',
+})(({ theme, open, sx }) => ({
+    width: drawerWidth,
+    flexShrink: 0,
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box',
+    ...(open && {
+        ...openedMixin(theme),
+        '& .MuiDrawer-paper': {
             ...openedMixin(theme),
-            '& .MuiDrawer-paper': openedMixin(theme),
-        }),
-        ...(!open && {
-            ...closedMixin(theme),
-            '& .MuiDrawer-paper': closedMixin(theme),
-        }),
+            ...sx, // sxプロパティのスタイルを追加
+        },
     }),
-);
+    ...(!open && {
+        ...closedMixin(theme),
+        '& .MuiDrawer-paper': {
+            ...closedMixin(theme),
+            ...sx, // sxプロパティのスタイルを追加
+        },
+    }),
+}));
 
 const Overlay = styled('div')<{ open: boolean }>(({ theme, open }) => ({
     position: 'fixed',
@@ -76,11 +88,10 @@ interface MiniDrawerProps {
 
 
 const MiniDrawer: React.FC<MiniDrawerProps> = ({ children, activeId, open, setOpen }) => {
-    const theme = useTheme();
 
-    const toggleDrawer = (newOpen: boolean) => () => {
-        setOpen(newOpen);
-    };
+    const handleClose = () => {
+        setOpen(false);
+    }
 
     React.useEffect(() => {
         if (activeId) {
@@ -90,25 +101,10 @@ const MiniDrawer: React.FC<MiniDrawerProps> = ({ children, activeId, open, setOp
 
     return (
         <Box sx={{ display: 'flex' }}>
-            <CssBaseline />
-            <Overlay open={open} onClick={toggleDrawer(false)} />
-            <Drawer variant="permanent" open={open} sx={{ bgcolor: 'var(--stone-50)' }}>
+            <Overlay open={open} onClick={handleClose} />
+            <Drawer variant="permanent" open={open} sx={{ backgroundColor: 'var(--slate-300)' }}>
                 <DrawerHeader>
-                    {open ?
-                        <IconButton onClick={toggleDrawer(false)}>
-                            {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-                        </IconButton>
-                        :
-                        <IconButton
-                            color="inherit"
-                            aria-label="open drawer"
-                            onClick={toggleDrawer(true)}
-                            edge="start"
-
-                        >
-                            <MenuIcon />
-                        </IconButton>
-                    }
+                    <ArrowButton setVisible={setOpen} visible={open}></ArrowButton>
                 </DrawerHeader>
                 <Box>
                     {children}
