@@ -1,6 +1,7 @@
 import React from 'react';
 import { SpeechBubbleImage, Spotlight } from '@/app/components/Tips';
 import { Box, createTheme, useMediaQuery } from '@mui/material';
+import Image from 'next/image';
 
 interface Props {
     visible?: boolean;
@@ -23,7 +24,13 @@ const ResponsiveImage: React.FC<ResponsiveImageProps> = ({ src, alt }) => {
     }
 
     return (
-        <img src={src} alt={alt} style={{ width }} />
+        <Image
+            src={src}
+            alt={alt}
+            width={300}
+            height={300}
+            style={{ width }}
+        />
     );
 };
 

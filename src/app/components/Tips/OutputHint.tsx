@@ -2,6 +2,7 @@ import { Box } from "@mui/material"
 import { FlattenedItem } from "@/app/types";
 import { v4 as uuidv4 } from 'uuid'
 import { SampleTreeItems } from "@/app/components/Tips";
+import Image from "next/image";
 
 
 const sampleItems: FlattenedItem[] = [
@@ -37,7 +38,13 @@ export const OutputHint = () => {
                 <SampleTreeItems sampleItems={sampleItems} ></SampleTreeItems>
             </Box>
             <Box sx={{ textAlign: 'center', marginX: 'auto', marginY: '10px', width: '50%' }}>
-                <img src={"/output.svg"} alt='表示文' style={{ maxWidth: '150px' }}></img>
+                <Image
+                    src="/output.svg"
+                    alt="表示文"
+                    width={300}
+                    height={300}
+                    style={{ width: "100%", maxWidth: "150px" }}
+                />
             </Box>
         </Box>
     )

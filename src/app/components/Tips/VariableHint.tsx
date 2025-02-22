@@ -43,7 +43,6 @@ export const VariableHint: FC = () => {
                 <Image
                     src="/label.svg"
                     alt="ラベル"
-                    layout="responsive"
                     width={300}
                     height={300}
                     style={{ width: "100%", maxWidth: "150px" }}
