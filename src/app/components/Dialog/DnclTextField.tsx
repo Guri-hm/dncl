@@ -148,7 +148,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
                     <FixedHeightGrid>[</FixedHeightGrid>
                     <Grid size="grow">
                       <ValidatedTextField
-                        name={`${name}_${index}_${keyPrefixEnum.Suffix}`} label={InputTypeJpEnum.SuffixOnly} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
+                        name={`${name}_${index}_${keyPrefixEnum.Suffix}`} label={InputTypeJpEnum.Suffix} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
                     </Grid>
                     <FixedHeightGrid>]</FixedHeightGrid>
                   </Grid>
@@ -212,7 +212,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
                     <FixedHeightGrid>[</FixedHeightGrid>
                     <Grid size="grow">
                       <ValidatedTextField
-                        name={`${name}_${index}_${keyPrefixEnum.Suffix}`} label={InputTypeJpEnum.SuffixOnly} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
+                        name={`${name}_${index}_${keyPrefixEnum.Suffix}`} label={InputTypeJpEnum.Suffix} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
                     </Grid>
                     <FixedHeightGrid>]</FixedHeightGrid>
                   </Grid>
@@ -268,7 +268,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
       case inputTypeEnum.Array:
         return <Grid container spacing={0}>
           <Grid size={'grow'}>
-            <ValidatedTextField name={`${name}_${index}`} label={InputTypeJpEnum.ArrayWithoutSuffix} pattern={ValidationEnum.Variable}></ValidatedTextField>
+            <ValidatedTextField name={`${name}_${index}`} label={InputTypeJpEnum.Array} pattern={ValidationEnum.Variable}></ValidatedTextField>
           </Grid>
           <Grid container size='auto'>
             <FixedHeightGrid>[</FixedHeightGrid>
@@ -276,7 +276,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
               <ValidatedTextField sx={() => ({
                 width: '100px',
               })}
-                name={`${name}_${index}_${suffixValue}`} label={InputTypeJpEnum.SuffixOnly} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
+                name={`${name}_${index}_${suffixValue}`} label={InputTypeJpEnum.Suffix} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
             </Grid>
             <FixedHeightGrid>]</FixedHeightGrid>
           </Grid>

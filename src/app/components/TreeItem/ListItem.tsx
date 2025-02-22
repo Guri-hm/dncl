@@ -2,6 +2,8 @@ import React, { forwardRef, HTMLAttributes } from "react";
 import classNames from "classnames";
 import { Handle } from "./Handle";
 import styles from "./TreeItem.module.scss";
+import { DraggableAttributes } from "@dnd-kit/core";
+import { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 
 export interface Props extends HTMLAttributes<HTMLLIElement> {
   childCount?: number;
@@ -9,12 +11,12 @@ export interface Props extends HTMLAttributes<HTMLLIElement> {
   disableInteraction?: boolean;
   disableSelection?: boolean;
   ghost?: boolean;
-  handleProps?: any;
+  handleProps?: DraggableAttributes & SyntheticListenerMap;
   value: string;
   wrapperRef?(node: HTMLLIElement): void;
 }
 
-export const ListItem = forwardRef<HTMLDivElement, Props>(
+const ListItem = forwardRef<HTMLDivElement, Props>(
   (
     {
       childCount,
@@ -59,3 +61,8 @@ export const ListItem = forwardRef<HTMLDivElement, Props>(
   }
 );
 
+
+// コンポーネントの displayName を設定
+ListItem.displayName = "ListItem";
+
+export default ListItem;

@@ -2,7 +2,7 @@ import React, { CSSProperties } from 'react';
 import { AnimateLayoutChanges, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-import { ListItem, Props as ListItemProps } from './ListItem';
+import ListItem, { Props as ListItemProps } from './ListItem';
 
 interface Props extends ListItemProps {
   id: string;

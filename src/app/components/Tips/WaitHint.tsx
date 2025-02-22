@@ -1,4 +1,5 @@
 import { Box } from "@mui/material"
+import Image from "next/image"
 
 export const WaitHint = () => {
 
@@ -9,7 +10,14 @@ export const WaitHint = () => {
                 <p>ゆっくりお待ちください。</p>
             </Box>
             <Box sx={{ textAlign: 'center', marginX: 'auto', marginY: '10px', width: '50%' }}>
-                <img src={"/break.svg"} alt='休憩' style={{ maxWidth: '150px' }}></img>
+                <Image
+                    src="/break.svg"
+                    alt="休憩する女の子"
+                    layout="responsive"
+                    width={300}
+                    height={300}
+                    style={{ width: "100%", maxWidth: "150px" }}
+                />
             </Box>
         </Box>
     )
