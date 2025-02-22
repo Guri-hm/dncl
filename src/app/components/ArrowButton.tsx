@@ -2,7 +2,7 @@ import styles from './arrow-button.module.css'
 
 type Props = {
     visible: boolean;
-    setVisible: any
+    setVisible: React.Dispatch<React.SetStateAction<boolean>>
 };
 
 export const ArrowButton = ({ visible, setVisible }: Props) => {

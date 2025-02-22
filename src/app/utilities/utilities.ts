@@ -165,7 +165,7 @@ export function setProperty<T extends keyof TreeItem>(
   property: T,
   setter: (value: TreeItem[T]) => TreeItem[T]
 ) {
-  for (let item of items) {
+  for (const item of items) {
     if (item.id === id) {
       item[property] = setter(item[property]);
       continue;
@@ -246,11 +246,9 @@ export function enumsToObjects<T>(enumObjs: T[]) {
     )
   };
 
-  let list: any = [];
-  enumObjs.map(enumObj => {
-    list.push(enumToObjectArray(enumObj as Object));
-  })
-  let flatList: { name: string, value: string }[] = list.flat();
+  const list: { name: string; value: string }[][] = enumObjs.map(enumObj => enumToObjectArray(enumObj as object));
+  const flatList: { name: string, value: string }[] = list.flat();
+
   return flatList;
 }
 
@@ -265,11 +263,11 @@ export function searchEnumValue<T>(enumObj: T, key: string | null): T[keyof T] |
   const getEnumKeys = <T extends object>(enumObj: T): (keyof T)[] => { return Object.keys(enumObj).filter(key => isNaN(Number(key))) as (keyof T)[]; };
 
   if (key == null) return null;
-  function getEnumValueByKey(enumObj: T, key: string): any {
-    return enumObj[key as keyof typeof enumObj];
+  function getEnumValueByKey(enumObj: T, key: string): T[keyof T] | null {
+    return enumObj[key as keyof typeof enumObj] || null;
   }
-  const keys = getEnumKeys(enumObj as Object);
-  return keys.includes(key as keyof Object) ? getEnumValueByKey(enumObj, key) : null;
+  const keys = getEnumKeys(enumObj as object);
+  return keys.includes(key as keyof object) ? getEnumValueByKey(enumObj, key) : null;
 };
 
 export function checkParenthesesBalance(strArray: string[]): { isBalanced: boolean, isCorrectOrder: boolean, balance: number, hasEmptyParentheses: boolean } {
@@ -360,7 +358,7 @@ function replaceOddFunctions(str: string) {
 
 export const tryParseToJsFunction = (targetString: string): { errorMsgArray: string[]; hasError: boolean; convertedStr: string } => {
 
-  let errorMsgArray: string[] = [];
+  const errorMsgArray: string[] = [];
 
   // "Random(m,n)" という文字列をJavaScriptの乱数生成コードに変換する関数
   function convertRandomString(str: string): string {
@@ -405,7 +403,7 @@ export const tryParseToJsFunction = (targetString: string): { errorMsgArray: str
 
 export const tryParseToPyFunc = (targetString: string): { errorMsgArray: string[]; hasError: boolean; convertedStr: string } => {
 
-  let errorMsgArray: string[] = [];
+  const errorMsgArray: string[] = [];
 
   // "Random(m,n)" という文字列をPythonの乱数生成コードに変換する関数
   //randomモジューラのimportが必要
@@ -451,7 +449,7 @@ export const tryParseToPyFunc = (targetString: string): { errorMsgArray: string[
 
 export const tryParseToVbaFunc = (targetString: string): { errorMsgArray: string[]; hasError: boolean; convertedStr: string } => {
 
-  let errorMsgArray: string[] = [];
+  const errorMsgArray: string[] = [];
 
   // 文字列を指数形式に変換する関数
   function exponentiateString(str: string) {
@@ -511,7 +509,7 @@ export const tryParseToVbaFunc = (targetString: string): { errorMsgArray: string
 
 export const checkBraketPair = (targetStringArray: string[]): { errorMsgArray: string[]; hasError: boolean; } => {
 
-  let errorMsgArray: string[] = [];
+  const errorMsgArray: string[] = [];
 
   const result: { isBalanced: boolean, isCorrectOrder: boolean, balance: number, hasEmptyParentheses: boolean } = (checkParenthesesBalance(targetStringArray));
 
@@ -582,14 +580,14 @@ export const isValidExpression = (targetString: string): { errorMsgArray: string
   try {
     new Function(`return ${targetString}`);
     return { errorMsgArray: [], hasError: false };
-  } catch (e) {
-    const error = e as any;
+  } catch (e: unknown) {
+    const error = e as Error;
     let errMsg = error.message;
     if (errMsg.includes('Unexpected token')) {
       const regex = /'([^']*)'/;
       const match = errMsg.match(regex);
       const extracted = match ? match[1] : null;
-      errMsg = `誤った位置に${extracted.replace('!', '「でない」')}が使われています`
+      errMsg = `誤った位置に${extracted?.replace('!', '「でない」')}が使われています`
     }
     return { errorMsgArray: [errMsg], hasError: true };
   }
@@ -630,7 +628,7 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
     return combinedEnumValues.includes(value);
   }
 
-  let errorMsgArray: string[] = [];
+  const errorMsgArray: string[] = [];
 
   const userDefinedFunctionInfoArray = getUserDefinedFunctionInfoArray(treeItems);
 
@@ -787,7 +785,7 @@ const pushIfNotEmpty = (array: string[], pushedString: string) => {
 
 export const getVariableNames = (obj: { [k: string]: string; }, operandsMaxIndex: number, keyword: keyPrefixEnum): string[] => {
 
-  let strArray: string[] = [];
+  const strArray: string[] = [];
   //配列への一括代入は左辺が必ず配列名なのでスキップ
   for (let i = 0; i <= operandsMaxIndex; i++) {
 
@@ -811,7 +809,7 @@ export const getVariableNames = (obj: { [k: string]: string; }, operandsMaxIndex
 }
 export const getArrayNames = (obj: { [k: string]: string; }, operandsMaxIndex: number, keyword: keyPrefixEnum): string[] => {
 
-  let strArray: string[] = [];
+  const strArray: string[] = [];
   for (let i = 0; i <= operandsMaxIndex; i++) {
 
     if (obj[`${keyword}_${i}_${keyPrefixEnum.Type}`] == inputTypeEnum.String) {
@@ -882,7 +880,7 @@ export const sanitizeJsonValues = (obj: {
 
 export const cnvObjToArray = (obj: { [k: string]: string; }, operandsMaxIndex: number, keyword: keyPrefixEnum): string[] => {
 
-  let strArray: string[] = [];
+  const strArray: string[] = [];
   //演算子以外はサニタイズされた値で処理していく
   for (let i = 0; i <= operandsMaxIndex; i++) {
 
@@ -899,10 +897,10 @@ export const cnvObjToArray = (obj: { [k: string]: string; }, operandsMaxIndex: n
     }
 
     //関数名
-    let functionName = `${toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Function}`])}${toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`])}`
+    const functionName = `${toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Function}`])}${toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`])}`
 
     //引数
-    let tmpArguments: string[] = [];
+    const tmpArguments: string[] = [];
     for (let j = 0; j < Number(toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}`])); j++) {
       pushIfNotEmpty(tmpArguments, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}_${j}`]));
     }
@@ -1076,7 +1074,7 @@ export const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedIte
 
     case ProcessEnum.EndIf: {
       //開始要素が同じ深度・同じ親IDで前の要素
-      let hasItem = prevItem?.processIndex == ProcessEnum.If || prevItem?.processIndex == ProcessEnum.ElseIf || prevItem?.processIndex == ProcessEnum.Else;
+      const hasItem = prevItem?.processIndex == ProcessEnum.If || prevItem?.processIndex == ProcessEnum.ElseIf || prevItem?.processIndex == ProcessEnum.Else;
       if (!hasItem || !prevItem) {
         result = { errors: [`${lineNum}行目:先行処理に「もし<条件>ならば」「を実行し，そうでなくもし<条件>ならば」「を実行し，そうでなければ」のいずれかを配置してください`], hasError: true };
         break;
