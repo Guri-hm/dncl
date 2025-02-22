@@ -14,7 +14,7 @@ import { Snackbar } from "@mui/material";
 import { ConsoleWrapper } from "@/app/components/ConsoleWrapper";
 import { FooterOverlay } from "@/app/components/Footer";
 import { Question } from "@/app/components/Challenge";
-import {SuccessDialog} from "@/app/components/Dialog";
+import { SuccessDialog } from "@/app/components/Dialog";
 import Confetti from 'react-confetti';
 import { useAchievements, storageKey } from '@/app/hooks';
 import { statementEnumMap } from "@/app/enum";

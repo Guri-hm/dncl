@@ -13,7 +13,7 @@ export const HeaderTitle = () => {
                 width={50}
                 height={50}
             />
-            <Typography variant="h1" sx={{ color: 'white', fontWeight: 800 }}>
+            <Typography variant="h1" sx={{ color: 'white', fontWeight: 800, marginLeft: 1 }}>
                 <ruby style={{ rubyAlign: 'space-around' }}>
                     DNCL
                     <rp>（</rp><rt>ぎじげんご</rt><rp>）</rp>
