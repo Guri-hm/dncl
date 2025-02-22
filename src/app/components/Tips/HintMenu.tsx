@@ -1,21 +1,20 @@
 import React, { useState } from 'react';
 import { List, ListItem, ListItemText, Box, Button, Divider } from '@mui/material';
-import { AssignmentHint, OutputHint, WaitHint, ArrayHint, IfHint } from '@/app/components/Tips';
-import { VariableHint } from '@/app/components/Tips/VariableHint';
-
-const menuItems = [
-    { id: 1, text: '変数とは？', component: <VariableHint></VariableHint> },
-    { id: 1, text: '配列とは？', component: <ArrayHint></ArrayHint> },
-    {
-        id: 3, text: '代入文とは？「定義される前に使用されています」の場合は？', component: <AssignmentHint />
-    },
-    { id: 4, text: '表示文とは？変数や配列の要素を確認するためには？', component: <OutputHint /> },
-    { id: 5, text: '条件分岐文とは？', component: <IfHint></IfHint> },
-    { id: 6, text: 'コンソールにすぐ表示されない', component: <WaitHint></WaitHint> },
-];
+import { AssignmentHint, OutputHint, WaitHint, ArrayHint, IfHint, VariableHint } from '@/app/components/Tips';
 
 export const HintMenu = () => {
     const [selectedItem, setSelectedItem] = useState<number | null>(null);
+
+    const menuItems = [
+        { id: 1, text: '変数とは？', component: <VariableHint></VariableHint> },
+        { id: 1, text: '配列とは？', component: <ArrayHint></ArrayHint> },
+        {
+            id: 3, text: '代入文とは？「定義される前に使用されています」の場合は？', component: <AssignmentHint />
+        },
+        { id: 4, text: '表示文とは？変数や配列の要素を確認するためには？', component: <OutputHint /> },
+        { id: 5, text: '条件分岐文とは？', component: <IfHint></IfHint> },
+        { id: 6, text: 'コンソールにすぐ表示されない', component: <WaitHint></WaitHint> },
+    ];
 
     const handleClick = (id: number) => {
         setSelectedItem(id);

@@ -7,7 +7,6 @@ import Loading from './Loading';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import theme from '@/app/theme';
-import { Typography } from '@mui/material';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(true);

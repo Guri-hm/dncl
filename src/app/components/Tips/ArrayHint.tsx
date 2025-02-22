@@ -1,7 +1,7 @@
 import { Box } from "@mui/material"
 import { FlattenedItem } from "@/app/types";
 import { v4 as uuidv4 } from 'uuid'
-import { SampleTreeItems } from "@/app/components/Tips";
+import { SampleTreeItems } from "./SampleTreeItems";
 import { FC } from "react";
 
 
