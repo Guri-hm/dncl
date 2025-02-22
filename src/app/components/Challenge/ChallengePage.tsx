@@ -156,7 +156,7 @@ export const ChallengePage = ({ challenge }: Props) => {
             <ContentWrapper>
                 {isSm ?
                     <Allotment vertical defaultSizes={[200, 100]}>
-                        <Allotment separator={false} defaultSizes={[100, 100]}>
+                        <Allotment separator={false}>
                             <Allotment.Pane>
                                 <SortableTree treeItems={items} setTreeItems={setItems} dnclValidation={dnclValidation} fragments={fragments} collapsible indicator removable ></SortableTree>
                             </Allotment.Pane>
