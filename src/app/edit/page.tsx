@@ -115,7 +115,7 @@ export default function Home() {
         message={snackbar.text}
       />
       <FooterOverlay>
-        {/* <HintButton /> */}
+        <HintButton />
         <HowToButton />
       </FooterOverlay>
     </PageWrapper >

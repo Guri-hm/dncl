@@ -1,10 +1,11 @@
-import React from 'react';
-import {SpeechBubbleImage,Spotlight} from '@/app/components/Tips';
+import React, { Dispatch, SetStateAction, useState } from 'react';
+import { SpeechBubbleImage, Spotlight } from '@/app/components/Tips';
 import { Box, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import Image from 'next/image';
 
 interface Props {
-    onClose?: any;
+    onClose?: Dispatch<SetStateAction<boolean>>;
     hint?: string;
     open?: boolean;
 }
@@ -19,11 +20,18 @@ export const Tip = ({ onClose, hint = "ヒントなし", open = true }: Props) =
                             position: 'absolute',
                             right: -10,
                             top: -20,
-                        }} onClick={onClose}>
+                        }} onClick={() => onClose(false)}>
                             <CloseIcon />
                         </IconButton>
                     }
-                    <img src="/look_back.svg" alt="ヒントを出す" style={{ width: '100%' }}></img>
+                    <Image
+                        src="/look_back.svg"
+                        alt="ヒントを出す"
+                        layout="responsive"
+                        width={300}
+                        height={300}
+                        style={{ width: "100%" }}
+                    />
                 </SpeechBubbleImage>
             </Spotlight>
         </Box>
