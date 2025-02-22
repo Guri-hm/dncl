@@ -7,6 +7,83 @@ export const parseCode = (code: string) => {
 interface ExtendedASTNode extends ASTNode {
     key?: { name?: string };
 }
+interface Identifier {
+    type: 'Identifier';
+    name: string;
+}
+
+interface MemberExpression {
+    type: 'MemberExpression';
+    object: Identifier;
+    property: Identifier;
+}
+
+interface Argument {
+    value?: string | number | boolean | object;
+    name?: string;
+}
+
+interface CallExpression {
+    type: 'CallExpression';
+    callee: Identifier | MemberExpression;
+    arguments: Argument[];
+}
+
+interface AssignmentExpression {
+    type: 'AssignmentExpression';
+    left: Expression;
+    operator: string;
+    right: Expression;
+}
+
+interface UpdateExpression {
+    type: 'UpdateExpression';
+    argument: Expression;
+    operator: string;
+}
+
+interface BinaryExpression {
+    type: 'BinaryExpression';
+    left: Expression;
+    operator: string;
+    right: Expression;
+}
+
+interface Identifier {
+    type: 'Identifier';
+    name: string;
+}
+
+interface Literal {
+    type: 'Literal';
+    value: string | number | boolean | object;
+}
+
+interface VariableDeclarator {
+    id: {
+        name: string;
+    };
+    init: {
+        value: string;
+    };
+}
+
+interface VariableDeclaration {
+    declarations: VariableDeclarator[];
+}
+
+type Expression = AssignmentExpression | UpdateExpression | BinaryExpression | Identifier | Literal | CallExpression;
+type InitExpression = VariableDeclaration | Expression
+
+interface Test {
+    left: {
+        name: string;
+    };
+    operator: string;
+    right: {
+        value: string | number | boolean | object; // 汎用的な型を指定
+    };
+}
 
 const rightCenter: { x: number, y: number } = { x: 1, y: 0.5 };
 
@@ -76,39 +153,54 @@ export const generateFlowchartXML = (ast: ASTNode) => {
         previousNodeId = nodeId - 1;
     };
 
-    const getExpressionString = (expression: any): string => {
-        if (expression) {
-            switch (expression.type) {
-                case 'AssignmentExpression':
-                    const left = getExpressionString(expression.left);
-                    const operator = expression.operator || "";
-                    const right = getExpressionString(expression.right);
-                    return `${left} ${operator} ${right}`;
-                case 'UpdateExpression':
-                    const argument = getExpressionString(expression.argument);
-                    const updateOperator = expression.operator || "";
-                    return `${argument}${updateOperator}`;
-                case 'BinaryExpression':
-                    const leftBinary = getExpressionString(expression.left);
-                    const operatorBinary = expression.operator || "";
-                    const rightBinary = getExpressionString(expression.right);
-                    return `${leftBinary} ${operatorBinary} ${rightBinary}`;
-                case 'Identifier':
-                    return expression.name;
-                case 'Literal':
-                    return expression.value;
-                default:
-                    return "";
+    const getExpressionString = (expression: InitExpression): string => {
+        if ('declarations' in expression) {
+            // VariableDeclaration の場合の処理
+            const declaration = expression.declarations[0];
+            return `${declaration.id.name} = ${declaration.init.value}`;
+        } else {
+            // その他の Expression の場合の処理
+            if (expression) {
+                switch (expression.type) {
+                    case 'AssignmentExpression':
+                        const left = getExpressionString(expression.left as InitExpression);
+                        const operator = expression.operator || "";
+                        const right = getExpressionString(expression.right as InitExpression);
+                        return `${left} ${operator} ${right}`;
+                    case 'UpdateExpression':
+                        const argument = getExpressionString(expression.argument as InitExpression);
+                        const updateOperator = expression.operator || "";
+                        return `${argument}${updateOperator}`;
+                    case 'BinaryExpression':
+                        const leftBinary = getExpressionString(expression.left as InitExpression);
+                        const operatorBinary = expression.operator || "";
+                        const rightBinary = getExpressionString(expression.right as InitExpression);
+                        return `${leftBinary} ${operatorBinary} ${rightBinary}`;
+                    case 'Identifier':
+                        return expression.name;
+                    case 'Literal':
+                        if (typeof expression.value === 'string') {
+                            return expression.value;
+                        } else if (typeof expression.value === 'number') {
+                            return expression.value.toString();
+                        } else if (typeof expression.value === 'boolean') {
+                            return expression.value ? 'true' : 'false';
+                        } else {
+                            return JSON.stringify(expression.value);
+                        }
+                    default:
+                        return "";
+                }
             }
+            return "";
         }
-        return "";
     };
 
     const processNode = (node: ASTNode, x: number, y: number, parentNodeId: number | null) => {
         switch (node.type) {
             case 'ExpressionStatement':
                 if (node.expression) {
-                    const expression = node.expression as any; // 型を明示的に指定
+                    const expression = node.expression as Expression;
                     if (expression.type === 'AssignmentExpression') {
                         const expressionString = getExpressionString(expression);
                         addNode(expressionString, 'endArrow=none;html=1;rounded=0;entryX=0.5;entryY=0.5;entryDx=0;entryDy=15;entryPerimeter=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
@@ -123,7 +215,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                             calleeName = callee.object.name;
                         }
 
-                        const args = expression.arguments.map((arg: any) => {
+                        const args = expression.arguments.map((arg: Argument) => {
                             if (arg.value !== undefined) {
                                 return `"${arg.value}"`;
                             } else {
@@ -131,21 +223,21 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                             }
                         }).join(', ');
 
-                        if (calleeName === 'console' && callee.property.name === 'log') {
+                        if (callee.type === 'MemberExpression' && callee.object.name === 'console' && callee.property.name === 'log') {
                             addNode(`${args}を表示する`, 'endArrow=none;html=1;rounded=0;entryX=0.5;entryY=0.5;entryDx=0;entryDy=15;entryPerimeter=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
                         } else {
                             // 定義済み関数の呼び出しの場合の処理
                             addNode(`${calleeName}(${args})を実行する`, 'shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
                         }
                     } else if (expression.type === 'UpdateExpression') {
-                        const argument = expression.argument.name;
+                        const argument = expression.argument as Identifier;
                         const operator = expression.operator;
-                        addNode(`${argument}${operator}`, 'endArrow=none;html=1;rounded=0;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
+                        addNode(`${argument.name}${operator}`, 'endArrow=none;html=1;rounded=0;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
                     }
                 }
                 break;
             case 'IfStatement':
-                const test = node.test as any;
+                const test = node.test as Test;
                 const testString = `${test.left.name} ${test.operator} ${test.right.value}`;
                 addNode(testString, 'rhombus;whiteSpace=wrap;html=1;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
 
@@ -195,7 +287,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 break;
 
             case 'WhileStatement':
-                const whileTest = node.test as any;
+                const whileTest = node.test as Test;
                 const whileTestString = `${whileTest.left.name} ${whileTest.operator} ${whileTest.right.value}`;
 
                 // ループ開始端子
@@ -237,11 +329,11 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                     return { operator: '', rightSide: '' };
                 };
 
-                const forInit = node.init ? getExpressionString(node.init) : '';
+                const forInit = node.init ? getExpressionString(node.init as InitExpression) : '';
                 const [variable, fromNum] = forInit.split('=').map(str => str.trim());
-                const forTest = node.test ? getExpressionString(node.test) : '';
+                const forTest = node.test ? getExpressionString(node.test as InitExpression) : '';
                 const [, toNum] = forTest.split('<=').map(str => str.trim());
-                const forUpdate = node.update ? getExpressionString(node.update) : '';
+                const forUpdate = node.update ? getExpressionString(node.update as InitExpression) : '';
                 const result = parseExpression(forUpdate);
                 // ループ開始端子
                 addNode(`${variable}を${fromNum}から${toNum}まで${result.rightSide}ずつ${result.operator == '+' ? '増やしながら' : '減らしながら'}`, 'strokeWidth=1;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;', x, y, nodeId - 1);
