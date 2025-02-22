@@ -189,10 +189,8 @@ export enum LogicalOperationJpEnum {
 
 export enum InputTypeJpEnum {
   Switch = '変数名・配列名',
-  ArrayWithoutSuffix = '配列名',
   Array = '配列名',
-  SuffixOnly = '添字',
-  SuffixWithBrackets = '添字',
+  Suffix = '添字',
   VariableOnly = '変数名',
   VariableOrNumber = '値・変数名',
   String = '文字列',
@@ -212,7 +210,7 @@ export enum DnclStatement {
   Else = 'を実行し，そうでなければ',
   EndIf = 'を実行する',
   While = '〈条件〉の間',
-  EndWhile = 'を繰り返す',
+  EndWhile = 'を繰り返す(前判定)',
   DoWhile = '繰り返し，',
   EndDoWhile = 'を，〈条件〉になるまで実行する',
   ForIncrement = '〈変数〉の値を増やしながら，',
