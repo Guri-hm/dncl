@@ -40,12 +40,6 @@ const DrawerHeader = styled('div')(({ theme }) => ({
     ...theme.mixins.toolbar,
 }));
 
-interface DrawerProps extends MuiDrawerProps {
-    open: boolean;
-    sx?: any;
-}
-
-
 const Drawer = styled(MuiDrawer, {
     shouldForwardProp: (prop) => prop !== 'open' && prop !== 'sx',
 })(({ theme, open, sx }) => ({
