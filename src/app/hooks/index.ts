@@ -1,3 +1,3 @@
-export { default as useAchievements ,storageKey} from './useAchievements';
-export { useUpdateEffect } from './useUpdateEffect ';
-export { useTreeItems,loadTreeItems,removeLocalStrage } from './useTreeItems';
+export { default as useAchievements, storageKey } from './useAchievements';
+export { useTreeItems, loadTreeItems, removeLocalStrage } from './useTreeItems';
+export { default as useUpdateEffect } from './useUpdateEffect'

@@ -6,10 +6,10 @@ import { Operator, Droppable, DroppableOperator, ErrorMsgBox, DraggableItem, Dnc
 import { bracketEnum, inputTypeEnum, keyPrefixEnum } from "./Enum";
 import { BraketSymbolEnum, OperationEnum, OperatorTypeJpEnum, ProcessEnum } from "@/app/enum";
 import AddIcon from '@mui/icons-material/Add';
-import { useUpdateEffect } from '@/app/hooks';
 import { checkParenthesesBalance, enumsToObjects, getValueByKey } from "@/app/utilities";
 import { TreeItems } from "@/app/types";
 import { useCallback } from 'react';
+import { useUpdateEffect } from "@/app/hooks";
 
 type Props = {
     children?: ReactNode;
@@ -68,7 +68,9 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [] }) 
     }, [])
 
     //初回レンダリング時に実行しない
-    useUpdateEffect(checkBraketPair, [operandComponents]);
+    useUpdateEffect(() => {
+        checkBraketPair();
+    }, [operandComponents]);
 
     const addOperandComponent = () => {
         setOperandComponents([...operandComponents, { name: keyPrefixEnum.RigthSide }]);
