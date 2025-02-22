@@ -1,7 +1,7 @@
 import { FC, useEffect, useRef, useState } from "react";
 import { TabGroup, TabItem, TabItemsObj, TreeItems } from "@/app/types";
 import cmnStyles from '@/app/components/common.module.css'
-import { Allotment } from "allotment";
+import { Allotment, AllotmentHandle } from "allotment";
 import { VbaTab, DnclTab, JsTab, PythonTab, TabsBox, TabsSingleBox, FlowTab } from "@/app/components/Tab";
 import { closestCenter, DndContext, DragEndEvent, DragOverEvent, MeasuringStrategy, UniqueIdentifier } from "@dnd-kit/core";
 import { arrayMove, SortableContext } from "@dnd-kit/sortable";
@@ -11,12 +11,12 @@ import { useTheme } from '@mui/material/styles';
 
 interface Props {
     treeItems: TreeItems;
-    setTabsBoxWrapperVisible: any;
+    setTabsBoxWrapperVisible: (visible: boolean) => void;
     tabsBoxWrapperVisible: boolean;
 }
 
 export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, setTabsBoxWrapperVisible }) => {
-    const ref = useRef<any>(null);
+    const ref = useRef<AllotmentHandle>(null);
     const theme = useTheme();
     const isMd = useMediaQuery(theme.breakpoints.up('md'));//900px以上
     const isSm = useMediaQuery(theme.breakpoints.up('sm'));//600px以上
@@ -276,14 +276,16 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, se
         const areAllVisibleFalse = (obj: TabItemsObj) => {
             return Object.keys(obj).every(key => !obj[key].visible);
         };
+
         requestAnimationFrame(() => {
             recentlyMovedToNewContainer.current = false;
         });
+
         const allVisibleFalse = areAllVisibleFalse(tabItemsObj);
         if (allVisibleFalse) {
             setTabsBoxWrapperVisible(false);
         }
-    }, [tabItemsObj]);
+    }, [tabItemsObj, setTabsBoxWrapperVisible]);
 
     useEffect(() => {
         const toggleAllVisible = (newVisible: boolean) => {

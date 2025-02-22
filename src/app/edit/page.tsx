@@ -8,7 +8,7 @@ import { DnclValidationType, TreeItems } from "@/app/types";
 import { PageWrapper } from "@/app/components/PageWrapper";
 import { sampleFuncItems } from "@/app/components/SampleDncl";
 import { ContentWrapper } from "@/app/components/ContentWrapper";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { TabsBoxWrapper } from "@/app/components/Tab";
 import { Snackbar } from "@mui/material";
 import SaveIcon from '@mui/icons-material/Save';
@@ -38,6 +38,10 @@ export default function Home() {
   const specialElementRef1 = useRef<HTMLDivElement | null>(null);
   const specialElementRef2 = useRef<HTMLDivElement | null>(null);
 
+  const handleSetTabsBoxWrapperVisible = useCallback((visible: boolean) => {
+    setTabsBoxWrapperVisible(visible);
+  }, []);
+  
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasUnsavedChanges) {
@@ -81,7 +85,7 @@ export default function Home() {
                   <SortableTree treeItems={items} setTreeItems={handleItemsChange} dnclValidation={dnclValidation} collapsible indicator removable ></SortableTree>
                 </Allotment.Pane>
                 <Allotment.Pane visible={tabsBoxWrapperVisible}>
-                  <TabsBoxWrapper treeItems={items} tabsBoxWrapperVisible={tabsBoxWrapperVisible} setTabsBoxWrapperVisible={setTabsBoxWrapperVisible}></TabsBoxWrapper>
+                  <TabsBoxWrapper treeItems={items} tabsBoxWrapperVisible={tabsBoxWrapperVisible} setTabsBoxWrapperVisible={handleSetTabsBoxWrapperVisible}></TabsBoxWrapper>
                 </Allotment.Pane>
                 {tabsBoxWrapperVisible ? '' :
                   <Allotment.Pane minSize={60} maxSize={60} className={styles.paneHover}>
