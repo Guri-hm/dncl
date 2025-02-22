@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import { BoxProps } from '@mui/system';
 import { IconButton, ListItemIcon, Menu, MenuItem, Snackbar } from '@mui/material';
 import cmnStyles from '@/app/components/common.module.css';
-import { Children, forwardRef, useMemo, useRef, useState } from 'react';
+import { Children, Dispatch, forwardRef, SetStateAction, useMemo, useRef, useState } from 'react';
 import MenuIcon from '@mui/icons-material/Menu';
 import { TabItem, TabItemsObj } from "@/app/types";
 import Grid from '@mui/material/Grid2';
@@ -37,7 +37,7 @@ const TabPanel = forwardRef<HTMLDivElement, TabPanelProps>(({ children, index, v
 type Props = {
     tabItems: TabItem[];
     containerId?: UniqueIdentifier;
-    setTabItemsObj?: any;
+    setTabItemsObj?: Dispatch<SetStateAction<TabItemsObj>>;
 }
 const StyledBox: React.FC<BoxProps> = ({ children }) => {
     return (<Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', border: '1px solid var(--slategray)', position: 'relative', zIndex: 10, gridColumn: 'span 3', backgroundColor: '#1e293b', boxShadow: '0 10px 15px rgba(0, 0, 0, 0.1)', '@xl': { marginLeft: 0 } }}>
@@ -45,7 +45,7 @@ const StyledBox: React.FC<BoxProps> = ({ children }) => {
     </Box>);
 };
 
-export const TabsSingleBox = ({ tabItems, setTabItemsObj, containerId = 'box', ...props }: Props) => {
+const TabsSingleBox = ({ tabItems, setTabItemsObj, containerId = 'box', ...props }: Props) => {
     const [value, setValue] = useState(0);
     const contentRef = useRef<HTMLDivElement | null>(null);
     const [snackbar, setSnackbar] = useState<{ open: boolean, duration: number, text: string }>({ open: false, duration: 3000, text: '' });
@@ -70,6 +70,7 @@ export const TabsSingleBox = ({ tabItems, setTabItemsObj, containerId = 'box', .
         handleCloseMenu();
     }
     const updateGroupVisibility = (groupKey: UniqueIdentifier, isVisible: boolean) => {
+        if (!setTabItemsObj) return;
         setTabItemsObj((prevState: TabItemsObj) => ({
             ...prevState,
             [groupKey]: {
@@ -143,3 +144,7 @@ export const TabsSingleBox = ({ tabItems, setTabItemsObj, containerId = 'box', .
         </StyledBox>
     );
 }
+
+TabsSingleBox.displayName = "TabsSingleBox";
+
+export default TabsSingleBox;
