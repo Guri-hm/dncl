@@ -27,10 +27,10 @@ export const Tip = ({ onClose, hint = "ヒントなし", open = true }: Props) =
                     <Image
                         src="/look_back.svg"
                         alt="ヒントを出す"
-                        layout="responsive"
                         width={300}
                         height={300}
-                        style={{ width: "100%" }}
+                        priority
+                        style={{ objectFit: "contain", width: "100%", height: "100%" }}
                     />
                 </SpeechBubbleImage>
             </Spotlight>
