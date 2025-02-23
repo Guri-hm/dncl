@@ -22,12 +22,10 @@ import { useTheme } from '@mui/material/styles';
 import { SwiperTabs } from "@/app/components/Tab";
 import { SwiperSlide } from "swiper/react";
 
-const initialItems: TreeItems = sampleFuncItems;
-
 export default function Home() {
 
   const [itemsStrage, setItemsStrage] = useTreeItems([]);
-  const [items, setItems] = useState<TreeItems>(() => initialItems);
+  const [items, setItems] = useState<TreeItems>([]);
   const [dnclValidation, setDnclValidation] = useState<DnclValidationType | null>(null);
   const [tabsBoxWrapperVisible, setTabsBoxWrapperVisible] = useState(true);
   const [snackbar, setSnackbar] = useState<{ open: boolean, duration: number, text: string }>({ open: false, duration: 3000, text: '' });
