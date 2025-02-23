@@ -22,3 +22,8 @@ npm i swiper --legacy-peer-deps
 *allotmentのバージョンが古く、「 --legacy-peer-deps」を付与してインストールした
 ⇒他のライブラリのインストール時にもこのオプション付与を要求されるようになった
 *本番環境ではプロジェクトのルートディレクトリのnode_modulesにeslint-plugin-custom-rulesを配置する
+*本番環境や新しい開発環境に.env.localを置き忘れない
+
+【.env.localファイルの中身】
+NEXT_PUBLIC_BASE_PATH=/next/dncl
+NEXT_PUBLIC_DOMAIN=localhost
