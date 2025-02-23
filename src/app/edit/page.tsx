@@ -75,8 +75,6 @@ export default function Home() {
     setHasUnsavedChanges(true);
   };
 
-  console.log(`itemsStrage:${itemsStrage}`)
-  console.log(`items:${items}`)
   return (
     <PageWrapper>
       <Header>
