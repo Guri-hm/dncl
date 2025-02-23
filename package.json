@@ -7,7 +7,8 @@
     "build": "set ESLINT_MODE=build&& next build",
     "start": "next start",
     "lint": "next lint",
-    "clean": "rmdir /s /q .next"
+    "clean": "rmdir /s /q .next",
+    "postbuild": "node copy-custom-rules.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
