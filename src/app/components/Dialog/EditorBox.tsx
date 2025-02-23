@@ -19,11 +19,11 @@ export function EditorBox(params: Props) {
     const [statement, setStatement] = useState<ReactElement | null>(null);
 
     const handleChange = (event: SelectChangeEvent) => {
-        const index = event.target.value ?? ProcessEnum.SetValToVariableOrArray;
+        const index = Number(event.target.value) ?? ProcessEnum.SetValToVariableOrArray
         setStatement(StatementEditor(index));
     }
 
-    const StatementEditor: any = (index: number): ReactElement => {
+    const StatementEditor = (index: number): ReactElement => {
 
         const hdnInput = (index: number): ReactElement => {
             return (
