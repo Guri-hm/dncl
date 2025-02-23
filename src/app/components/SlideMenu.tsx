@@ -1,12 +1,8 @@
-import * as React from 'react';
-import { styled, useTheme, Theme, CSSObject } from '@mui/material/styles';
+import { styled, Theme, CSSObject } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import MuiDrawer, { DrawerProps as MuiDrawerProps } from '@mui/material/Drawer';
-import IconButton from '@mui/material/IconButton';
-import MenuIcon from '@mui/icons-material/Menu';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { ArrowButton } from './ArrowButton';
+import { useCallback, useEffect } from 'react';
 
 const drawerWidth = 240;
 
@@ -77,21 +73,21 @@ interface MiniDrawerProps {
     children?: React.ReactNode;
     activeId?: string | null;//親コンポーネントでドラッグ中は文字列が入る
     open: boolean;
-    setOpen: any;
+    setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 
 const MiniDrawer: React.FC<MiniDrawerProps> = ({ children, activeId, open, setOpen }) => {
 
-    const handleClose = () => {
+    const handleClose = useCallback(() => {
         setOpen(false);
-    }
+    }, [setOpen]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (activeId) {
             setOpen(false);
         }
-    }, [activeId]);
+    }, [activeId, setOpen]);
 
     return (
         <Box sx={{ display: 'flex' }}>
