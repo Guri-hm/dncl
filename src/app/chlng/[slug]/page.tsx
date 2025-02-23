@@ -3,9 +3,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 interface SlugPageProps {
-  params: {
-    slug: string;
-  };
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
