@@ -1,4 +1,3 @@
-import * as React from 'react';
 import Dialog from '@mui/material/Dialog';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
@@ -8,8 +7,9 @@ import CloseIcon from '@mui/icons-material/Close';
 import Slide from '@mui/material/Slide';
 import { TransitionProps } from '@mui/material/transitions';
 import { Box } from '@mui/material';
+import { Dispatch, forwardRef, Fragment, ReactNode, SetStateAction } from 'react';
 
-const Transition = React.forwardRef(function Transition(
+const Transition = forwardRef(function Transition(
     props: TransitionProps & {
         children: React.ReactElement<unknown>;
     },
@@ -20,29 +20,25 @@ const Transition = React.forwardRef(function Transition(
 
 interface Props {
     open: boolean;
-    setOpen: any;
+    setOpen: Dispatch<SetStateAction<boolean>>;
     title?: string;
-    children: React.ReactNode;
+    children: ReactNode;
 }
 
 export const FullScreenDialog = ({ open, setOpen, title = "", children }: Props) => {
-
-    // const handleClickOpen = () => {
-    //     setOpen(true);
-    // };
 
     const handleClose = () => {
         setOpen(false);
     };
 
     return (
-        <React.Fragment>
+        <Fragment>
 
             <Dialog
                 fullScreen
                 open={open}
                 onClose={handleClose}
-                TransitionComponent={Transition}
+                slots={{ transition: Transition }}
             >
                 <AppBar sx={{ position: 'relative', backgroundColor: 'var(--slate-900)' }}>
                     <Toolbar>
@@ -71,6 +67,6 @@ export const FullScreenDialog = ({ open, setOpen, title = "", children }: Props)
                     {children}
                 </Box>
             </Dialog>
-        </React.Fragment>
+        </Fragment>
     );
 }
