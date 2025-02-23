@@ -9,6 +9,7 @@ type NextImageProps = {
     sx?: SxProps<Theme>;
     style?: React.CSSProperties;
     onDragStart?: (event: React.DragEvent<HTMLImageElement>) => void;
+    onTouchStart?: (event: React.TouchEvent<HTMLImageElement>) => void
 };
 
 export const NextImage: FC<NextImageProps> = ({ src, alt, size = "100vw", sx, style = { objectFit: 'cover' }, ...props }) => {

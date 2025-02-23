@@ -5,6 +5,16 @@ import { NextImage } from '@/app/components/NextImage';
 export const DoNotDrag = () => {
 
     const [msgDoNotDrag, setMsgDoNotDrag] = useState('ドラッグして追加します');
+    const handleTouchStart = (e: React.TouchEvent<HTMLImageElement>) => {
+        e.preventDefault();
+        setMsgDoNotDrag('私はドラッグできませんよ!');
+        setTimeout(() => setMsgDoNotDrag("ドラッグして追加します"), 3000);
+    };
+    const handleDragStart = (e: React.DragEvent<HTMLImageElement>) => {
+        e.preventDefault();
+        setMsgDoNotDrag('私はドラッグできませんよ!');
+        setTimeout(() => setMsgDoNotDrag("ドラッグして追加します"), 3000);
+    };
 
     return (
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -33,11 +43,10 @@ export const DoNotDrag = () => {
                 {msgDoNotDrag}
             </Box>
             <Box sx={{ width: '80px', height: '80px' }}>
-                <NextImage src={`${process.env.NEXT_PUBLIC_BASE_PATH}/pointing.svg`} alt={'指差し'} style={{ objectFit: 'contain' }} onDragStart={(e: React.DragEvent<HTMLImageElement>) => {
-                    e.preventDefault();
-                    setMsgDoNotDrag('私はドラッグできませんよ!');
-                    setTimeout(() => setMsgDoNotDrag("ドラッグして追加します"), 3000);
-                }} />
+                <NextImage src={`${process.env.NEXT_PUBLIC_BASE_PATH}/pointing.svg`} alt={'指差し'} style={{ objectFit: 'contain' }}
+                    onTouchStart={handleTouchStart}
+                    onDragStart={handleDragStart}
+                />
             </Box>
         </Box>
 
