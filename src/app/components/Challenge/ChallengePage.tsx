@@ -1,7 +1,7 @@
 "use client"
 import { Allotment } from "allotment";
 import "allotment/dist/style.css";
-import "@/app/components/alloment-custom.css";
+import "@/app/components/allotment-custom.css";
 import { defaultFragments, SortableTree } from "@/app/components/SortableTree";
 import styles from '@/app/components/common.module.css';
 import { Challenge, DnclValidationType, FragmentItems, TreeItems } from "@/app/types";

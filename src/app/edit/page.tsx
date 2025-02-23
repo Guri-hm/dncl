@@ -1,12 +1,11 @@
 "use client"
 import { Allotment } from "allotment";
 import "allotment/dist/style.css";
-import "@/app/components/alloment-custom.css";
+import "@/app/components/allotment-custom.css";
 import { SortableTree } from "@/app/components/SortableTree";
 import styles from '@/app/components/common.module.css';
 import { DnclValidationType, TreeItems } from "@/app/types";
 import { PageWrapper } from "@/app/components/PageWrapper";
-import { sampleFuncItems } from "@/app/components/SampleDncl";
 import { ContentWrapper } from "@/app/components/ContentWrapper";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TabsBoxWrapper } from "@/app/components/Tab";
