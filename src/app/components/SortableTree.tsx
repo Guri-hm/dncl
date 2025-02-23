@@ -38,10 +38,10 @@ import { DnclEditDialog } from "@/app/components/Dialog";
 import { v4 as uuidv4 } from "uuid";
 import { allStatementItems, statementEnumMap } from "@/app/enum";
 import { Box } from "@mui/material";
-import styles from '@/app/components/alloment-custom.module.css'
+import styles from '@/app/components/allotment-custom.module.css'
 import cmnStyles from '@/app/components/common.module.css'
 import { ArrowButton } from "@/app/components/ArrowButton";
-import "@/app/components/alloment-custom.css";
+import "@/app/components/allotment-custom.css";
 import { DropHere, DoNotDrag } from "@/app/components/Tips";
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
@@ -193,7 +193,7 @@ export function SortableTree({
       >
         <DnclEditDialog {...editor}></DnclEditDialog>
         {isSm ?
-          <Allotment separator={false} defaultSizes={[100, 100, 100]} className={styles.splitViewContainer} onVisibleChange={(_index, value) => {
+          <Allotment separator={false} className={styles.splitViewContainer} onVisibleChange={(_index, value) => {
             setVisible(value);
           }}>
             <Allotment.Pane maxSize={50} minSize={50} className={`${styles.paneBg}`}>
