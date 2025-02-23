@@ -125,11 +125,11 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
         switch (inputType) {
           case inputTypeEnum.SwitchVariableOrArray:
             tmpLabel = checked ? InputTypeJpEnum.Array : InputTypeJpEnum.VariableOnly;
-            pattern = checked ? ValidationEnum.Array : ValidationEnum.Variable;
+            pattern = ValidationEnum.Variable;
             break;
           case inputTypeEnum.SwitchVariableOrNumberOrArray:
             tmpLabel = checked ? InputTypeJpEnum.Array : InputTypeJpEnum.VariableOrNumber;
-            pattern = checked ? ValidationEnum.Array : ValidationEnum.VariableOrNumber;
+            pattern = ValidationEnum.VariableOrNumber;
             break;
           default:
             break;
@@ -174,7 +174,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
             break;
           case inputTypeEnum.Array:
             tmpLabel = InputTypeJpEnum.Array;
-            pattern = ValidationEnum.Array;
+            pattern = ValidationEnum.Variable;
             break;
           case inputTypeEnum.String:
             tmpLabel = InputTypeJpEnum.String;
@@ -253,12 +253,9 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
         );
 
       case inputTypeEnum.VariableOnly:
-        return <Grid size="grow">
-          <ValidatedTextField name={`${name}_${index}`} label={InputTypeJpEnum.VariableOnly} pattern={ValidationEnum.Variable}></ValidatedTextField>
-        </Grid>
       case inputTypeEnum.ArrayWithoutSuffix:
         return <Grid size="grow">
-          <ValidatedTextField name={`${name}_${index}`} label={InputTypeJpEnum.Array} pattern={ValidationEnum.VariableOrArray}></ValidatedTextField>
+          <ValidatedTextField name={`${name}_${index}`} label={InputTypeJpEnum.VariableOnly} pattern={ValidationEnum.Variable}></ValidatedTextField>
         </Grid>
 
       case inputTypeEnum.Array:
