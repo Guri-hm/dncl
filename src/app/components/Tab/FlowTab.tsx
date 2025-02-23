@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { parseCode, generateFlowchartXML, flattenTree } from '@/app/utilities';
 import { Box, BoxProps, Button } from '@mui/material';
 import { TreeItem, TreeItems } from '@/app/types';
@@ -149,22 +149,22 @@ export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props 
     } finally {
     }
   }, [generateFlowchart]);
-  
-  useEffect(() => {
+
+  const memoizedNodes = useMemo(() => {
     if (shouldRunEffect) {
       const convertCode = async () => {
         const jsCode = await renderCode(treeItems);
-        fetchLintResults(jsCode);
+        await fetchLintResults(jsCode);
       };
       setShouldRunEffect(false);
-      convertCode();
+      convertCode().then(() => { });
     }
-  }, [shouldRunEffect, renderCode, fetchLintResults, treeItems]);
+    return nodes;
+  }, [shouldRunEffect, renderCode, fetchLintResults, treeItems, nodes]);
 
-  
   return (
     <>
-      {nodes}
+      {memoizedNodes}
     </>
   );
 }

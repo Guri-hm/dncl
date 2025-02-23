@@ -1,5 +1,5 @@
 import { Box, BoxProps } from "@mui/material";
-import { FC, useCallback, useEffect, useState, Fragment } from "react";
+import { FC, useCallback, useEffect, useState, Fragment, useMemo } from "react";
 import { TreeItems } from "@/app/types";
 import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, LoopEnum, ArithmeticOperator } from "@/app/enum";
 import { cnvToDivision, cnvToRomaji, containsJapanese, tryParseToJsFunction } from "@/app/utilities";
@@ -148,21 +148,22 @@ export const JsTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props })
         return Promise.all(promises);
     }, []);
 
-    useEffect(() => {
+    const memoizedNodes = useMemo(() => {
         if (shouldRunEffect) {
             const convertCode = async () => {
-                setNodes(await renderNodes(treeItems, 0));
+                return await renderNodes(treeItems, 0);
             };
             setShouldRunEffect(false); // フラグをリセット
-            convertCode();
+            convertCode().then(setNodes);
         }
-    }, [shouldRunEffect, renderNodes, treeItems]);
+        return nodes;
+    }, [shouldRunEffect, renderNodes, treeItems, nodes]);
 
     return (
         <Box className={styles.codeContainer} sx={{
             ...sx
         }} {...props} >
-            {nodes}
+            {memoizedNodes}
         </Box>
     );
 };

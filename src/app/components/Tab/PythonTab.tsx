@@ -2,7 +2,7 @@ import { Box, BoxProps } from "@mui/material";
 import { TreeItems } from "@/app/types";
 import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, ComparisonOperatorDncl, LoopEnum, ArithmeticOperator, BreakEnum, ArithmeticOperatorPython } from "@/app/enum";
 import { capitalizeTrueFalse, cnvToRomaji, containsJapanese, tryParseToPyFunc } from "@/app/utilities";
-import { FC, Fragment, ReactNode, useCallback, useEffect, useState } from "react";
+import { FC, Fragment, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { ScopeBox } from "@/app/components/Tab";
 import styles from "./tab.module.css"
 
@@ -206,21 +206,22 @@ export const PythonTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...prop
         return renderedNodes;
     }, []);
 
-    useEffect(() => {
+    const memoizedNodes = useMemo(() => {
         if (shouldRunEffect) {
             const convertCode = async () => {
-                setNodes(await renderNodes(treeItems, 0));
+                return await renderNodes(treeItems, 0);
             };
             setShouldRunEffect(false); // フラグをリセット
-            convertCode();
+            convertCode().then(setNodes);
         }
-    }, [shouldRunEffect, renderNodes, treeItems]);
+        return nodes;
+    }, [shouldRunEffect, renderNodes, treeItems, nodes]);
 
     return (
         <Box className={styles.codeContainer} sx={{
             ...sx
         }} {...props} >
-            {nodes}
+            {memoizedNodes}
         </Box>
     );
 };
