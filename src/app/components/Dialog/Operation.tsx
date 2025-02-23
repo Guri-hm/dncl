@@ -65,7 +65,7 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [] }) 
             errorArray.push(`『 ${BraketSymbolEnum.LeftBraket} 』と『 ${BraketSymbolEnum.RigthBraket} 』の内側には要素が必要です`);
         }
         setBraketError(errorArray);
-    }, [])
+    }, [operandComponents]);
 
     //初回レンダリング時に実行しない
     useUpdateEffect(() => {
@@ -111,23 +111,27 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [] }) 
     }
 
     const setOperator = (id: string) => {
-        //(左辺または右辺)_(オペランドのインデックス)_(オペランドの左側または右側)という文字列を想定
         const overIdSplitArray = id.split('_');
-        let propertyName = 'operator';
-        //プロパティに変数を使うときは[]をつける
+        const propertyName = 'operator'; // constを使用
         setOperandComponents((prevItems) =>
-            prevItems.map((item: DnclTextFieldProps, i: number) =>
-                i === Number(overIdSplitArray[1]) ? { ...item, [propertyName]: activeId } : item
-            ));
-    }
+            prevItems.map((item, i) =>
+                i === Number(overIdSplitArray[1])
+                    ? { ...item, [propertyName]: activeId } as DnclTextFieldProps
+                    : item
+            )
+        );
+    };
+
     const removeOperator = (index: number) => {
-        let propertyName = 'operator';
-        //プロパティに変数を使うときは[]をつける
+        const propertyName = 'operator'; // constを使用
         setOperandComponents((prevItems) =>
-            prevItems.map((item: DnclTextFieldProps, i: number) =>
-                i === Number(index) ? { ...item, [propertyName]: null } : item
-            ));
-    }
+            prevItems.map((item, i) =>
+                i === Number(index)
+                    ? { ...item, [propertyName]: null as unknown as OperationEnum } // 型アサーションを使用して null を変換
+                    : item
+            )
+        );
+    };
 
     const addOneSideOfOperand = (id: string) => {
 
@@ -208,7 +212,7 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [] }) 
     const getSwitchType = (processType: ProcessEnum | undefined): inputTypeEnum => {
         switch (processType) {
             case ProcessEnum.Output:
-                return inputTypeEnum.RadioWithVoid;
+                return inputTypeEnum.All;
             case ProcessEnum.SetValToVariableOrArray:
             case ProcessEnum.If:
             case ProcessEnum.ElseIf:
@@ -274,6 +278,7 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [] }) 
                                 {(index == 0) && (processType == ProcessEnum.InitializeArray) ? <EmphasiseBox>{BraketSymbolEnum.OpenSquareBracket}</EmphasiseBox> : ''}
                                 {(index != 0) && <DroppableOperator id={`${component.name}_${index}_${keyPrefixEnum.Operator}`} name={`${component.name}`} parentIndex={index} isDragging={isDragging && isActiveIdOperator(activeId)} endOfArrayEvent={() => removeOperator(index)} type={component.operator}></DroppableOperator>}
                                 {
+                                    //表示文
                                     (processType == ProcessEnum.Output && index > 0) &&
                                     <Operator name={`${component.name}`} parentIndex={index} type={OperationEnum.JoinString}></Operator>
                                 }

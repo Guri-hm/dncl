@@ -165,7 +165,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
         );
 
       case inputTypeEnum.All:
-      case inputTypeEnum.RadioWithVoid:
+        //表示文
 
         switch (radioValue) {
           case inputTypeEnum.VariableOrNumber:
@@ -245,11 +245,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
                   <FormControlLabel sx={{ margin: 0, paddingBottom: 0 }} value={inputTypeEnum.Array} control={<Radio size="small" />} label={SwitchJpEnum.Array} />
                   <FormControlLabel sx={{ margin: 0, paddingBottom: 0 }} value={inputTypeEnum.String} control={<Radio size="small" />} label={SwitchJpEnum.String} />
                   <FormControlLabel sx={{ margin: 0, paddingBottom: 0 }} value={inputTypeEnum.Boolean} control={<Radio size="small" />} label={SwitchJpEnum.Boolean} />
-                  {inputType == inputTypeEnum.All ?
-                    <FormControlLabel sx={{ margin: 0, paddingBottom: 0 }} value={inputTypeEnum.ReturnFunction} control={<Radio size="small" />} label={SwitchJpEnum.Function} />
-                    :
-                    <FormControlLabel sx={{ margin: 0, paddingBottom: 0 }} value={inputTypeEnum.Void} control={<Radio size="small" />} label={SwitchJpEnum.Function} />
-                  }
+                  <FormControlLabel sx={{ margin: 0, paddingBottom: 0 }} value={inputTypeEnum.ReturnFunction} control={<Radio size="small" />} label={SwitchJpEnum.Function} />
                 </RadioGroup>
               </Grid>
             </Grid>

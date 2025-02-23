@@ -33,7 +33,6 @@ export enum inputTypeEnum {
   SwitchVariableOrNumberOrArray = 'SwitchVariableOrNumberOrArray',
   SwitchVariableOrArray = 'SwitchVariableOrArray',
   All = 'All',
-  RadioWithVoid = 'RadioWithVoid',
   ArrayWithoutSuffix = 'ArrayWithoutSuffix',
   Array = 'Array',
   InitializeArray = 'InitializeArray',

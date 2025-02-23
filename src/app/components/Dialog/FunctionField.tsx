@@ -1,38 +1,44 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Box from '@mui/material/Box';
 import { InputTypeJpEnum, ReturnFuncDncl, UserDefinedFuncDncl, VoidFuncDncl } from '@/app/enum';
 import { ReactElement } from "react";
 import IconButton from '@mui/material/IconButton';
-import { SvgIconProps } from '@mui/material/SvgIcon';
+import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon';
 import { inputTypeEnum, keyPrefixEnum, ValidationEnum } from "./Enum";
-import { FormControl, FormHelperText, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from "@mui/material";
+import { FormControl, FormHelperText, InputLabel, MenuItem, Select, SelectChangeEvent, Typography, TypographyProps } from "@mui/material";
 import NotInterestedIcon from '@mui/icons-material/NotInterested';
 import Grid from '@mui/material/Grid2';
 import { TreeItems } from "@/app/types";
 import { getUserDefinedFunctionInfoArray, UserDefinedFunctionInfo } from "@/app/utilities";
 import { FixedHeightGrid, ValidatedTextField } from '@/app/components/Dialog';
 
-const TextIcon: React.FC<any & { text: string }> = ({ text, ...props }) => (
-  <Typography noWrap {...props}>{text}</Typography>
-)
+interface TextIconProps extends SvgIconProps {
+  text: string;
+  onClick: () => void;
+}
+
+const TextIcon: React.FC<TextIconProps> = ({ text, onClick }) => (
+  <Typography onClick={onClick} noWrap style={{ fontWeight: 'bold' }}>{text}</Typography>
+);
+
 
 type Props = {
   name?: string
   parentIndex?: number
-  event?: any
+  event?: () => void;
   funcType: inputTypeEnum
   treeItems?: TreeItems
 }
 
 const ReturnFunctions = [
-  { name: UserDefinedFuncDncl.UserDefined, arguments: 0, desc: '「新しい関数の定義」で作成した関数を使用します。', icon: (props: SvgIconProps) => <NotInterestedIcon {...props} sx={{ color: 'gray', opacity: 0.2 }} /> },
-  { name: ReturnFuncDncl.Square, arguments: 1, desc: '引数の値を二乗した値を返します。', icon: (props: SvgIconProps) => <TextIcon {...props} text="二乗" /> },
-  { name: ReturnFuncDncl.Exponentiation, arguments: 2, desc: '「べき乗(m,n)」の場合，値mのn乗の値を返します。', icon: (props: SvgIconProps) => <TextIcon {...props} text="べき乗" /> },
-  { name: ReturnFuncDncl.Random, arguments: 2, desc: '「乱数(m,n)」の場合，値m以上値n以下の整数をランダムに一つ返します。', icon: (props: SvgIconProps) => <TextIcon {...props} text="乱数" /> },
-  { name: ReturnFuncDncl.Odd, arguments: 1, desc: '引数の値が奇数のとき真を返し，そうでないとき偽を返します。', icon: (props: SvgIconProps) => <TextIcon {...props} text="奇数" /> },
-]
+  { name: ReturnFuncDncl.Square, arguments: 1, desc: '引数の値を二乗した値を返します。', icon: (props: SvgIconProps & { onClick: () => void }) => <TextIcon text="二乗" {...props} /> },
+  { name: ReturnFuncDncl.Exponentiation, arguments: 2, desc: '「べき乗(m,n)」の場合，値mのn乗の値を返します。', icon: (props: SvgIconProps & { onClick: () => void }) => <TextIcon text="べき乗" {...props} /> },
+  { name: ReturnFuncDncl.Random, arguments: 2, desc: '「乱数(m,n)」の場合，値m以上値n以下の整数をランダムに一つ返します。', icon: (props: SvgIconProps & { onClick: () => void }) => <TextIcon text="乱数" {...props} /> },
+  { name: ReturnFuncDncl.Odd, arguments: 1, desc: '引数の値が奇数のとき真を返し，そうでないとき偽を返します。', icon: (props: SvgIconProps & { onClick: () => void }) => <TextIcon text="奇数" {...props} /> },
+];
+
 const VoidFuncs = [
-  { name: VoidFuncDncl.Binary, arguments: 1, desc: '引数の値を2進表現の値で返します。', icon: (props: SvgIconProps) => <TextIcon {...props} text="二進" /> },
+  { name: UserDefinedFuncDncl.UserDefined, arguments: 0, desc: '', icon: (props: SvgIconProps) => <NotInterestedIcon {...props} sx={{ color: 'gray', opacity: 0.2 }} /> },
 ]
 const UserDefine = [
   { name: UserDefinedFuncDncl.Define, arguments: null, desc: '複数の引数を指定する場合は，『，』で区切ります。', icon: null },]
@@ -77,6 +83,7 @@ export function FunctionField({ name = "", parentIndex = 0, event, funcType, tre
         return 1;
     }
   }
+
   const funcs = getFuncs(funcType);
 
   const handleOnClick = () => {
@@ -87,7 +94,6 @@ export function FunctionField({ name = "", parentIndex = 0, event, funcType, tre
     }
     setOperatorIndex(newIndex);
   }
-
   const handleChange = (event: SelectChangeEvent) => {
     setSelectedValue(event.target.value as string);
   };

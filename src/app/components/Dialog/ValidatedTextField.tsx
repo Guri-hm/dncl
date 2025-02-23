@@ -42,7 +42,7 @@ export function ValidatedTextField({ sx = [], name, label, pattern, isIMEOn = fa
   const inputRef = useRef<HTMLInputElement>(null);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const handleChange = (event: any) => {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const elm = event.target;
     const regex = new RegExp(pattern);
     if (elm.value === "" || regex.test(elm.value)) {

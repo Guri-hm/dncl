@@ -6,8 +6,14 @@ import { ReactElement } from "react";
 import IconButton from '@mui/material/IconButton';
 import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon';
 import { keyPrefixEnum } from "./Enum";
-import { Typography } from "@mui/material";
+import { Typography, TypographyProps } from "@mui/material";
 import NotInterestedIcon from '@mui/icons-material/NotInterested';
+
+interface SvgIconComponentProps extends SvgIconProps {
+  onClick: () => void;
+}
+type SvgIconComponent = React.FC<SvgIconComponentProps>;
+type EnumValues = string | number;
 
 function AdditionOperator(props: SvgIconProps) {
   return (
@@ -109,18 +115,23 @@ function LessThanOrEqualToOperator(props: SvgIconProps) {
   );
 }
 
-const TextIcon: React.FC<any & { text: string }> = ({ text, ...props }) => (
-  <Typography noWrap {...props}>{text}</Typography>
-)
+interface TextIconProps extends SvgIconProps {
+  text: string;
+  onClick: () => void;
+}
+
+const TextIcon: React.FC<TextIconProps> = ({ text, onClick }) => (
+  <Typography onClick={onClick} noWrap style={{ fontWeight: 'bold' }}>{text}</Typography>
+);
 
 type Props = {
   type: OperationEnum
   name?: string
   parentIndex?: number
-  event?: any
+  event?: () => void;
 }
 
-const ArithmeticOperatorArray: React.FC<SvgIconProps>[] = [
+const ArithmeticOperatorArray: React.FC<SvgIconComponentProps>[] = [
   AdditionOperator,
   SubtractionOperator,
   MultiplicationOperator,
@@ -129,7 +140,7 @@ const ArithmeticOperatorArray: React.FC<SvgIconProps>[] = [
   DivisionOperatorRemaining,
 ];
 
-const ComparisonOperatorArray: React.FC<SvgIconProps>[] = [
+const ComparisonOperatorArray: React.FC<SvgIconComponentProps>[] = [
 
   EqualToOperator,
   NotEqualToOperator,
@@ -138,14 +149,13 @@ const ComparisonOperatorArray: React.FC<SvgIconProps>[] = [
   LessThanOperator,
   LessThanOrEqualToOperator,
 ];
-const LogicalOperatorArray: React.FC<SvgIconProps>[] = [
 
+const LogicalOperatorArray: React.FC<SvgIconProps & { onClick: () => void }>[] = [
   (props) => <TextIcon {...props} text="かつ" />,
   (props) => <TextIcon {...props} text="または" />,
 ];
 
-const NegationOperatorArray: React.FC<SvgIconProps>[] = [
-
+const NegationOperatorArray: React.FC<SvgIconProps & { onClick: () => void }>[] = [
   (props) => <NotInterestedIcon {...props} sx={{ color: 'gray', opacity: 0.2 }} />,
   (props) => <TextIcon {...props} text="でない" />,
 ];
@@ -186,8 +196,8 @@ export function Operator({ type, name = "", parentIndex = 0, event, ...props }: 
     setOperatorIndex(newIndex);
   }
 
-  let SvgIconButton: any;
-  let enumValues: any;
+  let SvgIconButton: SvgIconComponent | null = null;
+  let enumValues: EnumValues[] = [];
   let newIndex: number = operatorIndex;
   switch (type) {
     case OperationEnum.ForDncl:
