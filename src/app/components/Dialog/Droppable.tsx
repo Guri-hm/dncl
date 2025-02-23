@@ -8,7 +8,7 @@ type DroppableProp = {
     children: ReactNode;
     id: string
     isDragging: boolean;
-    onClick?: any;
+    onClick?: () => void;
     stringArray?: string[];
 };
 

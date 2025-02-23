@@ -9,7 +9,7 @@ type DroppableProp = {
     id: string
     name: string
     isDragging: boolean;
-    endOfArrayEvent?: any;
+    endOfArrayEvent?: () => void;
     parentIndex?: number
     type?: OperationEnum
 };
