@@ -7,6 +7,7 @@ import Button from '@mui/material/Button';
 import { FireworksEffect } from '@/app/components/Dialog';
 import { useRouter } from 'next/navigation'
 import { Box } from '@mui/material';
+import Image from 'next/image';
 
 interface SuccessDialogProps {
     open: boolean;
@@ -29,7 +30,13 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({ open, onClose, mes
             <DialogContent>
                 <p style={{ textAlign: 'center' }}>{message}</p>
                 <Box sx={{ textAlign: 'center' }}>
-                    <img src={"/joy.svg"} alt={'指差し'} style={{ width: '80%', maxWidth: '200px' }} ></img>
+                    <Image
+                        src="/joy.svg"
+                        alt="喜ぶ女の子"
+                        width={300}
+                        height={300}
+                        style={{ width: "80%", maxWidth: "200px" }}
+                    />
                 </Box>
             </DialogContent>
             <DialogActions>
