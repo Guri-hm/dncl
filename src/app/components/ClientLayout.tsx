@@ -12,7 +12,6 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     const [loading, setLoading] = useState(true);
     const [fadeOut, setFadeOut] = useState(false);
     const pathname = usePathname();
-    const searchParams = useSearchParams();
 
     useEffect(() => {
         const handleComplete = () => {
@@ -27,7 +26,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         return () => {
             // クリーンアップ処理
         };
-    }, [pathname, searchParams]);
+    }, [pathname]);
 
     return (
         <>
