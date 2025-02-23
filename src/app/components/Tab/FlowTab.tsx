@@ -33,6 +33,86 @@ export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props 
     return renderCodeArray.join('\n');
   }, []);
 
+  const generateFlowchart = useCallback((code: string) => {
+    const ast = parseCode(code);
+    const flowchartXml = generateFlowchartXML(ast);
+    const mxfile = `
+    <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 Edg/132.0.0.0" version="26.0.11">
+          <diagram name="ページ1" id="-Ry5r97N3-jTHmX2WoBb">
+          ${flowchartXml}
+          </diagram>
+          </mxfile>
+          `;
+
+    const dataMxgraph = JSON.stringify({
+      highlight: "#0000ff",
+      lightbox: false,
+      nav: true,
+      "dark-mode": "auto",
+      edit: "_blank",
+      xml: mxfile
+    });
+
+    const handleCopyXML = () => {
+      navigator.clipboard.writeText(flowchartXml);
+      alert("クリップボードにコピーしました");
+    };
+
+    const flowChartNodes = <>
+      <Box className="mxgraph" sx={{ maxWidth: '100%', backgroundColor: 'var(--stone-50)' }} data-mxgraph={dataMxgraph}></Box>
+      <Box sx={{ textAlign: 'center', paddingY: 1 }}>
+        <Button
+          sx={{ backgroundColor: 'var(--stone-50)', margin: '0.5rem', color: 'var(--foreground)', textTransform: "none" }}
+          onClick={handleCopyXML}
+          variant="contained"
+        >
+          mxGraphModelのコピー
+        </Button>
+        <Button
+          sx={{ backgroundColor: 'var(--stone-50)', margin: '0.5rem', color: 'var(--foreground)', textTransform: "none" }}
+          onClick={handleDownloadSVG}
+          variant="contained"
+        >
+          SVGをダウンロード
+        </Button>
+      </Box>
+    </>;
+
+    setNodes(flowChartNodes);
+
+    const script = document.createElement('script');
+    script.src = 'https://viewer.diagrams.net/js/viewer-static.min.js';
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  const handleDownloadSVG = () => {
+    // mxgraphクラスの要素を取得
+    const svgElement = document.querySelector('.mxgraph svg');
+    if (!svgElement) {
+      alert('SVGファイルが見つかりません');
+      return;
+    }
+
+    // SVGの内容を取得してBlobを作成
+    const serializer = new XMLSerializer();
+    const svgString = serializer.serializeToString(svgElement);
+
+    const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'flowchart.svg';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   const fetchLintResults = useCallback(async (code: string) => {
     if (!code || code === '') {
       setNodes("");
@@ -68,91 +148,8 @@ export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props 
       }
     } finally {
     }
-  }, []);
-
-  const generateFlowchart = (code: string) => {
-
-    const ast = parseCode(code);
-    console.log(ast)
-
-    const flowchartXml = generateFlowchartXML(ast);
-    const mxfile = `
-    <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 Edg/132.0.0.0" version="26.0.11">
-          <diagram name="ページ1" id="-Ry5r97N3-jTHmX2WoBb">
-          ${flowchartXml}
-          </diagram>
-          </mxfile>
-          `;
-
-    const dataMxgraph = JSON.stringify({
-      highlight: "#0000ff",
-      lightbox: false,
-      nav: true,
-      "dark-mode": "auto",
-      edit: "_blank",
-      xml: mxfile
-    });
-
-    const handleCopyXML = () => {
-      navigator.clipboard.writeText(flowchartXml);
-      alert("クリップボードにコピーしました");
-    }
-
-    const flowChartNodes = <>
-      <Box className="mxgraph" sx={{ maxWidth: '100%', backgroundColor: 'var(--stone-50)' }} data-mxgraph={dataMxgraph}></Box><Box sx={{ textAlign: 'center', paddingY: 1 }}>
-        <Button
-          sx={{ backgroundColor: 'var(--stone-50)', margin: '0.5rem', color: 'var(--foreground)', textTransform: "none" }}
-          onClick={handleCopyXML}
-          variant="contained"
-        >
-          mxGraphModelのコピー
-        </Button>
-        <Button
-          sx={{ backgroundColor: 'var(--stone-50)', margin: '0.5rem', color: 'var(--foreground)', textTransform: "none" }}
-          onClick={handleDownloadSVG}
-          variant="contained"
-        >
-          SVGをダウンロード
-        </Button>
-      </Box>
-    </>
-
-    setNodes(flowChartNodes);
-
-    const script = document.createElement('script');
-    script.src = 'https://viewer.diagrams.net/js/viewer-static.min.js';
-    script.async = true;
-    document.body.appendChild(script);
-    return () => {
-      document.body.removeChild(script);
-    };
-  };
-
-
-  const handleDownloadSVG = () => {
-    // mxgraphクラスの要素を取得
-    const svgElement = document.querySelector('.mxgraph svg');
-    if (!svgElement) {
-      alert('SVGファイルが見つかりません');
-      return;
-    }
-
-    // SVGの内容を取得してBlobを作成
-    const serializer = new XMLSerializer();
-    const svgString = serializer.serializeToString(svgElement);
-
-    const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-    const url = URL.createObjectURL(svgBlob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'flowchart.svg';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
-
+  }, [generateFlowchart]);
+  
   useEffect(() => {
     if (shouldRunEffect) {
       const convertCode = async () => {
@@ -164,6 +161,7 @@ export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props 
     }
   }, [shouldRunEffect, renderCode, fetchLintResults, treeItems]);
 
+  
   return (
     <>
       {nodes}
