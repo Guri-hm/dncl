@@ -2,9 +2,13 @@ import React from 'react';
 import { Tooltip, tooltipClasses, TooltipProps } from "@mui/material";
 import { styled } from '@mui/system';
 
-export const CustomTooltip = styled(({ className, ...props }: TooltipProps) => (
+type CustomTooltipProps = TooltipProps & {
+    arrowDirection?: 'right' | 'left' | 'top' | 'bottom';
+};
+
+export const CustomTooltip = styled(({ className, arrowDirection, ...props }: CustomTooltipProps) => (
     <Tooltip {...props} classes={{ popper: className }} />
-))(() => {
+))<CustomTooltipProps>(({ arrowDirection = 'right' }) => {
     return {
         [`& .${tooltipClasses.tooltip}`]: {
             backgroundColor: 'var(--stone-50)',
@@ -17,12 +21,22 @@ export const CustomTooltip = styled(({ className, ...props }: TooltipProps) => (
             '&::after': {
                 content: '""',
                 position: 'absolute',
-                top: '50%',
-                left: '100%',
-                transform: 'translateY(-50%)',
-                borderWidth: '5px 0 5px 15px',
-                borderStyle: 'solid',
-                borderColor: 'transparent transparent transparent var(--stone-50)',
+                ...(arrowDirection === 'right' && {
+                    top: '50%',
+                    left: '100%',
+                    transform: 'translateY(-50%)',
+                    borderWidth: '5px 0 5px 15px',
+                    borderStyle: 'solid',
+                    borderColor: 'transparent transparent transparent var(--stone-50)',
+                }),
+                ...(arrowDirection === 'top' && {
+                    bottom: '75%',
+                    left: '50%',
+                    transform: 'rotate(45deg)',
+                    borderWidth: '0 5px 15px 15px',
+                    borderStyle: 'solid',
+                    borderColor: 'transparent transparent transparent var(--stone-50)',
+                }),
             },
         },
     };
