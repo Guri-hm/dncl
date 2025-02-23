@@ -43,7 +43,7 @@ export type FragmentItems = FragmentItem[];
 export type DnclEditorProps = {
   item?: FlattenedItem,
   treeItems: TreeItems,
-  setItems: Dispatch<SetStateAction<TreeItems>>,
+  setItems: (items: TreeItems) => void;
   setEditor?: Dispatch<SetStateAction<DnclEditorProps>> | null,
   open: boolean,
   addItem: ((itemParams: NewItemParams) => void) | null;

@@ -78,7 +78,7 @@ export const defaultFragments: FragmentItems = allStatementItems.map((item, inde
 interface Props {
   collapsible?: boolean;
   treeItems: TreeItems;
-  setTreeItems: any;
+  setTreeItems: (items: TreeItems) => void;
   indentationWidth?: number;
   indicator?: boolean;
   removable?: boolean;
@@ -132,7 +132,7 @@ export function SortableTree({
       flattenedTree,
       activeId ? [activeId, ...collapsedItems] : collapsedItems
     );
-  }, [activeId, treeItems]);
+  }, [activeId, treeItems, additionItem]);
 
   const projected =
     activeId && overId
@@ -171,7 +171,7 @@ export function SortableTree({
   }, [flattenedItems, offsetLeft]);
 
   const [visible, setVisible] = useState(true);
-  const ref = useRef<any>(null);
+  const ref = useRef<HTMLDivElement | null>(null);
 
   if (!isClient) {
     //documentオブジェクトはクライアントサイドでしか利用できないため、サーバサイドのエラーが発生する
@@ -406,7 +406,8 @@ export function SortableTree({
   }
 
   function handleRemove(id: string) {
-    setTreeItems((items: TreeItems) => removeItem(items, id));
+    const updatedItems = removeItem(treeItems, id);
+    setTreeItems(updatedItems);
   }
 
   function handleCollapse(id: string) {
