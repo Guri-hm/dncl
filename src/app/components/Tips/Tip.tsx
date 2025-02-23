@@ -25,7 +25,7 @@ export const Tip = ({ onClose, hint = "ヒントなし", open = true }: Props) =
                         </IconButton>
                     }
                     <Image
-                        src="/look_back.svg"
+                        src={`${process.env.NEXT_PUBLIC_BASE_PATH}/look_back.svg`}
                         alt="ヒントを出す"
                         width={300}
                         height={300}

@@ -39,7 +39,7 @@ export const DropHere = ({ visible = true }: Props) => {
         <Box sx={{ display: `${visible ? 'block' : 'none'}` }}>
             <Spotlight>
                 <SpeechBubbleImage msg='ここにドロップします'>
-                    <ResponsiveImage src="/raise_one_hand.svg" alt="手をあげる"></ResponsiveImage>
+                    <ResponsiveImage src={`${process.env.NEXT_PUBLIC_BASE_PATH}/raise_one_hand.svg`} alt="手をあげる"></ResponsiveImage>
                 </SpeechBubbleImage>
             </Spotlight>
         </Box>

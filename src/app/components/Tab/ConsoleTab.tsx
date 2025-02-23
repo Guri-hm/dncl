@@ -15,6 +15,8 @@ interface CustomBoxProps extends BoxProps {
     setDnclValidation: (validation: DnclValidationType | null) => void;
 }
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+
 const cnvToken = (token: string): string => {
     token = cnvToDivision(token);
     const { convertedStr } = tryParseToJsFunction(token);
@@ -170,7 +172,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
         setDnclValidation(null);
 
         try {
-            const response = await fetch('/api/execute', {
+            const response = await fetch(`${basePath}/api/execute`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -215,7 +217,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
         }
 
         try {
-            const response = await fetch('/api/lint', {
+            const response = await fetch(`${basePath}/api/lint`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

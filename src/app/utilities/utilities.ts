@@ -7,7 +7,7 @@ import { inputTypeEnum, keyPrefixEnum, ValidationEnum } from '../components/Dial
 
 import Kuroshiro from 'kuroshiro';
 import KuromojiAnalyzer from '@sglkc/kuroshiro-analyzer-kuromoji';
-
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
 function getDragDepth(offset: number, indentationWidth: number) {
   return Math.round(offset / indentationWidth);
@@ -991,7 +991,7 @@ export function getUserDefinedFunctionInfoArray(treeItems: TreeItems): UserDefin
 
 export const cnvToRomaji = async (text = '') => {
   const kuroshiro = new Kuroshiro();
-  await kuroshiro.init(new KuromojiAnalyzer({ dictPath: '/dict/' }));
+  await kuroshiro.init(new KuromojiAnalyzer({ dictPath: `${basePath}/dict/` }));
   const romaji = await kuroshiro.convert(text, { to: 'romaji' });
   return romaji;
 };

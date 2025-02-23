@@ -1,5 +1,3 @@
-
-
 "use client"
 import React from 'react';
 import { ContentWrapper } from '@/app/components/ContentWrapper';
@@ -27,7 +25,7 @@ export default function Home() {
         }} >
           <Grid container direction={{ xs: 'column', sm: 'row' }} spacing={3} size='auto'>
             <Grid size="grow">
-              <BubblePaper href='./chlng'>
+              <BubblePaper href='/chlng'>
                 <Typography variant="h2" sx={{ whiteSpace: 'nowrap' }}>
                   チャレンジモード
                 </Typography>
@@ -35,7 +33,7 @@ export default function Home() {
               </BubblePaper>
             </Grid>
             <Grid size="grow">
-              <BubblePaper href='./edit'>
+              <BubblePaper href='/edit'>
                 <Typography variant="h2">
                   エディタモード
                 </Typography>
@@ -46,7 +44,7 @@ export default function Home() {
           <Grid size={{ xs: 8, md: 3 }} sx={{ textAlign: 'center' }}>
             {/* <img src={"/front.svg"} alt={'女の子の真正面'} style={{ width: "100%", maxWidth: "300px" }} /> */}
             <Image
-              src="/front.svg"
+              src={`${process.env.NEXT_PUBLIC_BASE_PATH}/front.svg`}
               alt="女の子の真正面"
               width={300}
               height={300}

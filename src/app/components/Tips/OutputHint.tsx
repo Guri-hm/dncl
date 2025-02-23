@@ -39,7 +39,7 @@ export const OutputHint = () => {
             </Box>
             <Box sx={{ textAlign: 'center', marginX: 'auto', marginY: '10px', width: '50%' }}>
                 <Image
-                    src="/output.svg"
+                    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/output.svg`}
                     alt="表示文"
                     width={300}
                     height={300}

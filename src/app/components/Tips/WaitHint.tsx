@@ -11,7 +11,7 @@ export const WaitHint = () => {
             </Box>
             <Box sx={{ textAlign: 'center', marginX: 'auto', marginY: '10px', width: '50%' }}>
                 <Image
-                    src="/break.svg"
+                    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/break.svg`}
                     alt="休憩する女の子"
                     layout="responsive"
                     width={300}

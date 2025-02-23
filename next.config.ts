@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
     includePaths: [path.join(__dirname, 'styles')],
     api: 'modern-compiler' // モダンAPIを使用するように設定
   },
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
   /* 他の設定オプションはこちらに追加 */
 };
 

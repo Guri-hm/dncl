@@ -4,11 +4,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 export const HeaderTitle = () => {
+
     return (
-        <Link href='/' passHref style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+        <Link href={'/'} passHref style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
             <Image
                 aria-hidden
-                src="/logo.svg"
+                src={`${process.env.NEXT_PUBLIC_BASE_PATH}/logo.svg`}
                 alt="ロゴ"
                 width={50}
                 height={50}

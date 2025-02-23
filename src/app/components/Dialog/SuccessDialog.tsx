@@ -31,7 +31,7 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({ open, onClose, mes
                 <p style={{ textAlign: 'center' }}>{message}</p>
                 <Box sx={{ textAlign: 'center' }}>
                     <Image
-                        src="/joy.svg"
+                        src={`${process.env.NEXT_PUBLIC_BASE_PATH}/joy.svg`}
                         alt="喜ぶ女の子"
                         width={300}
                         height={300}
