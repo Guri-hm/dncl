@@ -8,6 +8,7 @@ interface CustomBoxProps extends BoxProps {
   children: React.ReactNode;
   treeItems: TreeItems;
 }
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
 export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }) => {
 
@@ -120,7 +121,7 @@ export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props 
     }
 
     try {
-      const response = await fetch('/api/lint', {
+      const response = await fetch(`${basePath}/api/lint`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

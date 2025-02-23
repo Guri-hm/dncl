@@ -35,6 +35,8 @@ const CustomTypography = styled(Typography)(({ theme }) => ({
   },
 }));
 
+//<ListItemButton> コンポーネントの href がルート (/) に基づいているため、ベースパスが含まれていないリンクが生成される
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
 export default function Home() {
 
@@ -86,7 +88,7 @@ export default function Home() {
             <List sx={{ width: '100%', maxWidth: 360 }}>
               {allChallengesItems.map((challenge, index) => (
                 <ListItem key={index}>
-                  <ListItemButton component="a" href={`/chlng/${challenge.id}`}>
+                  <ListItemButton component="a" href={`${basePath}/chlng/${challenge.id}`}>
                     <ListItemAvatar>
                       <Avatar sx={{ bgcolor: 'black' }}>
                         {achievements[challenge.id] && achievements[challenge.id].isAchieved

@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ESLint } from 'eslint';
 import stripAnsi from 'strip-ansi';
 
+// ベースパスを環境変数から取得
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+const eslintrcPath = `${basePath}/.eslintrc.js`;
+
 export async function POST(req: NextRequest) {
     const { code } = await req.json();
     // const eslint = new ESLint();
