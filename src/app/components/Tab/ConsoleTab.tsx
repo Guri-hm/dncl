@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Dispatch, SetStateAction, useCallback } from 'react';
 import { Box, BoxProps } from "@mui/material";
 import { useEffect, useState, Fragment } from "react";
 import { DnclValidationType, FlattenedItem, TreeItems } from "@/app/types";
@@ -10,9 +10,9 @@ interface CustomBoxProps extends BoxProps {
     children?: React.ReactNode;
     treeItems: TreeItems;
     runResults: string[];
-    setRunResults: any;
-    dnclValidation: DnclValidationType,
-    setDnclValidation: any,
+    setRunResults: Dispatch<SetStateAction<string[]>>;
+    dnclValidation: DnclValidationType | null,
+    setDnclValidation: (validation: DnclValidationType | null) => void;
 }
 
 const cnvToken = (token: string): string => {
@@ -166,95 +166,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
     const [shouldRunEffect, setShouldRunEffect] = useState(false);
     const [tmpMsg, setTmpMsg] = useState<string>('ここに出力結果が表示されます');
 
-    const fetchLintResults = async (code: string) => {
-
-        if (!code || code == '') {
-            setTmpMsg('');
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/lint', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ code }), // コードを送信
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Something went wrong');
-            }
-
-            const data = await response.json();
-
-            if (data.messages.length == 0) {
-                setTmpMsg('プログラム実行中…');
-                execute(code);
-            } else {
-                const formattedMessages = data.lineNumbers.map((lineNumber: number, index: number) => {
-                    return `${lineNumber}行目：${data.messages[index]}`;
-                });
-                const result: DnclValidationType = { color: Color.warnning, errors: formattedMessages, hasError: true, lineNum: data.lineNumbers };
-                setDnclValidation(result);
-            }
-
-        } catch (err: any) {
-            const result: DnclValidationType = { color: Color.error, errors: [err.message], hasError: true, lineNum: [] };
-            setDnclValidation(result);
-        } finally {
-            setTmpMsg('');
-        }
-
-    };
-
-    useEffect(() => {
-
-        setTmpMsg("DNCL解析中…")
-        setDnclValidation(null);
-        const timer = setTimeout(() => {
-            setShouldRunEffect(true);
-        }, 2000); // 2秒後に実行
-        return () => clearTimeout(timer); // クリーンアップ
-
-    }, [treeItems]);
-
-    useEffect(() => {
-
-        if (shouldRunEffect) {
-            // フラグをリセット
-            setShouldRunEffect(false);
-
-            const result: DnclValidationType = { errors: [], hasError: false, lineNum: [] };
-            const flatten = flattenTree(treeItems);
-            flatten.map((item: FlattenedItem, index) => {
-                const { hasError, errors } = checkDNCLSyntax(flatten, item, index + 1);
-                if (hasError) {
-                    result.hasError = true;
-                    result.errors.push(...errors);
-                    result.lineNum.push(index + 1);
-                }
-            })
-
-            setDnclValidation(result);
-            if (result.hasError) {
-                setTmpMsg('');
-                return;
-            }
-
-            const convertCode = async () => {
-                const code = await renderCode(treeItems);
-                fetchLintResults(code);
-            };
-
-            convertCode();
-
-        }
-
-    }, [shouldRunEffect]);
-
-    const execute = async (code: string) => {
+    const execute = useCallback(async (code: string) => {
         setDnclValidation(null);
 
         try {
@@ -275,22 +187,116 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
             if (data.result != '') {
                 setRunResults((prevResults: string[]) => (prevResults ? [...prevResults, data.result] : [data.result]));
             }
-        } catch (err: any) {
-            const result: DnclValidationType = { color: Color.error, errors: err.message || 'An unexpected error occurred', hasError: true, lineNum: [] };
-            setDnclValidation(result);
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                const result: DnclValidationType = {
+                    color: Color.error,
+                    errors: [err.message || 'An unexpected error occurred'],
+                    hasError: true,
+                    lineNum: []
+                };
+                setDnclValidation(result);
+            } else {
+                const result: DnclValidationType = {
+                    color: Color.error,
+                    errors: ['An unexpected error occurred'],
+                    hasError: true,
+                    lineNum: []
+                };
+                setDnclValidation(result);
+            }
         }
-    };
+    }, [setDnclValidation, setRunResults]);
 
-    const renderCode = async (nodes: TreeItems): Promise<string> => {
+    const fetchLintResults = useCallback(async (code: string) => {
+        if (!code || code === '') {
+            setTmpMsg('');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/lint', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ code }), // コードを送信
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Something went wrong');
+            }
+
+            const data = await response.json();
+
+            if (data.messages.length === 0) {
+                setTmpMsg('プログラム実行中…');
+                execute(code);
+            } else {
+                const formattedMessages = data.lineNumbers.map((lineNumber: number, index: number) => {
+                    return `${lineNumber}行目：${data.messages[index]}`;
+                });
+                const result: DnclValidationType = { color: Color.warnning, errors: formattedMessages, hasError: true, lineNum: data.lineNumbers };
+                setDnclValidation(result);
+            }
+        } catch (err: unknown) {
+            const result: DnclValidationType = { color: Color.error, errors: [err instanceof Error ? err.message : 'An unexpected error occurred'], hasError: true, lineNum: [] };
+            setDnclValidation(result);
+        } finally {
+            setTmpMsg('');
+        }
+    }, [execute, setDnclValidation]);
+
+    const renderCode = useCallback(async (nodes: TreeItems): Promise<string> => {
         const flatten = flattenTree(nodes);
 
         const renderCodeArray = await Promise.all(flatten.map(async (node, index) => {
-
             const content = await cnvToJs({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) });
-            return content
+            return content;
         }));
         return renderCodeArray.join('\n');
-    }
+    }, []);
+
+    useEffect(() => {
+        setTmpMsg("DNCL解析中…");
+        setDnclValidation(null);
+        const timer = setTimeout(() => {
+            setShouldRunEffect(true);
+        }, 2000); // 2秒後に実行
+        return () => clearTimeout(timer); // クリーンアップ
+    }, [treeItems, setDnclValidation]);
+
+    useEffect(() => {
+        if (shouldRunEffect) {
+            // フラグをリセット
+            setShouldRunEffect(false);
+
+            const result: DnclValidationType = { errors: [], hasError: false, lineNum: [] };
+            const flatten = flattenTree(treeItems);
+            flatten.map((item: FlattenedItem, index) => {
+                const { hasError, errors } = checkDNCLSyntax(flatten, item, index + 1);
+                if (hasError) {
+                    result.hasError = true;
+                    result.errors.push(...errors);
+                    result.lineNum.push(index + 1);
+                }
+            });
+
+            setDnclValidation(result);
+            if (result.hasError) {
+                setTmpMsg('');
+                return;
+            }
+
+            const convertCode = async () => {
+                const code = await renderCode(treeItems);
+                fetchLintResults(code);
+            };
+
+            convertCode();
+        }
+    }, [shouldRunEffect, fetchLintResults, renderCode, setDnclValidation, treeItems]);
 
     const convertNewLinesToBreaks = (text: string | null) => {
         if (!text) {
@@ -306,25 +312,25 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
     const renderResults = (results: string[]): React.ReactNode => {
         return results.map((result, index) => (
             <Fragment key={index}>
-                {index > 0 && <Divider sx={{ borderColor: 'var(--slate-300)' }} />}
+                {index > 0 && <Divider sx={{ borderColor: 'var(--slate-500)' }} />}
                 <Box sx={{ paddingY: 0.2, paddingX: 1 }}>
                     {convertNewLinesToBreaks(result)}
                 </Box>
             </Fragment>
         ))
     }
-    return <Box>
-
-
-        {tmpMsg && <Box sx={{ padding: 1 }}> {tmpMsg}</Box>}
-        {(dnclValidation?.hasError) && <Box sx={{ padding: 1, color: dnclValidation?.color || Color.warnning }}>エラーを解決してください
+    return (
+        <Box>
+            {tmpMsg && <Box sx={{ padding: 1 }}> {tmpMsg}</Box>}
+            {(dnclValidation?.hasError) && <Box sx={{ padding: 1, color: dnclValidation?.color || Color.warnning }}>エラーを解決してください
+                <Box>
+                    {dnclValidation?.errors ? convertNewLinesToBreaks(dnclValidation?.errors.join('\n')) : ''}
+                </Box>
+            </Box>
+            }
             <Box>
-                {dnclValidation?.errors ? convertNewLinesToBreaks(dnclValidation?.errors.join('\n')) : ''}
+                {runResults && renderResults(runResults)}
             </Box>
         </Box>
-        }
-        <Box>
-            {runResults && renderResults(runResults)}
-        </Box>
-    </Box>
+    );
 };

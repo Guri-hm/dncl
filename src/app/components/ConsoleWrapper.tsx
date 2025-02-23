@@ -1,13 +1,13 @@
-import { FC } from "react";
+import { Dispatch, FC, SetStateAction } from "react";
 import { DnclValidationType, TreeItems } from "@/app/types";
 import { ConsoleBox, ConsoleTab } from '@/app/components/Tab';
 
 interface Props {
     treeItems: TreeItems;
-    dnclValidation: DnclValidationType,
-    setDnclValidation: any,
+    dnclValidation: DnclValidationType|null,
+    setDnclValidation: (validation: DnclValidationType | null) => void;
     runResults: string[];
-    setRunResults: any;
+    setRunResults: Dispatch<SetStateAction<string[]>>;
 }
 
 export const ConsoleWrapper: FC<Props> = ({ setRunResults, ...props }) => {

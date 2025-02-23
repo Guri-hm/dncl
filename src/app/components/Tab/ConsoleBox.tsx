@@ -4,7 +4,7 @@ import { Button } from '@mui/material';
 import cmnStyles from '@/app/components/common.module.css';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
 import Grid from '@mui/material/Grid2';
-import React from 'react';
+import React, { Dispatch, SetStateAction } from 'react';
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -47,7 +47,7 @@ const StyledBox: React.FC<BoxProps> = ({ children }) => {
 type Props = {
     children: React.ReactNode | React.ReactNode[];
     tabLabels: string[];
-    setRunResults: any;
+    setRunResults: Dispatch<SetStateAction<string[]>>;
 }
 
 

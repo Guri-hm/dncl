@@ -82,7 +82,7 @@ interface Props {
   indentationWidth?: number;
   indicator?: boolean;
   removable?: boolean;
-  dnclValidation: DnclValidationType,
+  dnclValidation: DnclValidationType | null,
   fragments?: FragmentItems,
   specialElementsRefs?: RefObject<HTMLDivElement | null>[];
 }

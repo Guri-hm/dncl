@@ -28,7 +28,7 @@ export default function Home() {
 
   const [itemsStrage, setItemsStrage] = useTreeItems([]);
   const [items, setItems] = useState(() => loadTreeItems() ? initialItems : initialItems);
-  const [dnclValidation, setDnclValidation] = useState<DnclValidationType>({ hasError: false, errors: [], lineNum: [] });
+  const [dnclValidation, setDnclValidation] = useState<DnclValidationType | null>(null);
   const [tabsBoxWrapperVisible, setTabsBoxWrapperVisible] = useState(true);
   const [snackbar, setSnackbar] = useState<{ open: boolean, duration: number, text: string }>({ open: false, duration: 3000, text: '' });
   const [runResults, setRunResults] = useState<string[]>([]);
@@ -37,11 +37,14 @@ export default function Home() {
   const isSm = useMediaQuery(theme.breakpoints.up('sm'));//600px以上
   const specialElementRef1 = useRef<HTMLDivElement | null>(null);
   const specialElementRef2 = useRef<HTMLDivElement | null>(null);
-
+  const memoizedSetDnclValidation = useCallback(
+    (validation: DnclValidationType | null) => setDnclValidation(validation),
+    [setDnclValidation]
+  );
   const handleSetTabsBoxWrapperVisible = useCallback((visible: boolean) => {
     setTabsBoxWrapperVisible(visible);
   }, []);
-  
+
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasUnsavedChanges) {
@@ -94,7 +97,7 @@ export default function Home() {
                 }
               </Allotment>
               <Allotment.Pane className={`${styles.bgStone50} ${styles.marginTop16} ${styles.hFull} `}>
-                <ConsoleWrapper dnclValidation={dnclValidation} setDnclValidation={setDnclValidation} treeItems={items} runResults={runResults} setRunResults={setRunResults} />
+                <ConsoleWrapper dnclValidation={dnclValidation} setDnclValidation={memoizedSetDnclValidation} treeItems={items} runResults={runResults} setRunResults={setRunResults} />
               </Allotment.Pane>
             </Allotment >
             :
@@ -103,7 +106,7 @@ export default function Home() {
                 <SortableTree treeItems={items} setTreeItems={handleItemsChange} dnclValidation={dnclValidation} specialElementsRefs={[specialElementRef1, specialElementRef2]} collapsible indicator removable ></SortableTree>
               </SwiperSlide>
               <SwiperSlide>
-                <ConsoleWrapper dnclValidation={dnclValidation} setDnclValidation={setDnclValidation} treeItems={items} runResults={runResults} setRunResults={setRunResults} />
+                <ConsoleWrapper dnclValidation={dnclValidation} setDnclValidation={memoizedSetDnclValidation} treeItems={items} runResults={runResults} setRunResults={setRunResults} />
               </SwiperSlide>
               <SwiperSlide>
                 <TabsBoxWrapper treeItems={items} tabsBoxWrapperVisible={tabsBoxWrapperVisible} setTabsBoxWrapperVisible={setTabsBoxWrapperVisible}></TabsBoxWrapper>
