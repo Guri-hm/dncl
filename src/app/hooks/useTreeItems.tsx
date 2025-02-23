@@ -4,7 +4,7 @@ import { TreeItems } from '@/app/types';
 /**
  * ストロークを保存するローカルストレージのキー名。
  */
-const STORAGE_KEY_ALL_STROKES = `${process.env.domain}${process.env.clientPort}/edit`;
+const STORAGE_KEY_ALL_STROKES = `${process.env.NEXT_PUBLIC_DOMAIN}${process.env.NEXT_PUBLIC_BASE_PATH}/edit`;
 /**
  * ストローク保存を扱うためのフック。
  */

@@ -27,7 +27,7 @@ const initialItems: TreeItems = sampleFuncItems;
 export default function Home() {
 
   const [itemsStrage, setItemsStrage] = useTreeItems([]);
-  const [items, setItems] = useState(() => loadTreeItems() ? initialItems : initialItems);
+  const [items, setItems] = useState<TreeItems>(() => initialItems);
   const [dnclValidation, setDnclValidation] = useState<DnclValidationType | null>(null);
   const [tabsBoxWrapperVisible, setTabsBoxWrapperVisible] = useState(true);
   const [snackbar, setSnackbar] = useState<{ open: boolean, duration: number, text: string }>({ open: false, duration: 3000, text: '' });
@@ -44,6 +44,13 @@ export default function Home() {
   const handleSetTabsBoxWrapperVisible = useCallback((visible: boolean) => {
     setTabsBoxWrapperVisible(visible);
   }, []);
+
+  useEffect(() => {
+    const storedItems = loadTreeItems();
+    if (storedItems) {
+      setItems(storedItems);
+    }
+  }, [itemsStrage]);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -70,6 +77,8 @@ export default function Home() {
     setHasUnsavedChanges(true);
   };
 
+  console.log(`itemsStrage:${itemsStrage}`)
+  console.log(`items:${items}`)
   return (
     <PageWrapper>
       <Header>
