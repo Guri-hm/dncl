@@ -59,6 +59,11 @@ interface Literal {
     value: string | number | boolean | object;
 }
 
+interface ArrayExpression {
+    type: 'ArrayExpression';
+    elements: Expression[];
+}
+
 interface VariableDeclarator {
     id: {
         name: string;
@@ -72,7 +77,7 @@ interface VariableDeclaration {
     declarations: VariableDeclarator[];
 }
 
-type Expression = AssignmentExpression | UpdateExpression | BinaryExpression | Identifier | Literal | CallExpression;
+type Expression = AssignmentExpression | UpdateExpression | BinaryExpression | Identifier | Literal | CallExpression | ArrayExpression;
 type InitExpression = VariableDeclaration | Expression
 
 interface Test {
@@ -96,6 +101,7 @@ const escape = (str: string): string => {
 };
 
 export const generateFlowchartXML = (ast: ASTNode) => {
+    console.log(ast)
     let xml = `
 <mxGraphModel>
   <root>
@@ -176,6 +182,9 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                         const operatorBinary = expression.operator || "";
                         const rightBinary = getExpressionString(expression.right as InitExpression);
                         return `${leftBinary} ${operatorBinary} ${rightBinary}`;
+                    case 'ArrayExpression':
+                        const elements = expression.elements.map((el: InitExpression) => getExpressionString(el)).join(", ");
+                        return `[${elements}]`;
                     case 'Identifier':
                         return expression.name;
                     case 'Literal':
