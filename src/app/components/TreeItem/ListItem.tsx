@@ -11,7 +11,8 @@ export interface Props extends HTMLAttributes<HTMLLIElement> {
   disableInteraction?: boolean;
   disableSelection?: boolean;
   ghost?: boolean;
-  handleProps?: DraggableAttributes & SyntheticListenerMap;
+  attributes?: DraggableAttributes;
+  listeners?: SyntheticListenerMap;
   value: string;
   wrapperRef?(node: HTMLLIElement): void;
 }
@@ -24,7 +25,8 @@ const ListItem = forwardRef<HTMLDivElement, Props>(
       disableSelection,
       disableInteraction,
       ghost,
-      handleProps,
+      attributes,
+      listeners,
       style,
       value,
       wrapperRef,
@@ -50,7 +52,7 @@ const ListItem = forwardRef<HTMLDivElement, Props>(
         {...props}
       >
         <div className={styles.TreeItem} ref={ref} style={style}>
-          <Handle {...handleProps} />
+          <Handle {...attributes} {...listeners} />
           <span className={styles.Text}>{value}</span>
           {clone && childCount && childCount > 1 ? (
             <span className={styles.Count}>{childCount}</span>

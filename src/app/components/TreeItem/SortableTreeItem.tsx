@@ -39,10 +39,8 @@ export function SortableTreeItem({ id, depth, isError, ...props }: Props) {
       depth={depth}
       ghost={isDragging}
       disableInteraction={isSorting}
-      handleProps={{
-        ...attributes,
-        ...listeners,
-      }}
+      attributes={attributes}
+      listeners={listeners}
       {...props}
     />
   );

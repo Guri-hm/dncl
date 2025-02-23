@@ -3,6 +3,8 @@ import { AnimateLayoutChanges, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
 import ListItem, { Props as ListItemProps } from './ListItem';
+import { DraggableAttributes } from '@dnd-kit/core';
+import { SyntheticListenerMap } from '@dnd-kit/core/dist/hooks/utilities';
 
 interface Props extends ListItemProps {
   id: string;
@@ -36,10 +38,8 @@ export function FragmentsListItem({ id, ...props }: Props) {
       style={style}
       ghost={isDragging}
       disableInteraction={isSorting}
-      handleProps={{
-        ...attributes,
-        ...listeners,
-      }}
+      attributes={attributes}
+      listeners={listeners}
       {...props}
     />
   );

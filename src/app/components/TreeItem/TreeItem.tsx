@@ -16,7 +16,8 @@ export interface Props extends HTMLAttributes<HTMLLIElement> {
   disableInteraction?: boolean;
   disableSelection?: boolean;
   ghost?: boolean;
-  handleProps?: DraggableAttributes & SyntheticListenerMap;
+  attributes?: DraggableAttributes;
+  listeners?: SyntheticListenerMap;
   indicator?: boolean;
   indentationWidth: number;
   value: string;
@@ -35,7 +36,8 @@ const TreeItem = forwardRef<HTMLDivElement, Props>(
       disableSelection,
       disableInteraction,
       ghost,
-      handleProps,
+      attributes,
+      listeners,
       indentationWidth,
       indicator,
       collapsed,
@@ -71,7 +73,7 @@ const TreeItem = forwardRef<HTMLDivElement, Props>(
           {fixed ?
             null
             :
-            <Handle {...handleProps} />
+            <Handle {...attributes} {...listeners} />
           }
           {onCollapse && (
             <Action
