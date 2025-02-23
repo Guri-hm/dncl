@@ -13,31 +13,31 @@ const steps = [
     {
         label: '大学共通テストの疑似言語「DNCL」を体験できます',
         description: `処理工程を一つずつ作成し，計算結果などを確認できます。ただし，複雑な処理には対応させていません。`,
-        imgPath: '/girl_turning_around.svg',
+        imgPath: `${process.env.NEXT_PUBLIC_BASE_PATH}/girl_turning_around.svg`,
         width: '50%'
     },
     {
         label: 'アイテムをリストにドロップしましょう',
         description:
             '配置は後でも変更できます。アイテムの並び替えたり，追加したりするたびにプログラムが解析されます。エラーがなければ自動で実行されます。結果は「表示文」で確認しましょう。',
-        imgPath: '/drapdrop.gif',
+        imgPath: `${process.env.NEXT_PUBLIC_BASE_PATH}/drapdrop.gif`,
         width: '100%'
     },
     {
         label: 'アイテムを編集しましょう',
         description: `値などはアイテムの追加時に編集します。誤ったアイテムを追加した場合は，削除してもう一度追加しましょう。`,
-        imgPath: '/dialog.png',
+        imgPath: `${process.env.NEXT_PUBLIC_BASE_PATH}/dialog.png`,
         width: '100%'
     },
     {
         label: '早速操作してみましょう',
         description: `教科書などに掲載されたプログラムを作成し，DNCLを学びましょう。`,
-        imgPath: '/goodluck.svg',
+        imgPath: `${process.env.NEXT_PUBLIC_BASE_PATH}/goodluck.svg`,
         width: '70%'
     },
 ];
 
-export const InfoStepper =()=> {
+export const InfoStepper = () => {
     const theme = useTheme();
     const [activeStep, setActiveStep] = React.useState(0);
     const maxSteps = steps.length;

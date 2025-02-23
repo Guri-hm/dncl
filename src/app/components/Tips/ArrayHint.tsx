@@ -61,7 +61,7 @@ export const ArrayHint: FC = () => {
                     alt="配列の例え"
                     width={300}
                     height={300}
-                    style={{ width: "100%", maxWidth: "150px" }}
+                    style={{ width: "100%", maxWidth: "300px", height: "auto" }}
                 />
             </Box>
         </Box>
