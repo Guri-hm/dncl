@@ -12,8 +12,6 @@ import { ArithmeticOperatorDncl, ArithmeticOperator, BooleanDncl, BooleanJpDncl,
 import { checkBraketPair, cnvAndOrOperator, cnvObjToArray, cnvToDivision, escapeHtml, getOperandsMaxIndex, getVariableNames, replaceToConcatenation, sanitizeInput, sanitizeJsonValues, transformNegation, tryParseToJsFunction, updateToWithSquareBrackets, ValidateObjValue } from '@/app/utilities';
 import * as babelParser from '@babel/parser';
 
-interface Props extends DnclEditorProps { };
-
 type itemElms = {
     tokens: string;
     dnclStatement: string;
@@ -31,7 +29,7 @@ const getOperator = (statementType: StatementEnum) => {
     }
 }
 
-export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props) {
+export function DnclEditDialog({ type = StatementEnum.Input, ...params }: DnclEditorProps) {
 
     const [error, setError] = useState<string[]>([]);
 
@@ -106,12 +104,16 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props)
                 plugins: ['jsx', 'typescript'],
             });
             return true;
-        } catch (err: any) {
-            let errMsg = err.message;
+        } catch (err) {
+            let errMsg = (err as Error).message;
             if (errMsg.includes('Unexpected token')) {
                 const matches = errMsg.match(/"([^"]*)"/g);
                 const extracted = matches ? matches[0] : null;
-                errMsg = `誤った位置に${extracted.replace('!', '「でない」')}が使われています`
+                if (extracted) {
+                    errMsg = `誤った位置に${extracted.replace('!', '「でない」')}が使われています`;
+                } else {
+                    errMsg = 'Unexpected token error occurred';
+                }
             }
             result.errorMsgArray.push(errMsg);
             setError(result.errorMsgArray);
@@ -211,10 +213,10 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: Props)
                         event.preventDefault();
 
                         const formData = new FormData(event.currentTarget);
-                        const formJson = Object.fromEntries((formData as any).entries());
+                        const formJson = Object.fromEntries(formData.entries()) as { [key: string]: string }; // 型を明示的に指定
                         // Enumの値を配列に変換 
                         const ProcessEnumArray = Object.values(ProcessEnum);
-                        const processType = formJson.processIndex as ProcessEnum;
+                        const processType = formJson.processIndex as unknown as ProcessEnum;
 
                         //存在しない処理の場合は実行させない
                         if (processType == null || processType > ProcessEnumArray.length - 1) {

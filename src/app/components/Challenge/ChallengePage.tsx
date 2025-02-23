@@ -9,7 +9,7 @@ import { PageWrapper } from "@/app/components/PageWrapper";
 import { Header, HeaderItem, HeaderTitle } from "@/app/components/Header";
 import { HintButton, HowToButton, Tip, Door } from "@/app/components/Tips";
 import { ContentWrapper } from "@/app/components/ContentWrapper";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Snackbar } from "@mui/material";
 import { ConsoleWrapper } from "@/app/components/ConsoleWrapper";
 import { FooterOverlay } from "@/app/components/Footer";
@@ -65,7 +65,7 @@ const arraysHaveSameElements = (arr1: string[], arr2: string[]): boolean => {
 export const ChallengePage = ({ challenge }: Props) => {
     const [windowDimension, setWindowDimension] = useState({ width: 0, height: 0 });
     const [items, setItems] = useState(() => challenge.items);
-    const [dnclValidation, setDnclValidation] = useState<DnclValidationType>({ hasError: false, errors: [], lineNum: [] });
+    const [dnclValidation, setDnclValidation] = useState<DnclValidationType | null>(null);
     const [snackbar, setSnackbar] = useState<{ open: boolean, duration: number, text: string }>({ open: false, duration: 3000, text: '' });
     const [hintVisible, setHintVisible] = useState(true);
     const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
@@ -76,6 +76,10 @@ export const ChallengePage = ({ challenge }: Props) => {
     const isSm = useMediaQuery(theme.breakpoints.up('sm'));//600px以上
     const specialElementRef1 = useRef<HTMLDivElement | null>(null);
     const specialElementRef2 = useRef<HTMLDivElement | null>(null);
+    const memoizedSetDnclValidation = useCallback(
+        (validation: DnclValidationType | null) => setDnclValidation(validation),
+        [setDnclValidation]
+    );
 
     const fragments: FragmentItems = challenge.usableItems ? challenge.usableItems.map((item, index) => ({
         id: uuidv4(),
@@ -120,16 +124,16 @@ export const ChallengePage = ({ challenge }: Props) => {
                             return lines.some(line => arraysHaveSameElements(item.line.split(' '), line.split(' ')));
                         });
                         if (!allMatched) {
-                            setSnackbar({ ...snackbar, open: true, text: '適切な答えと一致しません' });
+                            setSnackbar(prev => ({ ...prev, open: true, text: '適切な答えと一致しません' }));
                             return;
                         }
                     }
                     addAchievement(challenge.id, { isAchieved: true });
                     setOpenSuccessDialog(true);
                 }
-            })
+            });
         }
-    }, [runResults]);
+    }, [runResults, addAchievement, challenge.answer, challenge.id, challenge.requiredItems, items, setSnackbar]);
 
     useEffect(() => {
         const updateDimensions = () => {
@@ -168,7 +172,7 @@ export const ChallengePage = ({ challenge }: Props) => {
                             </Allotment.Pane>
                         </Allotment>
                         <Allotment.Pane className={`${styles.bgStone50} ${styles.marginTop16} ${styles.hFull} `}>
-                            <ConsoleWrapper dnclValidation={dnclValidation} setDnclValidation={setDnclValidation} treeItems={items} runResults={runResults} setRunResults={setRunResults} />
+                            <ConsoleWrapper dnclValidation={dnclValidation} setDnclValidation={memoizedSetDnclValidation} treeItems={items} runResults={runResults} setRunResults={setRunResults} />
                         </Allotment.Pane>
                     </Allotment >
                     :
@@ -177,7 +181,7 @@ export const ChallengePage = ({ challenge }: Props) => {
                             <SortableTree treeItems={items} setTreeItems={setItems} dnclValidation={dnclValidation} specialElementsRefs={[specialElementRef1, specialElementRef2]} collapsible indicator removable ></SortableTree>
                         </SwiperSlide>
                         <SwiperSlide>
-                            <ConsoleWrapper dnclValidation={dnclValidation} setDnclValidation={setDnclValidation} treeItems={items} runResults={runResults} setRunResults={setRunResults} />
+                            <ConsoleWrapper dnclValidation={dnclValidation} setDnclValidation={memoizedSetDnclValidation} treeItems={items} runResults={runResults} setRunResults={setRunResults} />
                         </SwiperSlide>
                         <SwiperSlide>
                             <Tip onClose={() => setHintVisible(false)} hint={challenge.hint} open={hintVisible} />
