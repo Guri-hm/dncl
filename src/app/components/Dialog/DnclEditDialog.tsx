@@ -207,120 +207,122 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: DnclEd
             <Dialog
                 open={params.open}
                 onClose={handleClose}
-                PaperProps={{
-                    component: 'form',
-                    onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
-                        event.preventDefault();
+                slotProps={{
+                    paper: {
+                        component: 'form',
+                        onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
+                            event.preventDefault();
 
-                        const formData = new FormData(event.currentTarget);
-                        const formJson = Object.fromEntries(formData.entries()) as { [key: string]: string }; // 型を明示的に指定
-                        // Enumの値を配列に変換 
-                        const ProcessEnumArray = Object.values(ProcessEnum);
-                        const processType = formJson.processIndex as unknown as ProcessEnum;
+                            const formData = new FormData(event.currentTarget);
+                            const formJson = Object.fromEntries(formData.entries()) as { [key: string]: string }; // 型を明示的に指定
+                            // Enumの値を配列に変換 
+                            const ProcessEnumArray = Object.values(ProcessEnum);
+                            const processType = formJson.processIndex as unknown as ProcessEnum;
 
-                        //存在しない処理の場合は実行させない
-                        if (processType == null || processType > ProcessEnumArray.length - 1) {
-                            return;
-                        }
-                        if (!checkStatement(formJson, keyPrefixEnum.LeftSide, params.treeItems)) return;
-                        if (!checkStatement(formJson, keyPrefixEnum.RigthSide, params.treeItems)) return;
-                        setError([]);
-
-                        const operator = getOperator(type);
-                        const leftSideElms = getItemElms(formJson, keyPrefixEnum.LeftSide)
-                        const rightSideElms = getItemElms(formJson, keyPrefixEnum.RigthSide)
-                        const leftside = leftSideElms.dnclStatement;
-                        const rightside = rightSideElms.dnclStatement;
-
-                        const variables = [...new Set([...leftSideElms.variables, ...rightSideElms.variables])];
-
-                        let processPhrase = "";
-                        let tokens: string[] = [];
-                        tokens.push(leftSideElms.tokens);
-                        tokens.push(rightSideElms.tokens);
-
-                        switch (Number(formJson.processIndex)) {
-                            case ProcessEnum.SetValToVariableOrArray:
-                                processPhrase = `${leftside} ${operator} ${rightside}`;
-                                break;
-                            case ProcessEnum.InitializeArray:
-                                processPhrase = `${leftside} ${operator} ${BraketSymbolEnum.OpenSquareBracket}${rightside}${BraketSymbolEnum.CloseSquareBracket}`;
-                                break;
-                            case ProcessEnum.BulkAssignToArray:
-                                processPhrase = `${leftside}のすべての要素に${rightside}を代入する`;
-                                break;
-                            case ProcessEnum.Increment:
-                                processPhrase = `${leftside}を${rightside}増やす`;
-                                break;
-
-                            case ProcessEnum.Decrement:
-                                processPhrase = `${leftside}を${rightside}減らす`;
-                                break;
-
-                            case ProcessEnum.Output:
-                                processPhrase = `${rightside}を表示する`;
-                                break;
-
-                            case ProcessEnum.If:
-                                processPhrase = `もし${rightside}ならば`;
-                                break;
-                            case ProcessEnum.ElseIf:
-                                processPhrase = `を実行し，そうでなくもし${rightside}ならば`;
-                                break;
-
-                            case ProcessEnum.Else:
-                                processPhrase = `を実行し，そうでなければ`;
-                                break;
-
-                            case ProcessEnum.EndIf:
-                                processPhrase = `を実行する`;
-                                break;
-                            case ProcessEnum.While:
-                                processPhrase = `${rightside}の間，`;
-                                break;
-                            case ProcessEnum.EndWhile:
-                            case ProcessEnum.EndFor:
-                                processPhrase = `を繰り返す`;
-                                break;
-                            case ProcessEnum.DoWhile:
-                                processPhrase = `繰り返し，`;
-                                break;
-                            case ProcessEnum.EndDoWhile:
-                                processPhrase = `を，${rightside}になるまで実行する`;
-                                break;
-                            case ProcessEnum.ForIncrement:
-                            case ProcessEnum.ForDecrement:
-                                processPhrase = `${rightside}を${formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.InitialValue}`]}から${formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.EndValue}`]}まで${formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.Difference}`]}ずつ${Number(formJson.processIndex) == ProcessEnum.ForIncrement ? "増やしながら，" : "減らしながら，"}`;
-
-                                tokens.push(formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.InitialValue}`]);
-                                tokens.push(formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.EndValue}`]);
-                                tokens.push(formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.Difference}`]);
-
-                                break;
-                            case ProcessEnum.DefineFunction:
-                                processPhrase = `関数 ${rightside} を`;
-                                break;
-                            case ProcessEnum.Defined:
-                                processPhrase = `と定義する`;
-                                break;
-                            case ProcessEnum.ExecuteUserDefinedFunction:
-                                processPhrase = `${rightside}`;
-                                break;
-                            default:
-                                break;
-                        }
-                        tokens = tokens.filter(token => token != '');
-                        if (params.item) {
-                            params.item = { ...params.item, line: processPhrase, lineTokens: tokens, processIndex: Number(formJson.processIndex), variables }
-                        }
-
-                        if (params.addItem) {
-                            if (params.item) {
-                                params.addItem({ newItem: params.item, overIndex: params.overIndex });
+                            //存在しない処理の場合は実行させない
+                            if (processType == null || processType > ProcessEnumArray.length - 1) {
+                                return;
                             }
-                        }
-                        handleClose();
-                    },
+                            if (!checkStatement(formJson, keyPrefixEnum.LeftSide, params.treeItems)) return;
+                            if (!checkStatement(formJson, keyPrefixEnum.RigthSide, params.treeItems)) return;
+                            setError([]);
+
+                            const operator = getOperator(type);
+                            const leftSideElms = getItemElms(formJson, keyPrefixEnum.LeftSide)
+                            const rightSideElms = getItemElms(formJson, keyPrefixEnum.RigthSide)
+                            const leftside = leftSideElms.dnclStatement;
+                            const rightside = rightSideElms.dnclStatement;
+
+                            const variables = [...new Set([...leftSideElms.variables, ...rightSideElms.variables])];
+
+                            let processPhrase = "";
+                            let tokens: string[] = [];
+                            tokens.push(leftSideElms.tokens);
+                            tokens.push(rightSideElms.tokens);
+
+                            switch (Number(formJson.processIndex)) {
+                                case ProcessEnum.SetValToVariableOrArray:
+                                    processPhrase = `${leftside} ${operator} ${rightside}`;
+                                    break;
+                                case ProcessEnum.InitializeArray:
+                                    processPhrase = `${leftside} ${operator} ${BraketSymbolEnum.OpenSquareBracket}${rightside}${BraketSymbolEnum.CloseSquareBracket}`;
+                                    break;
+                                case ProcessEnum.BulkAssignToArray:
+                                    processPhrase = `${leftside}のすべての要素に${rightside}を代入する`;
+                                    break;
+                                case ProcessEnum.Increment:
+                                    processPhrase = `${leftside}を${rightside}増やす`;
+                                    break;
+
+                                case ProcessEnum.Decrement:
+                                    processPhrase = `${leftside}を${rightside}減らす`;
+                                    break;
+
+                                case ProcessEnum.Output:
+                                    processPhrase = `${rightside}を表示する`;
+                                    break;
+
+                                case ProcessEnum.If:
+                                    processPhrase = `もし${rightside}ならば`;
+                                    break;
+                                case ProcessEnum.ElseIf:
+                                    processPhrase = `を実行し，そうでなくもし${rightside}ならば`;
+                                    break;
+
+                                case ProcessEnum.Else:
+                                    processPhrase = `を実行し，そうでなければ`;
+                                    break;
+
+                                case ProcessEnum.EndIf:
+                                    processPhrase = `を実行する`;
+                                    break;
+                                case ProcessEnum.While:
+                                    processPhrase = `${rightside}の間，`;
+                                    break;
+                                case ProcessEnum.EndWhile:
+                                case ProcessEnum.EndFor:
+                                    processPhrase = `を繰り返す`;
+                                    break;
+                                case ProcessEnum.DoWhile:
+                                    processPhrase = `繰り返し，`;
+                                    break;
+                                case ProcessEnum.EndDoWhile:
+                                    processPhrase = `を，${rightside}になるまで実行する`;
+                                    break;
+                                case ProcessEnum.ForIncrement:
+                                case ProcessEnum.ForDecrement:
+                                    processPhrase = `${rightside}を${formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.InitialValue}`]}から${formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.EndValue}`]}まで${formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.Difference}`]}ずつ${Number(formJson.processIndex) == ProcessEnum.ForIncrement ? "増やしながら，" : "減らしながら，"}`;
+
+                                    tokens.push(formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.InitialValue}`]);
+                                    tokens.push(formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.EndValue}`]);
+                                    tokens.push(formJson[`${keyPrefixEnum.RigthSide}_${0}_${keyPrefixEnum.Difference}`]);
+
+                                    break;
+                                case ProcessEnum.DefineFunction:
+                                    processPhrase = `関数 ${rightside} を`;
+                                    break;
+                                case ProcessEnum.Defined:
+                                    processPhrase = `と定義する`;
+                                    break;
+                                case ProcessEnum.ExecuteUserDefinedFunction:
+                                    processPhrase = `${rightside}`;
+                                    break;
+                                default:
+                                    break;
+                            }
+                            tokens = tokens.filter(token => token != '');
+                            if (params.item) {
+                                params.item = { ...params.item, line: processPhrase, lineTokens: tokens, processIndex: Number(formJson.processIndex), variables }
+                            }
+
+                            if (params.addItem) {
+                                if (params.item) {
+                                    params.addItem({ newItem: params.item, overIndex: params.overIndex });
+                                }
+                            }
+                            handleClose();
+                        },
+                    }
                 }}
             >
                 <DialogTitle>
