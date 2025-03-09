@@ -26,7 +26,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
-      <body>
+      <body
+        style={{ userSelect: 'none' }}
+      >
         <ClientLayout>
           {children}
         </ClientLayout>
