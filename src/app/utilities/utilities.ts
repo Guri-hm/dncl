@@ -661,7 +661,7 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
 
         if (operandsMaxIndex > 0) {
           if (!([Number(ProcessEnum.Output), Number(ProcessEnum.InitializeArray)].includes(Number(proceccType)))) {
-            errorMsgArray.push(`文字列が含まれる場合，演算子が使用できません`);
+            // errorMsgArray.push(`文字列が含まれる場合，演算子が使用できません`);
           }
         }
         if (!regexForStringOperand.test(obj[`${keyword}_${i}`])) {
