@@ -1,0 +1,21 @@
+{
+    "name": "ぎじげんごいじるこ",
+    "short_name": "ぎじげんごいじるこ",
+    "description": "大学共通テストの疑似言語「DNCL」でプログラミングできるアプリケーション",
+    "start_url": "/next/dncl",
+    "display": "standalone",
+    "background_color": "#fff",
+    "theme_color": "#fff",
+    "icons": [
+        {
+            "src": "/icon-192x192.png",
+            "type": "image/png",
+            "sizes": "192x192"
+        },
+        {
+            "src": "/icon-512x512.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        }
+    ]
+}
