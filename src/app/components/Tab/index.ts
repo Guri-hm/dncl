@@ -7,6 +7,7 @@ export { ConsoleTab } from './ConsoleTab';
 export { default as TabsBox } from './TabsBox';
 export { default as TabPanel } from './TabPanel';
 export { ScopeBox } from './ScopeBox';
+export { default as DnclScopeBox } from './DnclScopeBox';
 export { ConsoleBox } from './ConsoleBox';
 export { TabsBoxWrapper } from './TabsBoxWrapper';
 export { default as TabsSingleBox } from './TabsSingleBox';

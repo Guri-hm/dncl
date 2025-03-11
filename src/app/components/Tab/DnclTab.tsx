@@ -1,7 +1,7 @@
 // components/ScopeBox.tsx
 import React from 'react';
 import Box, { BoxProps } from '@mui/material/Box';
-import { ScopeBox } from '@/app/components/Tab';
+import { DnclScopeBox } from '@/app/components/Tab';
 import styles from './tab.module.css';
 import { TreeItem, TreeItems } from '@/app/types';
 
@@ -16,9 +16,9 @@ const renderNodes = (nodes: TreeItems, depth: number): React.ReactNode => {
             <Box className={(index == 0 && depth != 0) ? styles.noCounter : ""}>{node.line}
             </Box>
             {node.children.length > 0 && (
-                <ScopeBox nested={true} depth={depth + 1}>
+                <DnclScopeBox nested={true} depth={depth + 1}>
                     {renderNodes(node.children, depth + 1)}
-                </ScopeBox>
+                </DnclScopeBox>
             )}
         </React.Fragment>
     ))
