@@ -24,11 +24,21 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({ result: output.trim() }, { status: 200 });
     } catch (error) {
+        const errorMessage = (error as Error).message;
         const lineNumberMatch = (error as Error).stack?.split('\n')[0].match(/:(\d+)$/);
+        let responseMessage = errorMessage;
+
+        if (errorMessage.includes('Script execution timed out')) {
+            responseMessage = '無限ループが生じています';
+        } else if (error instanceof SyntaxError) {
+            responseMessage = '構文エラーが発生しました';
+        } else if (error instanceof ReferenceError) {
+            responseMessage = '参照エラーが発生しました';
+        }
         if (lineNumberMatch) {
-            return NextResponse.json({ error: (error as Error).message, line: lineNumberMatch[1] }, { status: 500 });
+            return NextResponse.json({ error: responseMessage, line: lineNumberMatch[1] }, { status: 500 });
         } else {
-            return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+            return NextResponse.json({ error: responseMessage }, { status: 500 });
 
         }
     }
