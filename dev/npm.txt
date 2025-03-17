@@ -24,6 +24,6 @@ npm i swiper --legacy-peer-deps
 *本番環境ではプロジェクトのルートディレクトリのnode_modulesにeslint-plugin-custom-rulesを配置する
 *本番環境や新しい開発環境に.env.localを置き忘れない
 
-【.env.localファイルの中身】
+【.env.localファイルを開発環境ごとに用意（下記はファイルの内容）】
 NEXT_PUBLIC_BASE_PATH=/next/dncl
 NEXT_PUBLIC_DOMAIN=localhost
