@@ -15,3 +15,4 @@ export { Tip } from './Tip';
 export { DropHere } from './DropHere';
 export { DoNotDrag } from './DoNotDrag';
 export { ArrayHint } from './ArrayHint';
+export { IndentHint } from './IndentHint';

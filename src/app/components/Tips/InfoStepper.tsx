@@ -13,7 +13,7 @@ const steps = [
     {
         label: '大学共通テストの疑似言語「DNCL」を体験できます',
         description: `処理工程を一つずつ作成し，計算結果などを確認できます。ただし，複雑な処理には対応させていません。`,
-        imgPath: `${process.env.NEXT_PUBLIC_BASE_PATH}/girl_turning_around.svg`,
+        imgPath: `${process.env.NEXT_PUBLIC_BASE_PATH}/look_back.svg`,
         width: '50%'
     },
     {
@@ -25,7 +25,7 @@ const steps = [
     },
     {
         label: 'アイテムを編集しましょう',
-        description: `値などはアイテムの追加時に編集します。誤ったアイテムを追加した場合は，削除してもう一度追加しましょう。`,
+        description: `値はアイテムの追加時に編集します。誤ったアイテムを追加した場合は，削除してもう一度追加しましょう。`,
         imgPath: `${process.env.NEXT_PUBLIC_BASE_PATH}/dialog.png`,
         width: '100%'
     },

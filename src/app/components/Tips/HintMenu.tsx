@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { List, ListItem, ListItemText, Box, Button, Divider } from '@mui/material';
-import { AssignmentHint, OutputHint, WaitHint, ArrayHint, IfHint, VariableHint } from '@/app/components/Tips';
+import { AssignmentHint, OutputHint, WaitHint, ArrayHint, IfHint, VariableHint, IndentHint } from '@/app/components/Tips';
 
 export const HintMenu = () => {
     const [selectedItem, setSelectedItem] = useState<number | null>(null);
@@ -13,7 +13,8 @@ export const HintMenu = () => {
         },
         { id: 4, text: '表示文とは？変数や配列の要素を確認するためには？', component: <OutputHint /> },
         { id: 5, text: '条件分岐文とは？', component: <IfHint></IfHint> },
-        { id: 6, text: 'コンソールにすぐ表示されない', component: <WaitHint></WaitHint> },
+        { id: 6, text: 'インデントに気をつける', component: <IndentHint></IndentHint> },
+        { id: 7, text: 'コンソールにすぐ表示されない', component: <WaitHint></WaitHint> },
     ];
 
     const handleClick = (id: number) => {
