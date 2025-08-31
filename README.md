@@ -1,36 +1,109 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DNCL (ドリトル記述言語) 学習アプリ
 
-## Getting Started
+DNCL（ドリトル記述言語）の学習を支援するWebアプリケーションです。ブラウザ上でDNCLコードを記述し、実行結果を確認することができます。
 
-First, run the development server:
+## 機能
+
+- **コードエディター**: DNCLコードをブラウザ上で編集
+- **リアルタイム実行**: 書いたコードをその場で実行して結果を確認
+- **学習支援**: 
+  - インデントの説明
+  - その他のプログラミング概念の解説
+- **エラーハンドリング**: 分かりやすい日本語エラーメッセージ
+  - 構文エラー
+  - 参照エラー  
+  - 無限ループ検出
+
+## 技術スタック
+
+- **フレームワーク**: Next.js 15 (App Router)
+- **言語**: TypeScript
+- **UI**: Material-UI (MUI)
+- **コード実行**: Node.js vm モジュール
+- **スタイリング**: CSS Modules + MUI
+
+## セットアップ
+
+### 必要な環境
+- Node.js 18.0.0 以上
+- npm, yarn, pnpm, または bun
+
+### インストールと起動
 
 ```bash
+# リポジトリをクローン
+git clone https://github.com/Guri-hm/dncl.git
+cd dncl
+
+# 依存関係をインストール
+npm install
+# または
+yarn install
+
+# 開発サーバーを起動
 npm run dev
-# or
+# または
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+[http://localhost:3000](http://localhost:3000) をブラウザで開いてアプリケーションを確認できます。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## プロジェクト構成
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── app/
+│   ├── api/
+│   │   └── execute/          # コード実行API
+│   ├── components/
+│   │   └── Tips/            # 学習支援コンポーネント
+│   │       └── IndentHint.tsx
+│   ├── globals.css
+│   ├── layout.tsx
+│   ├── manifest.json        # PWA設定
+│   └── page.tsx
+└── ...
+```
 
-## Learn More
+## デプロイ
 
-To learn more about Next.js, take a look at the following resources:
+### Vercel（推奨）
+このアプリケーションはAPIルートを使用しているため、Vercelでのデプロイが推奨されます。
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+# Vercel CLIをインストール
+npm install -g vercel
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# デプロイ
+vercel
+```
 
-## Deploy on Vercel
+### その他のプラットフォーム
+- Netlify
+- Railway
+- Render
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 開発
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 新しい機能の追加
+- `src/app/components/` に新しいコンポーネントを追加
+- `src/app/api/` にAPIエンドポイントを追加
+
+### コードの実行機能
+コードの実行は `/api/execute` エンドポイントで処理されます：
+- サンドボックス環境で安全にコードを実行
+- タイムアウト設定（1秒）で無限ループを防止
+- カスタムconsole.logで出力をキャプチャ
+
+## ライセンス
+
+このプロジェクトはMITライセンスの下で公開されています。
+
+## 貢献
+
+プルリクエストやイシューの作成を歓迎します。
+
+## 参考資料
+
+- [Next.js Documentation](https://nextjs.org/docs)
+-
