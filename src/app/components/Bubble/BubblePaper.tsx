@@ -1,7 +1,8 @@
-import { Paper } from '@mui/material';
+import { Paper, Box, CircularProgress } from '@mui/material';
 import { useState } from 'react';
 import './BubblePaper.css';
-import Link from 'next/link';
+import { useNavigation } from '@/app/hooks/useNavigation';
+
 
 interface BubblePaperProps {
     children: React.ReactNode;
@@ -9,18 +10,37 @@ interface BubblePaperProps {
 }
 
 export default function BubblePaper({ children, href }: BubblePaperProps) {
-    const [hovered, setHovered] = useState(false);
+
+    const { navigateTo } = useNavigation();
+    const [isClicked, setIsClicked] = useState(false);
+
+    const handleClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        setIsClicked(true);
+        navigateTo(href);
+    };
 
     return (
-        <Link href={href} passHref style={{ textDecoration: 'none' }}>
-            <Paper
-                className={`bubble ${hovered ? 'hovered' : ''}`}
-                onMouseEnter={() => setHovered(true)}
-                onMouseLeave={() => setHovered(false)}
-            >
+        <Paper
+            className="bubble"
+            onClick={handleClick}
+            style={{ position: 'relative' }}
+        >
+            {isClicked && (
+                <Box sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    zIndex: 1000,
+                }}>
+                    <CircularProgress size={24} />
+                </Box>
+            )}
+            <Box sx={{ opacity: isClicked ? 0.5 : 1 }}>
                 {children}
                 <span className="arrow"></span>
-            </Paper>
-        </Link>
+            </Box>
+        </Paper>
     );
 }

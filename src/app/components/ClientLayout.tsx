@@ -7,6 +7,7 @@ import Loading from './Loading';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import theme from '@/app/theme';
+import { LoadingProvider } from './LoadingContext';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(true);
@@ -30,14 +31,15 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
     return (
         <>
-
-            {loading && <Loading fadeOut={fadeOut} />}
-            <Suspense fallback={<Loading />}>
-                <ThemeProvider theme={theme}>
-                    <CssBaseline />
-                    {children}
-                </ThemeProvider>
-            </Suspense>
+            <LoadingProvider>
+                {loading && <Loading fadeOut={fadeOut} />}
+                <Suspense fallback={<Loading />}>
+                    <ThemeProvider theme={theme}>
+                        <CssBaseline />
+                        {children}
+                    </ThemeProvider>
+                </Suspense>
+            </LoadingProvider>
         </>
     );
 }
