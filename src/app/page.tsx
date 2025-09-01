@@ -2,7 +2,7 @@
 import React from 'react';
 import { ContentWrapper } from '@/app/components/ContentWrapper';
 import { PageWrapper } from '@/app/components/PageWrapper';
-import { Typography } from '@mui/material';
+import { Typography, Box } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { BubblePaper } from '@/app/components/Bubble';
 import { Header, HeaderItem, HeaderTitle } from '@/app/components/Header';
@@ -23,10 +23,21 @@ export default function Home() {
           alignItems: "center", height: '100%',
           backgroundColor: 'var(--stone-50)'
         }} >
+          <Box sx={{ mb: 6, px: 2, pt: 2, textAlign: 'center' }}>
+            <Typography variant="h2" sx={{ fontWeight: 'bold', mb: 1 }}>
+              DNCL学習アプリ
+            </Typography>
+            <Typography variant="body1" sx={{ color: 'text.secondary' }}>
+              大学入試共通テストで使われる疑似言語「DNCL」を、実際にプログラミングしながら学べるWebアプリです。
+            </Typography>
+          </Box>
           <Grid container direction={{ xs: 'column', sm: 'row' }} spacing={3} size='auto'>
             <Grid size="grow">
               <BubblePaper href='/chlng'>
-                <Typography variant="h2" sx={{ whiteSpace: 'nowrap' }}>
+                <Typography variant="h3" sx={{
+                  fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem' },
+                  whiteSpace: 'nowrap'
+                }}>
                   チャレンジモード
                 </Typography>
                 <Typography sx={{ color: 'text.secondary', mb: 1.5, marginTop: 0.5 }}>課題に挑み，全問クリアを目指します</Typography>
@@ -34,7 +45,9 @@ export default function Home() {
             </Grid>
             <Grid size="grow">
               <BubblePaper href='/edit'>
-                <Typography variant="h2">
+                <Typography variant="h3" sx={{
+                  fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.6rem' }
+                }}>
                   エディタモード
                 </Typography>
                 <Typography sx={{ color: 'text.secondary', mb: 1.5, marginTop: 0.5 }}>自由にDNCLを操作します</Typography>
