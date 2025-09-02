@@ -2,6 +2,7 @@ import { createTheme, responsiveFontSizes } from '@mui/material/styles';
 
 let theme = createTheme({
     typography: {
+        fontFamily: 'YakuHanJPs, Roboto, "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3", Arial, nc3Jp, sans-serif',
         h1: {
             fontSize: '1.9rem !important',
             '@media (min-width:600px)': {
