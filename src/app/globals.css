@@ -15,10 +15,11 @@
   --slategray: #4b5563;
 }
 
+/* ダークモード対応 */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #ededed;
+    --foreground: #171717;
   }
 }
 
