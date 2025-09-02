@@ -117,6 +117,33 @@ const practiceIf: Challenge = {
     answer: ["こんにちは"],
     usableItems: [
         StatementJpEnum.Input,
+        StatementJpEnum.Output,
+    ]
+};
+
+const practiceArray: Challenge = {
+    id: "5",
+    items: [
+        {
+            id: uuidv4(),
+            line: "Ten ← [64 , 70 , 47]",
+            children: [],
+            lineTokens: [
+                "Ten",
+                "64 , 70 , 47"
+            ],
+            processIndex: 2,
+            variables: ["Ten"],
+            fixed: true
+        },
+    ],
+    title: '配列の使い方',
+    task: "配列Tenの3つの要素を合計して，変数goukeiに代入し，goukeiをコンソールに出力しましょう。",
+    hint: "配列の要素は添字で指定します。今回は添字は0，1，2の3つで，Ten[1]のように使います。",
+    answer: ["181"],
+    usableItems: [
+        StatementJpEnum.Input,
+        StatementJpEnum.Output,
     ]
 };
 
@@ -124,7 +151,8 @@ export const allChallengesItems: Challenge[] = [
     practiceAssignment,
     practiceOutput,
     practiceArithmeticOperation,
-    practiceIf
+    practiceIf,
+    practiceArray
 ];
 
 export const getChallengeById = (id: string) => {
