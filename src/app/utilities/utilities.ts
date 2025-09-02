@@ -555,7 +555,7 @@ export const getOperandsMaxIndex = (obj: { [k: string]: string; }, keyword: keyP
 
 export const sanitizeInput = (targetString: string) => {
   // 許可された文字セット: アルファベット、数字、スペース、および一部の記号、日本語 
-  const regex = /^[a-zA-Z0-9 ぁ-んァ-ンｧ-ﾝﾞﾟ一-龠々 \.,!?<>=!&|\+\-\*/\(\)%!""\[\]\u3000]*$/;
+  const regex = /^[a-zA-Z0-9_ ぁ-んァ-ンｧ-ﾝﾞﾟ一-龠々 \.,!?<>=!&|\+\-\*/\(\)%!""\[\]\u3000]*$/;
 
   // 制御文字（ASCII 0 - 31）を排除 
   const controlChars = /[\x00-\x1F]/;
