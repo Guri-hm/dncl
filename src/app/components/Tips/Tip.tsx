@@ -18,8 +18,8 @@ export const Tip = ({ onClose, hint = "ヒントなし", open = true }: Props) =
                     {(onClose && open) &&
                         <IconButton aria-label="close" sx={{
                             position: 'absolute',
-                            right: -10,
-                            top: -20,
+                            right: -40,
+                            top: -30,
                         }} onClick={() => onClose(false)}>
                             <CloseIcon />
                         </IconButton>

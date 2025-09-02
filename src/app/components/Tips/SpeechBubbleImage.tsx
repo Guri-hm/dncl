@@ -27,8 +27,8 @@ export const SpeechBubbleImage = ({ children, msg, open = true }: Props) => {
                     sx={{
                         textAlign: open ? 'left' : 'center',
                         position: 'absolute',
-                        width: '100%',
-                        top: '-10px',
+                        width: '130%',
+                        top: '-20px',
                         bgcolor: "var(--stone-50)",
                         borderRadius: "10px",
                         padding: "10px",
