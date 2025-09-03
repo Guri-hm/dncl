@@ -37,7 +37,7 @@ export function EditorBox(params: Props) {
             case ProcessEnum.SetValToVariableOrArray:
                 return <>
                     <Operation processType={ProcessEnum.SetValToVariableOrArray} treeItems={params.treeItems}>
-                        <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArray}></DnclTextField>
+                        <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArrayWithConstant}></DnclTextField>
                         <Operator type={OperationEnum.ForDncl}></Operator>
                     </Operation>
                     {hdnInput(index)}

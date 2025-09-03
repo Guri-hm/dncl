@@ -622,6 +622,7 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
   const regexForSuffix = new RegExp(ValidationEnum.InitializeArray);
   const regexForSuffixWithBrackets = new RegExp(/^(?:(?:[a-zA-Z_$][a-zA-Z0-9_$]*|[0-9]+)(?:,(?:[a-zA-Z_$][a-zA-Z0-9_$]*|[0-9]+))*)|(?:\([^\)]*\))|(?:\[[^\]]*\])$/);
   const regexForNegation = new RegExp(ValidationEnum.Negation);
+  const regexForConstant = new RegExp(ValidationEnum.Constant);
 
   function isEnumValue(value: string): value is ReturnFuncDncl | VoidFuncDncl | UserDefinedFuncDncl {
     const combinedEnumValues: string[] = [...Object.values(ReturnFuncDncl), ...Object.values(VoidFuncDncl), ...Object.values(UserDefinedFuncDncl)];
@@ -656,6 +657,8 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
       }
     }
 
+    const isConstant = obj[`${keyword}_${i}_isConstant`] === 'true';
+
     switch (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Type}`])) {
       case inputTypeEnum.String:
 
@@ -670,8 +673,12 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
         break;
 
       default:
-        if (!regexForVariableOrNumber.test(obj[`${keyword}_${i}`])) {
-          errorMsgArray.push(`${i + 1}番目のオペランドに不適切な値が使用されています`);
+        const validationRegex = isConstant ? regexForConstant : regexForVariableOrNumber;
+        if (!validationRegex.test(obj[`${keyword}_${i}`])) {
+          const errorMsg = isConstant
+            ? `${i + 1}番目のオペランドの定数名に不適切な文字が使用されています（定数名は大文字で始める必要があります）`
+            : `${i + 1}番目のオペランドに不適切な値が使用されています`;
+          errorMsgArray.push(errorMsg);
         }
         break;
     }
@@ -794,6 +801,7 @@ export const getVariableNames = (obj: { [k: string]: string; }, operandsMaxIndex
     }
 
     const variable = toEmptyIfNull(obj[`${keyword}_${i}`]);
+    // const isConstant = obj[`${keyword}_${i}_isConstant`] === 'true';
 
     if (!variable) {
       continue;

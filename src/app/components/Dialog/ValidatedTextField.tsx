@@ -9,6 +9,7 @@ type Props = {
   pattern: ValidationEnum
   sx?: SxProps<Theme>;
   isIMEOn?: boolean;
+  toUpperCase?: boolean;
 }
 
 const getErrorMessage = (value: string, pattern: string): string => {
@@ -36,49 +37,62 @@ const getFirstMismatchIndex = (value: string, pattern: string): number => {
   return -1;
 };
 
-export function ValidatedTextField({ sx = [], name, label, pattern, isIMEOn = false, ...params }: Props) {
+export function ValidatedTextField({ sx = [], name, label, pattern, isIMEOn = false, toUpperCase = false, ...params }: Props) {
 
+  const [inputValue, setInputValue] = useState('');
   const [inputError, setInputError] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const elm = event.target;
+    let value = event.target.value;
+    if (toUpperCase) {
+      value = value.toUpperCase();
+    }
+    setInputValue(value);
+
     const regex = new RegExp(pattern);
-    if (elm.value === "" || regex.test(elm.value)) {
+    if (value === "" || regex.test(value)) {
       setInputError(false);
       setErrorMessage('');
     } else {
       setInputError(true);
-      setErrorMessage(getErrorMessage(elm.value, pattern));
+      setErrorMessage(getErrorMessage(value, pattern));
     }
   };
 
   useEffect(() => {
-    setInputError(false);
-    if (inputRef.current) {
-      const inputElement = inputRef.current;
-      const regex = new RegExp(pattern);
-      if (inputElement.value !== "" && !regex.test(inputElement.value)) {
-        setInputError(true);
-        setErrorMessage(getErrorMessage(inputElement.value, pattern));
+    // 定数スイッチ切り替え時にpatternが変わるので，この値を使ってハンドルする
+    let value = inputValue;
+    if (toUpperCase) {
+      value = value.toUpperCase();
+      if (value !== inputValue) {
+        setInputValue(value);
+        // ここでreturnして次のuseEffectでバリデーション
+        return;
       }
     }
-  }, [pattern]);
+    const regex = new RegExp(pattern);
+    if (value === "" || regex.test(value)) {
+      setInputError(false);
+      setErrorMessage('');
+    } else {
+      setInputError(true);
+      setErrorMessage(getErrorMessage(value, pattern));
+    }
+  }, [inputValue, pattern]);
 
   return (
     <TextField
-      inputRef={inputRef}
       sx={[
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
+      value={inputValue}
       error={inputError}
       fullWidth
       size="small"
       required
       id="outlined-required"
       label={label}
-      defaultValue=""
       slotProps={{
         htmlInput: {
           className: 'text-center',

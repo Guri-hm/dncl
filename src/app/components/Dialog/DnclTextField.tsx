@@ -21,7 +21,6 @@ export interface DnclTextFieldProps {
   leftOfOperandValue?: string[]
   rightOfOperandValue?: string[]
   operator?: OperationEnum
-  value?: string
 }
 
 
@@ -31,6 +30,7 @@ enum SwitchJpEnum {
   String = '文字列',
   Function = '関数',
   Boolean = '真偽',
+  Constant = '定数',
 }
 
 const AntSwitch = styled(Switch)(({ theme }) => ({
@@ -97,6 +97,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
   const [checked, setChecked] = useState(false);
   const [radioValue, setRadioValue] = useState<inputTypeEnum>(inputTypeEnum.VariableOrNumber);
   const [boolString, setBoolString] = useState<string>('true');
+  const [isConstantMode, setIsConstantMode] = useState(false);
 
   const handleChangeToggle = (
     event: React.MouseEvent<HTMLElement>,
@@ -113,6 +114,10 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
     setRadioValue((event.target as HTMLInputElement).value as inputTypeEnum);;
   };
 
+  const handleChangeConstant = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsConstantMode(event.target.checked);
+  };
+
   let tmpLabel: string = "";
   let pattern: ValidationEnum = ValidationEnum.Variable;
 
@@ -121,15 +126,20 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
     switch (inputType) {
       case inputTypeEnum.SwitchVariableOrArray:
       case inputTypeEnum.SwitchVariableOrNumberOrArray:
+      case inputTypeEnum.SwitchVariableOrArrayWithConstant:
 
         switch (inputType) {
           case inputTypeEnum.SwitchVariableOrArray:
             tmpLabel = checked ? InputTypeJpEnum.Array : InputTypeJpEnum.VariableOnly;
-            pattern = ValidationEnum.Variable;
+            pattern = isConstantMode ? ValidationEnum.Constant : ValidationEnum.Variable;
             break;
           case inputTypeEnum.SwitchVariableOrNumberOrArray:
             tmpLabel = checked ? InputTypeJpEnum.Array : InputTypeJpEnum.VariableOrNumber;
             pattern = ValidationEnum.VariableOrNumber;
+            break;
+          case inputTypeEnum.SwitchVariableOrArrayWithConstant:
+            tmpLabel = checked ? InputTypeJpEnum.Array : InputTypeJpEnum.VariableOnly;
+            pattern = isConstantMode ? ValidationEnum.Constant : ValidationEnum.Variable;
             break;
           default:
             break;
@@ -141,24 +151,39 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
             <Grid container spacing={0} direction='column' sx={{ marginBottom: 1 }}>
               <Grid container direction='row'>
                 <Grid size='grow'>
-                  <ValidatedTextField name={`${name}_${index}`} label={tmpLabel} pattern={pattern}></ValidatedTextField>
+                  <ValidatedTextField name={`${name}_${index}`} label={tmpLabel} pattern={pattern} toUpperCase={isConstantMode}></ValidatedTextField>
                 </Grid>
+                {/* 定数スイッチの追加 */}
+                {inputType === inputTypeEnum.SwitchVariableOrArrayWithConstant && (
+                  <input type="hidden" name={`${name}_${index}_isConstant`} value={isConstantMode.toString()} />
+                )}
                 {checked &&
                   <Grid container size='grow'>
                     <FixedHeightGrid>[</FixedHeightGrid>
                     <Grid size="grow">
                       <ValidatedTextField
-                        name={`${name}_${index}_${keyPrefixEnum.Suffix}`} label={InputTypeJpEnum.Suffix} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
+                        name={`${name}_${index}_${keyPrefixEnum.Suffix}`} label={InputTypeJpEnum.Suffix} pattern={ValidationEnum.VariableOrNumber} ></ValidatedTextField>
                     </Grid>
                     <FixedHeightGrid>]</FixedHeightGrid>
                   </Grid>
                 }
               </Grid>
-              <Grid>
-                <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-                  <AntSwitch onChange={(handleChangeSwitch)} inputProps={{ 'aria-label': 'ant design' }} />
-                  <Typography>{SwitchJpEnum.Array}</Typography>
-                </Stack>
+              <Grid container spacing={1}>
+                <Grid>
+                  <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                    <AntSwitch onChange={(handleChangeSwitch)} inputProps={{ 'aria-label': 'ant design' }} />
+                    <Typography>{SwitchJpEnum.Array}</Typography>
+                  </Stack>
+                </Grid>
+                {/* 定数スイッチの追加 */}
+                {inputType === inputTypeEnum.SwitchVariableOrArrayWithConstant && (
+                  <Grid>
+                    <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                      <AntSwitch onChange={handleChangeConstant} inputProps={{ 'aria-label': 'constant' }} />
+                      <Typography>{SwitchJpEnum.Constant}</Typography>
+                    </Stack>
+                  </Grid>
+                )}
               </Grid>
             </Grid>
           </>

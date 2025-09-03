@@ -32,6 +32,7 @@ export enum keyPrefixEnum {
 export enum inputTypeEnum {
   SwitchVariableOrNumberOrArray = 'SwitchVariableOrNumberOrArray',
   SwitchVariableOrArray = 'SwitchVariableOrArray',
+  SwitchVariableOrArrayWithConstant = 'SwitchVariableOrArrayWithConstant',
   All = 'All',
   RadioWithVoid = 'RadioWithVoid',
   ArrayWithoutSuffix = 'ArrayWithoutSuffix',
@@ -50,6 +51,7 @@ export enum inputTypeEnum {
 //\dがうまく解釈されないため、エスケープシーケンスを更にエスケープする必要がある
 export enum ValidationEnum {
   Variable = '^[a-zA-Z_$][a-zA-Z0-9_$]*$',//変数名・配列名のルール
+  Constant = '^[A-Z_$][A-Z0-9_$]*$', // 定数用（大文字のみ）
   Integer = '^-?[\\d]+$', //整数
   VariableOrNumber = '^(?:[a-zA-Z_$][a-zA-Z0-9_$]*|[0-9]+)$',//変数名および数値
   InitializeArray = '^(?:(?:[a-zA-Z_$][a-zA-Z0-9_$]*|[0-9]+)(?:,(?:[a-zA-Z_$][a-zA-Z0-9_$]*|[0-9]+))*)$',//配列内のカンマ区切りの文字列
