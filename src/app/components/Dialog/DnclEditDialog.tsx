@@ -205,6 +205,10 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: DnclEd
 
     const handleClose = () => {
         setError([]);
+        // ダイアログ内のフォーカスを外す
+        if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
         if (params.setEditor) {
             params.setEditor((prevState: DnclEditorProps) => ({ ...prevState, open: false }));
         }
