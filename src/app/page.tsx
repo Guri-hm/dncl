@@ -55,14 +55,13 @@ export default function Home() {
             </Grid>
           </Grid>
           <Grid size={{ xs: 8, md: 3 }} sx={{ textAlign: 'center' }}>
-            {/* <img src={"/front.svg"} alt={'女の子の真正面'} style={{ width: "100%", maxWidth: "300px" }} /> */}
             <Image
               src={`${process.env.NEXT_PUBLIC_BASE_PATH}/front.svg`}
               alt="女の子の真正面"
               width={300}
               height={300}
               priority
-              style={{ width: "100%", maxWidth: "300px" }}
+              style={{ width: "100%", maxWidth: "300px", height: "auto" }}
             />
           </Grid>
         </Grid>
