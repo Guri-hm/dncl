@@ -118,7 +118,7 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: DnclEd
                 if (extracted) {
                     errMsg = `誤った位置に${extracted.replace('!', '「でない」')}が使われています`;
                 } else {
-                    errMsg = 'Unexpected token error occurred';
+                    errMsg = '予期しない記号が使われています';
                 }
             }
             result.errorMsgArray.push(errMsg);
