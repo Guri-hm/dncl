@@ -9,6 +9,7 @@ export interface TreeItem {
   lineTokens?: string[];//文の要素(語句単位)
   variables?: string[]; //文で使用されている変数名
   array?: string[]; //文で使用されている配列名
+  isConstant?: boolean;
   children: TreeItem[];
   collapsed?: boolean;
   processIndex?: number;

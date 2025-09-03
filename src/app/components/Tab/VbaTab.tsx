@@ -39,14 +39,18 @@ const cnvToken = (token: string): string => {
     return convertedStr;
 }
 
-const cnvToVba = async (statement: { lineTokens: string[], processIndex: number }) => {
+const cnvToVba = async (statement: { lineTokens: string[], processIndex: number, isConstant?: boolean }) => {
 
     const lineTokens: string[] = statement.lineTokens.map(token => { return cnvToken(token) });
     let tmpLine: string = '';
 
     switch (statement.processIndex) {
         case ProcessEnum.SetValToVariableOrArray:
-            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]}`
+            if (statement.isConstant) {
+                tmpLine = `Const ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]}`
+            } else {
+                tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]}`
+            }
             break;
         case ProcessEnum.InitializeArray:
             tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${BraketSymbolEnum.LeftBraket}${lineTokens[1]}${BraketSymbolEnum.RigthBraket}`
@@ -193,7 +197,7 @@ export const VbaTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }
 
     const renderNodes = useCallback(async (nodes: TreeItems, depth: number): Promise<React.ReactNode> => {
         const promises: Promise<React.ReactNode>[] = nodes.map(async (node, index) => {
-            const convertedVba = await cnvToVba({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) });
+            const convertedVba = await cnvToVba({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex), isConstant: node.isConstant });
 
             return (
                 <Fragment key={node.id}>

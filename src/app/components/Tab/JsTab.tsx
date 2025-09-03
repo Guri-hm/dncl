@@ -18,14 +18,19 @@ const cnvToken = (token: string): string => {
     return convertedStr;
 }
 
-const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }) => {
+const cnvToJs = async (statement: { lineTokens: string[], processIndex: number, isConstant?: boolean }) => {
 
     const lineTokens: string[] = statement.lineTokens.map(token => { return cnvToken(token) });
+
     let tmpLine: string = '';
 
     switch (statement.processIndex) {
         case ProcessEnum.SetValToVariableOrArray:
-            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]};`
+            if (statement.isConstant) {
+                tmpLine = `const ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]};`
+            } else {
+                tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]};`
+            }
             break;
         case ProcessEnum.InitializeArray:
             tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${BraketSymbolEnum.OpenSquareBracket}${lineTokens[1]}${BraketSymbolEnum.CloseSquareBracket};`
@@ -129,7 +134,7 @@ export const JsTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props })
 
     const renderNodes = useCallback(async (nodes: TreeItems, depth: number): Promise<React.ReactNode> => {
         const promises = nodes.map(async (node: TreeItem, index: number) => {
-            const convertedJs = await cnvToJs({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) });
+            const convertedJs = await cnvToJs({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex), isConstant: node.isConstant });
 
             return (
                 <Fragment key={node.id}>

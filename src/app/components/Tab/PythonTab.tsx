@@ -36,7 +36,7 @@ const cnvToken = (token: string): string => {
     return convertedStr;
 }
 
-const cnvToPython = async (statement: { lineTokens: string[], processIndex: number }) => {
+const cnvToPython = async (statement: { lineTokens: string[], processIndex: number, constants?: string[] }) => {
 
     const lineTokens: string[] = statement.lineTokens.map(token => { return cnvToken(token) });
     let tmpLine: string = '';
@@ -173,7 +173,7 @@ export const PythonTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...prop
                             {
                                 id: node.id, children: [], line: '', lineTokens: [], processIndex: ProcessEnum.Break
                             }
-                        ], line: '', lineTokens: node.lineTokens, processIndex: ProcessEnum.If
+                        ], line: '', lineTokens: node.lineTokens, processIndex: ProcessEnum.If,
                     }];
                 return (
                     <Fragment key={node.id}>

@@ -1228,3 +1228,33 @@ export const capitalizeTrueFalse = (str: string): string => {
   return str.replace(/\b(true|false)\b/g, match => match.charAt(0).toUpperCase() + match.slice(1));
 }
 
+export const getConstantNames = (obj: { [key: string]: string }, operandsMaxIndex: number, keyword: keyPrefixEnum): string[] => {
+  const constants: string[] = [];
+
+  for (let i = 0; i <= operandsMaxIndex; i++) {
+    // 定数モード（toUpperCase）がtrueの場合の値を収集
+    const constantModeKey = `${keyword}_${i}_isConstant`;
+    const valueKey = `${keyword}_${i}`;
+
+    if (obj[constantModeKey] === 'true') {
+      const value = obj[valueKey];
+      if (value && value.trim() !== '') {
+        // 大文字の値を定数として追加
+        constants.push(value.toUpperCase());
+      }
+    }
+
+    // 添字部分の定数も確認
+    const suffixConstantModeKey = `${keyword}_${i}_${keyPrefixEnum.Suffix}_isConstant`;
+    const suffixValueKey = `${keyword}_${i}_${keyPrefixEnum.Suffix}`;
+
+    if (obj[suffixConstantModeKey] === 'true') {
+      const suffixValue = obj[suffixValueKey];
+      if (suffixValue && suffixValue.trim() !== '') {
+        constants.push(suffixValue.toUpperCase());
+      }
+    }
+  }
+
+  return [...new Set(constants)]; // 重複を除去
+};

@@ -14,13 +14,14 @@ import { DnclEditorProps, TreeItems } from "@/app/types";
 import { StatementName, StatementDesc, EditorBox, ErrorMsgBox } from '@/app/components/Dialog';
 import { keyPrefixEnum } from './Enum';
 import { ArithmeticOperatorDncl, ArithmeticOperator, BooleanDncl, BooleanJpDncl, ComparisonOperatorDncl, ComparisonOperator, SimpleAssignmentOperator, ReturnFuncDncl, ReturnFuncJpDncl, StatementEnum, UserDefinedFuncDncl, UserDefinedFuncJpDncl, VoidFuncDncl, VoidFuncJpDncl, ProcessEnum, BraketSymbolEnum } from '@/app/enum';
-import { checkBraketPair, cnvAndOrOperator, cnvObjToArray, cnvToDivision, escapeHtml, getOperandsMaxIndex, getVariableNames, replaceToConcatenation, sanitizeInput, sanitizeJsonValues, transformNegation, tryParseToJsFunction, updateToWithSquareBrackets, ValidateObjValue } from '@/app/utilities';
+import { checkBraketPair, cnvAndOrOperator, cnvObjToArray, cnvToDivision, escapeHtml, getOperandsMaxIndex, getVariableNames, replaceToConcatenation, sanitizeInput, sanitizeJsonValues, transformNegation, tryParseToJsFunction, updateToWithSquareBrackets, ValidateObjValue, getConstantNames } from '@/app/utilities';
 import * as babelParser from '@babel/parser';
 
 type itemElms = {
     tokens: string;
     dnclStatement: string;
     variables: string[];
+    isConstant: boolean;
 }
 
 
@@ -145,17 +146,22 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: DnclEd
         const sanitizedObj = sanitizeJsonValues(obj);
 
         let variables: string[] = [];
+        // 左辺が定数かどうか
+        let isConstant = false;
+
         //代入文の左辺に使われているものを変数名として格納(配列名も変数名として扱う)
         if (validationProcesses.includes(processType) && keyword == keyPrefixEnum.LeftSide) {
             variables = getVariableNames(sanitizedObj, operandsMaxIndex, keyword);
+            isConstant = sanitizedObj[`${keyword}_0_isConstant`] === 'true';
         }
+
         //添字は前後に[]をつける
         const updatedObj = updateToWithSquareBrackets(sanitizedObj);
         const strArray: string[] = cnvObjToArray(updatedObj, operandsMaxIndex, keyword);
         const statement = getDnclStatement(strArray);
         const tokens = getTokens(strArray)
 
-        return { dnclStatement: statement, tokens: tokens, variables: variables }
+        return { dnclStatement: statement, tokens: tokens, variables: variables, isConstant: isConstant }
     }
 
     const getDnclStatement = (strArray: string[]): string => {
@@ -234,8 +240,9 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: DnclEd
                             setError([]);
 
                             const operator = getOperator(type);
-                            const leftSideElms = getItemElms(formJson, keyPrefixEnum.LeftSide)
-                            const rightSideElms = getItemElms(formJson, keyPrefixEnum.RigthSide)
+                            const leftSideElms: itemElms = getItemElms(formJson, keyPrefixEnum.LeftSide);
+                            const isConstant = leftSideElms.isConstant;
+                            const rightSideElms: itemElms = getItemElms(formJson, keyPrefixEnum.RigthSide);
                             const leftside = leftSideElms.dnclStatement;
                             const rightside = rightSideElms.dnclStatement;
 
@@ -318,7 +325,10 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: DnclEd
                             }
                             tokens = tokens.filter(token => token != '');
                             if (params.item) {
-                                params.item = { ...params.item, line: processPhrase, lineTokens: tokens, processIndex: Number(formJson.processIndex), variables }
+                                params.item = {
+                                    ...params.item, line: processPhrase, lineTokens: tokens, processIndex: Number(formJson.processIndex), variables,
+                                    isConstant
+                                }
                             }
 
                             if (params.addItem) {
