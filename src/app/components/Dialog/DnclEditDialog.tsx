@@ -1,10 +1,15 @@
 import { Fragment, useState } from 'react';
+import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import HelpOutline from '@mui/icons-material/HelpOutline';
+import Collapse from '@mui/material/Collapse';
 import { DnclEditorProps, TreeItems } from "@/app/types";
 import { StatementName, StatementDesc, EditorBox, ErrorMsgBox } from '@/app/components/Dialog';
 import { keyPrefixEnum } from './Enum';
@@ -32,6 +37,7 @@ const getOperator = (statementType: StatementEnum) => {
 export function DnclEditDialog({ type = StatementEnum.Input, ...params }: DnclEditorProps) {
 
     const [error, setError] = useState<string[]>([]);
+    const [showDescription, setShowDescription] = useState(false);
 
     const checkStatement = (data: { [k: string]: string; }, keyword: keyPrefixEnum, treeItems: TreeItems): boolean => {
 
@@ -326,12 +332,19 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: DnclEd
                 }}
             >
                 <DialogTitle>
-                    <StatementName statementType={type}></StatementName>
+                    <Box display="flex" justifyContent="space-between" alignItems="center">
+                        <StatementName statementType={type} />
+                        <IconButton onClick={() => setShowDescription(!showDescription)}>
+                            {showDescription ? <ExpandLess /> : <HelpOutline />}
+                        </IconButton>
+                    </Box>
                 </DialogTitle>
                 <DialogContent dividers>
-                    <DialogContentText>
-                        <StatementDesc statementType={type}></StatementDesc>
-                    </DialogContentText>
+                    <Collapse in={showDescription}>
+                        <DialogContentText sx={{ mb: 2 }}>
+                            <StatementDesc statementType={type} />
+                        </DialogContentText>
+                    </Collapse>
                     <EditorBox statementType={type} treeItems={params.treeItems}></EditorBox>
                 </DialogContent>
                 <DialogActions>
