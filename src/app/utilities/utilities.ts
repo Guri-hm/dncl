@@ -1022,6 +1022,29 @@ export function enumToKeyIndexObject<T extends object>(enumObj: T): { [key: stri
     }, {} as { [key: string]: number });
 }
 
+export const checkConstantReassignment = (flatten: FlattenedItem[], currentIndex: number): { hasError: boolean; errors: string[] } => {
+  const currentItem = flatten[currentIndex];
+  const errors: string[] = [];
+
+  // 現在のアイテムが定数かどうかチェック
+  if (currentItem.isConstant && currentItem.variables && currentItem.variables.length > 0) {
+    const currentVariable = currentItem.variables[0];
+
+    // 以前に同じ名前の定数が定義されているかチェック
+    for (let i = 0; i < currentIndex; i++) {
+      const previousItem = flatten[i];
+      if (previousItem.isConstant &&
+        previousItem.variables &&
+        previousItem.variables.includes(currentVariable)) {
+        errors.push(`定数「${currentVariable}」に再代入はできません`);
+        break;
+      }
+    }
+  }
+
+  return { hasError: errors.length > 0, errors };
+};
+
 export const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedItem, lineNum: number): ErrObj => {
 
   const processIndex = targetItem.processIndex;
@@ -1030,6 +1053,13 @@ export const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedIte
   const nextItem = targetIndex == sameParentItems.length ? null : sameParentItems[targetIndex + 1];
   const prevItem = targetIndex > 0 ? sameParentItems[targetIndex - 1] : null;
   let result: ErrObj = { errors: [], hasError: false };
+
+  // 定数再代入チェック
+  const constantCheck = checkConstantReassignment(items, targetIndex);
+  if (constantCheck.hasError) {
+    result.hasError = true;
+    result.errors.push(...constantCheck.errors.map(error => `${lineNum}行目：${error}`));
+  }
 
   switch (processIndex) {
     case ProcessEnum.Output:

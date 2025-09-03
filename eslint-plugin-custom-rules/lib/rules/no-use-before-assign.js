@@ -10,10 +10,12 @@ module.exports = {
         schema: [],
         messages: {
             useBeforeDeclaration: "'{{name}}' は定義される前に使用されています",
+            constantReassignment: "定数「{{name}}」に再代入はできません",
         },
     },
     create(context) {
         const assignedVariables = new Map(); // 直接代入された変数を追跡
+        const declaredConstants = new Set();
         const definedFunctions = new Set(); // 定義された関数を追跡
         const allowedGlobalsWithMethods = {
             console: new Set(["log"]),
@@ -22,22 +24,10 @@ module.exports = {
         const reportedErrors = new Set();
 
         return {
-            FunctionDeclaration(node) {
-                // 関数宣言を追跡
-                if (node.id && node.id.name) {
-                    definedFunctions.add(node.id.name);
-                }
-
-                // 関数引数を追跡
-                if (node.params) {
-                    node.params.forEach((param) => {
-                        if (param.type === "Identifier") {
-                            assignedVariables.set(param.name, "other");
-                        }
-                    });
-                }
-            },
             VariableDeclarator(node) {
+                if (node.id && node.id.type === "Identifier") {
+                    assignedVariables.set(node.id.name, "other");
+                }
                 // 関数式（変数に代入された関数）を追跡
                 if (
                     node.init &&
@@ -58,9 +48,53 @@ module.exports = {
                     }
                 }
             },
+            VariableDeclaration(node) {
+                node.declarations.forEach(declaration => {
+                    if (declaration.id.type === 'Identifier') {
+                        if (node.kind === 'const') {
+                            // 定数の重複チェック
+                            if (declaredConstants.has(declaration.id.name)) {
+                                context.report({
+                                    node: declaration.id,
+                                    messageId: "constantReassignment",
+                                    data: { name: declaration.id.name }
+                                });
+                            } else {
+                                declaredConstants.add(declaration.id.name);
+                            }
+                        }
+                        assignedVariables.set(declaration.id.name, "other");
+                    }
+                });
+            },
+            FunctionDeclaration(node) {
+                // 関数宣言を追跡
+                if (node.id && node.id.name) {
+                    definedFunctions.add(node.id.name);
+                }
+
+                // 関数引数を追跡
+                if (node.params) {
+                    node.params.forEach((param) => {
+                        if (param.type === "Identifier") {
+                            assignedVariables.set(param.name, "other");
+                        }
+                    });
+                }
+            },
             AssignmentExpression(node) {
                 // 直接代入を許可
                 if (node.left.type === "Identifier") {
+                    // 定数への代入をチェック
+                    if (declaredConstants.has(node.left.name)) {
+                        context.report({
+                            node: node.left,
+                            messageId: "constantReassignment",
+                            data: { name: node.left.name }
+                        });
+                        return;
+                    }
+
                     if (node.right.type === "ArrayExpression") {
                         assignedVariables.set(node.left.name, "array"); // 配列が代入された場合
                     } else {
@@ -75,6 +109,15 @@ module.exports = {
             },
             Identifier(node) {
                 const parent = node.parent;
+
+                // 変数宣言時の識別子は除外
+                if (
+                    parent &&
+                    parent.type === "VariableDeclarator" &&
+                    parent.id === node
+                ) {
+                    return;
+                }
 
                 // 左辺での使用（代入時）は除外
                 if (

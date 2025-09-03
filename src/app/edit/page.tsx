@@ -74,11 +74,24 @@ export default function Home() {
     setHasUnsavedChanges(true);
   };
 
+  // 開発環境のみ表示するボタンのハンドラ
+  const handleLogTreeItems = () => {
+    console.log("TreeItems:", items);
+  };
+
+
   return (
     <PageWrapper>
       <Header>
         <HeaderItem>
           <HeaderTitle />
+          {process.env.NODE_ENV === "development" && (
+            <HeaderButton
+              onClick={handleLogTreeItems}
+            >
+              TreeItemsログ
+            </HeaderButton>
+          )}
           <HeaderButton onClick={handleSaveItems} endIcon={<SaveIcon />}>保存</HeaderButton>
         </HeaderItem>
       </Header>

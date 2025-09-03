@@ -53,13 +53,17 @@ function extractJapaneseAndNonJapanese(text: string) {
     };
 }
 
-export const cnvToJs = async (statement: { lineTokens: string[], processIndex: number }) => {
+export const cnvToJs = async (statement: { lineTokens: string[], processIndex: number, isConstant?: boolean }) => {
 
     const lineTokens: string[] = statement.lineTokens.map(token => { return cnvToken(token) });
     let tmpLine: string = '';
     switch (statement.processIndex) {
         case ProcessEnum.SetValToVariableOrArray:
-            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]};`
+            if (statement.isConstant) {
+                tmpLine = `const ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]};`
+            } else {
+                tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]};`
+            }
             break;
         case ProcessEnum.InitializeArray:
             tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${BraketSymbolEnum.OpenSquareBracket}${lineTokens[1]}${BraketSymbolEnum.CloseSquareBracket};`
@@ -254,7 +258,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
         const flatten = flattenTree(nodes);
 
         const renderCodeArray = await Promise.all(flatten.map(async (node, index) => {
-            const content = await cnvToJs({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) });
+            const content = await cnvToJs({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex), isConstant: node.isConstant });
             return content;
         }));
         return renderCodeArray.join('\n');
