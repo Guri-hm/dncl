@@ -10,10 +10,11 @@ interface Props {
 interface ResponsiveImageProps {
     src: string;
     alt: string;
+    style?: React.CSSProperties;
 }
 const theme = createTheme();
 
-const ResponsiveImage: React.FC<ResponsiveImageProps> = ({ src, alt }) => {
+const ResponsiveImage: React.FC<ResponsiveImageProps> = ({ src, alt, style }) => {
     const isSm = useMediaQuery(theme.breakpoints.up('sm'));
 
     let width;
@@ -29,7 +30,7 @@ const ResponsiveImage: React.FC<ResponsiveImageProps> = ({ src, alt }) => {
             alt={alt}
             width={300}
             height={300}
-            style={{ width }}
+            style={{ width, ...style }}
         />
     );
 };
@@ -39,7 +40,7 @@ export const DropHere = ({ visible = true }: Props) => {
         <Box sx={{ display: `${visible ? 'block' : 'none'}` }}>
             <Spotlight>
                 <SpeechBubbleImage msg='ここにドロップします'>
-                    <ResponsiveImage src={`${process.env.NEXT_PUBLIC_BASE_PATH}/raise_one_hand.svg`} alt="手をあげる"></ResponsiveImage>
+                    <ResponsiveImage src={`${process.env.NEXT_PUBLIC_BASE_PATH}/raise_one_hand.svg`} alt="手をあげる女の子" style={{ height: "auto" }}></ResponsiveImage>
                 </SpeechBubbleImage>
             </Spotlight>
         </Box>
