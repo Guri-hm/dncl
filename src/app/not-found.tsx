@@ -6,6 +6,7 @@ import { Typography, Box, Button } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { HeaderBar, HeaderTitle } from '@/app/components/Header';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 export default function NotFound() {
     const router = useRouter();
@@ -37,6 +38,14 @@ export default function NotFound() {
                     backgroundColor: 'var(--stone-50)'
                 }}>
                     <Box sx={{ textAlign: 'center', maxWidth: '600px', padding: 3 }}>
+                        <Image
+                            src={`${process.env.NEXT_PUBLIC_BASE_PATH}/not-found.svg`}
+                            alt="not found"
+                            width={200}
+                            height={200}
+                            priority
+                            style={{ margin: "0 auto", display: "block" }}
+                        />
                         <Typography variant="h1" sx={{ fontSize: '4rem', fontWeight: 'bold', mb: 2 }}>
                             404
                         </Typography>
