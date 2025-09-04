@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "clean": "rmdir /s /q .next",
-    "postbuild": "node copy-custom-rules.js"
+    "postbuild": "node copy-custom-rules.js",
+    "copy-rule": "copy .\\eslint-plugin-custom-rules\\lib\\rules\\no-use-before-assign.js .\\node_modules\\eslint-plugin-custom-rules\\lib\\rules\\no-use-before-assign.js /Y"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

@@ -19,10 +19,20 @@ npm install react-confetti --legacy-peer-deps
 npm install acorn --legacy-peer-deps
 npm i swiper --legacy-peer-deps
 
-*allotmentのバージョンが古く、「 --legacy-peer-deps」を付与してインストールした
+【allotment】
+allotmentのバージョンが古く、「 --legacy-peer-deps」を付与してインストールした
 ⇒他のライブラリのインストール時にもこのオプション付与を要求されるようになった
-*本番環境ではプロジェクトのルートディレクトリのnode_modulesにeslint-plugin-custom-rulesを配置する
-*本番環境や新しい開発環境に.env.localを置き忘れない
+
+【eslint-plugin-custom-rulesの設定】
+eslint-plugin-custom-rulesのno-use-before-assign.jsを修正した場合、
+node_modules内にも配置する
+（\node_modules\eslint-plugin-custom-rules\lib\rulesの中）
+npm run copy-ruleを実行してもよい
+
+本番環境ではプロジェクトのルートディレクトリのnode_modulesにeslint-plugin-custom-rulesを配置する
+
+【.env.localの設定】
+本番環境や新しい開発環境に.env.localを置き忘れない
 
 【.env.localファイルを開発環境ごとに用意（下記はファイルの内容）】
 NEXT_PUBLIC_BASE_PATH=/next/dncl
