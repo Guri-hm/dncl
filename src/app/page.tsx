@@ -5,18 +5,18 @@ import { PageWrapper } from '@/app/components/PageWrapper';
 import { Typography, Box } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { BubblePaper } from '@/app/components/Bubble';
-import { Header, HeaderItem, HeaderTitle } from '@/app/components/Header';
+import { HeaderBar, HeaderTitle } from '@/app/components/Header';
 import Image from 'next/image';
+import { ThemeToggleButton } from '@/app/components/Header';
 
 export default function Home() {
 
   return (
     <PageWrapper>
-      <Header>
-        <HeaderItem>
-          <HeaderTitle />
-        </HeaderItem>
-      </Header>
+      <HeaderBar>
+        <HeaderTitle />
+        <ThemeToggleButton sx={{ marginLeft: "auto" }} />
+      </HeaderBar>
       <ContentWrapper>
         <Grid container direction={"column"} sx={{
           justifyContent: "center",
@@ -27,7 +27,7 @@ export default function Home() {
             <Typography variant="h2" sx={{ fontWeight: 'bold', mb: 1 }}>
               DNCL学習アプリ
             </Typography>
-            <Typography variant="body1" sx={{ color: 'text.secondary' }}>
+            <Typography variant="body1">
               大学入試共通テストで使われる疑似言語「DNCL」を、実際にプログラミングしながら学べるWebアプリです。
             </Typography>
           </Box>
@@ -40,7 +40,7 @@ export default function Home() {
                 }}>
                   チャレンジモード
                 </Typography>
-                <Typography sx={{ color: 'text.secondary', mb: 1.5, marginTop: 0.5 }}>課題に挑み，全問クリアを目指します</Typography>
+                <Typography sx={{ mb: 1.5, marginTop: 0.5 }}>課題に挑み，全問クリアを目指します</Typography>
               </BubblePaper>
             </Grid>
             <Grid size="grow">
@@ -50,7 +50,7 @@ export default function Home() {
                 }}>
                   エディタモード
                 </Typography>
-                <Typography sx={{ color: 'text.secondary', mb: 1.5, marginTop: 0.5 }}>自由にDNCLを操作します</Typography>
+                <Typography sx={{ mb: 1.5, marginTop: 0.5 }}>自由にDNCLを操作します</Typography>
               </BubblePaper>
             </Grid>
           </Grid>

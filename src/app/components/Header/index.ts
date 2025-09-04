@@ -1,4 +1,5 @@
 export { HeaderTitle } from './HeaderTitle';
 export { Header } from './Header';
-export { HeaderItem } from './HeaderItem';
-export { HeaderButton } from './HeaderButton'
+export { HeaderBar } from './HeaderBar';
+export { HeaderButton } from './HeaderButton';
+export { ThemeToggleButton } from './ThemeToggleButton';

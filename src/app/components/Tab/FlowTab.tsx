@@ -3,6 +3,7 @@ import { parseCode, generateFlowchartXML, flattenTree } from '@/app/utilities';
 import { Box, BoxProps, Button } from '@mui/material';
 import { TreeItem, TreeItems } from '@/app/types';
 import { cnvToJs } from '@/app/components/Tab/ConsoleTab';
+import { useTheme } from '@mui/material/styles';
 
 interface CustomBoxProps extends BoxProps {
   children: React.ReactNode;
@@ -14,6 +15,9 @@ export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props 
 
   const [shouldRunEffect, setShouldRunEffect] = useState(false);
   const [nodes, setNodes] = useState<React.ReactNode>(children);
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+  const darkModeValue = isDark ? "dark" : "light";
 
   useEffect(() => {
     setNodes("変換中");
@@ -49,7 +53,7 @@ export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props 
       highlight: "#0000ff",
       lightbox: false,
       nav: true,
-      "dark-mode": "auto",
+      "dark-mode": darkModeValue,
       edit: "_blank",
       xml: mxfile
     });
@@ -60,14 +64,14 @@ export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props 
     };
 
     const flowChartNodes = <>
-      <Box className="mxgraph" sx={{ maxWidth: '100%', backgroundColor: 'var(--stone-50)' }} data-mxgraph={dataMxgraph}></Box>
+      <Box className="mxgraph" sx={{ maxWidth: '100%', backgroundColor: isDark ? 'transparent' : 'var(--stone-50)' }} data-mxgraph={dataMxgraph}></Box>
       <Box sx={{ textAlign: 'center', paddingY: 1 }}>
         <Button
           sx={{ backgroundColor: 'var(--stone-50)', margin: '0.5rem', color: 'var(--foreground)', textTransform: "none" }}
           onClick={handleCopyXML}
           variant="contained"
         >
-          mxGraphModelのコピー
+          mxGraphModelのコピー{darkModeValue}あああ
         </Button>
         <Button
           sx={{ backgroundColor: 'var(--stone-50)', margin: '0.5rem', color: 'var(--foreground)', textTransform: "none" }}

@@ -4,10 +4,9 @@ import { useState, useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import Loading from './Loading';
-import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import theme from '@/app/theme';
 import { LoadingProvider } from './LoadingContext';
+import { CustomThemeProvider } from '@/app/hooks/ThemeProvider';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(true);
@@ -31,15 +30,15 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
     return (
         <>
-            <LoadingProvider>
-                {loading && <Loading fadeOut={fadeOut} />}
-                <Suspense fallback={<Loading />}>
-                    <ThemeProvider theme={theme}>
+            <CustomThemeProvider>
+                <LoadingProvider>
+                    {loading && <Loading fadeOut={fadeOut} />}
+                    <Suspense fallback={<Loading />}>
                         <CssBaseline />
                         {children}
-                    </ThemeProvider>
-                </Suspense>
-            </LoadingProvider>
+                    </Suspense>
+                </LoadingProvider>
+            </CustomThemeProvider>
         </>
     );
 }

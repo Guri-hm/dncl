@@ -3,7 +3,7 @@
 "use client"
 import { PageWrapper } from "@/app/components/PageWrapper";
 import { Header } from "@/app/components/Header/Header";
-import { HeaderItem } from "@/app/components/Header/HeaderItem";
+import { HeaderBar } from "@/app/components/Header/HeaderBar";
 import { ContentWrapper } from "@/app/components/ContentWrapper";
 import Grid from '@mui/material/Grid2';
 import { HeaderTitle } from "../components/Header";
@@ -13,7 +13,7 @@ import { CheckedIcon, allChallengesItems, UnachievedIcon } from "@/app/component
 import { useAchievements, storageKey } from "@/app/hooks";
 import { useRef, useState } from "react";
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
-
+import { ThemeToggleButton } from '@/app/components/Header';
 
 const CustomTypography = styled(Typography)(({ theme }) => ({
   position: 'relative',
@@ -61,19 +61,17 @@ export default function Home() {
 
   return (
     <PageWrapper>
-      <Header>
-        <HeaderItem>
-          <HeaderTitle />
-          <Button ref={buttonRef}
-            sx={{ backgroundColor: 'var(--stone-50)', marginLeft: 'auto', color: 'var(--foreground)' }}
-            onClick={handleClickOpen}
-            endIcon={<RestartAltIcon />}
-            variant="contained"
-          >
-            リセット
-          </Button>
-        </HeaderItem>
-      </Header>
+      <HeaderBar>
+        <Button ref={buttonRef}
+          sx={{ backgroundColor: 'var(--stone-50)', marginLeft: 'auto', color: 'var(--foreground)' }}
+          onClick={handleClickOpen}
+          endIcon={<RestartAltIcon />}
+          variant="contained"
+        >
+          リセット
+        </Button>
+        <ThemeToggleButton sx={{ marginLeft: "auto" }} />
+      </HeaderBar>
       <ContentWrapper>
         <Grid container direction={"column"} sx={{
           justifyContent: "flex-start",

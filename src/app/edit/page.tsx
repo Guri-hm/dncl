@@ -9,10 +9,9 @@ import { PageWrapper } from "@/app/components/PageWrapper";
 import { ContentWrapper } from "@/app/components/ContentWrapper";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TabsBoxWrapper } from "@/app/components/Tab";
-import { Snackbar } from "@mui/material";
-import SaveIcon from '@mui/icons-material/Save';
+import { Snackbar, Box } from "@mui/material";
 import { useTreeItems, loadTreeItems } from "@/app/hooks";
-import { Header, HeaderButton, HeaderItem, HeaderTitle } from '@/app/components/Header';
+import { HeaderButton, HeaderBar, HeaderTitle } from '@/app/components/Header';
 import { HintButton, HowToButton, Door } from "@/app/components/Tips";
 import { ConsoleWrapper } from "@/app/components/ConsoleWrapper";
 import { FooterOverlay } from "@/app/components/Footer";
@@ -20,6 +19,8 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import { SwiperTabs } from "@/app/components/Tab";
 import { SwiperSlide } from "swiper/react";
+import { ThemeToggleButton } from '@/app/components/Header';
+import SaveIcon from '@mui/icons-material/Save';
 
 export default function Home() {
 
@@ -82,19 +83,18 @@ export default function Home() {
 
   return (
     <PageWrapper>
-      <Header>
-        <HeaderItem>
-          <HeaderTitle />
-          {process.env.NODE_ENV === "development" && (
-            <HeaderButton
-              onClick={handleLogTreeItems}
-            >
-              TreeItemsログ
-            </HeaderButton>
-          )}
-          <HeaderButton onClick={handleSaveItems} endIcon={<SaveIcon />}>保存</HeaderButton>
-        </HeaderItem>
-      </Header>
+      <HeaderBar
+        leftContent={<HeaderTitle />}
+        rightContent={
+          <>
+            {process.env.NODE_ENV === "development" && (
+              <HeaderButton onClick={handleLogTreeItems}>TreeItemsログ</HeaderButton>
+            )}
+            <HeaderButton onClick={handleSaveItems} endIcon={<SaveIcon />}>保存</HeaderButton>
+            <ThemeToggleButton />
+          </>
+        }
+      />
       <ContentWrapper>
         {
           isSm ?

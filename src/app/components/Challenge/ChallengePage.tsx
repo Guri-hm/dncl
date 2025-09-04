@@ -6,7 +6,7 @@ import { defaultFragments, SortableTree } from "@/app/components/SortableTree";
 import styles from '@/app/components/common.module.css';
 import { Challenge, DnclValidationType, FragmentItems, TreeItems } from "@/app/types";
 import { PageWrapper } from "@/app/components/PageWrapper";
-import { Header, HeaderItem, HeaderTitle } from "@/app/components/Header";
+import { HeaderBar, HeaderTitle } from "@/app/components/Header";
 import { HintButton, HowToButton, Tip, Door } from "@/app/components/Tips";
 import { ContentWrapper } from "@/app/components/ContentWrapper";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -24,7 +24,7 @@ import { useTheme } from '@mui/material/styles';
 import { SwiperTabs } from "@/app/components/Tab";
 import { SwiperSlide } from "swiper/react";
 import Divider from '@mui/material/Divider';
-
+import { ThemeToggleButton } from '@/app/components/Header';
 interface Props {
     challenge: Challenge;
 }
@@ -148,15 +148,14 @@ export const ChallengePage = ({ challenge }: Props) => {
 
     return (
         <PageWrapper>
-            <Header>
-                <HeaderItem>
-                    <HeaderTitle />
-                </HeaderItem>
-                <Divider sx={{ borderColor: 'var(--slategray)' }} />
-                <Question>
-                    問：{`${challenge.task}`}
-                </Question>
-            </Header>
+            <HeaderBar>
+                <HeaderTitle />
+                <ThemeToggleButton sx={{ marginLeft: "auto" }} />
+            </HeaderBar>
+            <Divider sx={{ borderColor: 'var(--slategray)' }} />
+            <Question>
+                問：{`${challenge.task}`}
+            </Question>
             <ContentWrapper>
                 {isSm ?
                     <Allotment vertical defaultSizes={[200, 100]}>

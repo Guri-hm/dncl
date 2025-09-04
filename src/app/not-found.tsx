@@ -4,7 +4,7 @@ import { ContentWrapper } from '@/app/components/ContentWrapper';
 import { PageWrapper } from '@/app/components/PageWrapper';
 import { Typography, Box, Button } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import { Header, HeaderItem, HeaderTitle } from '@/app/components/Header';
+import { HeaderBar, HeaderTitle } from '@/app/components/Header';
 import { useRouter } from 'next/navigation';
 
 export default function NotFound() {
@@ -26,11 +26,9 @@ export default function NotFound() {
 
     return (
         <PageWrapper>
-            <Header>
-                <HeaderItem>
-                    <HeaderTitle />
-                </HeaderItem>
-            </Header>
+            <HeaderBar>
+                <HeaderTitle />
+            </HeaderBar>
             <ContentWrapper>
                 <Grid container direction={"column"} sx={{
                     justifyContent: "center",
