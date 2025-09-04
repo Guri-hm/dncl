@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useCallback } from 'react';
+import React, { Dispatch, SetStateAction, useCallback, useMemo } from 'react';
 import { Box, BoxProps } from "@mui/material";
 import { useEffect, useState, Fragment } from "react";
 import { DnclValidationType, FlattenedItem, TreeItems } from "@/app/types";
@@ -16,6 +16,11 @@ interface CustomBoxProps extends BoxProps {
 }
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+
+// グローバルキャッシュ
+const codeConversionCache = new Map<string, string>();
+const lintCache = new Map<string, { lineNumbers: number[], messages: string[] }>();
+const executionCache = new Map<string, { result?: string, error?: string }>();
 
 const cnvToken = (token: string): string => {
     token = cnvToDivision(token);
@@ -36,27 +41,37 @@ const makeFuncName = (hexStr: string): string => {
     return 'func_' + hexStr.replace(/[^a-zA-Z0-9_]/g, '');
 }
 function extractJapaneseAndNonJapanese(text: string) {
-    // 日本語の文字を表す正規表現
     const japanesePattern = /[\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\uFF00-\uFFEF]/g;
-
-    // 日本語の部分を抽出
     const japaneseMatches = text.match(japanesePattern);
     const japaneseText = japaneseMatches ? japaneseMatches.join('') : '';
-
-    // 日本語以外の部分を抽出
     const nonJapaneseText = text.replace(japanesePattern, '');
-
-    // 結果をオブジェクトにまとめる
     return {
         japanese: japaneseText,
         nonJapanese: nonJapaneseText
     };
 }
 
-export const cnvToJs = async (statement: { lineTokens: string[], processIndex: number, isConstant?: boolean }) => {
+// cnvToJsをメモ化
+const cnvToJsMemoized = (() => {
+    const cache = new Map<string, string>();
 
+    return async (statement: { lineTokens: string[], processIndex: number, isConstant?: boolean }): Promise<string> => {
+        const cacheKey = JSON.stringify(statement);
+
+        if (cache.has(cacheKey)) {
+            return cache.get(cacheKey)!;
+        }
+
+        const result = await cnvToJs(statement);
+        cache.set(cacheKey, result);
+        return result;
+    };
+})();
+
+export const cnvToJs = async (statement: { lineTokens: string[], processIndex: number, isConstant?: boolean }) => {
     const lineTokens: string[] = statement.lineTokens.map(token => { return cnvToken(token) });
     let tmpLine: string = '';
+
     switch (statement.processIndex) {
         case ProcessEnum.SetValToVariableOrArray:
             if (statement.isConstant) {
@@ -68,70 +83,51 @@ export const cnvToJs = async (statement: { lineTokens: string[], processIndex: n
         case ProcessEnum.InitializeArray:
             tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${BraketSymbolEnum.OpenSquareBracket}${lineTokens[1]}${BraketSymbolEnum.CloseSquareBracket};`
             break;
-
         case ProcessEnum.BulkAssignToArray:
             tmpLine = `${lineTokens[0]}.fill(${lineTokens[1]});`
             break;
-
         case ProcessEnum.Increment:
             tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[0]} ${ArithmeticOperator.AdditionOperator} ${lineTokens[1]};`
             break;
         case ProcessEnum.Decrement:
             tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[0]} ${ArithmeticOperator.SubtractionOperator} ${lineTokens[1]};`
             break;
-
         case ProcessEnum.Output:
-
             tmpLine = `${OutputEnum.Js}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket};`
             break;
-
         case ProcessEnum.If:
             tmpLine = `${ConditionEnum.JsPythonIf} ${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
             break;
-
         case ProcessEnum.ElseIf:
             tmpLine = `${BraketSymbolEnum.CloseBrace}${ConditionEnum.JsElseIf}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
-
             break;
-
         case ProcessEnum.Else:
             tmpLine = `${BraketSymbolEnum.CloseBrace}${ConditionEnum.JsPythonElse}${BraketSymbolEnum.OpenBrace}`
-
             break;
-
         case ProcessEnum.EndIf:
             tmpLine = `${BraketSymbolEnum.CloseBrace}`
             break;
-
         case ProcessEnum.While:
             tmpLine = `${LoopEnum.JsPythonWhile}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
             break;
-
         case ProcessEnum.EndWhile:
         case ProcessEnum.EndFor:
         case ProcessEnum.Defined:
             tmpLine = `${BraketSymbolEnum.CloseBrace}`
             break;
-
         case ProcessEnum.DoWhile:
             tmpLine = `${LoopEnum.JsDoWhile}${BraketSymbolEnum.OpenBrace}`;
-
             break;
-
         case ProcessEnum.EndDoWhile:
             tmpLine = `${BraketSymbolEnum.CloseBrace}${LoopEnum.JsPythonWhile}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket};`;
             break;
-
         case ProcessEnum.ForIncrement:
         case ProcessEnum.ForDecrement:
             tmpLine = `${LoopEnum.JsPythonFor} ${BraketSymbolEnum.LeftBraket} ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]}; ${lineTokens[0]} ${ComparisonOperator.LessThanOrEqualToOperator} ${lineTokens[2]}; ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[0]} ${statement.processIndex == ProcessEnum.ForIncrement ? ArithmeticOperator.AdditionOperator : ArithmeticOperator.SubtractionOperator} ${lineTokens[3]}${BraketSymbolEnum.RigthBraket} ${BraketSymbolEnum.OpenBrace}`;
             break;
-
         case ProcessEnum.DefineFunction:
-
             let funcName = `${lineTokens[0]}`
             if (containsJapanese(funcName)) {
-                // tmpLine = await cnvToRomaji(tmpLine);
                 const extracted = extractJapaneseAndNonJapanese(funcName);
                 const hexStr = convertToHexadecimal(extracted.japanese);
                 const prefix = makeFuncName(hexStr);
@@ -139,22 +135,18 @@ export const cnvToJs = async (statement: { lineTokens: string[], processIndex: n
             }
             tmpLine = `${UserDefinedFunc.Js} ${funcName} ${BraketSymbolEnum.OpenBrace}`
             break;
-
         case ProcessEnum.ExecuteUserDefinedFunction:
             tmpLine = `${lineTokens[0]};`
             if (containsJapanese(tmpLine)) {
-                // tmpLine = await cnvToRomaji(tmpLine);
                 const extracted = extractJapaneseAndNonJapanese(tmpLine);
                 const hexStr = convertToHexadecimal(extracted.japanese);
                 const prefix = makeFuncName(hexStr);
                 tmpLine = prefix + extracted.nonJapanese;
             }
             break;
-
         default:
             tmpLine = '';
             break;
-
     }
 
     return tmpLine;
@@ -167,13 +159,43 @@ const Color = {
     white: 'white'
 }
 
-export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, setRunResults, setDnclValidation, dnclValidation }) => {
-
+export const ConsoleTab: React.FC<CustomBoxProps> = React.memo(({
+    treeItems,
+    runResults,
+    setRunResults,
+    setDnclValidation,
+    dnclValidation
+}) => {
     const [shouldRunEffect, setShouldRunEffect] = useState(false);
     const [tmpMsg, setTmpMsg] = useState<string>('ここに出力結果が表示されます');
 
+    // treeItemsのハッシュ化で差分検出
+    const treeItemsHash = useMemo(() => {
+        return JSON.stringify(treeItems);
+    }, [treeItems]);
+
+    // 実行処理の最適化（キャッシュ付き）
     const execute = useCallback(async (code: string) => {
         setDnclValidation(null);
+
+        // 実行結果のキャッシュチェック
+        if (executionCache.has(code)) {
+            const cached = executionCache.get(code)!;
+            if (cached.result) {
+                setRunResults((prevResults: string[]) => (
+                    prevResults ? [...prevResults, cached.result!] : [cached.result!]
+                ));
+            } else if (cached.error) {
+                const result: DnclValidationType = {
+                    color: Color.error,
+                    errors: [cached.error],
+                    hasError: true,
+                    lineNum: []
+                };
+                setDnclValidation(result);
+            }
+            return;
+        }
 
         try {
             const response = await fetch(`${basePath}/api/execute`, {
@@ -190,33 +212,59 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
             }
 
             const data = await response.json();
+
+            // 成功結果をキャッシュ
+            executionCache.set(code, { result: data.result });
+
             if (data.result != '') {
-                setRunResults((prevResults: string[]) => (prevResults ? [...prevResults, data.result] : [data.result]));
+                setRunResults((prevResults: string[]) => (
+                    prevResults ? [...prevResults, data.result] : [data.result]
+                ));
             }
         } catch (err: unknown) {
-            if (err instanceof Error) {
-                const result: DnclValidationType = {
-                    color: Color.error,
-                    errors: [err.message || 'An unexpected error occurred'],
-                    hasError: true,
-                    lineNum: []
-                };
-                setDnclValidation(result);
-            } else {
-                const result: DnclValidationType = {
-                    color: Color.error,
-                    errors: ['An unexpected error occurred'],
-                    hasError: true,
-                    lineNum: []
-                };
-                setDnclValidation(result);
-            }
+            const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+
+            // エラー結果をキャッシュ
+            executionCache.set(code, { error: errorMessage });
+
+            const result: DnclValidationType = {
+                color: Color.error,
+                errors: [errorMessage],
+                hasError: true,
+                lineNum: []
+            };
+            setDnclValidation(result);
         }
     }, [setDnclValidation, setRunResults]);
 
+    // Lint処理の最適化（キャッシュ付き）
     const fetchLintResults = useCallback(async (code: string) => {
         if (!code || code === '') {
             setTmpMsg('');
+            return;
+        }
+
+        // Lintキャッシュチェック
+        if (lintCache.has(code)) {
+            const cached = lintCache.get(code)!;
+
+            if (cached.messages.length === 0) {
+                setTmpMsg('プログラム実行中…');
+                await execute(code); // <- awaitを追加
+                setTmpMsg(''); // <- 実行完了後にクリア
+            } else {
+                const formattedMessages = cached.lineNumbers.map((lineNumber: number, index: number) => {
+                    return `${lineNumber}行目：${cached.messages[index]}`;
+                });
+                const result: DnclValidationType = {
+                    color: Color.warnning,
+                    errors: formattedMessages,
+                    hasError: true,
+                    lineNum: cached.lineNumbers
+                };
+                setDnclValidation(result);
+                setTmpMsg(''); // <- エラー時もクリア
+            }
             return;
         }
 
@@ -226,7 +274,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ code }), // コードを送信
+                body: JSON.stringify({ code }),
             });
 
             if (!response.ok) {
@@ -236,86 +284,126 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
 
             const data = await response.json();
 
+            // Lint結果をキャッシュ
+            lintCache.set(code, { lineNumbers: data.lineNumbers, messages: data.messages });
+
             if (data.messages.length === 0) {
                 setTmpMsg('プログラム実行中…');
-                execute(code);
+                await execute(code); // <- awaitを追加
+                setTmpMsg(''); // <- 実行完了後にクリア
             } else {
                 const formattedMessages = data.lineNumbers.map((lineNumber: number, index: number) => {
                     return `${lineNumber}行目：${data.messages[index]}`;
                 });
-                const result: DnclValidationType = { color: Color.warnning, errors: formattedMessages, hasError: true, lineNum: data.lineNumbers };
+                const result: DnclValidationType = {
+                    color: Color.warnning,
+                    errors: formattedMessages,
+                    hasError: true,
+                    lineNum: data.lineNumbers
+                };
                 setDnclValidation(result);
+                setTmpMsg(''); // <- エラー時もクリア
             }
         } catch (err: unknown) {
-            const result: DnclValidationType = { color: Color.error, errors: [err instanceof Error ? err.message : 'An unexpected error occurred'], hasError: true, lineNum: [] };
+            const result: DnclValidationType = {
+                color: Color.error,
+                errors: [err instanceof Error ? err.message : 'An unexpected error occurred'],
+                hasError: true,
+                lineNum: []
+            };
             setDnclValidation(result);
-        } finally {
-            setTmpMsg('');
+            setTmpMsg(''); // <- エラー時もクリア
         }
     }, [execute, setDnclValidation]);
 
+    // コード変換処理の最適化（キャッシュ付き）
     const renderCode = useCallback(async (nodes: TreeItems): Promise<string> => {
+        // コード変換キャッシュチェック
+        if (codeConversionCache.has(treeItemsHash)) {
+            return codeConversionCache.get(treeItemsHash)!;
+        }
+
         const flatten = flattenTree(nodes);
 
         const renderCodeArray = await Promise.all(flatten.map(async (node, index) => {
-            const content = await cnvToJs({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex), isConstant: node.isConstant });
-            return content;
+            return await cnvToJsMemoized({
+                lineTokens: node.lineTokens ?? [],
+                processIndex: Number(node.processIndex),
+                isConstant: node.isConstant
+            });
         }));
-        return renderCodeArray.join('\n');
-    }, []);
+
+        const result = renderCodeArray.join('\n');
+
+        // 結果をキャッシュ
+        codeConversionCache.set(treeItemsHash, result);
+
+        return result;
+    }, [treeItemsHash]);
+
+    // DNCL構文チェックの最適化
+    const validateDNCLSyntax = useMemo(() => {
+        const result: DnclValidationType = { errors: [], hasError: false, lineNum: [] };
+        const flatten = flattenTree(treeItems);
+
+        flatten.forEach((item: FlattenedItem, index) => {
+            const { hasError, errors } = checkDNCLSyntax(flatten, item, index + 1);
+            if (hasError) {
+                result.hasError = true;
+                result.errors.push(...errors);
+                result.lineNum.push(index + 1);
+            }
+        });
+
+        return result;
+    }, [treeItems]);
 
     useEffect(() => {
         setTmpMsg("DNCL解析中…");
         setDnclValidation(null);
+
+        // タイマーを短縮（2秒→500ms）
         const timer = setTimeout(() => {
             setShouldRunEffect(true);
-        }, 2000); // 2秒後に実行
-        return () => clearTimeout(timer); // クリーンアップ
-    }, [treeItems, setDnclValidation]);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [treeItemsHash, setDnclValidation]);
 
     useEffect(() => {
         if (shouldRunEffect) {
-            // フラグをリセット
             setShouldRunEffect(false);
 
-            const result: DnclValidationType = { errors: [], hasError: false, lineNum: [] };
-            const flatten = flattenTree(treeItems);
-            flatten.map((item: FlattenedItem, index) => {
-                const { hasError, errors } = checkDNCLSyntax(flatten, item, index + 1);
-                if (hasError) {
-                    result.hasError = true;
-                    result.errors.push(...errors);
-                    result.lineNum.push(index + 1);
-                }
-            });
+            setDnclValidation(validateDNCLSyntax);
 
-            setDnclValidation(result);
-            if (result.hasError) {
-                setTmpMsg('');
+            if (validateDNCLSyntax.hasError) {
+                setTmpMsg(''); // <- DNCL構文エラー時もクリア
                 return;
             }
 
             const convertCode = async () => {
                 const code = await renderCode(treeItems);
-                fetchLintResults(code);
+                await fetchLintResults(code); // <- awaitを追加
+                setTmpMsg(''); // <- 全処理完了後にクリア
             };
 
             convertCode();
         }
-    }, [shouldRunEffect, fetchLintResults, renderCode, setDnclValidation, treeItems]);
+    }, [shouldRunEffect, fetchLintResults, renderCode, setDnclValidation, validateDNCLSyntax, treeItems]);
 
-    const convertNewLinesToBreaks = (text: string | null) => {
-        if (!text) {
-            return null;
-        }
+    // レンダリング関数の最適化
+    const convertNewLinesToBreaks = useCallback((text: string | null) => {
+        if (!text) return null;
+
         return text.split('\n').map((line, index) => (
             <Fragment key={index}>
                 {line}
                 <br />
             </Fragment>
         ));
-    };
-    const renderResults = (results: string[]): React.ReactNode => {
+    }, []);
+
+    const renderResults = useCallback((results: string[]): React.ReactNode => {
         return results.map((result, index) => (
             <Fragment key={index}>
                 {index > 0 && <Divider sx={{ borderColor: 'var(--slate-500)' }} />}
@@ -323,20 +411,30 @@ export const ConsoleTab: React.FC<CustomBoxProps> = ({ treeItems, runResults, se
                     {convertNewLinesToBreaks(result)}
                 </Box>
             </Fragment>
-        ))
-    }
+        ));
+    }, [convertNewLinesToBreaks]);
+
     return (
         <Box>
             {tmpMsg && <Box sx={{ padding: 1 }}> {tmpMsg}</Box>}
-            {(dnclValidation?.hasError) && <Box sx={{ padding: 1, color: dnclValidation?.color || Color.warnning }}>エラーを解決してください
-                <Box>
-                    {dnclValidation?.errors ? convertNewLinesToBreaks(dnclValidation?.errors.join('\n')) : ''}
+            {(dnclValidation?.hasError) && (
+                <Box sx={{ padding: 1, color: dnclValidation?.color || Color.warnning }}>
+                    エラーを解決してください
+                    <Box>
+                        {dnclValidation?.errors ? convertNewLinesToBreaks(dnclValidation?.errors.join('\n')) : ''}
+                    </Box>
                 </Box>
-            </Box>
-            }
+            )}
             <Box>
                 {runResults && renderResults(runResults)}
             </Box>
         </Box>
     );
-};
+}, (prevProps, nextProps) => {
+    // メモ化の比較関数
+    return (
+        JSON.stringify(prevProps.treeItems) === JSON.stringify(nextProps.treeItems) &&
+        JSON.stringify(prevProps.runResults) === JSON.stringify(nextProps.runResults) &&
+        prevProps.dnclValidation === nextProps.dnclValidation
+    );
+});
