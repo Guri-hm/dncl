@@ -2,7 +2,7 @@ import { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { parseCode, generateFlowchartXML, flattenTree } from '@/app/utilities';
 import { Box, BoxProps, Button } from '@mui/material';
 import { TreeItem, TreeItems } from '@/app/types';
-import { cnvToJs } from '@/app/components/Tab/ConsoleTab';
+import { cnvToJs } from '@/app/utilities/cnvToJs';
 import { useTheme } from '@mui/material/styles';
 
 interface CustomBoxProps extends BoxProps {
@@ -71,7 +71,7 @@ export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props 
           onClick={handleCopyXML}
           variant="contained"
         >
-          mxGraphModelのコピー{darkModeValue}あああ
+          mxGraphModelのコピー
         </Button>
         <Button
           sx={{ backgroundColor: 'var(--stone-50)', margin: '0.5rem', color: 'var(--foreground)', textTransform: "none" }}
