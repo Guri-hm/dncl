@@ -32,24 +32,31 @@ export const CustomThemeProvider: React.FC<{ children: React.ReactNode }> = ({ c
         localStorage.setItem("themeMode", mode);
     }, [mode]);
 
-    // 実際に使うモードを判定
-    const getActualMode = () => {
-        if (mode === 'system') {
-            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        }
-        return mode;
-    };
-
-    const [actualMode, setActualMode] = useState<'light' | 'dark'>(getActualMode());
+    const [actualMode, setActualMode] = useState<'light' | 'dark'>('light');
 
     useEffect(() => {
+        const getActualMode = (): 'light' | 'dark' => {
+            if (mode === 'system' && typeof window !== "undefined") {
+                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            // 'system' の場合は 'light' を返す（またはデフォルト値）
+            return mode === 'dark' ? 'dark' : 'light';
+        };
+
         if (mode === 'system') {
             const handler = () => setActualMode(getActualMode());
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handler);
-            setActualMode(getActualMode());
-            return () => window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', handler);
+            if (typeof window !== "undefined") {
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handler);
+                setActualMode(getActualMode());
+                return () => window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', handler);
+            }
         } else {
-            setActualMode(mode);
+            // ここを修正
+            if (mode === 'light' || mode === 'dark') {
+                setActualMode(mode);
+            } else {
+                setActualMode('light');
+            }
         }
     }, [mode]);
 
