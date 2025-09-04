@@ -39,24 +39,15 @@ export const CustomThemeProvider: React.FC<{ children: React.ReactNode }> = ({ c
             if (mode === 'system' && typeof window !== "undefined") {
                 return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
             }
-            // 'system' の場合は 'light' を返す（またはデフォルト値）
             return mode === 'dark' ? 'dark' : 'light';
         };
 
-        if (mode === 'system') {
+        setActualMode(getActualMode());
+
+        if (mode === 'system' && typeof window !== "undefined") {
             const handler = () => setActualMode(getActualMode());
-            if (typeof window !== "undefined") {
-                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handler);
-                setActualMode(getActualMode());
-                return () => window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', handler);
-            }
-        } else {
-            // ここを修正
-            if (mode === 'light' || mode === 'dark') {
-                setActualMode(mode);
-            } else {
-                setActualMode('light');
-            }
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handler);
+            return () => window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', handler);
         }
     }, [mode]);
 
