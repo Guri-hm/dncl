@@ -1,11 +1,13 @@
 import { Box, BoxProps } from "@mui/material";
-import { FC, useCallback, useEffect, useState, Fragment, useMemo } from "react";
+import React, { FC, Fragment, useMemo, useCallback, useState, useEffect } from 'react';
 import { TreeItems } from "@/app/types";
 import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, LoopEnum, ArithmeticOperator } from "@/app/enum";
 import { cnvToDivision, cnvToRomaji, containsJapanese, tryParseToJsFunction } from "@/app/utilities";
 import { ScopeBox } from "@/app/components/Tab";
 import styles from './tab.module.css';
 import { TreeItem } from "@/app/types";
+
+const jsConversionCache = new Map<string, React.ReactNode>();
 
 interface CustomBoxProps extends BoxProps {
     children: React.ReactNode;
@@ -119,22 +121,33 @@ const cnvToJs = async (statement: { lineTokens: string[], processIndex: number, 
     return tmpLine;
 }
 
-export const JsTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }) => {
 
-    const [shouldRunEffect, setShouldRunEffect] = useState(false);
+// JsTabコンポーネントをReact.memoでラップ
+export const JsTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx, ...props }) => {
     const [nodes, setNodes] = useState<React.ReactNode>(children);
 
-    useEffect(() => {
-        setNodes("変換中");
-        const timer = setTimeout(() => {
-            setShouldRunEffect(true);
-        }, 1000); // 1秒後に実行
-        return () => clearTimeout(timer); // クリーンアップ
+    // treeItemsのハッシュを作成（変更検出用）
+    const treeItemsHash = useMemo(() => {
+        return JSON.stringify(treeItems);
     }, [treeItems]);
 
+    // renderNodes関数を最適化
     const renderNodes = useCallback(async (nodes: TreeItems, depth: number): Promise<React.ReactNode> => {
         const promises = nodes.map(async (node: TreeItem, index: number) => {
-            const convertedJs = await cnvToJs({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex), isConstant: node.isConstant });
+            // キャッシュキーを作成
+            const nodeKey = `${node.id}-${JSON.stringify(node.lineTokens)}-${node.processIndex}-${node.isConstant}`;
+
+            let convertedJs;
+            if (jsConversionCache.has(nodeKey)) {
+                convertedJs = jsConversionCache.get(nodeKey);
+            } else {
+                convertedJs = await cnvToJs({
+                    lineTokens: node.lineTokens ?? [],
+                    processIndex: Number(node.processIndex),
+                    isConstant: node.isConstant
+                });
+                jsConversionCache.set(nodeKey, convertedJs);
+            }
 
             return (
                 <Fragment key={node.id}>
@@ -151,24 +164,45 @@ export const JsTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props })
         });
 
         return Promise.all(promises);
-    }, []);
+    }, []); // 依存配列を空に
 
-    const memoizedNodes = useMemo(() => {
-        if (shouldRunEffect) {
-            const convertCode = async () => {
-                return await renderNodes(treeItems, 0);
-            };
-            setShouldRunEffect(false); // フラグをリセット
-            convertCode().then(setNodes);
-        }
-        return nodes;
-    }, [shouldRunEffect, renderNodes, treeItems, nodes]);
+    // コード変換処理を最適化
+    const convertedCode = useMemo(() => {
+        let isCanceled = false;
+
+        const convertAsync = async () => {
+            if (jsConversionCache.has(treeItemsHash)) {
+                const cached = jsConversionCache.get(treeItemsHash);
+                if (!isCanceled) setNodes(cached);
+                return;
+            }
+
+            if (!isCanceled) setNodes("変換中");
+
+            // 少し遅延を入れて変換中表示を確実に出す
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            if (!isCanceled) {
+                const result = await renderNodes(treeItems, 0);
+                jsConversionCache.set(treeItemsHash, result);
+                setNodes(result);
+            }
+        };
+
+        convertAsync();
+
+        return () => {
+            isCanceled = true;
+        };
+    }, [treeItemsHash, renderNodes]);
 
     return (
-        <Box className={styles.codeContainer} sx={{
-            ...sx
-        }} {...props} >
-            {memoizedNodes}
+        <Box className={styles.codeContainer} sx={{ ...sx }} {...props}>
+            {nodes}
         </Box>
     );
-};
+}, (prevProps, nextProps) => {
+    // カスタム比較関数
+    return JSON.stringify(prevProps.treeItems) === JSON.stringify(nextProps.treeItems) &&
+        JSON.stringify(prevProps.sx) === JSON.stringify(nextProps.sx);
+});
