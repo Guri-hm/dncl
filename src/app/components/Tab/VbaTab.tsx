@@ -7,11 +7,12 @@ import { ScopeBox } from "@/app/components/Tab";
 import styles from './tab.module.css';
 import { v4 as uuidv4 } from 'uuid'
 
+const vbaConversionCache = new Map<string, React.ReactNode>();
+
 interface CustomBoxProps extends BoxProps {
     children: React.ReactNode;
     treeItems: TreeItems;
 }
-
 
 const cnvToken = (token: string): string => {
     //VBAのオペランドに変換
@@ -181,23 +182,31 @@ const wrapRemainingItems = (remainingItems: TreeItems, movedItems: TreeItems): T
     return [...movedItems, newParent, endSub];
 };
 
-export const VbaTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }) => {
-
-    const [shouldRunEffect, setShouldRunEffect] = useState(false);
+export const VbaTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx, ...props }) => {
     const [nodes, setNodes] = useState<React.ReactNode>(children);
 
-    useEffect(() => {
-        setNodes("変換中");
-        const timer = setTimeout(() => {
-            setShouldRunEffect(true);
-        }, 1000); // 1秒後に実行
-        return () => clearTimeout(timer); // クリーンアップ
+    // treeItemsのハッシュを作成（変更検出用）
+    const treeItemsHash = useMemo(() => {
+        return JSON.stringify(treeItems);
     }, [treeItems]);
 
-
+    // renderNodes関数を最適化
     const renderNodes = useCallback(async (nodes: TreeItems, depth: number): Promise<React.ReactNode> => {
-        const promises: Promise<React.ReactNode>[] = nodes.map(async (node, index) => {
-            const convertedVba = await cnvToVba({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex), isConstant: node.isConstant });
+        const promises = nodes.map(async (node: TreeItem, index: number) => {
+            // キャッシュキーを作成
+            const nodeKey = `${node.id}-${JSON.stringify(node.lineTokens)}-${node.processIndex}-${node.isConstant}`;
+
+            let convertedVba;
+            if (vbaConversionCache.has(nodeKey)) {
+                convertedVba = vbaConversionCache.get(nodeKey);
+            } else {
+                convertedVba = await cnvToVba({
+                    lineTokens: node.lineTokens ?? [],
+                    processIndex: Number(node.processIndex),
+                    isConstant: node.isConstant
+                });
+                vbaConversionCache.set(nodeKey, convertedVba);
+            }
 
             return (
                 <Fragment key={node.id}>
@@ -216,25 +225,46 @@ export const VbaTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }
         return Promise.all(promises);
     }, []);
 
-    const memoizedNodes = useMemo(() => {
-        if (shouldRunEffect) {
-            const convertCode = async () => {
-                //EndSubに変換するTreeItemを挿入
+    // コード変換処理を最適化
+    const convertedCode = useMemo(() => {
+        let isCanceled = false;
+
+        const convertAsync = async () => {
+            if (vbaConversionCache.has(treeItemsHash)) {
+                const cached = vbaConversionCache.get(treeItemsHash);
+                if (!isCanceled) setNodes(cached);
+                return;
+            }
+
+            if (!isCanceled) setNodes("変換中");
+
+            // 少し遅延を入れて変換中表示を確実に出す
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            if (!isCanceled) {
+                // EndSubに変換するTreeItemを挿入
                 const { movedItems, remainingItems } = moveElementsToEnd(treeItems);
                 const finalTreeItems = wrapRemainingItems(remainingItems, movedItems);
-                console.log(moveElementsToEnd(finalTreeItems));
-                return await renderNodes(finalTreeItems, 0);
-            };
-            setShouldRunEffect(false); // フラグをリセット
-            convertCode().then(setNodes);
-        }
-        return nodes;
-    }, [shouldRunEffect, renderNodes, treeItems, nodes]);
+                const result = await renderNodes(finalTreeItems, 0);
+                vbaConversionCache.set(treeItemsHash, result);
+                setNodes(result);
+            }
+        };
+
+        convertAsync();
+
+        return () => {
+            isCanceled = true;
+        };
+    }, [treeItemsHash, renderNodes, treeItems]);
 
     return (
         <Box className={styles.codeContainer} sx={{ ...sx }} {...props}>
-            {memoizedNodes}
+            {nodes}
         </Box>
     );
-};
-
+}, (prevProps, nextProps) => {
+    // カスタム比較関数
+    return JSON.stringify(prevProps.treeItems) === JSON.stringify(nextProps.treeItems) &&
+        JSON.stringify(prevProps.sx) === JSON.stringify(nextProps.sx);
+});

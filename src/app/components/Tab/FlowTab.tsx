@@ -4,6 +4,9 @@ import { Box, BoxProps, Button } from '@mui/material';
 import { TreeItem, TreeItems } from '@/app/types';
 import { cnvToJs } from '@/app/utilities/cnvToJs';
 import { useTheme } from '@mui/material/styles';
+import React from 'react';
+
+const flowConversionCache = new Map<string, React.ReactNode>();
 
 interface CustomBoxProps extends BoxProps {
   children: React.ReactNode;
@@ -11,20 +14,15 @@ interface CustomBoxProps extends BoxProps {
 }
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
-export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }) => {
-
-  const [shouldRunEffect, setShouldRunEffect] = useState(false);
+export const FlowTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx, ...props }) => {
   const [nodes, setNodes] = useState<React.ReactNode>(children);
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const darkModeValue = isDark ? "dark" : "light";
 
-  useEffect(() => {
-    setNodes("変換中");
-    const timer = setTimeout(() => {
-      setShouldRunEffect(true);
-    }, 1000); // 1秒後に実行
-    return () => clearTimeout(timer); // クリーンアップ
+  // treeItemsのハッシュを作成（変更検出用）
+  const treeItemsHash = useMemo(() => {
+    return JSON.stringify(treeItems);
   }, [treeItems]);
 
   const renderCode = useCallback(async (nodes: TreeItems): Promise<string> => {
@@ -92,7 +90,7 @@ export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props 
     return () => {
       document.body.removeChild(script);
     };
-  }, []);
+  }, [isDark, darkModeValue]);
 
   const handleDownloadSVG = () => {
     // mxgraphクラスの要素を取得
@@ -130,7 +128,7 @@ export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props 
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ code }), // コードを送信
+        body: JSON.stringify({ code }),
       });
 
       if (!response.ok) {
@@ -155,21 +153,41 @@ export const FlowTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props 
     }
   }, [generateFlowchart]);
 
-  const memoizedNodes = useMemo(() => {
-    if (shouldRunEffect) {
-      const convertCode = async () => {
+  const convertedCode = useMemo(() => {
+    let isCanceled = false;
+
+    const convertAsync = async () => {
+      if (flowConversionCache.has(treeItemsHash)) {
+        const cached = flowConversionCache.get(treeItemsHash);
+        if (!isCanceled) setNodes(cached);
+        return;
+      }
+
+      if (!isCanceled) setNodes("変換中");
+
+      // 少し遅延を入れて変換中表示を確実に出す
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      if (!isCanceled) {
         const jsCode = await renderCode(treeItems);
         await fetchLintResults(jsCode);
-      };
-      setShouldRunEffect(false);
-      convertCode().then(() => { });
-    }
-    return nodes;
-  }, [shouldRunEffect, renderCode, fetchLintResults, treeItems, nodes]);
+      }
+    };
+
+    convertAsync();
+
+    return () => {
+      isCanceled = true;
+    };
+  }, [treeItemsHash, renderCode, fetchLintResults, treeItems]);
 
   return (
     <>
-      {memoizedNodes}
+      {nodes}
     </>
   );
-}
+}, (prevProps, nextProps) => {
+  // カスタム比較関数
+  return JSON.stringify(prevProps.treeItems) === JSON.stringify(nextProps.treeItems) &&
+    JSON.stringify(prevProps.sx) === JSON.stringify(nextProps.sx);
+});

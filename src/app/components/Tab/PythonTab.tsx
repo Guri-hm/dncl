@@ -1,10 +1,12 @@
 import { Box, BoxProps } from "@mui/material";
-import { TreeItems } from "@/app/types";
-import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, ComparisonOperatorDncl, LoopEnum, ArithmeticOperator, BreakEnum, ArithmeticOperatorPython } from "@/app/enum";
+import { TreeItem, TreeItems } from "@/app/types";
+import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, LoopEnum, ArithmeticOperator, BreakEnum, ArithmeticOperatorPython } from "@/app/enum";
 import { capitalizeTrueFalse, cnvToRomaji, containsJapanese, tryParseToPyFunc } from "@/app/utilities";
-import { FC, Fragment, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import React, { FC, Fragment, ReactNode, useCallback, useMemo, useState } from "react";
 import { ScopeBox } from "@/app/components/Tab";
 import styles from "./tab.module.css"
+
+const pythonConversionCache = new Map<string, React.ReactNode>();
 
 interface CustomBoxProps extends BoxProps {
     children: React.ReactNode;
@@ -148,23 +150,30 @@ const GuardedBox: React.FC<GuardedBoxProps> = ({ className, children, ...props }
     );
 };
 
-
-export const PythonTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...props }) => {
-
-    const [shouldRunEffect, setShouldRunEffect] = useState(false);
+export const PythonTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx, ...props }) => {
     const [nodes, setNodes] = useState<React.ReactNode>(children);
 
-    useEffect(() => {
-        setNodes("変換中");
-        const timer = setTimeout(() => {
-            setShouldRunEffect(true);
-        }, 1000); // 1秒後に実行
-        return () => clearTimeout(timer); // クリーンアップ
+    // treeItemsのハッシュを作成（変更検出用）
+    const treeItemsHash = useMemo(() => {
+        return JSON.stringify(treeItems);
     }, [treeItems]);
 
+    // renderNodes関数を最適化
     const renderNodes = useCallback(async (nodes: TreeItems, depth: number): Promise<ReactNode> => {
-        const renderedNodes = await Promise.all(nodes.map(async (node, index) => {
-            const content = await cnvToPython({ lineTokens: node.lineTokens ?? [], processIndex: Number(node.processIndex) });
+        const promises = nodes.map(async (node: TreeItem, index: number) => {
+            // キャッシュキーを作成
+            const nodeKey = `${node.id}-${JSON.stringify(node.lineTokens)}-${node.processIndex}`;
+
+            let content;
+            if (pythonConversionCache.has(nodeKey)) {
+                content = pythonConversionCache.get(nodeKey);
+            } else {
+                content = await cnvToPython({
+                    lineTokens: node.lineTokens ?? [],
+                    processIndex: Number(node.processIndex)
+                });
+                pythonConversionCache.set(nodeKey, content);
+            }
 
             if (Number(node.processIndex) === ProcessEnum.EndDoWhile) {
                 const items: TreeItems = [
@@ -201,27 +210,48 @@ export const PythonTab: FC<CustomBoxProps> = ({ treeItems, children, sx, ...prop
                     )}
                 </Fragment>
             );
-        }));
+        });
 
-        return renderedNodes;
+        return Promise.all(promises);
     }, []);
 
-    const memoizedNodes = useMemo(() => {
-        if (shouldRunEffect) {
-            const convertCode = async () => {
-                return await renderNodes(treeItems, 0);
-            };
-            setShouldRunEffect(false); // フラグをリセット
-            convertCode().then(setNodes);
-        }
-        return nodes;
-    }, [shouldRunEffect, renderNodes, treeItems, nodes]);
+    // コード変換処理を最適化
+    const convertedCode = useMemo(() => {
+        let isCanceled = false;
+
+        const convertAsync = async () => {
+            if (pythonConversionCache.has(treeItemsHash)) {
+                const cached = pythonConversionCache.get(treeItemsHash);
+                if (!isCanceled) setNodes(cached);
+                return;
+            }
+
+            if (!isCanceled) setNodes("変換中");
+
+            // 少し遅延を入れて変換中表示を確実に出す
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            if (!isCanceled) {
+                const result = await renderNodes(treeItems, 0);
+                pythonConversionCache.set(treeItemsHash, result);
+                setNodes(result);
+            }
+        };
+
+        convertAsync();
+
+        return () => {
+            isCanceled = true;
+        };
+    }, [treeItemsHash, renderNodes, treeItems]);
 
     return (
-        <Box className={styles.codeContainer} sx={{
-            ...sx
-        }} {...props} >
-            {memoizedNodes}
+        <Box className={styles.codeContainer} sx={{ ...sx }} {...props}>
+            {nodes}
         </Box>
     );
-};
+}, (prevProps, nextProps) => {
+    // カスタム比較関数
+    return JSON.stringify(prevProps.treeItems) === JSON.stringify(nextProps.treeItems) &&
+        JSON.stringify(prevProps.sx) === JSON.stringify(nextProps.sx);
+});
