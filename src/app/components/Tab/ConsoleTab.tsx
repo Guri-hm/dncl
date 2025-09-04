@@ -5,6 +5,7 @@ import { DnclValidationType, FlattenedItem, TreeItems } from "@/app/types";
 import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, LoopEnum, ArithmeticOperator } from "@/app/enum";
 import { checkDNCLSyntax, cnvToDivision, containsJapanese, flattenTree, tryParseToJsFunction } from "@/app/utilities";
 import Divider from '@mui/material/Divider';
+import { cnvToJs } from "@/app/utilities/cnvToJs";
 
 interface CustomBoxProps extends BoxProps {
     children?: React.ReactNode;
@@ -62,95 +63,11 @@ const cnvToJsMemoized = (() => {
             return cache.get(cacheKey)!;
         }
 
-        const result = await cnvToJs(statement);
+        const result = await cnvToJs(statement, "hex");
         cache.set(cacheKey, result);
         return result;
     };
 })();
-
-export const cnvToJs = async (statement: { lineTokens: string[], processIndex: number, isConstant?: boolean }) => {
-    const lineTokens: string[] = statement.lineTokens.map(token => { return cnvToken(token) });
-    let tmpLine: string = '';
-
-    switch (statement.processIndex) {
-        case ProcessEnum.SetValToVariableOrArray:
-            if (statement.isConstant) {
-                tmpLine = `const ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]};`
-            } else {
-                tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]};`
-            }
-            break;
-        case ProcessEnum.InitializeArray:
-            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${BraketSymbolEnum.OpenSquareBracket}${lineTokens[1]}${BraketSymbolEnum.CloseSquareBracket};`
-            break;
-        case ProcessEnum.BulkAssignToArray:
-            tmpLine = `${lineTokens[0]}.fill(${lineTokens[1]});`
-            break;
-        case ProcessEnum.Increment:
-            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[0]} ${ArithmeticOperator.AdditionOperator} ${lineTokens[1]};`
-            break;
-        case ProcessEnum.Decrement:
-            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[0]} ${ArithmeticOperator.SubtractionOperator} ${lineTokens[1]};`
-            break;
-        case ProcessEnum.Output:
-            tmpLine = `${OutputEnum.Js}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket};`
-            break;
-        case ProcessEnum.If:
-            tmpLine = `${ConditionEnum.JsPythonIf} ${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
-            break;
-        case ProcessEnum.ElseIf:
-            tmpLine = `${BraketSymbolEnum.CloseBrace}${ConditionEnum.JsElseIf}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
-            break;
-        case ProcessEnum.Else:
-            tmpLine = `${BraketSymbolEnum.CloseBrace}${ConditionEnum.JsPythonElse}${BraketSymbolEnum.OpenBrace}`
-            break;
-        case ProcessEnum.EndIf:
-            tmpLine = `${BraketSymbolEnum.CloseBrace}`
-            break;
-        case ProcessEnum.While:
-            tmpLine = `${LoopEnum.JsPythonWhile}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
-            break;
-        case ProcessEnum.EndWhile:
-        case ProcessEnum.EndFor:
-        case ProcessEnum.Defined:
-            tmpLine = `${BraketSymbolEnum.CloseBrace}`
-            break;
-        case ProcessEnum.DoWhile:
-            tmpLine = `${LoopEnum.JsDoWhile}${BraketSymbolEnum.OpenBrace}`;
-            break;
-        case ProcessEnum.EndDoWhile:
-            tmpLine = `${BraketSymbolEnum.CloseBrace}${LoopEnum.JsPythonWhile}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket};`;
-            break;
-        case ProcessEnum.ForIncrement:
-        case ProcessEnum.ForDecrement:
-            tmpLine = `${LoopEnum.JsPythonFor} ${BraketSymbolEnum.LeftBraket} ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]}; ${lineTokens[0]} ${ComparisonOperator.LessThanOrEqualToOperator} ${lineTokens[2]}; ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[0]} ${statement.processIndex == ProcessEnum.ForIncrement ? ArithmeticOperator.AdditionOperator : ArithmeticOperator.SubtractionOperator} ${lineTokens[3]}${BraketSymbolEnum.RigthBraket} ${BraketSymbolEnum.OpenBrace}`;
-            break;
-        case ProcessEnum.DefineFunction:
-            let funcName = `${lineTokens[0]}`
-            if (containsJapanese(funcName)) {
-                const extracted = extractJapaneseAndNonJapanese(funcName);
-                const hexStr = convertToHexadecimal(extracted.japanese);
-                const prefix = makeFuncName(hexStr);
-                funcName = prefix + extracted.nonJapanese;
-            }
-            tmpLine = `${UserDefinedFunc.Js} ${funcName} ${BraketSymbolEnum.OpenBrace}`
-            break;
-        case ProcessEnum.ExecuteUserDefinedFunction:
-            tmpLine = `${lineTokens[0]};`
-            if (containsJapanese(tmpLine)) {
-                const extracted = extractJapaneseAndNonJapanese(tmpLine);
-                const hexStr = convertToHexadecimal(extracted.japanese);
-                const prefix = makeFuncName(hexStr);
-                tmpLine = prefix + extracted.nonJapanese;
-            }
-            break;
-        default:
-            tmpLine = '';
-            break;
-    }
-
-    return tmpLine;
-}
 
 const Color = {
     error: 'var(--error)',
@@ -250,8 +167,8 @@ export const ConsoleTab: React.FC<CustomBoxProps> = React.memo(({
 
             if (cached.messages.length === 0) {
                 setTmpMsg('プログラム実行中…');
-                await execute(code); // <- awaitを追加
-                setTmpMsg(''); // <- 実行完了後にクリア
+                await execute(code);
+                setTmpMsg('');
             } else {
                 const formattedMessages = cached.lineNumbers.map((lineNumber: number, index: number) => {
                     return `${lineNumber}行目：${cached.messages[index]}`;
@@ -263,7 +180,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = React.memo(({
                     lineNum: cached.lineNumbers
                 };
                 setDnclValidation(result);
-                setTmpMsg(''); // <- エラー時もクリア
+                setTmpMsg('');
             }
             return;
         }
@@ -289,8 +206,8 @@ export const ConsoleTab: React.FC<CustomBoxProps> = React.memo(({
 
             if (data.messages.length === 0) {
                 setTmpMsg('プログラム実行中…');
-                await execute(code); // <- awaitを追加
-                setTmpMsg(''); // <- 実行完了後にクリア
+                await execute(code);
+                setTmpMsg('');
             } else {
                 const formattedMessages = data.lineNumbers.map((lineNumber: number, index: number) => {
                     return `${lineNumber}行目：${data.messages[index]}`;
@@ -302,7 +219,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = React.memo(({
                     lineNum: data.lineNumbers
                 };
                 setDnclValidation(result);
-                setTmpMsg(''); // <- エラー時もクリア
+                setTmpMsg('');
             }
         } catch (err: unknown) {
             const result: DnclValidationType = {
@@ -312,7 +229,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = React.memo(({
                 lineNum: []
             };
             setDnclValidation(result);
-            setTmpMsg(''); // <- エラー時もクリア
+            setTmpMsg('');
         }
     }, [execute, setDnclValidation]);
 
@@ -377,14 +294,14 @@ export const ConsoleTab: React.FC<CustomBoxProps> = React.memo(({
             setDnclValidation(validateDNCLSyntax);
 
             if (validateDNCLSyntax.hasError) {
-                setTmpMsg(''); // <- DNCL構文エラー時もクリア
+                setTmpMsg('');
                 return;
             }
 
             const convertCode = async () => {
                 const code = await renderCode(treeItems);
                 await fetchLintResults(code); // <- awaitを追加
-                setTmpMsg(''); // <- 全処理完了後にクリア
+                setTmpMsg('');
             };
 
             convertCode();

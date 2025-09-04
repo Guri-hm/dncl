@@ -6,6 +6,7 @@ import { cnvToDivision, cnvToRomaji, containsJapanese, tryParseToJsFunction } fr
 import { ScopeBox } from "@/app/components/Tab";
 import styles from './tab.module.css';
 import { TreeItem } from "@/app/types";
+import { cnvToJs } from "@/app/utilities/cnvToJs";
 
 const jsConversionCache = new Map<string, React.ReactNode>();
 
@@ -19,108 +20,6 @@ const cnvToken = (token: string): string => {
     const { convertedStr } = tryParseToJsFunction(token);
     return convertedStr;
 }
-
-const cnvToJs = async (statement: { lineTokens: string[], processIndex: number, isConstant?: boolean }) => {
-
-    const lineTokens: string[] = statement.lineTokens.map(token => { return cnvToken(token) });
-
-    let tmpLine: string = '';
-
-    switch (statement.processIndex) {
-        case ProcessEnum.SetValToVariableOrArray:
-            if (statement.isConstant) {
-                tmpLine = `const ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]};`
-            } else {
-                tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]};`
-            }
-            break;
-        case ProcessEnum.InitializeArray:
-            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${BraketSymbolEnum.OpenSquareBracket}${lineTokens[1]}${BraketSymbolEnum.CloseSquareBracket};`
-            break;
-        case ProcessEnum.BulkAssignToArray:
-            tmpLine = `${lineTokens[0]}.fill(${lineTokens[1]});`
-            break;
-        case ProcessEnum.Increment:
-            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[0]} ${ArithmeticOperator.AdditionOperator} ${lineTokens[1]};`
-            break;
-        case ProcessEnum.Decrement:
-            tmpLine = `${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[0]} ${ArithmeticOperator.SubtractionOperator} ${lineTokens[1]};`
-            break;
-
-        case ProcessEnum.Output:
-
-            tmpLine = `${OutputEnum.Js}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket};`
-            break;
-
-        case ProcessEnum.If:
-            tmpLine = `${ConditionEnum.JsPythonIf} ${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
-            break;
-
-        case ProcessEnum.ElseIf:
-            tmpLine = `${BraketSymbolEnum.CloseBrace}${ConditionEnum.JsElseIf}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
-
-            break;
-
-        case ProcessEnum.Else:
-            tmpLine = `${BraketSymbolEnum.CloseBrace}${ConditionEnum.JsPythonElse}${BraketSymbolEnum.OpenBrace}`
-
-            break;
-
-        case ProcessEnum.EndIf:
-            tmpLine = `${BraketSymbolEnum.CloseBrace}`
-            break;
-
-        case ProcessEnum.While:
-            tmpLine = `${LoopEnum.JsPythonWhile}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket}${BraketSymbolEnum.OpenBrace}`
-            break;
-
-        case ProcessEnum.EndWhile:
-        case ProcessEnum.EndFor:
-        case ProcessEnum.Defined:
-            tmpLine = `${BraketSymbolEnum.CloseBrace}`
-            break;
-
-        case ProcessEnum.DoWhile:
-            tmpLine = `${LoopEnum.JsDoWhile}${BraketSymbolEnum.OpenBrace}`;
-
-            break;
-
-        case ProcessEnum.EndDoWhile:
-            tmpLine = `${BraketSymbolEnum.CloseBrace}${LoopEnum.JsPythonWhile}${BraketSymbolEnum.LeftBraket}${lineTokens[0]}${BraketSymbolEnum.RigthBraket};`;
-            break;
-
-        case ProcessEnum.ForIncrement:
-        case ProcessEnum.ForDecrement:
-            tmpLine = `${LoopEnum.JsPythonFor} ${BraketSymbolEnum.LeftBraket}
-            ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[1]}; 
-            ${lineTokens[0]} ${ComparisonOperator.LessThanOrEqualToOperator} ${lineTokens[2]}; 
-            ${lineTokens[0]} ${SimpleAssignmentOperator.Other} ${lineTokens[0]} ${statement.processIndex == ProcessEnum.ForIncrement ? ArithmeticOperator.AdditionOperator : ArithmeticOperator.SubtractionOperator} ${lineTokens[3]}${BraketSymbolEnum.RigthBraket} ${BraketSymbolEnum.OpenBrace}`;
-            break;
-
-        case ProcessEnum.DefineFunction:
-
-            tmpLine = `${UserDefinedFunc.Js} ${lineTokens[0]} ${BraketSymbolEnum.OpenBrace}`
-            if (containsJapanese(tmpLine)) {
-                tmpLine = await cnvToRomaji(tmpLine);
-            }
-            break;
-
-        case ProcessEnum.ExecuteUserDefinedFunction:
-            tmpLine = `${lineTokens[0]};`
-            if (containsJapanese(tmpLine)) {
-                tmpLine = await cnvToRomaji(tmpLine);
-            }
-            break;
-
-        default:
-            tmpLine = '';
-            break;
-
-    }
-
-    return tmpLine;
-}
-
 
 // JsTabコンポーネントをReact.memoでラップ
 export const JsTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx, ...props }) => {
@@ -145,7 +44,7 @@ export const JsTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx, 
                     lineTokens: node.lineTokens ?? [],
                     processIndex: Number(node.processIndex),
                     isConstant: node.isConstant
-                });
+                }, "romaji");
                 jsConversionCache.set(nodeKey, convertedJs);
             }
 
