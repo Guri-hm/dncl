@@ -61,17 +61,22 @@ export default function Home() {
 
   return (
     <PageWrapper>
-      <HeaderBar>
-        <Button ref={buttonRef}
-          sx={{ backgroundColor: 'var(--stone-50)', marginLeft: 'auto', color: 'var(--foreground)' }}
-          onClick={handleClickOpen}
-          endIcon={<RestartAltIcon />}
-          variant="contained"
-        >
-          リセット
-        </Button>
-        <ThemeToggleButton sx={{ marginLeft: "auto" }} />
-      </HeaderBar>
+      <HeaderBar
+        leftContent={<HeaderTitle />}
+        rightContent={
+          <>
+            <Button ref={buttonRef}
+              sx={{ backgroundColor: 'var(--stone-50)', marginLeft: 'auto', color: 'var(--foreground)' }}
+              onClick={handleClickOpen}
+              endIcon={<RestartAltIcon />}
+              variant="contained"
+            >
+              リセット
+            </Button>
+            <ThemeToggleButton sx={{ marginLeft: "auto" }} />
+          </>
+        }
+      />
       <ContentWrapper>
         <Grid container direction={"column"} sx={{
           justifyContent: "flex-start",
