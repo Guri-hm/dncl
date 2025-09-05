@@ -1,13 +1,30 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState, Suspense, lazy } from "react";
 import { TabGroup, TabItem, TabItemsObj, TreeItems } from "@/app/types";
 import cmnStyles from '@/app/components/common.module.css'
 import { Allotment, AllotmentHandle } from "allotment";
-import { VbaTab, DnclTab, JsTab, PythonTab, TabsBox, TabsSingleBox, FlowTab } from "@/app/components/Tab";
 import { closestCenter, DndContext, DragEndEvent, DragOverEvent, MeasuringStrategy, UniqueIdentifier } from "@dnd-kit/core";
 import { arrayMove, SortableContext } from "@dnd-kit/sortable";
 import { restrictToHorizontalAxis } from "@dnd-kit/modifiers";
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
+import { Box, CircularProgress } from '@mui/material';
+
+// 遅延読み込み
+const VbaTab = lazy(() => import('./VbaTab').then(module => ({ default: module.VbaTab })));
+const DnclTab = lazy(() => import('./DnclTab').then(module => ({ default: module.DnclTab })));
+const JsTab = lazy(() => import('./JsTab').then(module => ({ default: module.JsTab })));
+const PythonTab = lazy(() => import('./PythonTab').then(module => ({ default: module.PythonTab })));
+const FlowTab = lazy(() => import('./FlowTab').then(module => ({ default: module.FlowTab })));
+const TabsBox = lazy(() => import('./TabsBox'));
+const TabsSingleBox = lazy(() => import('./TabsSingleBox'));
+
+// ローディングコンポーネント
+const TabLoadingFallback = () => (
+    <Box display="flex" justifyContent="center" alignItems="center" height="150px">
+        <CircularProgress size={20} />
+        <Box ml={1}>タブを読み込み中...</Box>
+    </Box>
+);
 
 interface Props {
     treeItems: TreeItems;
@@ -21,76 +38,112 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, se
     const isMd = useMediaQuery(theme.breakpoints.up('md'));//900px以上
     const isSm = useMediaQuery(theme.breakpoints.up('sm'));//600px以上
 
+    // TabComponentのレンダリング関数（遅延読み込み対応）
+    const renderTabComponent = (label: string, treeItems: TreeItems, children: string) => {
+        switch (label) {
+            case 'DNCL':
+                return (
+                    <Suspense fallback={<TabLoadingFallback />}>
+                        <DnclTab treeItems={treeItems}>{children}</DnclTab>
+                    </Suspense>
+                );
+            case 'javascript':
+                return (
+                    <Suspense fallback={<TabLoadingFallback />}>
+                        <JsTab treeItems={treeItems}>{children}</JsTab>
+                    </Suspense>
+                );
+            case 'Python':
+                return (
+                    <Suspense fallback={<TabLoadingFallback />}>
+                        <PythonTab treeItems={treeItems}>{children}</PythonTab>
+                    </Suspense>
+                );
+            case 'VBA':
+                return (
+                    <Suspense fallback={<TabLoadingFallback />}>
+                        <VbaTab treeItems={treeItems}>{children}</VbaTab>
+                    </Suspense>
+                );
+            case 'フローチャート':
+                return (
+                    <Suspense fallback={<TabLoadingFallback />}>
+                        <FlowTab treeItems={treeItems}>{children}</FlowTab>
+                    </Suspense>
+                );
+            default:
+                return <TabLoadingFallback />;
+        }
+    };
+
     const [tabItemsObj, setTabItemsObj] = useState<TabItemsObj>(isMd ? {
         group1: {
-            visible: true, // or false, depending on the initial state
+            visible: true,
             items: [
                 {
-                    id: 4, label: 'DNCL', component: <DnclTab treeItems={treeItems}>
-                        DNCLのコード
-                    </DnclTab>
+                    id: 4,
+                    label: 'DNCL',
+                    component: renderTabComponent('DNCL', treeItems, 'DNCLのコード')
                 },
                 {
-                    id: 5, label: 'フローチャート', component: <FlowTab treeItems={treeItems}>
-                        フローチャート
-                    </FlowTab>
+                    id: 5,
+                    label: 'フローチャート',
+                    component: renderTabComponent('フローチャート', treeItems, 'フローチャート')
                 },
             ],
         },
         group2: {
-            visible: true, // or false, depending on the initial state
+            visible: true,
             items: [
                 {
-                    id: 1, label: 'javascript', component: <JsTab treeItems={treeItems}>
-                        javascriptのコード
-                    </JsTab>
+                    id: 1,
+                    label: 'javascript',
+                    component: renderTabComponent('javascript', treeItems, 'javascriptのコード')
                 },
                 {
-                    id: 2, label: 'Python', component: <PythonTab treeItems={treeItems}>
-                        Pythonのコード
-                    </PythonTab>
+                    id: 2,
+                    label: 'Python',
+                    component: renderTabComponent('Python', treeItems, 'Pythonのコード')
                 },
                 {
-                    id: 3, label: 'VBA', component: <VbaTab treeItems={treeItems}>
-                        VBAのコード
-                    </VbaTab>
+                    id: 3,
+                    label: 'VBA',
+                    component: renderTabComponent('VBA', treeItems, 'VBAのコード')
                 },
             ],
         },
-    } :
-        {
-            group1: {
-                visible: true, // or false, depending on the initial state
-                items: [
-                    {
-                        id: 4, label: 'DNCL', component: <DnclTab treeItems={treeItems}>
-                            DNCLのコード
-                        </DnclTab>
-                    },
-                    {
-                        id: 5, label: 'フローチャート', component: <FlowTab treeItems={treeItems}>
-                            フローチャート
-                        </FlowTab>
-                    },
-                    {
-                        id: 1, label: 'javascript', component: <JsTab treeItems={treeItems}>
-                            javascriptのコード
-                        </JsTab>
-                    },
-                    {
-                        id: 2, label: 'Python', component: <PythonTab treeItems={treeItems}>
-                            Pythonのコード
-                        </PythonTab>
-                    },
-                    {
-                        id: 3, label: 'VBA', component: <VbaTab treeItems={treeItems}>
-                            VBAのコード
-                        </VbaTab>
-                    },
-                ]
-            }
+    } : {
+        group1: {
+            visible: true,
+            items: [
+                {
+                    id: 4,
+                    label: 'DNCL',
+                    component: renderTabComponent('DNCL', treeItems, 'DNCLのコード')
+                },
+                {
+                    id: 5,
+                    label: 'フローチャート',
+                    component: renderTabComponent('フローチャート', treeItems, 'フローチャート')
+                },
+                {
+                    id: 1,
+                    label: 'javascript',
+                    component: renderTabComponent('javascript', treeItems, 'javascriptのコード')
+                },
+                {
+                    id: 2,
+                    label: 'Python',
+                    component: renderTabComponent('Python', treeItems, 'Pythonのコード')
+                },
+                {
+                    id: 3,
+                    label: 'VBA',
+                    component: renderTabComponent('VBA', treeItems, 'VBAのコード')
+                },
+            ]
         }
-    );
+    });
 
     useEffect(() => {
         // `treeItems` が変更されるたびに `tabItemsObj` の `component` 部分のみを更新
@@ -100,15 +153,15 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, se
                 component: (() => {
                     switch (item.label) {
                         case 'DNCL':
-                            return <DnclTab treeItems={treeItems}>DNCLのコード</DnclTab>;
+                            return renderTabComponent('DNCL', treeItems, 'DNCLのコード');
                         case 'javascript':
-                            return <JsTab treeItems={treeItems}>javascriptのコード</JsTab>;
+                            return renderTabComponent('javascript', treeItems, 'javascriptのコード');
                         case 'Python':
-                            return <PythonTab treeItems={treeItems}>Pythonのコード</PythonTab>;
+                            return renderTabComponent('Python', treeItems, 'Pythonのコード');
                         case 'VBA':
-                            return <VbaTab treeItems={treeItems}>VBAのコード</VbaTab>;
+                            return renderTabComponent('VBA', treeItems, 'VBAのコード');
                         case 'フローチャート':
-                            return <FlowTab treeItems={treeItems}>フローチャート</FlowTab>;
+                            return renderTabComponent('フローチャート', treeItems, 'フローチャート');
                         default:
                             return item.component;
                     }
@@ -217,6 +270,7 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, se
             });
         }
     }
+
     const handleDragEnd = ({ active, over }: DragEndEvent) => {
         if (!active.id) {
             return;
@@ -311,7 +365,6 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, se
                 tabsBoxWrapperVisible ?
                     isMd ?
                         <DndContext
-                            // 衝突検知を collisionDetection={closestCenter} にすると、全エリアでDropOver扱いになる
                             collisionDetection={closestCenter}
                             onDragStart={({ active }) => {
                                 setActiveId(active.id);
@@ -325,33 +378,36 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, se
                                 },
                             }}
                         >
-
                             <SortableContext items={[...containers, PLACEHOLDER_ID]}>
                                 <Allotment minSize={0} className={`${cmnStyles.hFull}`} ref={ref}>
                                     {containers.map((containerId) => {
                                         return <Allotment.Pane minSize={0} snap visible={tabItemsObj[containerId].visible} key={containerId}>
                                             <div key={containerId} className={`${cmnStyles.hFull}`} style={{ marginLeft: '16px' }}>
-                                                <TabsBox tabItems={tabItemsObj[containerId].items} disabled={isSortingContainer} containerId={containerId} setTabItemsObj={setTabItemsObj} />
+                                                <Suspense fallback={<TabLoadingFallback />}>
+                                                    <TabsBox tabItems={tabItemsObj[containerId].items} disabled={isSortingContainer} containerId={containerId} setTabItemsObj={setTabItemsObj} />
+                                                </Suspense>
                                             </div>
                                         </Allotment.Pane>
-                                    }
-                                    )}
+                                    })}
                                 </Allotment>
                             </SortableContext>
                         </DndContext>
                         :
                         <div className={`${cmnStyles.hFull}`} style={{ marginLeft: '17px', marginRight: '5px' }}>
                             <Allotment minSize={0} className={`${cmnStyles.hFull}`}>
-                                <TabsSingleBox tabItems={tabItemsObj['group1'].items} containerId={'group1'} setTabItemsObj={setTabItemsObj} />
+                                <Suspense fallback={<TabLoadingFallback />}>
+                                    <TabsSingleBox tabItems={tabItemsObj['group1'].items} containerId={'group1'} setTabItemsObj={setTabItemsObj} />
+                                </Suspense>
                             </Allotment>
                         </div>
                     : null
                 :
                 <div className={`${cmnStyles.hFull}`}>
-                    <TabsSingleBox tabItems={tabItemsObj['group1'].items} />
+                    <Suspense fallback={<TabLoadingFallback />}>
+                        <TabsSingleBox tabItems={tabItemsObj['group1'].items} />
+                    </Suspense>
                 </div>
             }
-
         </>
     );
 };

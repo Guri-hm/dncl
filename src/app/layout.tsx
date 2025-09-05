@@ -1,18 +1,14 @@
 import type { Metadata } from "next";
-// import localFont from "next/font/local";
 import "./globals.css";
-import ClientLayout from '@/app/components/ClientLayout';
+import { Suspense, lazy } from 'react';
 
-// const geistSans = localFont({
-//   src: "./fonts/GeistVF.woff",
-//   variable: "--font-geist-sans",
-//   weight: "100 900",
-// });
-// const geistMono = localFont({
-//   src: "./fonts/GeistMonoVF.woff",
-//   variable: "--font-geist-mono",
-//   weight: "100 900",
-// });
+const ClientLayout = lazy(() => import('@/app/components/ClientLayout'));
+
+const InitialLoader = () => (
+  <div className="initial-loader">
+    <div className="spinner" />
+  </div>
+);
 
 export const metadata: Metadata = {
   title: "ぎじげんごいじるこ",
@@ -26,12 +22,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
-      <body
-        style={{ userSelect: 'none' }}
-      >
-        <ClientLayout>
-          {children}
-        </ClientLayout>
+      <body style={{ userSelect: 'none' }}>
+        <Suspense fallback={<InitialLoader />}>
+          <ClientLayout>
+            {children}
+          </ClientLayout>
+        </Suspense>
       </body>
     </html>
   );

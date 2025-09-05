@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
-export const FireworksEffect: React.FC = () => {
+const FireworksEffect: React.FC = () => {
     const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -123,4 +123,4 @@ export const FireworksEffect: React.FC = () => {
 
     return <div ref={containerRef} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflow: 'hidden' }} />;
 };
-
+export default FireworksEffect;

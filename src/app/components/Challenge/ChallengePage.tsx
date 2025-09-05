@@ -2,32 +2,72 @@
 import { Allotment } from "allotment";
 import "allotment/dist/style.css";
 import "@/app/components/allotment-custom.css";
-import { defaultFragments, SortableTree } from "@/app/components/SortableTree";
+import { defaultFragments } from "@/app/components/SortableTree";
 import styles from '@/app/components/common.module.css';
 import { Challenge, DnclValidationType, FragmentItems, TreeItems } from "@/app/types";
 import { PageWrapper } from "@/app/components/PageWrapper";
 import { HeaderBar, HeaderTitle } from "@/app/components/Header";
-import { HintButton, HowToButton, Tip, Door } from "@/app/components/Tips";
+import { HintButton, HowToButton, Door } from "@/app/components/Tips";
 import { ContentWrapper } from "@/app/components/ContentWrapper";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Snackbar } from "@mui/material";
-import { ConsoleWrapper } from "@/app/components/ConsoleWrapper";
+import { useCallback, useEffect, useRef, useState, Suspense, lazy } from "react";
+import { Snackbar, Box, CircularProgress } from "@mui/material";
 import { FooterOverlay } from "@/app/components/Footer";
 import { Question } from "@/app/components/Challenge";
-import { SuccessDialog } from "@/app/components/Dialog";
 import Confetti from 'react-confetti';
 import { useAchievements, storageKey } from '@/app/hooks';
 import { statementEnumMap } from "@/app/enum";
 import { v4 as uuidv4 } from "uuid";
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
-import { SwiperTabs } from "@/app/components/Tab";
-import { SwiperSlide } from "swiper/react";
 import Divider from '@mui/material/Divider';
 import { ThemeToggleButton } from '@/app/components/Header';
+
+// 重いコンポーネントを遅延読み込み
+const SortableTree = lazy(() => import("@/app/components/SortableTree").then(module => ({ default: module.SortableTree })));
+const ConsoleWrapper = lazy(() => import("@/app/components/ConsoleWrapper").then(module => ({ default: module.ConsoleWrapper })));
+const SwiperTabs = lazy(() => import("@/app/components/Tab").then(module => ({ default: module.SwiperTabs })));
+const SwiperSlide = lazy(() => import("swiper/react").then(module => ({ default: module.SwiperSlide })));
+const Tip = lazy(() => import("@/app/components/Tips").then(module => ({ default: module.Tip })));
+const SuccessDialog = lazy(() => import("@/app/components/Dialog").then(module => ({ default: module.SuccessDialog })));
+
 interface Props {
     challenge: Challenge;
 }
+
+// ローディングコンポーネント
+const TreeLoadingFallback = () => (
+    <Box display="flex" justifyContent="center" alignItems="center" height="200px">
+        <CircularProgress size={24} />
+        <Box ml={1}>プログラムエディタを読み込み中...</Box>
+    </Box>
+);
+
+const ConsoleLoadingFallback = () => (
+    <Box display="flex" justifyContent="center" alignItems="center" height="150px">
+        <CircularProgress size={24} />
+        <Box ml={1}>コンソールを読み込み中...</Box>
+    </Box>
+);
+
+const SwiperLoadingFallback = () => (
+    <Box display="flex" justifyContent="center" alignItems="center" height="100px">
+        <CircularProgress size={20} />
+        <Box ml={1}>タブを読み込み中...</Box>
+    </Box>
+);
+
+const TipLoadingFallback = () => (
+    <Box display="flex" justifyContent="center" alignItems="center" height="100px">
+        <CircularProgress size={20} />
+        <Box ml={1}>ヒントを読み込み中...</Box>
+    </Box>
+);
+
+const DialogLoadingFallback = () => (
+    <Box display="flex" justifyContent="center" alignItems="center">
+        <CircularProgress size={20} />
+    </Box>
+);
 
 const getLines = (treeItems: TreeItems): string[] => {
     const lines: string[] = [];
@@ -76,6 +116,7 @@ export const ChallengePage = ({ challenge }: Props) => {
     const isSm = useMediaQuery(theme.breakpoints.up('sm'));//600px以上
     const specialElementRef1 = useRef<HTMLDivElement | null>(null);
     const specialElementRef2 = useRef<HTMLDivElement | null>(null);
+
     const memoizedSetDnclValidation = useCallback(
         (validation: DnclValidationType | null) => setDnclValidation(validation),
         [setDnclValidation]
@@ -157,37 +198,78 @@ export const ChallengePage = ({ challenge }: Props) => {
                 問：{`${challenge.task}`}
             </Question>
             <ContentWrapper>
-                {isSm ?
+                {isSm ? (
                     <Allotment vertical defaultSizes={[200, 100]}>
                         <Allotment separator={false}>
                             <Allotment.Pane>
-                                <SortableTree treeItems={items} setTreeItems={setItems} dnclValidation={dnclValidation} fragments={fragments} collapsible indicator removable ></SortableTree>
+                                <Suspense fallback={<TreeLoadingFallback />}>
+                                    <SortableTree
+                                        treeItems={items}
+                                        setTreeItems={setItems}
+                                        dnclValidation={dnclValidation}
+                                        fragments={fragments}
+                                        collapsible
+                                        indicator
+                                        removable
+                                    />
+                                </Suspense>
                             </Allotment.Pane>
                             <Allotment.Pane visible={hintVisible}>
-                                <Tip onClose={() => setHintVisible(false)} hint={challenge.hint} />
+                                <Suspense fallback={<TipLoadingFallback />}>
+                                    <Tip onClose={() => setHintVisible(false)} hint={challenge.hint} />
+                                </Suspense>
                             </Allotment.Pane>
                             <Allotment.Pane visible={!hintVisible} minSize={60} maxSize={60} className={styles.paneHover}>
                                 <Door setVisible={() => setHintVisible(true)} title={"ヒントを表示したいですか？"} />
                             </Allotment.Pane>
                         </Allotment>
-                        <Allotment.Pane className={`${styles.bgStone50} ${styles.marginTop16} ${styles.hFull} `}>
-                            <ConsoleWrapper dnclValidation={dnclValidation} setDnclValidation={memoizedSetDnclValidation} treeItems={items} runResults={runResults} setRunResults={setRunResults} />
+                        <Allotment.Pane className={`${styles.bgStone50} ${styles.marginTop16} ${styles.hFull}`}>
+                            <Suspense fallback={<ConsoleLoadingFallback />}>
+                                <ConsoleWrapper
+                                    dnclValidation={dnclValidation}
+                                    setDnclValidation={memoizedSetDnclValidation}
+                                    treeItems={items}
+                                    runResults={runResults}
+                                    setRunResults={setRunResults}
+                                />
+                            </Suspense>
                         </Allotment.Pane>
-                    </Allotment >
-                    :
-                    <SwiperTabs labels={['プログラム', 'コンソール', 'ヒント']} specialElementsRefs={[specialElementRef1, specialElementRef2]}>
-                        <SwiperSlide >
-                            <SortableTree treeItems={items} setTreeItems={setItems} dnclValidation={dnclValidation} specialElementsRefs={[specialElementRef1, specialElementRef2]} collapsible indicator removable ></SortableTree>
-                        </SwiperSlide>
-                        <SwiperSlide>
-                            <ConsoleWrapper dnclValidation={dnclValidation} setDnclValidation={memoizedSetDnclValidation} treeItems={items} runResults={runResults} setRunResults={setRunResults} />
-                        </SwiperSlide>
-                        <SwiperSlide>
-                            <Tip onClose={() => setHintVisible(false)} hint={challenge.hint} open={hintVisible} />
-                        </SwiperSlide>
-
-                    </SwiperTabs>
-                }
+                    </Allotment>
+                ) : (
+                    <Suspense fallback={<SwiperLoadingFallback />}>
+                        <SwiperTabs labels={['プログラム', 'コンソール', 'ヒント']} specialElementsRefs={[specialElementRef1, specialElementRef2]}>
+                            <Suspense fallback={<TreeLoadingFallback />}>
+                                <SwiperSlide>
+                                    <SortableTree
+                                        treeItems={items}
+                                        setTreeItems={setItems}
+                                        dnclValidation={dnclValidation}
+                                        specialElementsRefs={[specialElementRef1, specialElementRef2]}
+                                        collapsible
+                                        indicator
+                                        removable
+                                    />
+                                </SwiperSlide>
+                            </Suspense>
+                            <Suspense fallback={<ConsoleLoadingFallback />}>
+                                <SwiperSlide>
+                                    <ConsoleWrapper
+                                        dnclValidation={dnclValidation}
+                                        setDnclValidation={memoizedSetDnclValidation}
+                                        treeItems={items}
+                                        runResults={runResults}
+                                        setRunResults={setRunResults}
+                                    />
+                                </SwiperSlide>
+                            </Suspense>
+                            <Suspense fallback={<TipLoadingFallback />}>
+                                <SwiperSlide>
+                                    <Tip onClose={() => setHintVisible(false)} hint={challenge.hint} open={hintVisible} />
+                                </SwiperSlide>
+                            </Suspense>
+                        </SwiperTabs>
+                    </Suspense>
+                )}
             </ContentWrapper>
             <Snackbar
                 anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
@@ -204,11 +286,13 @@ export const ChallengePage = ({ challenge }: Props) => {
                     numberOfPieces={400}
                 />
             )}
-            <SuccessDialog open={openSuccessDialog} onClose={handleClose} message="問題をクリアしました！" />
+            <Suspense fallback={<DialogLoadingFallback />}>
+                <SuccessDialog open={openSuccessDialog} onClose={handleClose} message="問題をクリアしました！" />
+            </Suspense>
             <FooterOverlay>
                 <HintButton />
                 <HowToButton />
             </FooterOverlay>
-        </PageWrapper >
+        </PageWrapper>
     );
 }
