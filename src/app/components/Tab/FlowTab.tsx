@@ -15,7 +15,7 @@ interface CustomBoxProps extends BoxProps {
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
 export const FlowTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx, ...props }) => {
-  const [nodes, setNodes] = useState<React.ReactNode>(children);
+  const [nodes, setNodes] = useState<React.ReactNode>("変換中");
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const darkModeValue = isDark ? "dark" : "light";
@@ -36,7 +36,29 @@ export const FlowTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx
     return renderCodeArray.join('\n');
   }, []);
 
-  const generateFlowchart = useCallback((code: string) => {
+  const handleDownloadSVG = useCallback(() => {
+    const svgElement = document.querySelector('.mxgraph svg');
+    if (!svgElement) {
+      alert('SVGファイルが見つかりません');
+      return;
+    }
+    const serializer = new XMLSerializer();
+    const svgString = serializer.serializeToString(svgElement);
+
+    const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'flowchart.svg';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, []);
+
+  // フローチャートノードを返す関数に修正
+  const generateFlowchart = useCallback((code: string): React.ReactNode => {
     const ast = parseCode(code);
     const flowchartXml = generateFlowchartXML(ast);
     const mxfile = `
@@ -61,60 +83,28 @@ export const FlowTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx
       alert("クリップボードにコピーしました");
     };
 
-    const flowChartNodes = <>
-      <Box className="mxgraph" sx={{ maxWidth: '100%', backgroundColor: isDark ? 'transparent' : 'var(--stone-50)' }} data-mxgraph={dataMxgraph}></Box>
-      <Box sx={{ textAlign: 'center', paddingY: 1 }}>
-        <Button
-          sx={{ backgroundColor: 'var(--stone-50)', margin: '0.5rem', color: 'var(--foreground)', textTransform: "none" }}
-          onClick={handleCopyXML}
-          variant="contained"
-        >
-          mxGraphModelのコピー
-        </Button>
-        <Button
-          sx={{ backgroundColor: 'var(--stone-50)', margin: '0.5rem', color: 'var(--foreground)', textTransform: "none" }}
-          onClick={handleDownloadSVG}
-          variant="contained"
-        >
-          SVGをダウンロード
-        </Button>
-      </Box>
-    </>;
-
-    setNodes(flowChartNodes);
-
-    const script = document.createElement('script');
-    script.src = 'https://viewer.diagrams.net/js/viewer-static.min.js';
-    script.async = true;
-    document.body.appendChild(script);
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, [isDark, darkModeValue]);
-
-  const handleDownloadSVG = () => {
-    // mxgraphクラスの要素を取得
-    const svgElement = document.querySelector('.mxgraph svg');
-    if (!svgElement) {
-      alert('SVGファイルが見つかりません');
-      return;
-    }
-
-    // SVGの内容を取得してBlobを作成
-    const serializer = new XMLSerializer();
-    const svgString = serializer.serializeToString(svgElement);
-
-    const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-    const url = URL.createObjectURL(svgBlob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'flowchart.svg';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
+    return (
+      <>
+        <Box className="mxgraph" sx={{ maxWidth: '100%', backgroundColor: isDark ? 'transparent' : 'var(--stone-50)' }} data-mxgraph={dataMxgraph}></Box>
+        <Box sx={{ textAlign: 'center', paddingY: 1 }}>
+          <Button
+            sx={{ backgroundColor: 'var(--stone-50)', margin: '0.5rem', color: 'var(--foreground)', textTransform: "none" }}
+            onClick={handleCopyXML}
+            variant="contained"
+          >
+            mxGraphModelのコピー
+          </Button>
+          <Button
+            sx={{ backgroundColor: 'var(--stone-50)', margin: '0.5rem', color: 'var(--foreground)', textTransform: "none" }}
+            onClick={handleDownloadSVG}
+            variant="contained"
+          >
+            SVGをダウンロード
+          </Button>
+        </Box>
+      </>
+    );
+  }, [isDark, darkModeValue, handleDownloadSVG]);
 
   const fetchLintResults = useCallback(async (code: string) => {
     if (!code || code === '') {
@@ -139,7 +129,23 @@ export const FlowTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx
       const data = await response.json();
 
       if (data.messages.length === 0) {
-        generateFlowchart(code);
+        // フローチャートノードを生成してセット＆キャッシュ
+        const flowChartNodes = generateFlowchart(code);
+        setNodes(flowChartNodes);
+        flowConversionCache.set(treeItemsHash, flowChartNodes);
+
+        // スクリプト追加
+        const script = document.createElement('script');
+        script.src = 'https://viewer.diagrams.net/js/viewer-static.min.js';
+        script.async = true;
+        document.body.appendChild(script);
+
+        // クリーンアップ
+        setTimeout(() => {
+          if (document.body.contains(script)) {
+            document.body.removeChild(script);
+          }
+        }, 1000);
       } else {
         setNodes("プログラムに誤りがあります");
       }
@@ -149,28 +155,32 @@ export const FlowTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx
       } else {
         console.error('Unexpected error', err);
       }
-    } finally {
     }
-  }, [generateFlowchart]);
+  }, [generateFlowchart, treeItemsHash]);
 
-  const convertedCode = useMemo(() => {
+  useEffect(() => {
     let isCanceled = false;
 
     const convertAsync = async () => {
       if (flowConversionCache.has(treeItemsHash)) {
         const cached = flowConversionCache.get(treeItemsHash);
-        if (!isCanceled) setNodes(cached);
+        if (!isCanceled) {
+          setNodes(cached);
+        }
         return;
       }
 
-      if (!isCanceled) setNodes("変換中");
+      if (!isCanceled) {
+        setNodes("変換中");
+      }
 
-      // 少し遅延を入れて変換中表示を確実に出す
       await new Promise(resolve => setTimeout(resolve, 100));
 
       if (!isCanceled) {
         const jsCode = await renderCode(treeItems);
-        await fetchLintResults(jsCode);
+        const flowChartNodes = generateFlowchart(jsCode);
+        setNodes(flowChartNodes);
+        flowConversionCache.set(treeItemsHash, flowChartNodes);
       }
     };
 
@@ -181,13 +191,29 @@ export const FlowTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx
     };
   }, [treeItemsHash, renderCode, fetchLintResults, treeItems]);
 
+  // mxGraphスクリプトの追加・削除をnodesがフローチャートノードの時だけ行う
+  useEffect(() => {
+    // mxgraphクラスが存在する場合のみスクリプト追加
+    if (typeof window !== "undefined" && document.querySelector('.mxgraph')) {
+      const script = document.createElement('script');
+      script.src = 'https://viewer.diagrams.net/js/viewer-static.min.js';
+      script.async = true;
+      document.body.appendChild(script);
+
+      return () => {
+        if (document.body.contains(script)) {
+          document.body.removeChild(script);
+        }
+      };
+    }
+  }, [nodes]);
+
   return (
     <>
       {nodes}
     </>
   );
 }, (prevProps, nextProps) => {
-  // カスタム比較関数
   return JSON.stringify(prevProps.treeItems) === JSON.stringify(nextProps.treeItems) &&
     JSON.stringify(prevProps.sx) === JSON.stringify(nextProps.sx);
 });
