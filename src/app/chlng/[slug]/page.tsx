@@ -5,8 +5,7 @@ import { Suspense, lazy } from 'react';
 import { Box, CircularProgress } from '@mui/material';
 
 // ChallengePage を遅延読み込み
-const ChallengePage = lazy(() => import('@/app/components/Challenge/ChallengePage').then(module => ({ default: module.ChallengePage })));
-
+export const ChallengePage = lazy(() => import('@/app/components/Challenge/ChallengePage'));
 interface SlugPageProps {
   params: Promise<{ slug: string }>;
 }

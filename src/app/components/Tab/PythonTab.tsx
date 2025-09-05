@@ -2,7 +2,7 @@ import { Box, BoxProps } from "@mui/material";
 import { TreeItem, TreeItems } from "@/app/types";
 import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, LoopEnum, ArithmeticOperator, BreakEnum, ArithmeticOperatorPython } from "@/app/enum";
 import { capitalizeTrueFalse, cnvToRomaji, containsJapanese, tryParseToPyFunc } from "@/app/utilities";
-import React, { FC, Fragment, ReactNode, useCallback, useMemo, useState } from "react";
+import React, { FC, Fragment, ReactNode, useCallback, useMemo, useState, useEffect } from "react";
 import { ScopeBox } from "@/app/components/Tab";
 import styles from "./tab.module.css"
 
@@ -152,6 +152,7 @@ const GuardedBox: React.FC<GuardedBoxProps> = ({ className, children, ...props }
 
 export const PythonTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx, ...props }) => {
     const [nodes, setNodes] = useState<React.ReactNode>(children);
+    const [isConverting, setIsConverting] = useState(false);
 
     // treeItemsのハッシュを作成（変更検出用）
     const treeItemsHash = useMemo(() => {
@@ -215,31 +216,49 @@ export const PythonTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, 
         return Promise.all(promises);
     }, []);
 
-    // コード変換処理を最適化
-    const convertedCode = useMemo(() => {
+    // useEffectで非同期処理を実行
+    useEffect(() => {
         let isCanceled = false;
 
         const convertAsync = async () => {
+            // キャッシュチェック
             if (pythonConversionCache.has(treeItemsHash)) {
                 const cached = pythonConversionCache.get(treeItemsHash);
-                if (!isCanceled) setNodes(cached);
+                if (!isCanceled) {
+                    setNodes(cached);
+                    setIsConverting(false);
+                }
                 return;
             }
 
-            if (!isCanceled) setNodes("変換中");
-
-            // 少し遅延を入れて変換中表示を確実に出す
-            await new Promise(resolve => setTimeout(resolve, 100));
-
+            // 変換開始
             if (!isCanceled) {
-                const result = await renderNodes(treeItems, 0);
-                pythonConversionCache.set(treeItemsHash, result);
-                setNodes(result);
+                setIsConverting(true);
+                setNodes("Pythonコードに変換中...");
+            }
+
+            try {
+                // 少し遅延を入れて変換中表示を確実に出す
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+                if (!isCanceled) {
+                    const result = await renderNodes(treeItems, 0);
+                    pythonConversionCache.set(treeItemsHash, result);
+                    setNodes(result);
+                    setIsConverting(false);
+                }
+            } catch (error) {
+                if (!isCanceled) {
+                    console.error('Python conversion error:', error);
+                    setNodes("変換エラーが発生しました");
+                    setIsConverting(false);
+                }
             }
         };
 
         convertAsync();
 
+        // クリーンアップ関数
         return () => {
             isCanceled = true;
         };
@@ -247,7 +266,13 @@ export const PythonTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, 
 
     return (
         <Box className={styles.codeContainer} sx={{ ...sx }} {...props}>
-            {nodes}
+            {isConverting ? (
+                <Box display="flex" alignItems="center" justifyContent="center" p={2}>
+                    Pythonコードに変換中...
+                </Box>
+            ) : (
+                nodes
+            )}
         </Box>
     );
 }, (prevProps, nextProps) => {
@@ -255,3 +280,5 @@ export const PythonTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, 
     return JSON.stringify(prevProps.treeItems) === JSON.stringify(nextProps.treeItems) &&
         JSON.stringify(prevProps.sx) === JSON.stringify(nextProps.sx);
 });
+
+PythonTab.displayName = 'PythonTab';

@@ -1,4 +1,3 @@
-// components/ScopeBox.tsx
 import React from 'react';
 import Box, { BoxProps } from '@mui/material/Box';
 import { DnclScopeBox } from '@/app/components/Tab';
@@ -24,8 +23,15 @@ const renderNodes = (nodes: TreeItems, depth: number): React.ReactNode => {
     ))
 }
 
-export const DnclTab: React.FC<CustomBoxProps> = ({ treeItems }) => {
-    return <Box className={styles.codeContainer}>
-        {renderNodes(treeItems, 0)}
-    </Box>
-};
+export const DnclTab: React.FC<CustomBoxProps> = React.memo(({ treeItems, sx, ...props }) => {
+    return (
+        <Box className={styles.codeContainer} sx={{ ...sx }} {...props}>
+            {renderNodes(treeItems, 0)}
+        </Box>
+    );
+}, (prevProps, nextProps) => {
+    return JSON.stringify(prevProps.treeItems) === JSON.stringify(nextProps.treeItems) &&
+        JSON.stringify(prevProps.sx) === JSON.stringify(nextProps.sx);
+});
+
+DnclTab.displayName = 'DnclTab';

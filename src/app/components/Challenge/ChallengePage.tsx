@@ -102,7 +102,7 @@ const arraysHaveSameElements = (arr1: string[], arr2: string[]): boolean => {
     return true;
 }
 
-export const ChallengePage = ({ challenge }: Props) => {
+const ChallengePage = ({ challenge }: Props) => {
     const [windowDimension, setWindowDimension] = useState({ width: 0, height: 0 });
     const [items, setItems] = useState(() => challenge.items);
     const [dnclValidation, setDnclValidation] = useState<DnclValidationType | null>(null);
@@ -295,4 +295,5 @@ export const ChallengePage = ({ challenge }: Props) => {
             </FooterOverlay>
         </PageWrapper>
     );
-}
+};
+export default ChallengePage;

@@ -184,6 +184,7 @@ const wrapRemainingItems = (remainingItems: TreeItems, movedItems: TreeItems): T
 
 export const VbaTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx, ...props }) => {
     const [nodes, setNodes] = useState<React.ReactNode>(children);
+    const [isConverting, setIsConverting] = useState(false);
 
     // treeItemsのハッシュを作成（変更検出用）
     const treeItemsHash = useMemo(() => {
@@ -225,34 +226,52 @@ export const VbaTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx,
         return Promise.all(promises);
     }, []);
 
-    // コード変換処理を最適化
-    const convertedCode = useMemo(() => {
+    // useEffectで非同期処理を実行
+    useEffect(() => {
         let isCanceled = false;
 
         const convertAsync = async () => {
+            // キャッシュチェック
             if (vbaConversionCache.has(treeItemsHash)) {
                 const cached = vbaConversionCache.get(treeItemsHash);
-                if (!isCanceled) setNodes(cached);
+                if (!isCanceled) {
+                    setNodes(cached);
+                    setIsConverting(false);
+                }
                 return;
             }
 
-            if (!isCanceled) setNodes("変換中");
-
-            // 少し遅延を入れて変換中表示を確実に出す
-            await new Promise(resolve => setTimeout(resolve, 100));
-
+            // 変換開始
             if (!isCanceled) {
-                // EndSubに変換するTreeItemを挿入
-                const { movedItems, remainingItems } = moveElementsToEnd(treeItems);
-                const finalTreeItems = wrapRemainingItems(remainingItems, movedItems);
-                const result = await renderNodes(finalTreeItems, 0);
-                vbaConversionCache.set(treeItemsHash, result);
-                setNodes(result);
+                setIsConverting(true);
+                setNodes("VBAコードに変換中...");
+            }
+
+            try {
+                // 少し遅延を入れて変換中表示を確実に出す
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+                if (!isCanceled) {
+                    // EndSubに変換するTreeItemを挿入
+                    const { movedItems, remainingItems } = moveElementsToEnd(treeItems);
+                    const finalTreeItems = wrapRemainingItems(remainingItems, movedItems);
+                    const result = await renderNodes(finalTreeItems, 0);
+                    vbaConversionCache.set(treeItemsHash, result);
+                    setNodes(result);
+                    setIsConverting(false);
+                }
+            } catch (error) {
+                if (!isCanceled) {
+                    console.error('VBA conversion error:', error);
+                    setNodes("変換エラーが発生しました");
+                    setIsConverting(false);
+                }
             }
         };
 
         convertAsync();
 
+        // クリーンアップ関数
         return () => {
             isCanceled = true;
         };
@@ -260,7 +279,13 @@ export const VbaTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx,
 
     return (
         <Box className={styles.codeContainer} sx={{ ...sx }} {...props}>
-            {nodes}
+            {isConverting ? (
+                <Box display="flex" alignItems="center" justifyContent="center" p={2}>
+                    VBAコードに変換中...
+                </Box>
+            ) : (
+                nodes
+            )}
         </Box>
     );
 }, (prevProps, nextProps) => {
@@ -268,3 +293,5 @@ export const VbaTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx,
     return JSON.stringify(prevProps.treeItems) === JSON.stringify(nextProps.treeItems) &&
         JSON.stringify(prevProps.sx) === JSON.stringify(nextProps.sx);
 });
+
+VbaTab.displayName = 'VbaTab';
