@@ -1,5 +1,5 @@
 import { defaultDropAnimationSideEffects, DndContext, DragOverlay } from "@dnd-kit/core";
-import { FC, ReactNode, useState } from "react";
+import { FC, ReactNode, useEffect, useState } from "react";
 import { Box, Button, Divider, FormHelperText, IconButton, Stack } from '@mui/material';
 import BackspaceIcon from '@mui/icons-material/Backspace';
 import { Operator, Droppable, DroppableOperator, ErrorMsgBox, DraggableItem, DnclTextField, DnclTextFieldProps, EmphasiseBox } from '@/app/components/Dialog';
@@ -38,6 +38,45 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [] }) 
     const [braketError, setBraketError] = useState<string[]>([]);
 
     const draggableStringList = enumsToObjects([BraketSymbolEnum, OperatorTypeJpEnum]);
+
+    const restoreOperands = useCallback((formData: { [key: string]: string }) => {
+
+        // オペランドの数を計算
+        const operandCount = Object.keys(formData)
+            .filter(key => key.includes('RigthSide_') && !key.includes('_Operator') && !key.includes('_Type') && !key.includes('_LeftOfOperand') && !key.includes('_RightOfOperand'))
+            .length;
+
+        if (operandCount > 1) {
+            const newOperands: DnclTextFieldProps[] = [];
+            for (let i = 0; i < operandCount; i++) {
+                const operatorKey = `RigthSide_${i}_Operator`;
+                const operator = formData[operatorKey] as OperationEnum;
+
+                newOperands.push({
+                    name: keyPrefixEnum.RigthSide,
+                    operator: operator || null as unknown as OperationEnum,
+                    leftOfOperandValue: [],
+                    rightOfOperandValue: []
+                });
+            }
+
+            setOperandComponents(newOperands);
+        }
+    }, []);
+
+    // 60行目付近にuseEffectを追加
+    useEffect(() => {
+        // 外部から復元要求があった場合
+        const handleRestore = (event: CustomEvent) => {
+            restoreOperands(event.detail.formData);
+        };
+
+        window.addEventListener('restoreOperands', handleRestore as EventListener);
+
+        return () => {
+            window.removeEventListener('restoreOperands', handleRestore as EventListener);
+        };
+    }, [restoreOperands]);
 
     const checkBraketPair = useCallback(() => {
 

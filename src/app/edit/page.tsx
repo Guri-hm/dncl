@@ -159,6 +159,7 @@ export default function Home() {
                     collapsible
                     indicator
                     removable
+                    allowEdit={true}
                   />
                 </Suspense>
               </Allotment.Pane>
@@ -201,6 +202,7 @@ export default function Home() {
                   collapsible
                   indicator
                   removable
+                  allowEdit={true}
                 />
               </Suspense>
             </SwiperSlide>

@@ -18,7 +18,9 @@ const ClientLayout = memo(({ children }: { children: React.ReactNode }) => {
     useEffect(() => {
         const handleComplete = () => {
             setFadeOut(true);
-            setTimeout(() => setLoading(false), 500); // setLoading(true) → setLoading(false) に修正
+            setTimeout(() => {
+                setLoading(false);
+            }, 500);
         };
 
         // 初回ロード完了の処理
@@ -36,16 +38,7 @@ const ClientLayout = memo(({ children }: { children: React.ReactNode }) => {
                         <Loading fadeOut={fadeOut} />
                     </Suspense>
                 )}
-                <Suspense fallback={
-                    <div style={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        height: '100vh'
-                    }}>
-                        読み込み中...
-                    </div>
-                }>
+                <Suspense fallback={null}>
                     {children}
                 </Suspense>
             </LoadingProvider>

@@ -33,10 +33,10 @@ import {
   removeChildrenOf,
   setProperty,
 } from "@/app/utilities";
-import { FlattenedItem, SensorContext, TreeItems, FragmentItems, FragmentItem, DnclEditorProps, DnclValidationType, NewItemParams } from "@/app/types";
+import { FlattenedItem, SensorContext, TreeItems, TreeItem, FragmentItems, FragmentItem, DnclEditorProps, DnclValidationType, NewItemParams, EditItemParams } from "@/app/types";
 import { DnclEditDialog } from "@/app/components/Dialog";
 import { v4 as uuidv4 } from "uuid";
-import { allStatementItems, statementEnumMap } from "@/app/enum";
+import { allStatementItems, statementEnumMap, StatementEnum, ProcessEnum } from "@/app/enum";
 import { Box } from "@mui/material";
 import styles from '@/app/components/allotment-custom.module.css'
 import cmnStyles from '@/app/components/common.module.css'
@@ -82,6 +82,7 @@ interface Props {
   indentationWidth?: number;
   indicator?: boolean;
   removable?: boolean;
+  allowEdit?: boolean;
   dnclValidation: DnclValidationType | null,
   fragments?: FragmentItems,
   specialElementsRefs?: RefObject<HTMLDivElement | null>[];
@@ -94,6 +95,7 @@ export function SortableTree({
   indicator,
   indentationWidth = 30, //ツリー子要素の左インデント
   removable,
+  allowEdit = true,
   dnclValidation,
   fragments = defaultFragments,
   specialElementsRefs
@@ -103,11 +105,19 @@ export function SortableTree({
   const [activeCode, setActiveCode] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
   const [offsetLeft, setOffsetLeft] = useState(0);
-  const [editor, setEditor] = useState<DnclEditorProps>({ addItem: null, open: false, overIndex: 0, treeItems: treeItems, setItems: setTreeItems });
+  const [editor, setEditor] = useState<DnclEditorProps>({
+    addItem: null,
+    open: false,
+    overIndex: '',
+    treeItems: treeItems,
+    setItems: setTreeItems
+  });
   const [isClient, setIsClient] = useState(false);
+
   useEffect(() => {
     setIsClient(true);
   }, []);
+
   const theme = useTheme();
   const isSm = useMediaQuery(theme.breakpoints.up('sm'));//600px以上
   const [openDrawer, setOpenDrawer] = React.useState(false);
@@ -149,16 +159,15 @@ export function SortableTree({
     items: flattenedItems,
     offset: offsetLeft
   });
+
   const sensors = useSensors(
     useSensor(PointerSensor)
-    // useSensor(KeyboardSensor, {
-    //   coordinateGetter,
-    // })
   );
 
   const sortedIds = useMemo(() => flattenedItems.map(({ id }) => id), [
     flattenedItems
   ]);
+
   const activeItem = activeId
     ? [...flattenedItems, ...fragments].find(({ id }) => id === activeId)
     : null;
@@ -173,11 +182,239 @@ export function SortableTree({
   const [visible, setVisible] = useState(true);
   const ref = useRef<HTMLDivElement | null>(null);
 
+  // 編集可能かどうかを判定する関数を修正
+  const canEditItem = (item: FlattenedItem): boolean => {
+    if (!allowEdit || item.fixed) return false; // allowEditがfalseかfixedがtrueなら編集不可
+    return !!(item.processIndex !== undefined && item.formData);
+  };
+
+  // Helper functions
+  function handleDragStart({ active: { id: activeId } }: DragStartEvent) {
+    setActiveId(activeId.toString());
+    setOverId(activeId.toString());
+
+    const activeItem = [...flattenedItems, ...fragments].find(({ id }) => id === activeId);
+
+    if (activeItem) {
+      setActiveCode(activeItem?.line);
+    }
+    document.body.style.setProperty("cursor", "grabbing");
+  }
+
+  function handleDragMove({ delta, active }: DragMoveEvent) {
+    let adjustmentVal = 0;
+
+    //要素追加時のみドラッグ差分値を修正
+    if (ref.current && additionItem) {
+      const rect = ref.current.getBoundingClientRect();
+      adjustmentVal = rect.left;
+    }
+
+    setOffsetLeft(delta.x - adjustmentVal);
+  }
+
+  function handleDragOver({ over }: DragOverEvent) {
+    setOverId(over?.id.toString() ?? null);
+  }
+
+  function refrash() {
+    //元の要素のidを更新しないと追加のためのドラッグできなくなる
+    fragments.forEach(item => { item.id = uuidv4() });
+  }
+
+  function handleEdit(itemId: string) {
+    if (!allowEdit) return; // 編集不可の場合は何もしない
+    const targetItem = flattenedItems.find(({ id }) => id === itemId);
+    if (!targetItem || !targetItem.formData || targetItem.fixed) return;
+
+    const editItemToTree = (itemParams: EditItemParams) => {
+      const updatedItems = treeItems.map(item =>
+        updateItemRecursively(item, itemParams.itemId, itemParams.editedItem)
+      );
+      setTreeItems(updatedItems);
+      refrash();
+    };
+
+    // processIndexからstatementTypeを正しく取得
+    let statementType: StatementEnum = StatementEnum.Input; // デフォルト値
+    const getStatementTypeFromProcessIndex = (processIndex: number): StatementEnum => {
+      switch (processIndex) {
+        // StatementEnum.Input
+        case ProcessEnum.SetValToVariableOrArray:
+        case ProcessEnum.InitializeArray:
+        case ProcessEnum.BulkAssignToArray:
+        case ProcessEnum.Increment:
+        case ProcessEnum.Decrement:
+          return StatementEnum.Input;
+
+        // StatementEnum.Output
+        case ProcessEnum.Output:
+          return StatementEnum.Output;
+
+        // StatementEnum.Condition
+        case ProcessEnum.If:
+        case ProcessEnum.ElseIf:
+        case ProcessEnum.Else:
+        case ProcessEnum.EndIf:
+          return StatementEnum.Condition;
+
+        // StatementEnum.ConditionalLoopPreTest
+        case ProcessEnum.While:
+        case ProcessEnum.EndWhile:
+          return StatementEnum.ConditionalLoopPreTest;
+
+        // StatementEnum.ConditionalLoopPostTest
+        case ProcessEnum.DoWhile:
+        case ProcessEnum.EndDoWhile:
+          return StatementEnum.ConditionalLoopPostTest;
+
+        // StatementEnum.SequentialIteration
+        case ProcessEnum.ForIncrement:
+        case ProcessEnum.ForDecrement:
+        case ProcessEnum.EndFor:
+          return StatementEnum.SequentialIteration;
+
+        // StatementEnum.UserDefinedfunction
+        case ProcessEnum.DefineFunction:
+        case ProcessEnum.Defined:
+          return StatementEnum.UserDefinedfunction;
+
+        // StatementEnum.ExecuteUserDefinedFunction
+        case ProcessEnum.ExecuteUserDefinedFunction:
+          return StatementEnum.ExecuteUserDefinedFunction;
+
+        default:
+          return StatementEnum.Input;
+      }
+    };
+    if (targetItem.processIndex !== undefined) {
+      // processIndexに対応するStatementEnumを見つける
+      const processIndex = targetItem.processIndex;
+
+      // 各StatementEnumに対するprocessIndexのマッピングを確認
+      Object.values(StatementEnum).forEach((enumValue) => {
+        if (typeof enumValue === 'number' && enumValue === processIndex) {
+          statementType = enumValue;
+        }
+      });
+    }
+
+    setEditor((prevState: DnclEditorProps) => ({
+      ...prevState,
+      item: targetItem,
+      editItem: editItemToTree,
+      open: true,
+      type: targetItem.statementType || getStatementTypeFromProcessIndex(targetItem.processIndex || 0),
+      treeItems: treeItems,
+      refresh: refrash,
+      setEditor: setEditor,
+      isEdit: true,
+      overIndex: targetItem.id
+    }));
+  }
+
+  // TreeItemをFlattenedItemに変換してから再帰的に更新する関数
+  function updateItemRecursively(item: TreeItem, targetId: UniqueIdentifier, newItem: FlattenedItem): TreeItem {
+    if (item.id === targetId) {
+      // FlattenedItemからTreeItemに必要なプロパティのみを抽出
+      const { parentId, depth, index, ...treeItemProps } = newItem;
+      return {
+        ...treeItemProps,
+        id: targetId.toString(),
+        children: item.children
+      };
+    }
+
+    return {
+      ...item,
+      children: item.children.map(child => updateItemRecursively(child, targetId, newItem))
+    };
+  }
+
+  function handleDragEnd({ active, over }: DragEndEvent) {
+    resetState();
+
+    const addItemToTree = (itemParams: NewItemParams) => {
+      const clonedItems: FlattenedItem[] = structuredClone(flattenTree(treeItems));
+
+      clonedItems.push(itemParams.newItem);
+      const overIndex = clonedItems.findIndex(({ id }) => id === itemParams.overIndex);
+      const activeIndex = clonedItems.findIndex(({ id }) => id === active.id);
+      const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
+      const newItems = buildTree(sortedItems);
+
+      setTreeItems(newItems);
+      refrash();
+    }
+
+    if (projected && over) {
+      const { depth, parentId } = projected;
+      const clonedItems: FlattenedItem[] = structuredClone(flattenTree(treeItems));
+      const fragmentItem: FragmentItem | undefined = fragments.find(({ id }) => id === active.id);
+
+      if (fragmentItem) {
+        let clonedItem: FlattenedItem = JSON.parse(JSON.stringify(fragmentItem));
+        const newId = uuidv4();
+
+        clonedItem = { ...clonedItem, id: newId, depth: depth, parentId: parentId }
+        setEditor((prevState: DnclEditorProps) => ({
+          ...prevState,
+          item: clonedItem,
+          addItem: addItemToTree,
+          open: true,
+          type: fragmentItem.statementType,
+          overIndex: over.id,
+          treeItems: treeItems,
+          refresh: refrash,
+          setEditor: setEditor,
+          isEdit: false
+        }));
+        return;
+      }
+
+      const overIndex = clonedItems.findIndex(({ id }) => id === over.id);
+      const activeIndex = clonedItems.findIndex(({ id }) => id === active.id);
+      const activeTreeItem = clonedItems[activeIndex];
+
+      clonedItems[activeIndex] = { ...activeTreeItem, depth, parentId };
+
+      const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
+      const newItems = buildTree(sortedItems);
+
+      setTreeItems(newItems);
+    }
+
+    refrash();
+  }
+
+  function handleDragCancel() {
+    resetState();
+    refrash();
+  }
+
+  function resetState() {
+    setOverId(null);
+    setActiveId(null);
+    setOffsetLeft(0);
+    document.body.style.setProperty("cursor", "");
+  }
+
+  function handleRemove(id: string) {
+    const updatedItems = removeItem(treeItems, id);
+    setTreeItems(updatedItems);
+  }
+
+  function handleCollapse(id: string) {
+    const newItems = setProperty(treeItems, id, "collapsed", (item) => !item)
+    setTreeItems(newItems)
+  }
+
   if (!isClient) {
     //documentオブジェクトはクライアントサイドでしか利用できないため、サーバサイドのエラーが発生する
     // サーバーサイドでは何もレンダリングしない
     return null;
   }
+
   return (
     <>
       <DndContext
@@ -231,6 +468,8 @@ export function SortableTree({
                             : undefined
                         }
                         onRemove={removable ? () => handleRemove(id) : undefined}
+                        canEdit={canEditItem(flattenedItems[index])}
+                        onEdit={() => handleEdit(id)}
                         isError={dnclValidation?.lineNum.includes(index + 1)}
                         fixed={fixed}
                       />
@@ -295,6 +534,8 @@ export function SortableTree({
                           : undefined
                       }
                       onRemove={removable ? () => handleRemove(id) : undefined}
+                      canEdit={canEditItem(flattenedItems[index])}
+                      onEdit={() => handleEdit(id)}
                       isError={dnclValidation?.lineNum.includes(index + 1)}
                       fixed={fixed}
                     />
@@ -309,118 +550,6 @@ export function SortableTree({
       </DndContext >
     </>
   );
-
-  function handleDragStart({ active: { id: activeId } }: DragStartEvent) {
-    setActiveId(activeId.toString());
-    setOverId(activeId.toString());
-
-    const activeItem = [...flattenedItems, ...fragments].find(({ id }) => id === activeId);
-
-    if (activeItem) {
-      setActiveCode(activeItem?.line);
-    }
-    document.body.style.setProperty("cursor", "grabbing");
-  }
-
-  function handleDragMove({ delta, active }: DragMoveEvent) {
-    let adjustmentVal = 0;
-
-    //要素追加時のみドラッグ差分値を修正
-    if (ref.current && additionItem) {
-      const rect = ref.current.getBoundingClientRect();
-      adjustmentVal = rect.left;
-      // const x = active.rect.current.translated?.left ?? 0;
-      // adjustmentVal = rect.left - (x - 80);
-    }
-
-    setOffsetLeft(delta.x - adjustmentVal);
-  }
-
-  function handleDragOver({ over }: DragOverEvent) {
-    setOverId(over?.id.toString() ?? null);
-  }
-
-  function refrash() {
-    //元の要素のidを更新しないと追加のためのドラッグできなくなる
-    fragments.forEach(item => { item.id = uuidv4() });
-  }
-
-
-  function handleDragEnd({ active, over }: DragEndEvent) {
-    resetState();
-
-    const addItemToTree = (itemParams: NewItemParams) => {
-      const clonedItems: FlattenedItem[] = structuredClone(flattenTree(treeItems));
-
-      clonedItems.push(itemParams.newItem);
-      const overIndex = clonedItems.findIndex(({ id }) => id === itemParams.overIndex);
-      const activeIndex = clonedItems.findIndex(({ id }) => id === active.id);
-      const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
-      const newItems = buildTree(sortedItems);
-
-      setTreeItems(newItems);
-      refrash();
-    }
-    if (projected && over) {
-      const { depth, parentId } = projected;
-      const clonedItems: FlattenedItem[] = structuredClone(flattenTree(treeItems));
-      const fragmentItem: FragmentItem | undefined = fragments.find(({ id }) => id === active.id);
-      // const additionItem: FlattenedItem | undefined = fragments.find(({ id }) => id === active.id);
-
-      if (fragmentItem) {
-        let clonedItem: FlattenedItem = JSON.parse(JSON.stringify(fragmentItem));
-        const newId = uuidv4();
-
-        // clonedItem.id = newId;
-        // active.id = newId;
-        // clonedItems.push(clonedItem);
-        clonedItem = { ...clonedItem, id: newId, depth: depth, parentId: parentId }
-        setEditor((prevState: DnclEditorProps) => ({ ...prevState, item: clonedItem, addItem: addItemToTree, open: true, type: fragmentItem.statementType, overIndex: over.id, treeItems: treeItems, refresh: refrash, setEditor: setEditor }));
-        return;
-      }
-      const overIndex = clonedItems.findIndex(({ id }) => id === over.id);
-      const activeIndex = clonedItems.findIndex(({ id }) => id === active.id);
-      const activeTreeItem = clonedItems[activeIndex];
-
-      clonedItems[activeIndex] = { ...activeTreeItem, depth, parentId };
-
-      const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
-      const newItems = buildTree(sortedItems);
-
-      setTreeItems(newItems);
-    }
-
-    refrash();
-  }
-
-  function handleDragCancel() {
-    resetState();
-    refrash();
-  }
-
-  function resetState() {
-    setOverId(null);
-    setActiveId(null);
-    setOffsetLeft(0);
-    document.body.style.setProperty("cursor", "");
-  }
-
-  function handleRemove(id: string) {
-    const updatedItems = removeItem(treeItems, id);
-    setTreeItems(updatedItems);
-  }
-
-  function handleCollapse(id: string) {
-
-    //下記のように実行するとsetPropertyが2度実行されてしまう
-    // setItems((items) =>
-    //     setProperty(items, id, "collapsed", (value) => {
-    //         return !value;
-    //     })
-    // );
-    const newItems = setProperty(treeItems, id, "collapsed", (item) => !item)
-    setTreeItems(newItems)
-  }
 }
 
 const adjustTranslate: Modifier = ({ transform }) => {

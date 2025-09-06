@@ -201,7 +201,12 @@ export function EditorBox(params: Props) {
     const ddl = <Box sx={{ minWidth: 120, marginTop: 2 }}>
         <FormControl variant="standard" fullWidth>
             <InputLabel id="process-select-label">文の内容</InputLabel>
-            <Select labelId="process-select-label" defaultValue={result[0].value.toString()} onChange={handleChange} label="文の内容" >
+            <Select
+                labelId="process-select-label"
+                value={result.length > 0 ? result[0].value.toString() : ""}
+                onChange={handleChange}
+                label="文の内容"
+            >
                 {result.map((item, index) => (
                     <MenuItem key={index} value={item.value}> {item.title} </MenuItem>
                 ))}

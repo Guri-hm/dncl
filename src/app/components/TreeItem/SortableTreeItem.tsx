@@ -6,13 +6,15 @@ import TreeItem, { Props as TreeItemProps } from './TreeItem';
 
 interface Props extends TreeItemProps {
   id: string;
-  isError?: boolean
+  isError?: boolean;
+  canEdit?: boolean;
+  onEdit?: () => void;
 }
 
 const animateLayoutChanges: AnimateLayoutChanges = ({ isSorting, wasDragging }) =>
   isSorting || wasDragging ? false : true;
 
-export function SortableTreeItem({ id, depth, isError, ...props }: Props) {
+export function SortableTreeItem({ id, depth, isError, canEdit, onEdit, ...props }: Props) {
   const {
     attributes,
     isDragging,
@@ -41,6 +43,8 @@ export function SortableTreeItem({ id, depth, isError, ...props }: Props) {
       disableInteraction={isSorting}
       attributes={attributes}
       listeners={listeners}
+      canEdit={canEdit}
+      onEdit={onEdit}
       {...props}
     />
   );

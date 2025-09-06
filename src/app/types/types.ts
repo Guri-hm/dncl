@@ -12,14 +12,27 @@ export interface TreeItem {
   isConstant?: boolean;
   children: TreeItem[];
   collapsed?: boolean;
+  statementType?: StatementEnum;
   processIndex?: number;
   fixed?: boolean;
+  formData?: { [key: string]: string };
+  uiState?: {  // ← 新しく追加
+    radioSelections?: { [key: string]: string };
+    switchStates?: { [key: string]: boolean };
+    toggleStates?: { [key: string]: string };
+  };
 }
 
 export type TreeItems = TreeItem[];
 
 export interface NewItemParams {
-  newItem: FlattenedItem; overIndex: UniqueIdentifier;
+  newItem: FlattenedItem;
+  overIndex: UniqueIdentifier;
+}
+
+export interface EditItemParams {
+  editedItem: FlattenedItem;
+  itemId: UniqueIdentifier;
 }
 
 //?付与でオプション扱い(デフォルトはundefined)
@@ -41,16 +54,18 @@ export interface FragmentItem extends FlattenedItem {
 
 export type FragmentItems = FragmentItem[];
 
-export type DnclEditorProps = {
-  item?: FlattenedItem,
-  treeItems: TreeItems,
-  setItems: (items: TreeItems) => void;
-  setEditor?: Dispatch<SetStateAction<DnclEditorProps>> | null,
-  open: boolean,
-  addItem: ((itemParams: NewItemParams) => void) | null;
-  type?: StatementEnum,
-  overIndex: UniqueIdentifier,
-  refresh?: () => void,
+export interface DnclEditorProps {
+  addItem?: ((params: NewItemParams) => void) | null;
+  editItem?: ((params: EditItemParams) => void) | null; // 編集用のコールバックを追加
+  open: boolean;
+  overIndex: UniqueIdentifier;
+  treeItems: TreeItems;
+  item?: FlattenedItem;
+  setEditor?: React.Dispatch<React.SetStateAction<DnclEditorProps>>;
+  type?: StatementEnum;
+  setItems?: (items: TreeItems) => void;
+  refresh?: () => void;
+  isEdit?: boolean;
 }
 
 export type ErrObj = {

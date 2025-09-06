@@ -2,7 +2,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import Switch from '@mui/material/Switch';
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Box from '@mui/material/Box';
 import { keyPrefixEnum, inputTypeEnum, ValidationEnum } from "./Enum";
 import Grid from '@mui/material/Grid2';
@@ -93,9 +93,56 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
   const [threeWayValue, setThreeWayValue] = useState<inputTypeEnum>(inputTypeEnum.Number);
   // For文の各値用の状態管理
   const [forValueType, setForValueType] = useState<inputTypeEnum>(inputTypeEnum.Number);
+  const [restoreValues, setRestoreValues] = useState<{ [key: string]: string }>({});
+
   const handleThreeWayChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setThreeWayValue((event.target as HTMLInputElement).value as inputTypeEnum);
   };
+
+  const restoreRadioState = useCallback((fieldName: string, value: string) => {
+
+    // このコンポーネントに関連するフィールドかチェック
+    if (fieldName === `${name}_${index}_Type`) {
+      setRadioValue(value as inputTypeEnum);
+    }
+
+    // For文の値タイプの復元
+    if (fieldName.includes(`${name}_${index}_`) && fieldName.includes('_type')) {
+      setForValueType(value as inputTypeEnum);
+    }
+
+    // スイッチの復元
+    if (fieldName === `${name}_${index}_switch`) {
+      setChecked(value === 'true');
+    }
+
+    if (fieldName === `${name}_${index}_isConstant`) {
+      setIsConstantMode(value === 'true');
+    }
+
+    if (fieldName === `${name}_${index}` ||
+      fieldName === `${name}_${index}_${keyPrefixEnum.Suffix}` ||
+      fieldName.includes(`${name}_${index}_`)) {
+      setRestoreValues(prev => ({
+        ...prev,
+        [fieldName]: value
+      }));
+    }
+  }, [name, index]);
+
+  useEffect(() => {
+    // 外部から復元要求があった場合
+    const handleRestore = (event: CustomEvent) => {
+      const { fieldName, value } = event.detail;
+      restoreRadioState(fieldName, value);
+    };
+
+    window.addEventListener('restoreRadioState', handleRestore as EventListener);
+
+    return () => {
+      window.removeEventListener('restoreRadioState', handleRestore as EventListener);
+    };
+  }, [restoreRadioState]);
 
   const handleChangeToggle = (
     event: React.MouseEvent<HTMLElement>,
@@ -166,7 +213,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
             <Grid container spacing={0} direction='column' sx={{ marginBottom: 1 }}>
               <Grid container direction='row'>
                 <Grid size='grow'>
-                  <ValidatedTextField name={`${name}_${index}`} label={tmpLabel} pattern={pattern} toUpperCase={isConstantMode}></ValidatedTextField>
+                  <ValidatedTextField name={`${name}_${index}`} label={tmpLabel} pattern={pattern} toUpperCase={isConstantMode} restoreValue={restoreValues[`${name}_${index}`]}></ValidatedTextField>
                 </Grid>
                 {/* 定数スイッチの追加 */}
                 {inputType === inputTypeEnum.SwitchVariableOrArrayWithConstant && (
@@ -178,7 +225,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
                     <FixedHeightGrid>[</FixedHeightGrid>
                     <Grid size="grow">
                       <ValidatedTextField
-                        name={`${name}_${index}_${keyPrefixEnum.Suffix}`} label={InputTypeJpEnum.Suffix} pattern={ValidationEnum.VariableOrPositiveInteger} ></ValidatedTextField>
+                        name={`${name}_${index}_${keyPrefixEnum.Suffix}`} label={InputTypeJpEnum.Suffix} pattern={ValidationEnum.VariableOrPositiveInteger} restoreValue={restoreValues[`${name}_${index}_${keyPrefixEnum.Suffix}`]}></ValidatedTextField>
                     </Grid>
                     <FixedHeightGrid>]</FixedHeightGrid>
                   </Grid>
@@ -189,7 +236,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
                     <FixedHeightGrid>[</FixedHeightGrid>
                     <Grid size="grow">
                       <ValidatedTextField
-                        name={`${name}_${index}_${keyPrefixEnum.Suffix}`} label={InputTypeJpEnum.Suffix} pattern={ValidationEnum.VariableOrPositiveInteger} ></ValidatedTextField>
+                        name={`${name}_${index}_${keyPrefixEnum.Suffix}`} label={InputTypeJpEnum.Suffix} pattern={ValidationEnum.VariableOrPositiveInteger} restoreValue={restoreValues[`${name}_${index}_${keyPrefixEnum.Suffix}`]}></ValidatedTextField>
                     </Grid>
                     <FixedHeightGrid>]</FixedHeightGrid>
                   </Grid>
@@ -212,8 +259,8 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
                 ) : (
                   // 従来の2つ選択のスイッチ
                   <Grid>
-                    <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-                      <AntSwitch onChange={(handleChangeSwitch)} inputProps={{ 'aria-label': 'ant design' }} />
+                    <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }} data-switch-name={`${name}_${index}_switch`}>
+                      <AntSwitch checked={checked} onChange={(handleChangeSwitch)} inputProps={{ 'aria-label': 'ant design' }} />
                       <Typography>{SwitchJpEnum.Array}</Typography>
                     </Stack>
                   </Grid>
@@ -221,8 +268,8 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
                 {/* 定数スイッチの追加 */}
                 {inputType === inputTypeEnum.SwitchVariableOrArrayWithConstant && (
                   <Grid>
-                    <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-                      <AntSwitch onChange={handleChangeConstant} inputProps={{ 'aria-label': 'constant' }} />
+                    <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }} data-switch-name={`${name}_${index}_isConstant`}>
+                      <AntSwitch checked={isConstantMode} onChange={handleChangeConstant} inputProps={{ 'aria-label': 'constant' }} />
                       <Typography>{SwitchJpEnum.Constant}</Typography>
                     </Stack>
                   </Grid>
@@ -269,7 +316,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
                 {(radioValue == inputTypeEnum.Variable || radioValue == inputTypeEnum.Number || radioValue == inputTypeEnum.Array || radioValue == inputTypeEnum.String) &&
                   <>
                     <Grid size='grow'>
-                      <ValidatedTextField name={`${name}_${index}`} label={tmpLabel} pattern={pattern} isIMEOn={radioValue == inputTypeEnum.String ? true : false}></ValidatedTextField>
+                      <ValidatedTextField name={`${name}_${index}`} label={tmpLabel} pattern={pattern} isIMEOn={radioValue == inputTypeEnum.String ? true : false} restoreValue={restoreValues[`${name}_${index}`]} ></ValidatedTextField>
                     </Grid>
                   </>
                 }
@@ -284,7 +331,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
                     <FixedHeightGrid>[</FixedHeightGrid>
                     <Grid size="grow">
                       <ValidatedTextField
-                        name={`${name}_${index}_${keyPrefixEnum.Suffix}`} label={InputTypeJpEnum.Suffix} pattern={ValidationEnum.VariableOrPositiveInteger}></ValidatedTextField>
+                        name={`${name}_${index}_${keyPrefixEnum.Suffix}`} label={InputTypeJpEnum.Suffix} pattern={ValidationEnum.VariableOrPositiveInteger} restoreValue={restoreValues[`${name}_${index}_${keyPrefixEnum.Suffix}`]} ></ValidatedTextField>
                     </Grid>
                     <FixedHeightGrid>]</FixedHeightGrid>
                   </Grid>
@@ -311,7 +358,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
                   row
                   aria-labelledby="row-radio-buttons-group-label"
                   onChange={handleChangeRadio}
-                  defaultValue={inputTypeEnum.Number}
+                  value={radioValue}
                 >
                   <FormControlLabel sx={{ margin: 0, paddingBottom: 0 }} value={inputTypeEnum.Number} control={<Radio size="small" />} label={SwitchJpEnum.Number} />
                   <FormControlLabel sx={{ margin: 0, paddingBottom: 0 }} value={inputTypeEnum.Variable} control={<Radio size="small" />} label={SwitchJpEnum.Variable} />
@@ -328,13 +375,13 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
       case inputTypeEnum.VariableOnly:
       case inputTypeEnum.ArrayWithoutSuffix:
         return <Grid size="grow">
-          <ValidatedTextField name={`${name}_${index}`} label={InputTypeJpEnum.Variable} pattern={ValidationEnum.Variable}></ValidatedTextField>
+          <ValidatedTextField name={`${name}_${index}`} label={InputTypeJpEnum.Variable} pattern={ValidationEnum.Variable} restoreValue={restoreValues[`${name}_${index}`]}></ValidatedTextField>
         </Grid>
 
       case inputTypeEnum.Array:
         return <Grid container spacing={0}>
           <Grid size={'grow'}>
-            <ValidatedTextField name={`${name}_${index}`} label={InputTypeJpEnum.Array} pattern={ValidationEnum.Variable}></ValidatedTextField>
+            <ValidatedTextField name={`${name}_${index}`} label={InputTypeJpEnum.Array} pattern={ValidationEnum.Variable} restoreValue={restoreValues[`${name}_${index}`]}></ValidatedTextField>
           </Grid>
           <Grid container size='auto'>
             <FixedHeightGrid>[</FixedHeightGrid>
@@ -342,7 +389,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
               <ValidatedTextField sx={() => ({
                 width: '100px',
               })}
-                name={`${name}_${index}_${suffixValue}`} label={InputTypeJpEnum.Suffix} pattern={ValidationEnum.VariableOrPositiveInteger}></ValidatedTextField>
+                name={`${name}_${index}_${suffixValue}`} label={InputTypeJpEnum.Suffix} pattern={ValidationEnum.VariableOrPositiveInteger} restoreValue={restoreValues[`${name}_${index}_${keyPrefixEnum.Suffix}`]}></ValidatedTextField>
             </Grid>
             <FixedHeightGrid>]</FixedHeightGrid>
           </Grid>
@@ -352,7 +399,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
         return <Grid container size='auto'>
           <FixedHeightGrid>[</FixedHeightGrid>
           <Grid size="grow">
-            <ValidatedTextField name={`${name}_${index}_${keyPrefixEnum.Suffix}`} label={label} pattern={ValidationEnum.InitializeArray}></ValidatedTextField>
+            <ValidatedTextField name={`${name}_${index}_${keyPrefixEnum.Suffix}`} label={label} pattern={ValidationEnum.InitializeArray} restoreValue={restoreValues[`${name}_${index}_${keyPrefixEnum.Suffix}`]}></ValidatedTextField>
           </Grid>
           <FixedHeightGrid>]</FixedHeightGrid>
         </Grid>;
@@ -377,7 +424,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
                   <ValidatedTextField
                     name={`${name}_${index}_${suffixValue}`}
                     label={label || tmpLabel}
-                    pattern={pattern}
+                    pattern={pattern} restoreValue={restoreValues[`${name}_${index}_${suffixValue}`]}
                   />
                 </Grid>
                 <input type="hidden" name={`${name}_${index}_${suffixValue}_type`} value={forValueType} />

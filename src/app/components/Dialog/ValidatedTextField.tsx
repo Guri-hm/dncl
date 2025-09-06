@@ -10,6 +10,7 @@ type Props = {
   sx?: SxProps<Theme>;
   isIMEOn?: boolean;
   toUpperCase?: boolean;
+  restoreValue?: string;
 }
 
 const getErrorMessage = (value: string, pattern: string): string => {
@@ -43,7 +44,7 @@ const getFirstMismatchIndex = (value: string, pattern: string): number => {
   return -1;
 };
 
-export function ValidatedTextField({ sx = [], name, label, pattern, isIMEOn = false, toUpperCase = false, ...params }: Props) {
+export function ValidatedTextField({ sx = [], name, label, pattern, isIMEOn = false, restoreValue, toUpperCase = false, ...params }: Props) {
 
   const [inputValue, setInputValue] = useState('');
   const [inputError, setInputError] = useState(false);
@@ -65,6 +66,67 @@ export function ValidatedTextField({ sx = [], name, label, pattern, isIMEOn = fa
       setErrorMessage(getErrorMessage(value, pattern));
     }
   };
+
+
+  const handleFocus = (event: React.FocusEvent<HTMLInputElement>) => {
+    // フォーカス時に外部から設定された値を状態に反映
+    const currentValue = event.target.value;
+    if (currentValue !== inputValue) {
+      let value = currentValue;
+      if (toUpperCase) {
+        value = value.toUpperCase();
+      }
+      setInputValue(value);
+
+      const regex = new RegExp(pattern);
+      if (value === "" || regex.test(value)) {
+        setInputError(false);
+        setErrorMessage('');
+      } else {
+        setInputError(true);
+        setErrorMessage(getErrorMessage(value, pattern));
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (restoreValue !== undefined && restoreValue !== inputValue) {
+      let value = restoreValue;
+      if (toUpperCase) {
+        value = value.toUpperCase();
+      }
+      setInputValue(value);
+
+      const regex = new RegExp(pattern);
+      if (value === "" || regex.test(value)) {
+        setInputError(false);
+        setErrorMessage('');
+      } else {
+        setInputError(true);
+        setErrorMessage(getErrorMessage(value, pattern));
+      }
+    }
+  }, [restoreValue, toUpperCase, pattern, inputValue]);
+
+  useEffect(() => {
+    let value = inputValue;
+    if (toUpperCase) {
+      value = value.toUpperCase();
+      if (value !== inputValue) {
+        setInputValue(value);
+        return;
+      }
+    }
+    const regex = new RegExp(pattern);
+    if (value === "" || regex.test(value)) {
+      setInputError(false);
+      setErrorMessage('');
+    } else {
+      setInputError(true);
+      setErrorMessage(getErrorMessage(value, pattern));
+    }
+  }, [pattern, toUpperCase]);
+
 
   useEffect(() => {
     // 定数スイッチ切り替え時にpatternが変わるので，この値を使ってハンドルする
@@ -111,6 +173,7 @@ export function ValidatedTextField({ sx = [], name, label, pattern, isIMEOn = fa
       name={name}
       helperText={inputError && errorMessage}
       onChange={handleChange}
+      onFocus={handleFocus}
     />
   );
 }

@@ -1,9 +1,9 @@
 import React, { forwardRef, HTMLAttributes } from "react";
 import classNames from "classnames";
-
 import { Action } from "./Action";
 import { Handle } from "./Handle";
 import { Remove } from "./Remove";
+import { Edit } from "./Edit";
 import styles from "./TreeItem.module.scss";
 import { DraggableAttributes } from "@dnd-kit/core";
 import { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
@@ -22,8 +22,10 @@ export interface Props extends HTMLAttributes<HTMLLIElement> {
   indentationWidth: number;
   value: string;
   fixed?: boolean;
+  canEdit?: boolean; // 編集可能かどうかのフラグを追加
   onCollapse?(): void;
   onRemove?(): void;
+  onEdit?(): void; // 編集ボタンのハンドラを追加
   wrapperRef?(node: HTMLLIElement): void;
 }
 
@@ -43,14 +45,18 @@ const TreeItem = forwardRef<HTMLDivElement, Props>(
       collapsed,
       onCollapse,
       onRemove,
+      onEdit, // 編集ハンドラを追加
       style,
       value,
       wrapperRef,
       fixed = false,
+      canEdit = true, // デフォルトは編集可能
       ...props
     },
     ref
   ) => {
+    // fixedがtrueの場合は強制的にcanEditをfalseにする
+    const effectiveCanEdit = fixed ? false : canEdit;
     return (
       <li
         className={classNames(
@@ -87,6 +93,9 @@ const TreeItem = forwardRef<HTMLDivElement, Props>(
             </Action>
           )}
           <span className={styles.Text}>{value}</span>
+          {!clone && !fixed && effectiveCanEdit && (
+            <Edit onClick={onEdit} />
+          )}
           {!clone && !fixed && <Remove onClick={onRemove} />}
           {clone && childCount && childCount > 1 ? (
             <span className={styles.Count}>{childCount}</span>

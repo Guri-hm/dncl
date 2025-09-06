@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
@@ -10,6 +10,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import HelpOutline from '@mui/icons-material/HelpOutline';
 import Collapse from '@mui/material/Collapse';
+import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
 import { DnclEditorProps, TreeItems } from "@/app/types";
 import { StatementName, StatementDesc, EditorBox, ErrorMsgBox } from '@/app/components/Dialog';
 import { keyPrefixEnum } from './Enum';
@@ -24,9 +26,7 @@ type itemElms = {
     isConstant: boolean;
 }
 
-
 const getOperator = (statementType: StatementEnum) => {
-
     switch (statementType) {
         case StatementEnum.Input:
             return SimpleAssignmentOperator.Dncl;
@@ -35,10 +35,112 @@ const getOperator = (statementType: StatementEnum) => {
     }
 }
 
-export function DnclEditDialog({ type = StatementEnum.Input, ...params }: DnclEditorProps) {
+export function DnclEditDialog({ type = StatementEnum.Input, isEdit = false, ...params }: DnclEditorProps) {
 
     const [error, setError] = useState<string[]>([]);
     const [showDescription, setShowDescription] = useState(false);
+    const [isRestoring, setIsRestoring] = useState(false);
+
+    useEffect(() => {
+        if (isEdit && params.item?.formData && params.open) {
+            setIsRestoring(true);
+            const timer = setTimeout(() => {
+                if (!params.item?.formData) return;
+
+                // 1. Operationコンポーネントにオペランド復元を依頼
+                const restoreEvent = new CustomEvent('restoreOperands', {
+                    detail: { formData: params.item.formData }
+                });
+                window.dispatchEvent(restoreEvent);
+
+                // 2. 少し待ってからフォームデータとUI状態を復元
+                setTimeout(() => {
+                    // フォームデータの復元（型安全性を確保）
+                    if (params.item?.formData) {
+                        Object.entries(params.item.formData).forEach(([key, value]) => {
+                            if (!key.includes('_Type') && !key.includes('processIndex')) {
+                                // テキストフィールドの値をDnclTextFieldに送信
+                                const restoreEvent = new CustomEvent('restoreRadioState', {
+                                    detail: { fieldName: key, value: value }
+                                });
+                                window.dispatchEvent(restoreEvent);
+                            }
+                        });
+                    }
+
+                    // UI状態の復元
+                    if (params.item?.uiState) {
+                        // ラジオボタンの復元
+                        const radioSelections = params.item.uiState.radioSelections;
+                        if (radioSelections) {
+                            Object.entries(radioSelections).forEach(([name, value]) => {
+                                if (name.includes('_Type')) {
+                                    // 隠しフィールドを設定
+                                    const hiddenField = document.querySelector(`input[name="${name}"]`) as HTMLInputElement;
+                                    if (hiddenField) {
+                                        hiddenField.value = value;
+                                        hiddenField.dispatchEvent(new Event('change', { bubbles: true }));
+                                    }
+
+                                    // DnclTextFieldコンポーネントに状態復元を依頼
+                                    const restoreEvent = new CustomEvent('restoreRadioState', {
+                                        detail: { fieldName: name, value: value }
+                                    });
+                                    window.dispatchEvent(restoreEvent);
+                                }
+                            });
+                        }
+
+                        // スイッチの復元
+                        const switchStates = params.item.uiState.switchStates;
+                        if (switchStates) {
+                            Object.entries(switchStates).forEach(([name, checked]) => {
+                                // DnclTextFieldコンポーネントに状態復元を依頼
+                                const restoreEvent = new CustomEvent('restoreRadioState', {
+                                    detail: { fieldName: name, value: checked.toString() }
+                                });
+                                window.dispatchEvent(restoreEvent);
+
+                                // DOM要素も設定（保険）
+                                const switchContainer = document.querySelector(`[data-switch-name="${name}"]`);
+                                if (switchContainer) {
+                                    const switchElement = switchContainer.querySelector('input[type="checkbox"]') as HTMLInputElement;
+                                    if (switchElement) {
+                                        switchElement.checked = checked;
+                                        switchElement.dispatchEvent(new Event('change', { bubbles: true }));
+                                    }
+                                }
+                            });
+                        }
+                    }
+
+                    // 復元完了イベントを発行
+                    const completeEvent = new CustomEvent('restoreComplete');
+                    window.dispatchEvent(completeEvent);
+
+                }, 300); // Operationコンポーネントの更新完了後
+
+            }, 200);
+
+            return () => clearTimeout(timer);
+        } else {
+            setIsRestoring(false);
+        }
+    }, [isEdit, params.item?.formData, params.item?.uiState, params.open]);
+
+    useEffect(() => {
+        const handleRestoreComplete = () => {
+            setTimeout(() => {
+                setIsRestoring(false);
+            }, 100); // 少し余裕をもって
+        };
+
+        window.addEventListener('restoreComplete', handleRestoreComplete);
+
+        return () => {
+            window.removeEventListener('restoreComplete', handleRestoreComplete);
+        };
+    }, []);
 
     const checkStatement = (data: { [k: string]: string; }, keyword: keyPrefixEnum, treeItems: TreeItems): boolean => {
 
@@ -85,8 +187,6 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: DnclEd
         }
 
         const strArray: string[] = cnvObjToArray(updatedObj, operandsMaxIndex, keyword);
-        // console.log(updatedObj);
-        // console.log(strArray);
 
         result = checkBraketPair(strArray);
         if (result.hasError) {
@@ -118,14 +218,6 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: DnclEd
         //サニタイジングの後で実行
         statement = replaceToConcatenation(statement);
 
-        //Function関数で実行し、エラーがあるかチェック
-        // result = isValidExpression(statement);
-        // if (result.hasError) {
-        //     setError(result.errorMsgArray);
-        //     return false;
-        // }
-
-        //Functionはセキュリティ上安全ではない
         // Babelを使ってコードをパース
         try {
             babelParser.parse(statement, {
@@ -214,6 +306,7 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: DnclEd
         line = line.replace(/,(?=\S)/g, ', ');
         return line;
     }
+
     const getTokens = (strArray: string[]): string => {
 
         let line = strArray.join(' ');
@@ -232,7 +325,11 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: DnclEd
             document.activeElement.blur();
         }
         if (params.setEditor) {
-            params.setEditor((prevState: DnclEditorProps) => ({ ...prevState, open: false }));
+            params.setEditor((prevState: DnclEditorProps) => ({
+                ...prevState,
+                open: false,
+                isEdit: false // isEditフラグもリセット
+            }));
         }
 
         if (params.refresh) {
@@ -351,16 +448,61 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: DnclEd
                             }
                             tokens = tokens.filter(token => token != '');
                             if (params.item) {
+                                const uiState: {
+                                    radioSelections: { [key: string]: string };
+                                    switchStates: { [key: string]: boolean };
+                                    toggleStates: { [key: string]: string };
+                                } = {
+                                    radioSelections: {},
+                                    switchStates: {},
+                                    toggleStates: {}
+                                };
+                                document.querySelectorAll('input[type="radio"]:checked').forEach((radio) => {
+                                    const radioElement = radio as HTMLInputElement;
+                                    // 動的な:r～は除外
+                                    if (!radioElement.name.startsWith(':r')) {
+                                        uiState.radioSelections[radioElement.name] = radioElement.value;
+                                    }
+                                });
+
+                                // 隠しフィールドの状態も収集（_Typeのみ）
+                                document.querySelectorAll('input[type="hidden"]').forEach((hidden) => {
+                                    const hiddenElement = hidden as HTMLInputElement;
+                                    if (hiddenElement.name.includes('_Type')) {
+                                        uiState.radioSelections[hiddenElement.name] = hiddenElement.value;
+                                    }
+                                });
+
+                                // スイッチの状態を収集
+                                document.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
+                                    const checkboxElement = checkbox as HTMLInputElement;
+                                    // MUIのSwitchコンポーネントは実際のname属性がない場合があるので、親要素から推測
+                                    const parentElement = checkboxElement.closest('[data-switch-name]');
+                                    if (parentElement) {
+                                        const switchName = parentElement.getAttribute('data-switch-name');
+                                        if (switchName) {
+                                            uiState.switchStates[switchName] = checkboxElement.checked;
+                                        }
+                                    }
+                                });
                                 params.item = {
-                                    ...params.item, line: processPhrase, lineTokens: tokens, processIndex: Number(formJson.processIndex), variables,
-                                    isConstant
+                                    ...params.item,
+                                    line: processPhrase,
+                                    lineTokens: tokens,
+                                    processIndex: Number(formJson.processIndex),
+                                    statementType: type,  // ← StatementEnumを保存
+                                    variables,
+                                    isConstant,
+                                    formData: formJson,
+                                    uiState: uiState
                                 }
                             }
 
-                            if (params.addItem) {
-                                if (params.item) {
-                                    params.addItem({ newItem: params.item, overIndex: params.overIndex });
-                                }
+                            // 編集モードか新規追加モードかで処理を分岐
+                            if (isEdit && params.editItem && params.item) {
+                                params.editItem({ editedItem: params.item, itemId: params.item.id });
+                            } else if (params.addItem && params.item) {
+                                params.addItem({ newItem: params.item, overIndex: params.overIndex });
                             }
                             handleClose();
                         },
@@ -370,6 +512,7 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: DnclEd
                 <DialogTitle>
                     <Box display="flex" justifyContent="space-between" alignItems="center">
                         <StatementName statementType={type} />
+                        {isEdit && <Box component="span" sx={{ ml: 1, fontSize: '0.875rem', color: 'text.secondary' }}>（編集中）</Box>}
                         <IconButton onClick={() => setShowDescription(!showDescription)}>
                             {showDescription ? <ExpandLess /> : <HelpOutline />}
                         </IconButton>
@@ -381,12 +524,41 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: DnclEd
                             <StatementDesc statementType={type} />
                         </DialogContentText>
                     </Collapse>
-                    <EditorBox statementType={type} treeItems={params.treeItems}></EditorBox>
+                    <Box sx={{ position: 'relative' }}>
+                        <EditorBox statementType={type} treeItems={params.treeItems}></EditorBox>
+
+                        {isRestoring && (
+                            <Box
+                                sx={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    right: 0,
+                                    bottom: 0,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                    zIndex: 1000,
+                                    minHeight: '200px',
+                                    gap: 2
+                                }}
+                            >
+                                <CircularProgress size={40} />
+                                <Typography variant="body2" color="text.secondary">
+                                    データを復元中...
+                                </Typography>
+                            </Box>
+                        )}
+                    </Box>
                 </DialogContent>
                 <DialogActions>
                     <ErrorMsgBox sx={{ display: 'flex', flexDirection: 'column' }} errorArray={error}></ErrorMsgBox>
-                    <Button onClick={handleClose}>キャンセル</Button>
-                    <Button variant="outlined" type="submit">決定</Button>
+                    <Button onClick={handleClose} disabled={isRestoring}>キャンセル</Button>
+                    <Button variant="outlined" type="submit" disabled={isRestoring}>
+                        {isEdit ? '更新' : '決定'}
+                    </Button>
                 </DialogActions>
             </Dialog>
         </Fragment >
