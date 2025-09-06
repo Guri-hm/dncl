@@ -8,8 +8,8 @@ const nextConfig: NextConfig = {
   // swcMinify: true,
 
   // GitHub Pages用のパス設定
-  // basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
-  // assetPrefix: process.env.NEXT_PUBLIC_BASE_PATH || '',
+  basePath: '/dncl',
+  assetPrefix: process.env.NEXT_PUBLIC_BASE_PATH || '',
   trailingSlash: true,
 
   // GitHub Pagesでは画像最適化が使えない
