@@ -40,12 +40,14 @@ jobs:
     - name: Build with Next.js
       run: npm run build
       env:
-        NEXT_PUBLIC_BASE_PATH: ""  # サブドメインでは空文字
-        NEXT_PUBLIC_API_BASE_URL: ${{ vars.NEXT_PUBLIC_API_BASE_URL }}
+        NEXT_PUBLIC_BASE_PATH: ""
+        NEXT_PUBLIC_API_BASE_URL: "https://solopg.com/next/dncl"  # 直接指定に変更
         ESLINT_MODE: build
         
     - name: Create CNAME file
-      run: echo "dncl.solopg.com" > ./out/CNAME  # ← 独自ドメイン設定
+      run: |
+        mkdir -p ./out
+        echo "dncl.solopg.com" > ./out/CNAME
         
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
