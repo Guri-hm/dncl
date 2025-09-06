@@ -43,7 +43,36 @@ jobs:
         export ESLINT_MODE=build
         npm run build
 
-    - name: Upload artifact
+    - name: Debug root directory after build
+      run: |
+        echo "=== ルートディレクトリの全内容 ==="
+        ls -la ./
+        echo ""
+        echo "=== outディレクトリの確認 ==="
+        ls -la ./out/ 2>/dev/null || echo "outディレクトリは存在しません"
+        echo ""
+        echo "=== .nextディレクトリの確認 ==="
+        ls -la ./.next/ | head -10
+        echo ""
+        echo "=== HTMLファイルの検索 ==="
+        find . -name "*.html" -type f -maxdepth 3 | head -10
+        echo ""
+        echo "=== 可能性のあるビルド出力ディレクトリ ==="
+        find . -type d -name "out" -o -name "dist" -o -name "build" -o -name "static" | head -10
+
+    - name: Check build output
+      run: |
+        if [ -d "./out" ]; then
+          echo "✓ out directory exists"
+          ls -la ./out/ | head -10
+        else
+          echo "❌ out directory not found"
+          echo "Creating dummy out directory for debugging..."
+          mkdir -p ./out
+          echo "<h1>Build Failed</h1><p>out directory was not created by Next.js</p>" > ./out/index.html
+        fi
+
+    - name: Upload artifact (always upload something)
       uses: actions/upload-pages-artifact@v3
       with:
         path: ./out
