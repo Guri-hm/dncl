@@ -260,7 +260,6 @@ const TabsBox = ({ tabItems, disabled, containerId = 'box', setTabItemsObj, ...p
                                             return formattedText;
                                         }
                                         const innerHTML = contentRef.current.innerHTML;
-                                        // const content = contentRef.current.textContent;
                                         if (!innerHTML) {
                                             return;
                                         }
@@ -276,9 +275,26 @@ const TabsBox = ({ tabItems, disabled, containerId = 'box', setTabItemsObj, ...p
                                     <AssignmentIcon />
                                 </IconButton>
                             }
-                            <IconButton size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: 'var(--stone-50)' } }} aria-label="clipboard" ref={setActivatorNodeRef} {...attributes} {...listeners} style={{
-                                cursor: isDragging ? 'grabbing' : 'grab'
-                            }}>
+                            <IconButton
+                                size='small'
+                                sx={{
+                                    color: 'var(--slate-500)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    '&:hover': { color: 'var(--stone-50)' },
+                                    // ドラッグ中の視覚的強調
+                                    backgroundColor: isDragging ? 'rgba(0, 127, 255, 0.2)' : 'transparent',
+                                    transform: isDragging ? 'scale(1.1)' : 'scale(1)',
+                                    transition: 'all 0.2s ease',
+                                }}
+                                aria-label="move-container"
+                                ref={setActivatorNodeRef}
+                                {...attributes}
+                                {...listeners}
+                                style={{
+                                    cursor: isDragging ? 'grabbing' : 'grab'
+                                }}
+                            >
                                 <SwapHorizIcon />
                             </IconButton>
                             <div>
