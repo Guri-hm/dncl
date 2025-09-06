@@ -3,7 +3,6 @@ import { TabGroup, TabItem, TabItemsObj, TreeItems } from "@/app/types";
 import cmnStyles from '@/app/components/common.module.css'
 import { Allotment, AllotmentHandle } from "allotment";
 import {
-    closestCenter,
     DndContext,
     DragEndEvent,
     DragOverEvent,
@@ -13,7 +12,6 @@ import {
     useDroppable,
     rectIntersection,
     pointerWithin,
-    DroppableContainer,
     CollisionDetection
 } from "@dnd-kit/core";
 import { arrayMove, SortableContext } from "@dnd-kit/sortable";
@@ -184,7 +182,7 @@ const DragOverlayTabsBox = ({ containerId, tabItems, originalWidth }: {
             gap: '8px',
         }}>
             <SwapHorizIcon fontSize="small" />
-            TabsBox ({tabItems.length} tabs)
+            {tabItems.length} タブ
         </Box>
         <Box style={{
             display: 'flex',
