@@ -44,18 +44,6 @@ jobs:
         export ESLINT_MODE=build
         npm run build
 
-    - name: Verify build and add CNAME
-      run: |
-        if [ -d "./out" ]; then
-          echo "✓ Build successful, out directory exists"
-          echo "dncl.solopg.com" > ./out/CNAME
-          echo "Contents of out directory:"
-          ls -la ./out/ | head -10
-        else
-          echo "❌ Build failed, no out directory"
-          exit 1
-        fi
-        
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
