@@ -10,6 +10,7 @@ import { FormControlLabel, Radio, RadioGroup, ToggleButton, ToggleButtonGroup } 
 import { InputTypeJpEnum, OperationEnum, SwitchJpEnum } from '@/app/enum';
 import { FunctionField, ValidatedTextField, FixedHeightGrid } from '@/app/components/Dialog';
 import { TreeItems } from '@/app/types';
+import { getValidationPattern } from '@/app/utilities/validation-utils';
 
 export interface DnclTextFieldProps {
   label?: string | inputTypeEnum
@@ -118,45 +119,42 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
     setForValueType((event.target as HTMLInputElement).value as inputTypeEnum);
   };
 
-  let tmpLabel: string = "";
-  let pattern: ValidationEnum = ValidationEnum.Variable;
-
   const renderContent = () => {
+    let tmpLabel: string = "";
+    let pattern: ValidationEnum = ValidationEnum.Variable;
 
     switch (inputType) {
       case inputTypeEnum.SwitchVariableOrArray:
       case inputTypeEnum.SwitchVariableOrNumberOrArray:
       case inputTypeEnum.SwitchVariableOrArrayWithConstant:
 
+        pattern = getValidationPattern(inputType, {
+          isConstant: isConstantMode,
+          threeWayValue: threeWayValue,
+        });
         switch (inputType) {
           case inputTypeEnum.SwitchVariableOrArray:
             tmpLabel = checked ? InputTypeJpEnum.Array : InputTypeJpEnum.Variable;
-            pattern = isConstantMode ? ValidationEnum.Constant : ValidationEnum.Variable;
             break;
           case inputTypeEnum.SwitchVariableOrNumberOrArray:
             // 3つの選択肢に対応
             switch (threeWayValue) {
               case inputTypeEnum.Variable:
                 tmpLabel = InputTypeJpEnum.Variable;
-                pattern = ValidationEnum.Variable;
                 break;
               case inputTypeEnum.Number:
                 tmpLabel = InputTypeJpEnum.Number;
-                pattern = ValidationEnum.Number;
                 break;
               case inputTypeEnum.Array:
                 tmpLabel = InputTypeJpEnum.Array;
-                pattern = ValidationEnum.Variable;
                 break;
               default:
                 tmpLabel = InputTypeJpEnum.Variable;
-                pattern = ValidationEnum.Variable;
                 break;
             }
             break;
           case inputTypeEnum.SwitchVariableOrArrayWithConstant:
             tmpLabel = checked ? InputTypeJpEnum.Array : InputTypeJpEnum.Variable;
-            pattern = isConstantMode ? ValidationEnum.Constant : ValidationEnum.Variable;
             break;
           default:
             break;
@@ -368,20 +366,8 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
         </Grid>
 
       case inputTypeEnum.ForValue:
-        switch (forValueType) {
-          case inputTypeEnum.Variable:
-            tmpLabel = InputTypeJpEnum.Variable;
-            pattern = ValidationEnum.Variable;
-            break;
-          case inputTypeEnum.Number:
-            tmpLabel = InputTypeJpEnum.Number;
-            pattern = ValidationEnum.Number; // 負の数・小数も許可
-            break;
-          default:
-            tmpLabel = InputTypeJpEnum.Number;
-            pattern = ValidationEnum.Number;
-            break;
-        }
+        pattern = getValidationPattern(inputType, { forValueType });
+        tmpLabel = forValueType === inputTypeEnum.Variable ? InputTypeJpEnum.Variable : InputTypeJpEnum.Number;
 
         return (
           <>

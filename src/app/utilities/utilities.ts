@@ -1327,13 +1327,13 @@ export const checkForLoopInfinite = (
   endValue: string,
   difference: string,
   isIncrement: boolean,
-  treeItems: TreeItems
+  treeItems: any[]
 ): { errorMsgArray: string[]; hasError: boolean } => {
 
   const errorMsgArray: string[] = [];
 
   // 変数が含まれている場合は検証をスキップ（実行時に判定）
-  const variableRegex = new RegExp(ValidationEnum.Variable);
+  const variableRegex = new RegExp('^[a-zA-Z][a-zA-Z0-9_]*$');
   if (variableRegex.test(initialValue) || variableRegex.test(endValue) || variableRegex.test(difference)) {
     return { errorMsgArray: [], hasError: false };
   }
