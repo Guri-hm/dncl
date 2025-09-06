@@ -123,7 +123,7 @@ export function FunctionField({ name = "", parentIndex = 0, event, funcType, tre
           <React.Fragment key={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${newIndex}_${i}_fragment`}>
             {ArgumentFields.length > 0 && <Grid size="auto" key={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${newIndex}_${i}_comma`}><FixedHeightGrid>,</FixedHeightGrid></Grid>}
             <Grid size="grow" key={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${newIndex}_${i}`}>
-              <ValidatedTextField name={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${i}`} label={InputTypeJpEnum.Argument} pattern={ValidationEnum.VariableOrNumber}></ValidatedTextField>
+              <ValidatedTextField name={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${i}`} label={InputTypeJpEnum.Argument} pattern={ValidationEnum.VariableOrPositiveInteger}></ValidatedTextField>
             </Grid>
           </React.Fragment>
         );
