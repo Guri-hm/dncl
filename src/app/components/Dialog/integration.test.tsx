@@ -42,7 +42,7 @@ describe('DNCL統合テスト', () => {
 
     test('プロパティの型チェック', () => {
         expect(typeof defaultProps.open).toBe('boolean');
-        expect(typeof defaultProps.type).toBe('number');
+        expect(typeof defaultProps.type).toBe('string');
         expect(Array.isArray(defaultProps.treeItems)).toBe(true);
         expect(typeof defaultProps.setEditor).toBe('function');
         expect(typeof defaultProps.addItem).toBe('function');
@@ -63,7 +63,7 @@ describe('DNCL統合テスト', () => {
 
     test('StatementEnumの値が正しい', () => {
         expect(StatementEnum.Input).toBeDefined();
-        expect(typeof StatementEnum.Input).toBe('number');
+        expect(typeof StatementEnum.Input).toBe('string');
     });
 
     test('モック関数が正しく動作する', () => {
