@@ -38,12 +38,14 @@ jobs:
         static_site_generator: next
         
     - name: Build with Next.js
-      run: npm run build
-      env:
-        NEXT_PUBLIC_BASE_PATH: ""
-        NEXT_PUBLIC_API_BASE_URL: "https://solopg.com/next/dncl"
-        ESLINT_MODE: build
-        
+      run: |
+        export NEXT_PUBLIC_BASE_PATH="/dncl"
+        export NEXT_PUBLIC_API_BASE_URL="https://solopg.com/next/dncl"
+        export ESLINT_MODE=build
+        export NODE_ENV=production
+        echo "Testing with NEXT_PUBLIC_BASE_PATH='/dncl'"
+        npm run build
+
     - name: Debug environment and build output
       run: |
         echo "=== Environment variables ==="
