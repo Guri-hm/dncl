@@ -13,15 +13,26 @@ const TabPanel = forwardRef<HTMLDivElement, TabPanelProps>(({ children, index, v
     return (
         <>
             {value === index &&
-                <Box className={`${cmnStyles.overflowAuto}`} sx={{
-                    wordBreak: 'break-all',
-                    flex: 1,
-                    color: 'white',
-                    margin: '15px'
-                }} role="tabpanel"
+                <Box
+                    className={`${cmnStyles.overflowAuto}`}
+                    sx={{
+                        wordBreak: 'break-all',
+                        flex: 1,
+                        color: 'white',
+                        margin: '15px',
+                        // 明示的にオーバーフロー設定を上書き
+                        overflow: 'auto !important',
+                        contain: 'layout style !important',
+                        clipPath: 'none',
+                    }}
+                    role="tabpanel"
                     hidden={value !== index}
                     id={`simple-tabpanel-${index}`}
-                    aria-labelledby={`simple-tab-${index}`} ref={ref}>{children}</Box>
+                    aria-labelledby={`simple-tab-${index}`}
+                    ref={ref}
+                >
+                    {children}
+                </Box>
             }
         </>
     );

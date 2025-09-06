@@ -27,17 +27,25 @@ const TabsWrapper: FC<BoxProps> = ({ children, ref, style }) => {
             className={`${styles.tabsWrapper} ${styles.dark}`}
             sx={{
                 ...style,
-                // 完全なオーバーフロー表示設定
+                // ドラッグ要素のオーバーフローのみ表示、他は通常通り
                 overflow: 'visible !important',
                 position: 'relative',
                 zIndex: 1,
                 contain: 'none',
                 isolation: 'auto',
                 clipPath: 'none',
-                // すべての子要素のオーバーフローも表示
-                '& *': {
-                    clipPath: 'none !important',
-                    contain: 'none !important',
+                // ドラッグ関連の要素のみオーバーフロー設定を調整
+                '& .MuiTabs-root': {
+                    overflow: 'visible !important',
+                    '& *': {
+                        clipPath: 'none !important',
+                        contain: 'none !important',
+                        overflow: 'visible !important',
+                    },
+                },
+                // TabPanelは通常のオーバーフロー動作を維持
+                '& [role="tabpanel"]': {
+                    overflow: 'auto !important',
                 },
             }}
         >

@@ -39,51 +39,58 @@ const TabLoadingFallback = () => (
     </Box>
 );
 
-// DragOverlay用のコンポーネント（ハンドル位置を中心にする）
-const DragOverlayTab = ({ item }: { item: TabItem }) => (
-    <Box
-        style={{
-            display: 'flex',
-            backgroundColor: 'rgba(30, 41, 59, 0.95)',
-            borderRadius: '6px',
-            padding: '4px 8px',
-            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5)',
-            zIndex: 999999,
-            // ハンドル部分（24px）の中心をカーソル位置に合わせる
-            transform: 'translateX(-12px)', // ハンドル幅の半分だけ左にオフセット
-        }}
-    >
-        <span style={{
-            width: '24px',
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'grabbing',
-            flexShrink: 0,
-        }}>
-            <Handle />
-        </span>
-        <Tab
-            label={item.label}
-            sx={{
-                flex: 'none',
-                fontWeight: 600,
+// DragOverlay用のコンポーネント（プレースホルダー幅を考慮した位置補正）
+const DragOverlayTab = ({ item, isDragging }: { item: TabItem; isDragging: boolean }) => {
+    // プレースホルダーが表示されている場合の補正値
+    // プレースホルダー幅(60px) + margin(16px) = 76px の補正
+    const placeholderOffset = isDragging ? -76 : 0;
+    const handleOffset = -12; // ハンドル幅の半分
+
+    return (
+        <Box
+            style={{
+                display: 'flex',
+                backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                borderRadius: '6px',
+                padding: '4px 8px',
+                boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5)',
+                zIndex: 999999,
+                // プレースホルダー補正 + ハンドル中心補正
+                transform: `translateX(${placeholderOffset + handleOffset}px)`,
+            }}
+        >
+            <span style={{
+                width: '24px',
+                height: '100%',
                 display: 'flex',
                 alignItems: 'center',
-                fontSize: '0.75rem',
-                minHeight: 'auto',
-                minWidth: 'auto',
-                paddingLeft: '3px',
-                paddingRight: '10px',
-                margin: '0px',
-                color: '#e2e8f0',
-                pointerEvents: 'none',
-                whiteSpace: 'nowrap',
-            }}
-        />
-    </Box>
-);
+                justifyContent: 'center',
+                cursor: 'grabbing',
+                flexShrink: 0,
+            }}>
+                <Handle />
+            </span>
+            <Tab
+                label={item.label}
+                sx={{
+                    flex: 'none',
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    fontSize: '0.75rem',
+                    minHeight: 'auto',
+                    minWidth: 'auto',
+                    paddingLeft: '3px',
+                    paddingRight: '10px',
+                    margin: '0px',
+                    color: '#e2e8f0',
+                    pointerEvents: 'none',
+                    whiteSpace: 'nowrap',
+                }}
+            />
+        </Box>
+    );
+};
 
 // 最適化されたプレースホルダー
 const DroppablePlaceholder = ({ id, position }: { id: string; position: 'left' | 'right' }) => {
@@ -96,7 +103,6 @@ const DroppablePlaceholder = ({ id, position }: { id: string; position: 'left' |
             ref={setNodeRef}
             sx={{
                 height: '100%',
-                width: '60px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -107,7 +113,6 @@ const DroppablePlaceholder = ({ id, position }: { id: string; position: 'left' |
                 backgroundColor: isOver ? 'rgba(0, 127, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
                 transition: isOver ? 'none' : 'all 0.2s ease',
                 opacity: 0.8,
-                margin: '8px',
                 willChange: isOver ? 'background-color, border-color' : 'auto',
             }}
         >
@@ -601,7 +606,6 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, se
                                                 <DroppablePlaceholder id={PLACEHOLDER_LEFT} position="left" />
                                             </Allotment.Pane>
                                         )}
-
                                         {containers.map((containerId) => {
                                             const tabGroup = tabItemsObj[containerId];
                                             if (!tabGroup || tabGroup.items.length === 0) return null;
@@ -626,9 +630,9 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, se
                                     </Allotment>
                                 </SortableContext>
 
-                                {/* DragOverlayでポータル化、ハンドル中心でカーソルに追従 */}
+                                {/* DragOverlayでポータル化、プレースホルダー補正適用 */}
                                 <DragOverlay adjustScale={false} dropAnimation={null}>
-                                    {activeItem ? <DragOverlayTab item={activeItem} /> : null}
+                                    {activeItem ? <DragOverlayTab item={activeItem} isDragging={isDragging} /> : null}
                                 </DragOverlay>
                             </DndContext>
                         </div>
