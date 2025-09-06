@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import { FC, useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { parseCode, generateFlowchartXML, flattenTree } from '@/app/utilities';
 import { Box, BoxProps, Button } from '@mui/material';
 import { TreeItem, TreeItems } from '@/app/types';
@@ -16,9 +16,18 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
 export const FlowTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx, ...props }) => {
   const [nodes, setNodes] = useState<React.ReactNode>(children);
+  const isMountedRef = useRef<boolean>(false);
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const darkModeValue = isDark ? "dark" : "light";
+
+  // マウント状態を追跡
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // treeItemsのハッシュを作成（変更検出用）
   const treeItemsHash = useMemo(() => {
@@ -81,7 +90,9 @@ export const FlowTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx
       </Box>
     </>;
 
-    setNodes(flowChartNodes);
+    if (isMountedRef.current) {
+      setNodes(flowChartNodes);
+    }
 
     const script = document.createElement('script');
     script.src = 'https://viewer.diagrams.net/js/viewer-static.min.js';
@@ -118,7 +129,7 @@ export const FlowTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx
 
   const fetchLintResults = useCallback(async (code: string) => {
     if (!code || code === '') {
-      setNodes("");
+      if (isMountedRef.current) setNodes("");
       return;
     }
 
@@ -141,7 +152,7 @@ export const FlowTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx
       if (data.messages.length === 0) {
         generateFlowchart(code);
       } else {
-        setNodes("プログラムに誤りがあります");
+        if (isMountedRef.current) setNodes("プログラムに誤りがあります");
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -153,32 +164,29 @@ export const FlowTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx
     }
   }, [generateFlowchart]);
 
-  const convertedCode = useMemo(() => {
-    let isCanceled = false;
-
+  // コード変換処理をuseEffectに移動
+  useEffect(() => {
     const convertAsync = async () => {
+      if (!isMountedRef.current) return;
+
       if (flowConversionCache.has(treeItemsHash)) {
         const cached = flowConversionCache.get(treeItemsHash);
-        if (!isCanceled) setNodes(cached);
+        if (isMountedRef.current) setNodes(cached);
         return;
       }
 
-      if (!isCanceled) setNodes("変換中");
+      if (isMountedRef.current) setNodes("変換中");
 
       // 少し遅延を入れて変換中表示を確実に出す
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      if (!isCanceled) {
+      if (isMountedRef.current) {
         const jsCode = await renderCode(treeItems);
         await fetchLintResults(jsCode);
       }
     };
 
     convertAsync();
-
-    return () => {
-      isCanceled = true;
-    };
   }, [treeItemsHash, renderCode, fetchLintResults, treeItems]);
 
   return (

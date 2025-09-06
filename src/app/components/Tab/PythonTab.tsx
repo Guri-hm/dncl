@@ -2,7 +2,7 @@ import { Box, BoxProps } from "@mui/material";
 import { TreeItem, TreeItems } from "@/app/types";
 import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, LoopEnum, ArithmeticOperator, BreakEnum, ArithmeticOperatorPython } from "@/app/enum";
 import { capitalizeTrueFalse, cnvToRomaji, containsJapanese, tryParseToPyFunc } from "@/app/utilities";
-import React, { FC, Fragment, ReactNode, useCallback, useMemo, useState } from "react";
+import React, { FC, Fragment, ReactNode, useCallback, useMemo, useState, useEffect, useRef } from "react";
 import { ScopeBox } from "@/app/components/Tab";
 import styles from "./tab.module.css"
 
@@ -152,6 +152,15 @@ const GuardedBox: React.FC<GuardedBoxProps> = ({ className, children, ...props }
 
 export const PythonTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx, ...props }) => {
     const [nodes, setNodes] = useState<React.ReactNode>(children);
+    const isMountedRef = useRef<boolean>(false);
+
+    // マウント状態を追跡
+    useEffect(() => {
+        isMountedRef.current = true;
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
 
     // treeItemsのハッシュを作成（変更検出用）
     const treeItemsHash = useMemo(() => {
@@ -215,34 +224,30 @@ export const PythonTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, 
         return Promise.all(promises);
     }, []);
 
-    // コード変換処理を最適化
-    const convertedCode = useMemo(() => {
-        let isCanceled = false;
-
+    // コード変換処理をuseEffectに移動
+    useEffect(() => {
         const convertAsync = async () => {
+            if (!isMountedRef.current) return;
+
             if (pythonConversionCache.has(treeItemsHash)) {
                 const cached = pythonConversionCache.get(treeItemsHash);
-                if (!isCanceled) setNodes(cached);
+                if (isMountedRef.current) setNodes(cached);
                 return;
             }
 
-            if (!isCanceled) setNodes("変換中");
+            if (isMountedRef.current) setNodes("変換中");
 
             // 少し遅延を入れて変換中表示を確実に出す
             await new Promise(resolve => setTimeout(resolve, 100));
 
-            if (!isCanceled) {
+            if (isMountedRef.current) {
                 const result = await renderNodes(treeItems, 0);
                 pythonConversionCache.set(treeItemsHash, result);
-                setNodes(result);
+                if (isMountedRef.current) setNodes(result);
             }
         };
 
         convertAsync();
-
-        return () => {
-            isCanceled = true;
-        };
     }, [treeItemsHash, renderNodes, treeItems]);
 
     return (

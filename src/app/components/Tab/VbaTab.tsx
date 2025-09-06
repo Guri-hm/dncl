@@ -1,5 +1,5 @@
 import { Box, BoxProps } from "@mui/material";
-import React, { FC, useEffect, useState, Fragment, useCallback, useMemo } from "react";
+import React, { FC, useEffect, useState, Fragment, useCallback, useMemo, useRef } from "react";
 import { TreeItem, TreeItems } from "@/app/types";
 import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, LoopEnum, ArithmeticOperator, ArithmeticOperatorVba } from "@/app/enum";
 import { capitalizeTrueFalse, replaceToVbaConcatenation, tryParseToVbaFunc } from "@/app/utilities";
@@ -184,6 +184,15 @@ const wrapRemainingItems = (remainingItems: TreeItems, movedItems: TreeItems): T
 
 export const VbaTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx, ...props }) => {
     const [nodes, setNodes] = useState<React.ReactNode>(children);
+    const isMountedRef = useRef<boolean>(false);
+
+    // マウント状態を追跡
+    useEffect(() => {
+        isMountedRef.current = true;
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
 
     // treeItemsのハッシュを作成（変更検出用）
     const treeItemsHash = useMemo(() => {
@@ -225,37 +234,33 @@ export const VbaTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx,
         return Promise.all(promises);
     }, []);
 
-    // コード変換処理を最適化
-    const convertedCode = useMemo(() => {
-        let isCanceled = false;
-
+    // コード変換処理をuseEffectに移動
+    useEffect(() => {
         const convertAsync = async () => {
+            if (!isMountedRef.current) return;
+
             if (vbaConversionCache.has(treeItemsHash)) {
                 const cached = vbaConversionCache.get(treeItemsHash);
-                if (!isCanceled) setNodes(cached);
+                if (isMountedRef.current) setNodes(cached);
                 return;
             }
 
-            if (!isCanceled) setNodes("変換中");
+            if (isMountedRef.current) setNodes("変換中");
 
             // 少し遅延を入れて変換中表示を確実に出す
             await new Promise(resolve => setTimeout(resolve, 100));
 
-            if (!isCanceled) {
+            if (isMountedRef.current) {
                 // EndSubに変換するTreeItemを挿入
                 const { movedItems, remainingItems } = moveElementsToEnd(treeItems);
                 const finalTreeItems = wrapRemainingItems(remainingItems, movedItems);
                 const result = await renderNodes(finalTreeItems, 0);
                 vbaConversionCache.set(treeItemsHash, result);
-                setNodes(result);
+                if (isMountedRef.current) setNodes(result);
             }
         };
 
         convertAsync();
-
-        return () => {
-            isCanceled = true;
-        };
     }, [treeItemsHash, renderNodes, treeItems]);
 
     return (

@@ -1,13 +1,26 @@
-import { FC, useEffect, useRef, useState, Suspense, lazy } from "react";
+import { FC, useEffect, useRef, useState, Suspense, lazy, useCallback } from "react";
 import { TabGroup, TabItem, TabItemsObj, TreeItems } from "@/app/types";
 import cmnStyles from '@/app/components/common.module.css'
 import { Allotment, AllotmentHandle } from "allotment";
-import { closestCenter, DndContext, DragEndEvent, DragOverEvent, MeasuringStrategy, UniqueIdentifier } from "@dnd-kit/core";
+import {
+    closestCenter,
+    DndContext,
+    DragEndEvent,
+    DragOverEvent,
+    DragOverlay,
+    MeasuringStrategy,
+    UniqueIdentifier,
+    useDroppable,
+    rectIntersection,
+    pointerWithin,
+    DroppableContainer,
+    CollisionDetection
+} from "@dnd-kit/core";
 import { arrayMove, SortableContext } from "@dnd-kit/sortable";
-import { restrictToHorizontalAxis } from "@dnd-kit/modifiers";
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
-import { Box, CircularProgress } from '@mui/material';
+import { Box, CircularProgress, Tab } from '@mui/material';
+import { Handle } from "@/app/components/TreeItem/Handle";
 
 // 遅延読み込み
 const VbaTab = lazy(() => import('./VbaTab').then(module => ({ default: module.VbaTab })));
@@ -26,6 +39,115 @@ const TabLoadingFallback = () => (
     </Box>
 );
 
+// DragOverlay用のコンポーネント（ハンドル位置を中心にする）
+const DragOverlayTab = ({ item }: { item: TabItem }) => (
+    <Box
+        style={{
+            display: 'flex',
+            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+            borderRadius: '6px',
+            padding: '4px 8px',
+            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5)',
+            zIndex: 999999,
+            // ハンドル部分（24px）の中心をカーソル位置に合わせる
+            transform: 'translateX(-12px)', // ハンドル幅の半分だけ左にオフセット
+        }}
+    >
+        <span style={{
+            width: '24px',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'grabbing',
+            flexShrink: 0,
+        }}>
+            <Handle />
+        </span>
+        <Tab
+            label={item.label}
+            sx={{
+                flex: 'none',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                fontSize: '0.75rem',
+                minHeight: 'auto',
+                minWidth: 'auto',
+                paddingLeft: '3px',
+                paddingRight: '10px',
+                margin: '0px',
+                color: '#e2e8f0',
+                pointerEvents: 'none',
+                whiteSpace: 'nowrap',
+            }}
+        />
+    </Box>
+);
+
+// 最適化されたプレースホルダー
+const DroppablePlaceholder = ({ id, position }: { id: string; position: 'left' | 'right' }) => {
+    const { isOver, setNodeRef } = useDroppable({
+        id,
+    });
+
+    return (
+        <Box
+            ref={setNodeRef}
+            sx={{
+                height: '100%',
+                width: '60px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: isOver ? '2px dashed #007FFF' : '2px dashed #666',
+                borderRadius: '8px',
+                color: isOver ? '#007FFF' : '#666',
+                fontSize: '2rem',
+                backgroundColor: isOver ? 'rgba(0, 127, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+                transition: isOver ? 'none' : 'all 0.2s ease',
+                opacity: 0.8,
+                margin: '8px',
+                willChange: isOver ? 'background-color, border-color' : 'auto',
+            }}
+        >
+            +
+        </Box>
+    );
+};
+
+// カスタム衝突検出関数
+const customCollisionDetection: CollisionDetection = (args) => {
+    const { droppableContainers } = args;
+
+    // プレースホルダーに対してはrectIntersection（要素の重なり判定）を使用
+    const placeholderIds = ['placeholder-left', 'placeholder-right'];
+    const placeholderContainers = Array.from(droppableContainers.values()).filter(
+        (container) => placeholderIds.includes(String(container.id))
+    );
+
+    if (placeholderContainers.length > 0) {
+        const intersections = rectIntersection({
+            ...args,
+            droppableContainers: placeholderContainers
+        });
+
+        if (intersections && intersections.length > 0) {
+            return intersections;
+        }
+    }
+
+    // その他の要素に対してはpointerWithin（ポインター位置判定）を使用
+    const otherContainers = Array.from(droppableContainers.values()).filter(
+        (container) => !placeholderIds.includes(String(container.id))
+    );
+
+    return pointerWithin({
+        ...args,
+        droppableContainers: otherContainers
+    });
+};
+
 interface Props {
     treeItems: TreeItems;
     setTabsBoxWrapperVisible: (visible: boolean) => void;
@@ -35,162 +157,204 @@ interface Props {
 export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, setTabsBoxWrapperVisible }) => {
     const ref = useRef<AllotmentHandle>(null);
     const theme = useTheme();
-    const isMd = useMediaQuery(theme.breakpoints.up('md'));//900px以上
-    const isSm = useMediaQuery(theme.breakpoints.up('sm'));//600px以上
+    const isMd = useMediaQuery(theme.breakpoints.up('md'));
+    const isSm = useMediaQuery(theme.breakpoints.up('sm'));
 
-    // TabComponentのレンダリング関数（遅延読み込み対応）
-    const renderTabComponent = (label: string, treeItems: TreeItems, children: string) => {
+    const [isDragging, setIsDragging] = useState(false);
+    const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
+    const [activeItem, setActiveItem] = useState<TabItem | null>(null);
+
+    const renderTabComponent = useCallback((label: string, treeItems: TreeItems, children: string, uniqueId?: string) => {
+        const key = uniqueId ? `${label}_${uniqueId}` : `${label}_${Date.now()}`;
+
         switch (label) {
             case 'DNCL':
                 return (
-                    <Suspense fallback={<TabLoadingFallback />}>
+                    <Suspense key={key} fallback={<TabLoadingFallback />}>
                         <DnclTab treeItems={treeItems}>{children}</DnclTab>
                     </Suspense>
                 );
             case 'javascript':
                 return (
-                    <Suspense fallback={<TabLoadingFallback />}>
+                    <Suspense key={key} fallback={<TabLoadingFallback />}>
                         <JsTab treeItems={treeItems}>{children}</JsTab>
                     </Suspense>
                 );
             case 'Python':
                 return (
-                    <Suspense fallback={<TabLoadingFallback />}>
+                    <Suspense key={key} fallback={<TabLoadingFallback />}>
                         <PythonTab treeItems={treeItems}>{children}</PythonTab>
                     </Suspense>
                 );
             case 'VBA':
                 return (
-                    <Suspense fallback={<TabLoadingFallback />}>
+                    <Suspense key={key} fallback={<TabLoadingFallback />}>
                         <VbaTab treeItems={treeItems}>{children}</VbaTab>
                     </Suspense>
                 );
             case 'フローチャート':
                 return (
-                    <Suspense fallback={<TabLoadingFallback />}>
+                    <Suspense key={key} fallback={<TabLoadingFallback />}>
                         <FlowTab treeItems={treeItems}>{children}</FlowTab>
                     </Suspense>
                 );
             default:
                 return <TabLoadingFallback />;
         }
-    };
+    }, []);
 
-    const [tabItemsObj, setTabItemsObj] = useState<TabItemsObj>(isMd ? {
-        group1: {
-            visible: true,
-            items: [
-                {
-                    id: 4,
-                    label: 'DNCL',
-                    component: renderTabComponent('DNCL', treeItems, 'DNCLのコード')
-                },
-                {
-                    id: 5,
-                    label: 'フローチャート',
-                    component: renderTabComponent('フローチャート', treeItems, 'フローチャート')
-                },
-            ],
-        },
-        group2: {
-            visible: true,
-            items: [
-                {
-                    id: 1,
-                    label: 'javascript',
-                    component: renderTabComponent('javascript', treeItems, 'javascriptのコード')
-                },
-                {
-                    id: 2,
-                    label: 'Python',
-                    component: renderTabComponent('Python', treeItems, 'Pythonのコード')
-                },
-                {
-                    id: 3,
-                    label: 'VBA',
-                    component: renderTabComponent('VBA', treeItems, 'VBAのコード')
-                },
-            ],
-        },
-    } : {
-        group1: {
-            visible: true,
-            items: [
-                {
-                    id: 4,
-                    label: 'DNCL',
-                    component: renderTabComponent('DNCL', treeItems, 'DNCLのコード')
-                },
-                {
-                    id: 5,
-                    label: 'フローチャート',
-                    component: renderTabComponent('フローチャート', treeItems, 'フローチャート')
-                },
-                {
-                    id: 1,
-                    label: 'javascript',
-                    component: renderTabComponent('javascript', treeItems, 'javascriptのコード')
-                },
-                {
-                    id: 2,
-                    label: 'Python',
-                    component: renderTabComponent('Python', treeItems, 'Pythonのコード')
-                },
-                {
-                    id: 3,
-                    label: 'VBA',
-                    component: renderTabComponent('VBA', treeItems, 'VBAのコード')
-                },
-            ]
-        }
+    const generateUniqueKey = () => `group_${Date.now()}_${Math.random()}`;
+
+    const [tabItemsObj, setTabItemsObj] = useState<TabItemsObj>(() => {
+        return isMd ? {
+            [generateUniqueKey()]: {
+                visible: true,
+                items: [
+                    {
+                        id: `dncl_${Date.now()}`,
+                        label: 'DNCL',
+                        component: renderTabComponent('DNCL', treeItems, 'DNCLのコード')
+                    },
+                    {
+                        id: `flow_${Date.now()}`,
+                        label: 'フローチャート',
+                        component: renderTabComponent('フローチャート', treeItems, 'フローチャート')
+                    },
+                ],
+            },
+            [generateUniqueKey()]: {
+                visible: true,
+                items: [
+                    {
+                        id: `js_${Date.now()}`,
+                        label: 'javascript',
+                        component: renderTabComponent('javascript', treeItems, 'javascriptのコード')
+                    },
+                    {
+                        id: `python_${Date.now()}`,
+                        label: 'Python',
+                        component: renderTabComponent('Python', treeItems, 'Pythonのコード')
+                    },
+                    {
+                        id: `vba_${Date.now()}`,
+                        label: 'VBA',
+                        component: renderTabComponent('VBA', treeItems, 'VBAのコード')
+                    },
+                ],
+            },
+        } : {
+            [generateUniqueKey()]: {
+                visible: true,
+                items: [
+                    {
+                        id: `dncl_${Date.now()}`,
+                        label: 'DNCL',
+                        component: renderTabComponent('DNCL', treeItems, 'DNCLのコード')
+                    },
+                    {
+                        id: `flow_${Date.now()}`,
+                        label: 'フローチャート',
+                        component: renderTabComponent('フローチャート', treeItems, 'フローチャート')
+                    },
+                    {
+                        id: `js_${Date.now()}`,
+                        label: 'javascript',
+                        component: renderTabComponent('javascript', treeItems, 'javascriptのコード')
+                    },
+                    {
+                        id: `python_${Date.now()}`,
+                        label: 'Python',
+                        component: renderTabComponent('Python', treeItems, 'Pythonのコード')
+                    },
+                    {
+                        id: `vba_${Date.now()}`,
+                        label: 'VBA',
+                        component: renderTabComponent('VBA', treeItems, 'VBAのコード')
+                    },
+                ]
+            }
+        };
     });
 
+    const [containers, setContainers] = useState<UniqueIdentifier[]>(() =>
+        Object.keys(tabItemsObj) as UniqueIdentifier[]
+    );
+
+    const createNewTabsBox = (tabItem: TabItem, insertIndex: number): string => {
+        const newGroupKey = generateUniqueKey();
+        setTabItemsObj(prev => ({
+            ...prev,
+            [newGroupKey]: {
+                visible: true,
+                items: [tabItem]
+            }
+        }));
+
+        setContainers(prev => {
+            const newContainers = [...prev];
+            newContainers.splice(insertIndex, 0, newGroupKey);
+            return newContainers;
+        });
+
+        return newGroupKey;
+    };
+
+    const getChildrenText = (label: string): string => {
+        switch (label) {
+            case 'DNCL': return 'DNCLのコード';
+            case 'javascript': return 'javascriptのコード';
+            case 'Python': return 'Pythonのコード';
+            case 'VBA': return 'VBAのコード';
+            case 'フローチャート': return 'フローチャート';
+            default: return '';
+        }
+    };
+
+    // treeItemsが変更された時のみコンポーネントを更新
     useEffect(() => {
-        // `treeItems` が変更されるたびに `tabItemsObj` の `component` 部分のみを更新
         setTabItemsObj(prevTabItemsObj => {
             const updateComponents = (group: TabGroup) => group.items.map((item: TabItem) => ({
                 ...item,
-                component: (() => {
-                    switch (item.label) {
-                        case 'DNCL':
-                            return renderTabComponent('DNCL', treeItems, 'DNCLのコード');
-                        case 'javascript':
-                            return renderTabComponent('javascript', treeItems, 'javascriptのコード');
-                        case 'Python':
-                            return renderTabComponent('Python', treeItems, 'Pythonのコード');
-                        case 'VBA':
-                            return renderTabComponent('VBA', treeItems, 'VBAのコード');
-                        case 'フローチャート':
-                            return renderTabComponent('フローチャート', treeItems, 'フローチャート');
-                        default:
-                            return item.component;
-                    }
-                })()
+                component: renderTabComponent(item.label, treeItems, getChildrenText(item.label), item.id.toString())
             }));
 
-            const updatedTabItemsObj: TabItemsObj = {
-                group1: {
-                    ...prevTabItemsObj.group1,
-                    items: updateComponents(prevTabItemsObj.group1)
-                }
-            };
+            const updatedTabItemsObj: TabItemsObj = {};
 
-            if (prevTabItemsObj.group2) {
-                updatedTabItemsObj.group2 = {
-                    ...prevTabItemsObj.group2,
-                    items: updateComponents(prevTabItemsObj.group2)
+            for (const groupKey of Object.keys(prevTabItemsObj)) {
+                updatedTabItemsObj[groupKey] = {
+                    ...prevTabItemsObj[groupKey],
+                    items: updateComponents(prevTabItemsObj[groupKey])
                 };
             }
 
             return updatedTabItemsObj;
         });
-    }, [treeItems]);
+    }, [treeItems, renderTabComponent]);
 
-    const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
-    const [containers, setContainers] = useState(
-        Object.keys(tabItemsObj) as UniqueIdentifier[]
-    );
-    const PLACEHOLDER_ID = "placeholder";
+    // 空のコンテナを削除（別のuseEffectで管理）
+    useEffect(() => {
+        const validContainers = Object.keys(tabItemsObj).filter(key =>
+            tabItemsObj[key] && tabItemsObj[key].items.length > 0
+        );
+
+        if (validContainers.length !== containers.length) {
+            setContainers(validContainers as UniqueIdentifier[]);
+
+            // 空のコンテナを削除
+            setTabItemsObj(prev => {
+                const newObj: TabItemsObj = {};
+                validContainers.forEach(key => {
+                    if (prev[key]) {
+                        newObj[key] = prev[key];
+                    }
+                });
+                return newObj;
+            });
+        }
+    }, [tabItemsObj, containers.length]);
+
+    const PLACEHOLDER_LEFT = "placeholder-left";
+    const PLACEHOLDER_RIGHT = "placeholder-right";
 
     const recentlyMovedToNewContainer = useRef(false);
     const isSortingContainer = activeId ? containers.includes(activeId) : false;
@@ -208,13 +372,36 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, se
         return null;
     };
 
-    const handleDragOver = ({ active, over }: DragOverEvent) => {
+    const findItem = (id: UniqueIdentifier): TabItem | null => {
+        for (const key of Object.keys(tabItemsObj)) {
+            const foundItem = tabItemsObj[key].items.find(item => item.id === id);
+            if (foundItem) {
+                return foundItem;
+            }
+        }
+        return null;
+    };
+
+    // handleDragOverの最適化（スロットリング）
+    const lastDragOverTime = useRef(0);
+    const handleDragOver = useCallback(({ active, over }: DragOverEvent) => {
+        const now = Date.now();
+        // 16ms以下の間隔での処理をスキップ（60FPS制限）
+        if (now - lastDragOverTime.current < 16) {
+            return;
+        }
+        lastDragOverTime.current = now;
+
         const overId = over?.id;
-        //コンテナ移動時は処理終了
+
+        if ((overId === PLACEHOLDER_LEFT || overId === PLACEHOLDER_RIGHT) && !(active.id in tabItemsObj)) {
+            return;
+        }
+
         if (overId == null || active.id in tabItemsObj) {
             return;
         }
-        //以降はタブ移動時の処理
+
         const overContainer = findContainer(overId);
         const activeContainer = findContainer(active.id);
 
@@ -269,14 +456,39 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, se
                 };
             });
         }
-    }
+    }, [tabItemsObj, findContainer, PLACEHOLDER_LEFT, PLACEHOLDER_RIGHT]);
 
     const handleDragEnd = ({ active, over }: DragEndEvent) => {
+        setIsDragging(false);
+        setActiveId(null);
+        setActiveItem(null);
+
         if (!active.id) {
             return;
         }
 
-        //コンテナ移動の場合
+        // プレースホルダーへのドロップ処理
+        if ((over?.id === PLACEHOLDER_LEFT || over?.id === PLACEHOLDER_RIGHT) && !(active.id in tabItemsObj)) {
+            const activeContainer = findContainer(active.id);
+            if (activeContainer) {
+                const activeItem = tabItemsObj[activeContainer].items.find(item => item.id === active.id);
+                if (activeItem) {
+                    const insertIndex = over.id === PLACEHOLDER_LEFT ? 0 : containers.length;
+                    createNewTabsBox(activeItem, insertIndex);
+
+                    setTabItemsObj(prev => {
+                        const newObj = { ...prev };
+                        newObj[activeContainer] = {
+                            ...newObj[activeContainer],
+                            items: newObj[activeContainer].items.filter(item => item.id !== active.id)
+                        };
+                        return newObj;
+                    });
+                }
+            }
+            return;
+        }
+
         if (active.id in tabItemsObj && over?.id) {
             setContainers((containers) => {
                 const activeIndex = containers.indexOf(active.id);
@@ -286,22 +498,16 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, se
             });
         }
 
-        //以降はタブ移動の場合
         const activeContainer = findContainer(active.id);
 
         if (!activeContainer) {
-            setActiveId(null);
             return;
         }
 
         const overId = over?.id;
 
         if (overId == null) {
-            setActiveId(null);
             return;
-        }
-
-        if (overId === PLACEHOLDER_ID) {
         }
 
         const overContainer = findContainer(overId);
@@ -323,7 +529,6 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, se
                 }));
             }
         }
-        setActiveId(null);
     };
 
     useEffect(() => {
@@ -364,39 +569,74 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, se
             {isSm ?
                 tabsBoxWrapperVisible ?
                     isMd ?
-                        <DndContext
-                            collisionDetection={closestCenter}
-                            onDragStart={({ active }) => {
-                                setActiveId(active.id);
-                            }}
-                            onDragOver={handleDragOver}
-                            onDragEnd={handleDragEnd}
-                            modifiers={[restrictToHorizontalAxis]}
-                            measuring={{
-                                droppable: {
-                                    strategy: MeasuringStrategy.Always,
-                                },
-                            }}
-                        >
-                            <SortableContext items={[...containers, PLACEHOLDER_ID]}>
-                                <Allotment minSize={0} className={`${cmnStyles.hFull}`} ref={ref}>
-                                    {containers.map((containerId) => {
-                                        return <Allotment.Pane minSize={0} snap visible={tabItemsObj[containerId].visible} key={containerId}>
-                                            <div key={containerId} className={`${cmnStyles.hFull}`} style={{ marginLeft: '16px' }}>
-                                                <Suspense fallback={<TabLoadingFallback />}>
-                                                    <TabsBox tabItems={tabItemsObj[containerId].items} disabled={isSortingContainer} containerId={containerId} setTabItemsObj={setTabItemsObj} />
-                                                </Suspense>
-                                            </div>
-                                        </Allotment.Pane>
-                                    })}
-                                </Allotment>
-                            </SortableContext>
-                        </DndContext>
+                        <div style={{ height: '100%', overflow: 'visible' }}>
+                            <DndContext
+                                collisionDetection={customCollisionDetection}
+                                onDragStart={({ active }) => {
+                                    setActiveId(active.id);
+                                    setIsDragging(true);
+                                    const item = findItem(active.id);
+                                    setActiveItem(item);
+                                }}
+                                onDragOver={handleDragOver}
+                                onDragEnd={handleDragEnd}
+                                measuring={{
+                                    droppable: {
+                                        strategy: MeasuringStrategy.Always,
+                                    },
+                                }}
+                                accessibility={{
+                                    announcements: {
+                                        onDragStart: () => '',
+                                        onDragOver: () => '',
+                                        onDragEnd: () => '',
+                                        onDragCancel: () => '',
+                                    },
+                                }}
+                            >
+                                <SortableContext items={containers}>
+                                    <Allotment minSize={0} className={`${cmnStyles.hFull}`} ref={ref}>
+                                        {isDragging && (
+                                            <Allotment.Pane minSize={60} maxSize={60}>
+                                                <DroppablePlaceholder id={PLACEHOLDER_LEFT} position="left" />
+                                            </Allotment.Pane>
+                                        )}
+
+                                        {containers.map((containerId) => {
+                                            const tabGroup = tabItemsObj[containerId];
+                                            if (!tabGroup || tabGroup.items.length === 0) return null;
+
+                                            return <Allotment.Pane minSize={100} snap visible={tabGroup.visible} key={containerId}>
+                                                <div key={containerId} className={`${cmnStyles.hFull}`} style={{
+                                                    marginLeft: '16px',
+                                                    overflow: 'visible'
+                                                }}>
+                                                    <Suspense fallback={<TabLoadingFallback />}>
+                                                        <TabsBox tabItems={tabGroup.items} disabled={isSortingContainer} containerId={containerId} setTabItemsObj={setTabItemsObj} />
+                                                    </Suspense>
+                                                </div>
+                                            </Allotment.Pane>
+                                        })}
+
+                                        {isDragging && (
+                                            <Allotment.Pane minSize={60} maxSize={60}>
+                                                <DroppablePlaceholder id={PLACEHOLDER_RIGHT} position="right" />
+                                            </Allotment.Pane>
+                                        )}
+                                    </Allotment>
+                                </SortableContext>
+
+                                {/* DragOverlayでポータル化、ハンドル中心でカーソルに追従 */}
+                                <DragOverlay adjustScale={false} dropAnimation={null}>
+                                    {activeItem ? <DragOverlayTab item={activeItem} /> : null}
+                                </DragOverlay>
+                            </DndContext>
+                        </div>
                         :
                         <div className={`${cmnStyles.hFull}`} style={{ marginLeft: '17px', marginRight: '5px' }}>
                             <Allotment minSize={0} className={`${cmnStyles.hFull}`}>
                                 <Suspense fallback={<TabLoadingFallback />}>
-                                    <TabsSingleBox tabItems={tabItemsObj['group1'].items} containerId={'group1'} setTabItemsObj={setTabItemsObj} />
+                                    <TabsSingleBox tabItems={tabItemsObj[Object.keys(tabItemsObj)[0]]?.items || []} containerId={Object.keys(tabItemsObj)[0]} setTabItemsObj={setTabItemsObj} />
                                 </Suspense>
                             </Allotment>
                         </div>
@@ -404,7 +644,7 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, se
                 :
                 <div className={`${cmnStyles.hFull}`}>
                     <Suspense fallback={<TabLoadingFallback />}>
-                        <TabsSingleBox tabItems={tabItemsObj['group1'].items} />
+                        <TabsSingleBox tabItems={tabItemsObj[Object.keys(tabItemsObj)[0]]?.items || []} />
                     </Suspense>
                 </div>
             }

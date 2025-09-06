@@ -13,10 +13,44 @@ interface TabsProps {
 }
 
 export const CustomTabs: FC<TabsProps> = ({ value, onChange, a11yProps, tabItems, tabClasses = [] }) => {
-    //minHeightで最低限高さがないとwidthが効かない
-    return (
-        <Tabs sx={{ minHeight: 'auto' }} value={value} onChange={onChange} aria-label="tabs">
+    // tabItemsが空の場合は何も表示しない
+    if (tabItems.length === 0) {
+        return null;
+    }
 
+    // 安全なvalue値を計算
+    const safeValue = Math.min(Math.max(0, value), tabItems.length - 1);
+
+    return (
+        <Tabs
+            sx={{
+                minHeight: 'auto',
+                // 完全なオーバーフロー表示設定
+                overflow: 'visible !important',
+                contain: 'none',
+                isolation: 'auto',
+                '& .MuiTabs-scroller': {
+                    overflow: 'visible !important',
+                    contain: 'none !important',
+                },
+                '& .MuiTabs-flexContainer': {
+                    overflow: 'visible !important',
+                    contain: 'none !important',
+                },
+                '& .MuiTabs-indicator': {
+                    overflow: 'visible !important',
+                },
+                // すべての子要素のオーバーフローも表示
+                '& *': {
+                    overflow: 'visible !important',
+                    clipPath: 'none !important',
+                    contain: 'none !important',
+                },
+            }}
+            value={safeValue}
+            onChange={onChange}
+            aria-label="tabs"
+        >
             {tabItems.map((item, index) => (
                 <CustomTab
                     key={item.id}

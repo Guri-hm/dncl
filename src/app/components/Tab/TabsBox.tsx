@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import styles from './tabs-box.module.css'
 import { BoxProps } from '@mui/system';
 import { IconButton, Menu, MenuItem, Snackbar } from '@mui/material';
-import { Children, Dispatch, FC, SetStateAction, useMemo, useRef, useState } from 'react';
+import { Children, Dispatch, FC, SetStateAction, useMemo, useRef, useState, useEffect } from 'react';
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { AnimateLayoutChanges, defaultAnimateLayoutChanges, SortableContext, useSortable } from '@dnd-kit/sortable';
 import { CSS } from "@dnd-kit/utilities";
@@ -11,7 +11,6 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import MenuIcon from '@mui/icons-material/Menu';
 import { TabItem, TabItemsObj } from "@/app/types";
-
 
 //a11yはaccessibilityの略記
 export function a11yProps(index: number) {
@@ -23,11 +22,30 @@ export function a11yProps(index: number) {
 
 const TabsWrapper: FC<BoxProps> = ({ children, ref, style }) => {
     return (
-        <Box ref={ref} className={`${styles.tabsWrapper} ${styles.dark}`} sx={{ ...style }}>
+        <Box
+            ref={ref}
+            className={`${styles.tabsWrapper} ${styles.dark}`}
+            sx={{
+                ...style,
+                // 完全なオーバーフロー表示設定
+                overflow: 'visible !important',
+                position: 'relative',
+                zIndex: 1,
+                contain: 'none',
+                isolation: 'auto',
+                clipPath: 'none',
+                // すべての子要素のオーバーフローも表示
+                '& *': {
+                    clipPath: 'none !important',
+                    contain: 'none !important',
+                },
+            }}
+        >
             {children}
         </Box>
     );
 };
+
 const Header: FC<BoxProps> = ({ children }) => {
     return (
         <Box sx={{
@@ -37,7 +55,11 @@ const Header: FC<BoxProps> = ({ children }) => {
             color: '#94a3b8',
             fontSize: '0.75rem',
             lineHeight: '1.5rem',
-            paddingTop: '0.25rem'
+            paddingTop: '0.25rem',
+            // 完全なオーバーフロー表示設定
+            overflow: 'visible !important',
+            contain: 'none',
+            clipPath: 'none',
         }} >
             {children}
         </Box>
@@ -83,37 +105,6 @@ type Props = {
 const animateLayoutChanges: AnimateLayoutChanges = (args) =>
     defaultAnimateLayoutChanges({ ...args, wasDragging: true });
 
-// const TabPanelsWrapper: FC<BoxProps & { containerId: UniqueIdentifier, items: TabItem[], disabled?: boolean; }> = ({ children, containerId, items, disabled }) => {
-//     const {
-//         attributes,
-//         isDragging,
-//         listeners,
-//         setNodeRef,
-//         transition,
-//         transform,
-//     } = useSortable({
-//         id: containerId,
-//         data: {
-//             type: "container",
-//             children: items,
-//         },
-//         animateLayoutChanges,
-//     });
-//     return (
-//         <Box className={`${styles.tabsWrapper} ${styles.dark}`} ref={disabled ? undefined : setNodeRef}
-//             style={{
-//                 transition,
-//                 transform: CSS.Translate.toString(transform),
-//                 opacity: isDragging ? 0.5 : undefined,
-//                 cursor: isDragging ? 'grabbing' : 'grab'
-//             }}
-//             {...attributes}
-//             {...listeners}>
-//             {children}
-//         </Box>
-//     );
-// };
-
 const TabsBox = ({ tabItems, disabled, containerId = 'box', setTabItemsObj, ...props }: Props) => {
     const [value, setValue] = useState(0);
     const contentRef = useRef<HTMLDivElement | null>(null);
@@ -121,9 +112,22 @@ const TabsBox = ({ tabItems, disabled, containerId = 'box', setTabItemsObj, ...p
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
 
+    // tabItemsが変更された時にvalueを適切に調整
+    useEffect(() => {
+        if (tabItems.length === 0) {
+            setValue(0);
+        } else if (value >= tabItems.length) {
+            setValue(Math.max(0, tabItems.length - 1));
+        }
+    }, [tabItems.length, value]);
+
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-        setValue(newValue);
+        // 有効な範囲内かチェック
+        if (newValue >= 0 && newValue < tabItems.length) {
+            setValue(newValue);
+        }
     };
+
     const handleClose = () => {
         setSnackbar({ ...snackbar, open: false });
     };
@@ -208,25 +212,36 @@ const TabsBox = ({ tabItems, disabled, containerId = 'box', setTabItemsObj, ...p
         },
         animateLayoutChanges,
     });
+
+    // 空のTabsBoxの場合は何も表示しない（削除される）
+    if (tabItems.length === 0) {
+        return null;
+    }
+
+    // 安全なvalue値を計算
+    const safeValue = Math.min(Math.max(0, value), tabItems.length - 1);
+
     return (
         <TabsWrapper ref={setNodeRef} style={{
             transition,
             transform: CSS.Translate.toString(transform),
             opacity: isDragging ? 0.5 : undefined,
+            zIndex: isDragging ? 1000 : 'auto',
+            position: 'relative',
         }}>
-            <SortableContext key={containerId} items={tabItems}>
+            <SortableContext key={`${containerId}-${tabItems.length}`} items={tabItems}>
                 <Header>
                     <CustomTabs
-                        value={value}
+                        value={safeValue}
                         onChange={handleChange}
                         a11yProps={a11yProps}
                         tabItems={tabItems}
-                        tabClasses={tabItems.map((_, index) => `${value === index ? styles.tabSelected : styles.tab}`)}
+                        tabClasses={tabItems.map((_, index) => `${safeValue === index ? styles.tabSelected : styles.tab}`)}
                         disabled={disabled}
                     />
                     <TabFillerContainer>
                         <TabFillerInner>
-                            {tabItems[value] && tabItems[value].label == 'フローチャート' ? '' :
+                            {tabItems[safeValue] && tabItems[safeValue].label == 'フローチャート' ? '' :
                                 <IconButton size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: 'var(--stone-50)' } }} aria-label="clipboard" onClick={() => {
                                     if (contentRef.current) {
                                         const replaceDivWithNewline = (html: string) => {
@@ -286,13 +301,11 @@ const TabsBox = ({ tabItems, disabled, containerId = 'box', setTabItemsObj, ...p
                     </TabFillerContainer>
                 </Header>
             </SortableContext>
-            {/* <TabPanelsWrapper containerId={containerId} items={tabItems}> */}
             {
                 Children.map(tabPanels, (child, index) => (
-                    <TabPanel value={value} index={index} key={index} ref={contentRef}> {child} </TabPanel>
+                    <TabPanel value={safeValue} index={index} key={index} ref={contentRef}> {child} </TabPanel>
                 ))
             }
-            {/* </TabPanelsWrapper> */}
             <Snackbar
                 anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
                 autoHideDuration={snackbar.duration}
