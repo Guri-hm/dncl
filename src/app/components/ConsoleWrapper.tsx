@@ -37,3 +37,4 @@ export const ConsoleWrapper: FC<Props> = React.memo(({ setRunResults, ...props }
         prevProps.dnclValidation === nextProps.dnclValidation
     );
 });
+ConsoleWrapper.displayName = 'ConsoleWrapper';

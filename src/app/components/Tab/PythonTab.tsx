@@ -260,3 +260,4 @@ export const PythonTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, 
     return JSON.stringify(prevProps.treeItems) === JSON.stringify(nextProps.treeItems) &&
         JSON.stringify(prevProps.sx) === JSON.stringify(nextProps.sx);
 });
+PythonTab.displayName = 'PythonTab';

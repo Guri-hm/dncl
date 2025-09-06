@@ -7,6 +7,8 @@ import LightModeIcon from '@mui/icons-material/LightMode';
 import SettingsBrightnessIcon from '@mui/icons-material/SettingsBrightness';
 import { SxProps } from "@mui/material";
 
+type ThemeMode = "light" | "dark" | "system";
+
 const themeOptions = [
     { value: "light", label: "ライト", icon: <LightModeIcon /> },
     { value: "dark", label: "ダーク", icon: <DarkModeIcon /> },
@@ -32,7 +34,7 @@ export const ThemeToggleButton = ({ sx }: { sx?: SxProps }) => {
     };
 
     const handleSelect = (value: string) => {
-        setMode(value as any);
+        setMode(value as ThemeMode);
         handleClose();
     };
 

@@ -1327,7 +1327,7 @@ export const checkForLoopInfinite = (
   endValue: string,
   difference: string,
   isIncrement: boolean,
-  treeItems: any[]
+  treeItems: TreeItems
 ): { errorMsgArray: string[]; hasError: boolean } => {
 
   const errorMsgArray: string[] = [];

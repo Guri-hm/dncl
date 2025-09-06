@@ -2,8 +2,26 @@ import type { NextConfig } from "next";
 import path from "path";
 
 const nextConfig: NextConfig = {
+  // 静的サイト出力（GitHub Pages用）
+  output: 'export',
+  // パフォーマンス最適化
+  swcMinify: true,
+
+  // GitHub Pages用のパス設定
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
+  assetPrefix: process.env.NEXT_PUBLIC_BASE_PATH || '',
+  trailingSlash: true,
+
+  // GitHub Pagesでは画像最適化が使えない
+  images: {
+    unoptimized: true
+  },
+  sassOptions: {
+    includePaths: [path.join(__dirname, 'styles')],
+    api: 'modern-compiler'
+  },
   experimental: {
-    // コード分割の最適化
+    // コード分割の最適化（GitHub Pagesでも有効）
     optimizePackageImports: ['@mui/material', '@mui/icons-material'],
   },
   webpack: (config, { isServer }) => {
@@ -40,18 +58,6 @@ const nextConfig: NextConfig = {
     }
     return config;
   },
-  // 静的最適化
-  swcMinify: true,
-  // 画像最適化
-  images: {
-    formats: ['image/webp', 'image/avif'],
-  },
-  sassOptions: {
-    includePaths: [path.join(__dirname, 'styles')],
-    api: 'modern-compiler' // モダンAPIを使用するように設定
-  },
-  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
-  /* 他の設定オプションはこちらに追加 */
 };
 
 export default nextConfig;

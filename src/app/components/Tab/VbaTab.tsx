@@ -273,3 +273,4 @@ export const VbaTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx,
     return JSON.stringify(prevProps.treeItems) === JSON.stringify(nextProps.treeItems) &&
         JSON.stringify(prevProps.sx) === JSON.stringify(nextProps.sx);
 });
+VbaTab.displayName = 'VbaTab';

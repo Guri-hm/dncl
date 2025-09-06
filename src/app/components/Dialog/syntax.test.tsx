@@ -14,7 +14,7 @@ interface MockFlattenedItem {
     line: string;
     processIndex: number;
     parentId: string | null;
-    children: any[];
+    children: MockFlattenedItem[];
     depth: number;
     index: number;
     variables: string[];
@@ -27,7 +27,7 @@ describe('DNCL構文パターン検証', () => {
         id: string,
         processIndex: number,
         parentId: string | null = null,
-        children: any[] = []
+        children: MockFlattenedItem[] = []
     ): MockFlattenedItem => ({
         id,
         line: '',

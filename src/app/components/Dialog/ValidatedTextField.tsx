@@ -109,26 +109,6 @@ export function ValidatedTextField({ sx = [], name, label, pattern, isIMEOn = fa
   }, [restoreValue, toUpperCase, pattern, inputValue]);
 
   useEffect(() => {
-    let value = inputValue;
-    if (toUpperCase) {
-      value = value.toUpperCase();
-      if (value !== inputValue) {
-        setInputValue(value);
-        return;
-      }
-    }
-    const regex = new RegExp(pattern);
-    if (value === "" || regex.test(value)) {
-      setInputError(false);
-      setErrorMessage('');
-    } else {
-      setInputError(true);
-      setErrorMessage(getErrorMessage(value, pattern));
-    }
-  }, [pattern, toUpperCase]);
-
-
-  useEffect(() => {
     // 定数スイッチ切り替え時にpatternが変わるので，この値を使ってハンドルする
     let value = inputValue;
     if (toUpperCase) {
@@ -147,7 +127,7 @@ export function ValidatedTextField({ sx = [], name, label, pattern, isIMEOn = fa
       setInputError(true);
       setErrorMessage(getErrorMessage(value, pattern));
     }
-  }, [inputValue, pattern]);
+  }, [inputValue, pattern, toUpperCase]);
 
   return (
     <TextField

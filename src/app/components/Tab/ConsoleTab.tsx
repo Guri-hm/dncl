@@ -17,6 +17,7 @@ interface CustomBoxProps extends BoxProps {
 }
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://solopg.com/next/dncl';
 
 // グローバルキャッシュ
 const codeConversionCache = new Map<string, string>();
@@ -115,7 +116,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = React.memo(({
         }
 
         try {
-            const response = await fetch(`${basePath}/api/execute`, {
+            const response = await fetch(`${apiBaseUrl}/api/execute`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -186,7 +187,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = React.memo(({
         }
 
         try {
-            const response = await fetch(`${basePath}/api/lint`, {
+            const response = await fetch(`${apiBaseUrl}/api/lint`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -355,3 +356,5 @@ export const ConsoleTab: React.FC<CustomBoxProps> = React.memo(({
         prevProps.dnclValidation === nextProps.dnclValidation
     );
 });
+
+ConsoleTab.displayName = 'ConsoleTab';

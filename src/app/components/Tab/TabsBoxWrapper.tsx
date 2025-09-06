@@ -533,7 +533,7 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, se
     const recentlyMovedToNewContainer = useRef(false);
     const isSortingContainer = activeId ? containers.includes(activeId) : false;
 
-    const findContainer = (id: UniqueIdentifier) => {
+    const findContainer = useCallback((id: UniqueIdentifier) => {
         if (id in tabItemsObj) {
             return id;
         }
@@ -544,7 +544,7 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, se
             }
         }
         return null;
-    };
+    }, [tabItemsObj]);
 
     const findItem = (id: UniqueIdentifier): TabItem | null => {
         for (const key of Object.keys(tabItemsObj)) {

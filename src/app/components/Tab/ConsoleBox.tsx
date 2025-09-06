@@ -116,3 +116,7 @@ export const ConsoleBox: React.FC<Props> = React.memo(({ children, tabLabels, se
         </StyledBox>
     );
 });
+
+TabPanel.displayName = 'TabPanel';
+StyledBox.displayName = 'StyledBox';
+ConsoleBox.displayName = 'ConsoleBox';

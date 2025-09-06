@@ -2,8 +2,30 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import { StatementEnum } from '@/app/enum';
 
-// DnclEditDialogの型定義をモック
-const MockDnclEditDialog = ({ open, type, treeItems, item, overIndex, setEditor, addItem, refresh, setItems }: any) => {
+// DnclEditDialogの型定義を具体的に指定
+interface MockDnclEditDialogProps {
+    open: boolean;
+    type: StatementEnum;
+    treeItems: unknown[];
+    item: unknown;
+    overIndex: number;
+    setEditor: () => void;
+    addItem: (item: unknown) => void;
+    refresh: () => void;
+    setItems: (items: unknown[]) => void;
+}
+
+const MockDnclEditDialog = ({
+    open,
+    type,
+    treeItems,
+    item,
+    overIndex,
+    setEditor,
+    addItem,
+    refresh,
+    setItems
+}: MockDnclEditDialogProps) => {
     if (!open) return null;
 
     return (
@@ -24,7 +46,7 @@ jest.mock('./DnclEditDialog', () => ({
 
 describe('DNCL統合テスト', () => {
 
-    const defaultProps = {
+    const defaultProps: MockDnclEditDialogProps = {
         open: true,
         type: StatementEnum.Input,
         treeItems: [],

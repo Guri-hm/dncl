@@ -1,14 +1,27 @@
-import { getChallengeById } from '@/app/components/Challenge';
+import { getChallengeById, allChallengesItems } from '@/app/components/Challenge';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense, lazy } from 'react';
 import { Box, CircularProgress } from '@mui/material';
 
 // ChallengePage を遅延読み込み
-const ChallengePage = lazy(() => import('@/app/components/Challenge/ChallengePage').then(module => ({ default: module.ChallengePage })));
+const ChallengePage = lazy(() => import('@/app/components/Challenge/ChallengePage'));
 
 interface SlugPageProps {
   params: Promise<{ slug: string }>;
+}
+
+const getAllChallengeIds = (): string[] => {
+  return allChallengesItems.map(challenge => challenge.id);
+};
+
+// 静的サイト用: 全てのパラメータを事前生成
+export async function generateStaticParams() {
+  const challengeIds = getAllChallengeIds(); // 全てのチャレンジIDを取得
+
+  return challengeIds.map((slug) => ({
+    slug: slug,
+  }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
