@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { IconButton, Menu, MenuItem, ListItemIcon, ListItemText } from "@mui/material";
 import { useThemeMode } from '@/app/hooks/ThemeProvider';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
@@ -16,6 +16,12 @@ const themeOptions = [
 export const ThemeToggleButton = ({ sx }: { sx?: SxProps }) => {
     const { mode, setMode } = useThemeMode();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [mounted, setMounted] = useState(false);
+
+    // SSR対応: クライアントサイドでマウントされるまで待機
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -30,7 +36,10 @@ export const ThemeToggleButton = ({ sx }: { sx?: SxProps }) => {
         handleClose();
     };
 
-    const current = themeOptions.find(opt => opt.value === mode);
+    // マウント前はシステムテーマのアイコンを固定表示（SSR時の一貫性のため）
+    const current = mounted
+        ? themeOptions.find(opt => opt.value === mode)
+        : themeOptions.find(opt => opt.value === "system");
 
     return (
         <>
@@ -41,6 +50,8 @@ export const ThemeToggleButton = ({ sx }: { sx?: SxProps }) => {
                     color: "#fff",
                     ...sx,
                 }}
+                // マウント前は無効化してメニューの表示を防ぐ
+                disabled={!mounted}
             >
                 {current?.icon}
             </IconButton>
