@@ -39,6 +39,7 @@ jobs:
         
     - name: Build with Next.js
       run: |
+        export NEXT_PUBLIC_BASE_PATH=""
         export NEXT_PUBLIC_API_BASE_URL="https://solopg.com/next/dncl"
         export ESLINT_MODE=build
         npm run build
@@ -60,19 +61,25 @@ jobs:
         echo "=== 可能性のあるビルド出力ディレクトリ ==="
         find . -type d -name "out" -o -name "dist" -o -name "build" -o -name "static" | head -10
 
-    - name: Check build output
+    - name: Verify build output
       run: |
         if [ -d "./out" ]; then
-          echo "✓ out directory exists"
-          ls -la ./out/ | head -10
+          echo "✓ Build successful - out directory exists"
+          echo "Contents:"
+          find ./out -type f | head -10
         else
-          echo "❌ out directory not found"
-          echo "Creating dummy out directory for debugging..."
-          mkdir -p ./out
-          echo "<h1>Build Failed</h1><p>out directory was not created by Next.js</p>" > ./out/index.html
+          echo "❌ Build failed - no out directory"
+          exit 1
         fi
 
-    - name: Upload artifact (always upload something)
+    - name: Add CNAME for custom domain
+      run: |
+        echo "dncl.solopg.com" > ./out/CNAME
+        echo "✓ CNAME file created"
+        echo "Final out directory contents:"
+        ls -la ./out/ | head -10
+
+    - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
         path: ./out

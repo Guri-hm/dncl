@@ -6,13 +6,8 @@ const nextConfig = {
   swcMinify: true,
   trailingSlash: true,
 
-  // 環境別basePath設定
-  basePath: process.env.NEXT_PUBLIC_BASE_PATH && process.env.NEXT_PUBLIC_BASE_PATH !== ''
-    ? process.env.NEXT_PUBLIC_BASE_PATH
-    : undefined,
-  assetPrefix: process.env.NEXT_PUBLIC_BASE_PATH && process.env.NEXT_PUBLIC_BASE_PATH !== ''
-    ? process.env.NEXT_PUBLIC_BASE_PATH
-    : undefined,
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
+  assetPrefix: process.env.NEXT_PUBLIC_BASE_PATH || '',
 
   images: {
     unoptimized: true
