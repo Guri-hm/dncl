@@ -14,7 +14,7 @@ import { DnclEditorProps, TreeItems } from "@/app/types";
 import { StatementName, StatementDesc, EditorBox, ErrorMsgBox } from '@/app/components/Dialog';
 import { keyPrefixEnum } from './Enum';
 import { ArithmeticOperatorDncl, ArithmeticOperator, BooleanDncl, BooleanJpDncl, ComparisonOperatorDncl, ComparisonOperator, SimpleAssignmentOperator, ReturnFuncDncl, ReturnFuncJpDncl, StatementEnum, UserDefinedFuncDncl, UserDefinedFuncJpDncl, VoidFuncDncl, VoidFuncJpDncl, ProcessEnum, BraketSymbolEnum } from '@/app/enum';
-import { checkBraketPair, cnvAndOrOperator, cnvObjToArray, cnvToDivision, escapeHtml, getOperandsMaxIndex, getVariableNames, replaceToConcatenation, sanitizeInput, sanitizeJsonValues, transformNegation, tryParseToJsFunction, updateToWithSquareBrackets, ValidateObjValue, getConstantNames } from '@/app/utilities';
+import { checkBraketPair, cnvAndOrOperator, cnvObjToArray, cnvToDivision, escapeHtml, getOperandsMaxIndex, getVariableNames, replaceToConcatenation, sanitizeInput, sanitizeJsonValues, transformNegation, tryParseToJsFunction, updateToWithSquareBrackets, ValidateObjValue, checkForLoopInfinite } from '@/app/utilities';
 import * as babelParser from '@babel/parser';
 
 type itemElms = {
@@ -60,6 +60,28 @@ export function DnclEditDialog({ type = StatementEnum.Input, ...params }: DnclEd
         if (result.hasError) {
             setError(result.errorMsgArray);
             return false;
+        }
+
+        // For文の無限ループチェック
+        if (processType === ProcessEnum.ForIncrement || processType === ProcessEnum.ForDecrement) {
+            const initialValue = data[`${keyPrefixEnum.RigthSide}_0_${keyPrefixEnum.InitialValue}`];
+            const endValue = data[`${keyPrefixEnum.RigthSide}_0_${keyPrefixEnum.EndValue}`];
+            const difference = data[`${keyPrefixEnum.RigthSide}_0_${keyPrefixEnum.Difference}`];
+
+            if (initialValue && endValue && difference) {
+                const loopResult = checkForLoopInfinite(
+                    initialValue,
+                    endValue,
+                    difference,
+                    processType === ProcessEnum.ForIncrement,
+                    treeItems
+                );
+
+                if (loopResult.hasError) {
+                    setError(loopResult.errorMsgArray);
+                    return false;
+                }
+            }
         }
 
         const strArray: string[] = cnvObjToArray(updatedObj, operandsMaxIndex, keyword);

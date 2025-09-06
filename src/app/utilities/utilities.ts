@@ -615,7 +615,9 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
 
   //オペランドの文字列のバリデーションパターン
   const regexForStringOperand = new RegExp(ValidationEnum.String);
-  const regexForVariableOrNumber = new RegExp(ValidationEnum.VariableOrNumber);
+  const regexForVariable = new RegExp(ValidationEnum.Variable);
+  const regexForNumber = new RegExp(ValidationEnum.Number);
+  const regexForVariableOrPositiveInteger = new RegExp(ValidationEnum.VariableOrPositiveInteger);
   const regexForInitializeArray = new RegExp(ValidationEnum.InitializeArray);
   const regexForParentheses = new RegExp(ValidationEnum.Parentheses);
   //添字はカンマ区切りも許容(実際はダメだが一括代入の処理があるため許容)
@@ -672,8 +674,26 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
         }
         break;
 
+      case inputTypeEnum.Variable:
+        if (!regexForVariable.test(obj[`${keyword}_${i}`])) {
+          errorMsgArray.push(`${i + 1}番目のオペランドの変数名に不適切な文字が使用されています`);
+        }
+        break;
+
+      case inputTypeEnum.Number:
+        if (!regexForNumber.test(obj[`${keyword}_${i}`])) {
+          errorMsgArray.push(`${i + 1}番目のオペランドの数値に不適切な文字が使用されています`);
+        }
+        break;
+
+      case inputTypeEnum.Array:
+        if (!regexForVariable.test(obj[`${keyword}_${i}`])) {
+          errorMsgArray.push(`${i + 1}番目のオペランドの配列名に不適切な文字が使用されています`);
+        }
+        break;
+
       default:
-        const validationRegex = isConstant ? regexForConstant : regexForVariableOrNumber;
+        const validationRegex = isConstant ? regexForConstant : regexForVariableOrPositiveInteger;
         if (!validationRegex.test(obj[`${keyword}_${i}`])) {
           const errorMsg = isConstant
             ? `${i + 1}番目のオペランドの定数名に不適切な文字が使用されています（定数名は大文字で始める必要があります）`
@@ -761,19 +781,31 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
     }
     //For文の初期値
     if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.InitialValue}`]) != "") {
-      if (!regexForVariableOrNumber.test(obj[`${keyword}_${i}_${keyPrefixEnum.InitialValue}`])) {
+      const initialValueType = obj[`${keyword}_${i}_${keyPrefixEnum.InitialValue}_type`] || inputTypeEnum.Number;
+      const pattern = initialValueType === inputTypeEnum.Variable ? ValidationEnum.Variable : ValidationEnum.Number;
+      const validationRegex = new RegExp(pattern);
+
+      if (!validationRegex.test(obj[`${keyword}_${i}_${keyPrefixEnum.InitialValue}`])) {
         errorMsgArray.push(`初期値に不適切な文字が使用されています`);
       }
     }
     //For文の終了値
     if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.EndValue}`]) != "") {
-      if (!regexForVariableOrNumber.test(obj[`${keyword}_${i}_${keyPrefixEnum.EndValue}`])) {
+      const endValueType = obj[`${keyword}_${i}_${keyPrefixEnum.EndValue}_type`] || inputTypeEnum.Number;
+      const pattern = endValueType === inputTypeEnum.Variable ? ValidationEnum.Variable : ValidationEnum.Number;
+      const validationRegex = new RegExp(pattern);
+
+      if (!validationRegex.test(obj[`${keyword}_${i}_${keyPrefixEnum.EndValue}`])) {
         errorMsgArray.push(`終了値に不適切な文字が使用されています`);
       }
     }
     //For文の増減差分
     if (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Difference}`]) != "") {
-      if (!regexForVariableOrNumber.test(obj[`${keyword}_${i}_${keyPrefixEnum.Difference}`])) {
+      const differenceType = obj[`${keyword}_${i}_${keyPrefixEnum.Difference}_type`] || inputTypeEnum.Number;
+      const pattern = differenceType === inputTypeEnum.Variable ? ValidationEnum.Variable : ValidationEnum.Number;
+      const validationRegex = new RegExp(pattern);
+
+      if (!validationRegex.test(obj[`${keyword}_${i}_${keyPrefixEnum.Difference}`])) {
         errorMsgArray.push(`差分に不適切な文字が使用されています`);
       }
     }
@@ -1287,4 +1319,64 @@ export const getConstantNames = (obj: { [key: string]: string }, operandsMaxInde
   }
 
   return [...new Set(constants)]; // 重複を除去
+};
+
+
+export const checkForLoopInfinite = (
+  initialValue: string,
+  endValue: string,
+  difference: string,
+  isIncrement: boolean,
+  treeItems: TreeItems
+): { errorMsgArray: string[]; hasError: boolean } => {
+
+  const errorMsgArray: string[] = [];
+
+  // 変数が含まれている場合は検証をスキップ（実行時に判定）
+  const variableRegex = new RegExp(ValidationEnum.Variable);
+  if (variableRegex.test(initialValue) || variableRegex.test(endValue) || variableRegex.test(difference)) {
+    return { errorMsgArray: [], hasError: false };
+  }
+
+  // 数値として解析
+  const initial = parseFloat(initialValue);
+  const end = parseFloat(endValue);
+  const diff = parseFloat(difference);
+
+  // 数値解析失敗時はエラー
+  if (isNaN(initial) || isNaN(end) || isNaN(diff)) {
+    errorMsgArray.push('初期値、終了値、差分は数値または変数である必要があります');
+    return { errorMsgArray, hasError: true };
+  }
+
+  // 差分が0の場合は無限ループ
+  if (diff === 0) {
+    errorMsgArray.push('差分が0の場合、無限ループになります');
+    return { errorMsgArray, hasError: true };
+  }
+
+  // 増加ループの場合
+  if (isIncrement) {
+    if (diff < 0) {
+      errorMsgArray.push('増やすループで差分が負の値の場合、無限ループになります');
+      return { errorMsgArray, hasError: true };
+    }
+    if (initial > end) {
+      errorMsgArray.push('増やすループで初期値が終了値より大きい場合、ループが実行されません');
+      return { errorMsgArray, hasError: true };
+    }
+  }
+  // 減少ループの場合  
+  else {
+    if (diff > 0) {
+      errorMsgArray.push('減らすループで差分が正の値の場合、無限ループになります');
+      return { errorMsgArray, hasError: true };
+    }
+    if (initial < end) {
+      errorMsgArray.push('減らすループで初期値が終了値より小さい場合、ループが実行されません');
+      return { errorMsgArray, hasError: true };
+    }
+  }
+
+  return { errorMsgArray: [], hasError: false };
 };

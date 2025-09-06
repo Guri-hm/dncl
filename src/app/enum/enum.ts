@@ -191,11 +191,22 @@ export enum InputTypeJpEnum {
   Switch = '変数名・配列名',
   Array = '配列名',
   Suffix = '添字',
-  VariableOnly = '変数名',
-  VariableOrNumber = '値・変数名',
+  Variable = '変数名',
+  Number = '数値',
+  VariableOrNumber = '変数名または数値',
   String = '文字列',
   Function = '関数名',
   Argument = '引数',
+}
+
+export enum SwitchJpEnum {
+  Variable = '変数',
+  Number = '数値',
+  Array = '配列',
+  String = '文字列',
+  Function = '関数',
+  Boolean = '真偽',
+  Constant = '定数',
 }
 
 export enum DnclStatement {

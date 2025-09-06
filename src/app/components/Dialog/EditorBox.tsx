@@ -145,17 +145,17 @@ export function EditorBox(params: Props) {
                             </Grid>
                             <NowrapText text={'を'}></NowrapText>
                             <Grid size='grow'>
-                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.InitialValue}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.InitialValue} inputType={inputTypeEnum.VariableOrNumber} label={"初期値"}></DnclTextField>
+                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.InitialValue}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.InitialValue} inputType={inputTypeEnum.ForValue} label={"初期値"}></DnclTextField>
                             </Grid>
                             <NowrapText text={'から'}></NowrapText>
                         </Grid>
                         <Grid container direction='row'>
                             <Grid size='grow'>
-                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.EndValue}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.EndValue} inputType={inputTypeEnum.VariableOrNumber} label={"終了値"}></DnclTextField>
+                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.EndValue}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.EndValue} inputType={inputTypeEnum.ForValue} label={"終了値"}></DnclTextField>
                             </Grid>
                             <NowrapText text={'まで'}></NowrapText>
                             <Grid size='grow'>
-                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.Difference}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.Difference} inputType={inputTypeEnum.VariableOrNumber} label={"差分"}></DnclTextField>
+                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.Difference}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.Difference} inputType={inputTypeEnum.ForValue} label={"差分"}></DnclTextField>
                             </Grid>
                             <NowrapText text={index == ProcessEnum.ForIncrement ? 'ずつ増やしながら，' : 'ずつ減らしながら，'}></NowrapText>
                         </Grid>

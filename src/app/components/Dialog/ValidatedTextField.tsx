@@ -14,16 +14,22 @@ type Props = {
 
 const getErrorMessage = (value: string, pattern: string): string => {
   const regex = new RegExp(pattern);
-  const match = value.match(regex);
-  if (match) {
-    return `入力値「${value}」はパターン「${pattern}」に一致しません`;
-  } else {
-    const diffIndex = getFirstMismatchIndex(value, pattern);
-    if (diffIndex !== -1) {
-      return `「${value[diffIndex]}」は使用できません`;
+  if (!regex.test(value)) {
+    // パターンに応じたエラーメッセージを分岐
+    if (pattern === ValidationEnum.Variable) {
+      return `変数名は英字で始まる英数字と「_」の並びを入力してください`;
+    } else if (pattern === ValidationEnum.Number) {
+      return `整数または小数で入力してください`;
+    } else if (pattern === ValidationEnum.VariableOrPositiveInteger) {
+      return `正の整数または変数名（英字で始まる英数字と「_」の並び）を入力してください`;
+    } else if (pattern === ValidationEnum.Parameters) {
+      return `変数名または数値をカンマ区切りで入力してください`;
+    } else if (pattern === ValidationEnum.Constant) {
+      return `定数名は大文字の英字で始まる英数字と「_」の並びを入力してください`;
     }
-    return `入力値に不適切な文字が使用されています`;
+    return `入力値「${value}」に不適切な文字が使用されています`;
   }
+  return '';
 };
 
 const getFirstMismatchIndex = (value: string, pattern: string): number => {
