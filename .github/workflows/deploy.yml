@@ -39,51 +39,22 @@ jobs:
         
     - name: Build with Next.js
       run: |
-        export NEXT_PUBLIC_BASE_PATH="/dncl"
+        export NEXT_PUBLIC_BASE_PATH=""
         export NEXT_PUBLIC_API_BASE_URL="https://solopg.com/next/dncl"
         export ESLINT_MODE=build
-        export NODE_ENV=production
-        echo "Testing with NEXT_PUBLIC_BASE_PATH='/dncl'"
         npm run build
 
-    - name: Debug environment and build output
-      run: |
-        echo "=== Environment variables ==="
-        echo "NEXT_PUBLIC_BASE_PATH: '$NEXT_PUBLIC_BASE_PATH'"
-        echo "NEXT_PUBLIC_API_BASE_URL: '$NEXT_PUBLIC_API_BASE_URL'"
-        echo "NODE_ENV: '$NODE_ENV'"
-        echo ""
-        echo "=== Directory structure after build ==="
-        find . -type d -name "out" -o -name ".next" | head -5
-        echo ""
-        echo "=== Out directory contents ==="
-        if [ -d "./out" ]; then
-          find ./out -type f | head -20
-        else
-          echo "out directory does not exist!"
-        fi
-        echo ""
-        echo "=== .next directory contents ==="
-        if [ -d "./.next" ]; then
-          ls -la ./.next/
-        else
-          echo ".next directory does not exist!"
-        fi
-        echo ""
-        echo "=== Root directory contents ==="
-        ls -la ./
-        
-    - name: Create CNAME file (only if out exists)
+    - name: Verify build and add CNAME
       run: |
         if [ -d "./out" ]; then
+          echo "✓ Build successful, out directory exists"
           echo "dncl.solopg.com" > ./out/CNAME
-          echo "CNAME created in existing out directory"
+          echo "Contents of out directory:"
+          ls -la ./out/ | head -10
         else
-          mkdir -p ./out
-          echo "dncl.solopg.com" > ./out/CNAME
-          echo "Created out directory and CNAME file"
+          echo "❌ Build failed, no out directory"
+          exit 1
         fi
-        ls -la ./out/
         
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
