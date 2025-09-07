@@ -38,7 +38,10 @@
     "strip-ansi": "^7.1.0",
     "swiper": "^11.2.4",
     "uuid": "^11.0.3",
-    "wanakana": "^5.3.1"
+    "wanakana": "^5.3.1",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "15.0.4",
+    "eslint-plugin-custom-rules": "file:eslint-plugin-custom-rules"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.8.0",
@@ -48,9 +51,6 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "eslint": "^8.57.1",
-    "eslint-config-next": "15.0.4",
-    "eslint-plugin-custom-rules": "file:eslint-plugin-custom-rules",
     "jest": "^30.1.3",
     "jest-environment-jsdom": "^30.1.2",
     "postcss": "^8",
