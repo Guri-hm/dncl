@@ -33,6 +33,7 @@ npm run copy-ruleを実行してもよい
 
 【eslintのテスト】
 npx eslint test.js --config .eslintrc.js
+コンソールが出ないなどの場合は、ESLINT_MODEの設定を確認
 
 【.env.localの設定】
 本番環境や新しい開発環境に.env.localを置き忘れない
