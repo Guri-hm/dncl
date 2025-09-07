@@ -1,8 +1,11 @@
 const path = require('path');
 
+const isIISBuild = process.env.BUILD_TARGET === 'iis';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  // 基本はGitHub用（export）、IIS用のみサーバーモード
+  ...(!isIISBuild && { output: 'export' }),
 
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
   assetPrefix: process.env.NEXT_PUBLIC_BASE_PATH || '',
