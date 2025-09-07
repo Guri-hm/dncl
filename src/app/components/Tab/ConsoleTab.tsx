@@ -17,6 +17,12 @@ interface CustomBoxProps extends BoxProps {
 }
 
 const apiBaseUrl = (() => {
+    // 強制的に本番APIを使用するフラグ
+    const useProdApi = process.env.NEXT_PUBLIC_USE_PROD_API === 'true';
+
+    if (useProdApi) {
+        return 'https://solopg.com/next/dncl';
+    }
     // 開発環境では相対パス
     if (process.env.NODE_ENV === 'development') {
         return process.env.NEXT_PUBLIC_BASE_PATH || '';
