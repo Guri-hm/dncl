@@ -21,7 +21,18 @@ export async function POST(req: NextRequest) {
         const { code } = await req.json();
 
         if (typeof code !== 'string') {
-            return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
+            return NextResponse.json(
+                {
+                    error: 'Invalid input'
+                },
+                {
+                    status: 400,
+                    headers: {
+                        'Access-Control-Allow-Origin': allowedOrigin,
+                        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                    },
+                });
         }
 
         let output = '';
@@ -37,7 +48,17 @@ export async function POST(req: NextRequest) {
         vm.createContext(context); // サンドボックスを作成
         vm.runInContext(code, context, { timeout: 1000 }); // コードを実行
 
-        return NextResponse.json({ result: output.trim() }, { status: 200 });
+        return NextResponse.json(
+            { result: output.trim() },
+            {
+                status: 200,
+                headers: {
+                    'Access-Control-Allow-Origin': allowedOrigin,
+                    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                },
+            }
+        );
     } catch (error) {
         const errorMessage = (error as Error).message;
         const lineNumberMatch = (error as Error).stack?.split('\n')[0].match(/:(\d+)$/);
@@ -51,9 +72,29 @@ export async function POST(req: NextRequest) {
             responseMessage = '参照エラーが発生しました';
         }
         if (lineNumberMatch) {
-            return NextResponse.json({ error: responseMessage, line: lineNumberMatch[1] }, { status: 500 });
+            return NextResponse.json(
+                { error: responseMessage, line: lineNumberMatch[1] },
+                {
+                    status: 500,
+                    headers: {
+                        'Access-Control-Allow-Origin': allowedOrigin,
+                        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                    },
+                }
+            );
         } else {
-            return NextResponse.json({ error: responseMessage }, { status: 500 });
+            return NextResponse.json(
+                { error: responseMessage },
+                {
+                    status: 500,
+                    headers: {
+                        'Access-Control-Allow-Origin': allowedOrigin,
+                        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                    },
+                }
+            );
 
         }
     }
