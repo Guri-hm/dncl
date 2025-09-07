@@ -49,6 +49,7 @@ export function ValidatedTextField({ sx = [], name, label, pattern, isIMEOn = fa
   const [inputValue, setInputValue] = useState('');
   const [inputError, setInputError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [hasRestored, setHasRestored] = useState(false);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     let value = event.target.value;
@@ -90,7 +91,7 @@ export function ValidatedTextField({ sx = [], name, label, pattern, isIMEOn = fa
   };
 
   useEffect(() => {
-    if (restoreValue !== undefined && restoreValue !== inputValue) {
+    if (restoreValue !== undefined && !hasRestored) {
       let value = restoreValue;
       if (toUpperCase) {
         value = value.toUpperCase();
@@ -105,8 +106,20 @@ export function ValidatedTextField({ sx = [], name, label, pattern, isIMEOn = fa
         setInputError(true);
         setErrorMessage(getErrorMessage(value, pattern));
       }
+      setHasRestored(true);
     }
   }, [restoreValue, toUpperCase, pattern, inputValue]);
+
+  useEffect(() => {
+    const handleRestoreComplete = () => {
+      setHasRestored(false);
+    };
+
+    window.addEventListener('restoreComplete', handleRestoreComplete);
+    return () => {
+      window.removeEventListener('restoreComplete', handleRestoreComplete);
+    };
+  }, []);
 
   useEffect(() => {
     // 定数スイッチ切り替え時にpatternが変わるので，この値を使ってハンドルする
