@@ -316,7 +316,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
                 {(radioValue == inputTypeEnum.Variable || radioValue == inputTypeEnum.Number || radioValue == inputTypeEnum.Array || radioValue == inputTypeEnum.String) &&
                   <>
                     <Grid size='grow'>
-                      <ValidatedTextField name={`${name}_${index}`} label={tmpLabel} pattern={pattern} isIMEOn={radioValue == inputTypeEnum.String ? true : false} restoreValue={restoreValues[`${name}_${index}`]} ></ValidatedTextField>
+                      <ValidatedTextField name={`${name}_${index}`} label={tmpLabel} pattern={pattern} restoreValue={restoreValues[`${name}_${index}`]} ></ValidatedTextField>
                     </Grid>
                   </>
                 }

@@ -8,7 +8,6 @@ type Props = {
   name: string
   pattern: ValidationEnum
   sx?: SxProps<Theme>;
-  isIMEOn?: boolean;
   toUpperCase?: boolean;
   restoreValue?: string;
 }
@@ -44,7 +43,7 @@ const getFirstMismatchIndex = (value: string, pattern: string): number => {
   return -1;
 };
 
-export function ValidatedTextField({ sx = [], name, label, pattern, isIMEOn = false, restoreValue, toUpperCase = false, ...params }: Props) {
+export function ValidatedTextField({ sx = [], name, label, pattern, restoreValue, toUpperCase = false, ...params }: Props) {
 
   const [inputValue, setInputValue] = useState('');
   const [inputError, setInputError] = useState(false);
@@ -158,7 +157,7 @@ export function ValidatedTextField({ sx = [], name, label, pattern, isIMEOn = fa
         htmlInput: {
           className: 'text-center',
           pattern: pattern,
-          inputMode: isIMEOn ? 'text' : 'none',
+          inputMode: 'text',
           maxLength: 15
         },
       }}
