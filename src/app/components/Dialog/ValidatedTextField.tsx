@@ -108,7 +108,7 @@ export function ValidatedTextField({ sx = [], name, label, pattern, isIMEOn = fa
       }
       setHasRestored(true);
     }
-  }, [restoreValue, toUpperCase, pattern, inputValue]);
+  }, [restoreValue, toUpperCase, pattern, hasRestored]);
 
   useEffect(() => {
     const handleRestoreComplete = () => {
