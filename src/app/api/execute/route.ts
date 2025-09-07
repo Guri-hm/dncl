@@ -1,6 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import vm from 'vm';
 
+const allowedOrigin = 'https://dncl.solopg.com';
+
+// OPTIONSリクエストの処理を追加
+export async function OPTIONS(request: NextRequest) {
+
+    return new NextResponse(null, {
+        status: 200,
+        headers: {
+            'Access-Control-Allow-Origin': allowedOrigin,
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        },
+    });
+}
+
 export async function POST(req: NextRequest) {
     try {
         const { code } = await req.json();
@@ -42,14 +57,4 @@ export async function POST(req: NextRequest) {
 
         }
     }
-}
-
-export async function OPTIONS() {
-    return NextResponse.json(null, {
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type',
-        },
-    });
 }

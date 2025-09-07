@@ -6,14 +6,15 @@ import stripAnsi from 'strip-ansi';
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 const eslintrcPath = `${basePath}/.eslintrc.js`;
 
+const allowedOrigin = 'https://dncl.solopg.com';
+
 // OPTIONSリクエストの処理を追加
 export async function OPTIONS(request: NextRequest) {
-    console.log('OPTIONS request received');
 
     return new NextResponse(null, {
         status: 200,
         headers: {
-            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Origin': allowedOrigin,
             'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
             'Access-Control-Allow-Headers': 'Content-Type, Authorization',
         },
@@ -21,7 +22,6 @@ export async function OPTIONS(request: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-    console.log('POST request received');
     const { code } = await req.json();
     // const eslint = new ESLint();
     const eslint = new ESLint({ overrideConfigFile: '.eslintrc.js' }); // 設定ファイルを指定
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
             {
                 headers: {
                     'Content-Type': 'application/json; charset=utf-8',
-                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Origin': allowedOrigin,
                     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
                     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
                 },
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
                 status: 500,
                 headers: {
                     'Content-Type': 'application/json; charset=utf-8',
-                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Origin': allowedOrigin,
                     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
                     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
                 },
