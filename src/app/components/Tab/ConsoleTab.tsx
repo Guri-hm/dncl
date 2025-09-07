@@ -16,42 +16,19 @@ interface CustomBoxProps extends BoxProps {
     setDnclValidation: (validation: DnclValidationType | null) => void;
 }
 
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://solopg.com/next/dncl';
+const apiBaseUrl = (() => {
+    // 開発環境では相対パス
+    if (process.env.NODE_ENV === 'development') {
+        return process.env.NEXT_PUBLIC_BASE_PATH || '';
+    }
+    // 本番環境では絶対URL
+    return process.env.NEXT_PUBLIC_API_BASE_URL || 'https://solopg.com/next/dncl';
+})();
 
 // グローバルキャッシュ
 const codeConversionCache = new Map<string, string>();
 const lintCache = new Map<string, { lineNumbers: number[], messages: string[] }>();
 const executionCache = new Map<string, { result?: string, error?: string }>();
-
-const cnvToken = (token: string): string => {
-    token = cnvToDivision(token);
-    const { convertedStr } = tryParseToJsFunction(token);
-    return convertedStr;
-}
-
-const convertToHexadecimal = (str: string): string => {
-    return Array.from(str)
-        .map(char => char.charCodeAt(0).toString(16))
-        .join('');
-}
-
-const makeVariableName = (hexStr: string): string => {
-    return 'var_' + hexStr.replace(/[^a-zA-Z0-9_]/g, '');
-}
-const makeFuncName = (hexStr: string): string => {
-    return 'func_' + hexStr.replace(/[^a-zA-Z0-9_]/g, '');
-}
-function extractJapaneseAndNonJapanese(text: string) {
-    const japanesePattern = /[\u3000-\u303F\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\uFF00-\uFFEF]/g;
-    const japaneseMatches = text.match(japanesePattern);
-    const japaneseText = japaneseMatches ? japaneseMatches.join('') : '';
-    const nonJapaneseText = text.replace(japanesePattern, '');
-    return {
-        japanese: japaneseText,
-        nonJapanese: nonJapaneseText
-    };
-}
 
 // cnvToJsをメモ化
 const cnvToJsMemoized = (() => {
