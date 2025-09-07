@@ -14,6 +14,7 @@ module.exports = {
         },
     },
     create(context) {
+        console.log("カスタムルールが読み込まれました");
         const assignedVariables = new Map(); // 直接代入された変数を追跡
         const declaredConstants = new Set();
         const definedFunctions = new Set(); // 定義された関数を追跡
