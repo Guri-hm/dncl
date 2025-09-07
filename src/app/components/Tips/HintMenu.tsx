@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { List, ListItem, ListItemText, Box, Button, Divider } from '@mui/material';
 import { AssignmentHint, OutputHint, WaitHint, ArrayHint, IfHint, VariableHint, IndentHint } from '@/app/components/Tips';
+import Image from 'next/image';
 
 export const HintMenu = () => {
     const [selectedItem, setSelectedItem] = useState<number | null>(null);
@@ -28,16 +29,28 @@ export const HintMenu = () => {
     return (
         <Box sx={{ width: { xs: '90%', md: '50%' }, height: '100%', maxWidth: '600px' }}>
             {selectedItem === null ? (
-                <List>
-                    {menuItems.map((item, index) => (
-                        <React.Fragment key={item.id}>
-                            {index != 0 ? <Divider component='li' /> : null}
-                            <ListItem onClick={() => handleClick(item.id)}>
-                                <ListItemText primary={item.text} />
-                            </ListItem>
-                        </React.Fragment>
-                    ))}
-                </List >
+                <>
+                    <List>
+                        {menuItems.map((item, index) => (
+                            <React.Fragment key={item.id}>
+                                {index != 0 ? <Divider component='li' /> : null}
+                                <ListItem onClick={() => handleClick(item.id)}>
+                                    <ListItemText primary={item.text} />
+                                </ListItem>
+                            </React.Fragment>
+                        ))}
+                    </List >
+                    <Box sx={{ textAlign: 'center', marginX: 'auto', marginY: '10px', width: '50%' }}>
+                        <Image
+                            src={`${process.env.NEXT_PUBLIC_BASE_PATH}/want_a_hint.svg`}
+                            alt="ヒントがほしい"
+                            layout="responsive"
+                            width={300}
+                            height={300}
+                            style={{ width: "100%", maxWidth: "150px" }}
+                        />
+                    </Box>
+                </>
 
             ) : (
                 <Box sx={{ display: 'block', paddingBottom: '30px' }}>
