@@ -30,18 +30,19 @@
     "@types/eslint": "^9.6.1",
     "acorn": "^8.14.0",
     "allotment": "^1.20.3",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "15.0.4",
+    "eslint-plugin-custom-rules": "file:eslint-plugin-custom-rules",
     "kuroshiro": "^1.2.0",
     "next": "15.0.4",
     "react": "^19.0.0",
     "react-confetti": "^6.2.2",
     "react-dom": "^19.0.0",
+    "sharp": "^0.34.3",
     "strip-ansi": "^7.1.0",
     "swiper": "^11.2.4",
     "uuid": "^11.0.3",
-    "wanakana": "^5.3.1",
-    "eslint": "^8.57.1",
-    "eslint-config-next": "15.0.4",
-    "eslint-plugin-custom-rules": "file:eslint-plugin-custom-rules"
+    "wanakana": "^5.3.1"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.8.0",
