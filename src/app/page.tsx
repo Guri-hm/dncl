@@ -8,6 +8,7 @@ import { BubblePaper } from '@/app/components/Bubble';
 import { HeaderBar, HeaderTitle } from '@/app/components/Header';
 import Image from 'next/image';
 import { ThemeToggleButton } from '@/app/components/Header';
+import GitHubIcon from '@mui/icons-material/GitHub';
 
 export default function Home() {
 
@@ -66,6 +67,15 @@ export default function Home() {
           </Grid>
         </Grid>
       </ContentWrapper>
+      <Box component="footer" sx={{ py: 1, textAlign: 'center', bgcolor: 'background.paper', borderTop: 1, borderColor: 'divider' }}>
+        <a href="https://github.com/Guri-hm/dncl" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: 'inherit' }}>
+          <GitHubIcon sx={{ verticalAlign: 'middle', color: 'text.primary' }} />
+          <span style={{ color: 'text.primary' }}>GitHub: Guri-hm/dncl</span>
+        </a>
+        <Typography variant="body2" sx={{ mt: 0.5, color: 'text.secondary' }}>
+          &copy; {new Date().getFullYear()} Guri-hm
+        </Typography>
+      </Box>
     </PageWrapper >
   );
 }
