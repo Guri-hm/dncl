@@ -2,6 +2,7 @@
   "name": "dncl",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "scripts": {
     "dev": "next dev --experimental-https",
     "dev-prod-api": "set NEXT_PUBLIC_USE_PROD_API=true&& next dev --experimental-https",
@@ -16,6 +17,7 @@
     "test:coverage": "jest --coverage",
     "test:validation": "jest validation.test.tsx",
     "test:syntax": "jest syntax.test.tsx",
+    "test:utility": "jest utilities.test.tsx",
     "test:integration": "jest integration.test.tsx"
   },
   "dependencies": {
