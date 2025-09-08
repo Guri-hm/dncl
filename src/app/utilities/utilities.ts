@@ -383,8 +383,8 @@ export const tryParseToJsFunction = (targetString: string): { errorMsgArray: str
   }
 
   function removeWord(str: string, removeWord: string) {
-    const regex = new RegExp(`\\b${removeWord}\\b`, 'g');
-    return str.replace(regex, '').trim();
+    const regex = new RegExp(`\\b${removeWord}\\b\\s*`, 'g');
+    return str.replace(regex, '').replace(/\s+/g, ' ').trim();
   }
   targetString = squareString(targetString);
   targetString = exponentiateString(targetString);
