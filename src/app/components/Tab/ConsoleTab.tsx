@@ -6,6 +6,7 @@ import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFun
 import { checkDNCLSyntax, cnvToDivision, containsJapanese, flattenTree, tryParseToJsFunction } from "@/app/utilities";
 import Divider from '@mui/material/Divider';
 import { cnvToJs } from "@/app/utilities/cnvToJs";
+import Image from 'next/image';
 
 interface CustomBoxProps extends BoxProps {
     children?: React.ReactNode;
@@ -317,7 +318,18 @@ export const ConsoleTab: React.FC<CustomBoxProps> = React.memo(({
 
     return (
         <Box>
-            {tmpMsg && <Box sx={{ padding: 1 }}> {tmpMsg}</Box>}
+            {tmpMsg && <Box sx={{ padding: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                {(tmpMsg === 'プログラム実行中…' || tmpMsg === 'DNCL解析中…') && (
+                    <Image
+                        src={`${process.env.NEXT_PUBLIC_BASE_PATH}/run.min.svg`}
+                        alt="実行中"
+                        height={20}
+                        width={20}
+                        style={{ height: '2em', width: 'auto', verticalAlign: 'middle' }}
+                    />
+                )}
+                {tmpMsg}
+            </Box>}
             {(dnclValidation?.hasError) && (
                 <Box sx={{ padding: 1, color: dnclValidation?.color || Color.warnning }}>
                     エラーを解決してください
