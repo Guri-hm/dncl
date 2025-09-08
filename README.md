@@ -1,7 +1,7 @@
 # DNCL学習アプリ
 
 <div align="center">
-  <img src="public/webp/title_character.webp" alt="DNCL学習アプリのマスコット" width="200" height="200">
+  <img src="public/webp/title_character.webp" alt="DNCL学習アプリのマスコット" width="200" height="auto">
 </div>
 
 共通テストで使われる疑似言語DNCLの学習を支援するWebアプリケーションです。ブラウザ上でDNCLコードを記述し、実行結果を確認することができます。
