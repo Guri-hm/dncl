@@ -335,8 +335,9 @@ export const cnvToDivision = (targetString: string): string => {
 function squareString(str: string) {
   // "Square" で始まる部分を見つけて置換
   const result = str.replace(/Square\s*\(\s*([a-zA-Z0-9_]+)\s*\)/g, (match, num) => {
-    const number = parseInt(num, 10);
-    return `(${number} * ${number})`;
+    // 数値なら数値型、変数ならそのまま
+    const isNumber = /^\d+$/.test(num);
+    return isNumber ? `(${parseInt(num, 10)} * ${parseInt(num, 10)})` : `(${num} * ${num})`;
   });
   return result;
 }
