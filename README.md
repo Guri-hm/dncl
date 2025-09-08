@@ -4,6 +4,14 @@
   <img src="public/webp/title_character.webp" alt="DNCL学習アプリのマスコット" width="200" height="auto">
 </div>
 
+---
+
+## 🚀 デモページ
+
+[https://dncl.solopg.com/](https://dncl.solopg.com/) でアプリのデモを公開しています。ブラウザからすぐに体験できます。
+
+---
+
 共通テストで使われる疑似言語DNCLの学習を支援するWebアプリケーションです。ブラウザ上でDNCLコードを記述し、実行結果を確認することができます。
 
 ## 機能
