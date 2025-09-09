@@ -1,5 +1,6 @@
 import * as acorn from 'acorn';
 import { ASTNode } from '../types';
+import { ComparisonOperatorDncl, SimpleAssignmentOperator } from '../enum';
 
 export const parseCode = (code: string) => {
     return acorn.parse(code, { ecmaVersion: 2020 }) as ASTNode;
@@ -163,7 +164,8 @@ export const generateFlowchartXML = (ast: ASTNode) => {
         if ('declarations' in expression) {
             // VariableDeclaration の場合の処理
             const declaration = expression.declarations[0];
-            return `${declaration.id.name} = ${declaration.init.value}`;
+            // ここも = を ← に
+            return `${declaration.id.name} ${SimpleAssignmentOperator.Dncl} ${declaration.init.value}`;
         } else {
             // その他の Expression の場合の処理
             if (expression) {
@@ -174,10 +176,17 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                         const rightExpr = expression.right as Expression;
                         const randomPattern = parseRandomExpression(rightExpr);
                         if (randomPattern) {
-                            return `${left} = 乱数(${randomPattern.min}, ${randomPattern.max})`;
+                            return `${left} ${SimpleAssignmentOperator.Dncl} 乱数(${randomPattern.min}, ${randomPattern.max})`;
                         }
-                        const operator = expression.operator || "";
-                        const right = getExpressionString(expression.right as InitExpression);
+                        // 代入演算子を ← に変換
+                        const operator = expression.operator === '=' ? '←' : expression.operator || "";
+                        let right = getExpressionString(expression.right as InitExpression);
+
+                        // 右辺が「!==」を含む場合は「≠」に変換
+                        if (right.includes('!==')) {
+                            right = right.replace('!==', ComparisonOperatorDncl.NotEqualToOperator);
+                        }
+
                         return `${left} ${operator} ${right}`;
                     case 'UpdateExpression':
                         const argument = getExpressionString(expression.argument as InitExpression);
@@ -185,7 +194,8 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                         return `${argument}${updateOperator}`;
                     case 'BinaryExpression':
                         const leftBinary = getExpressionString(expression.left as InitExpression);
-                        const operatorBinary = expression.operator || "";
+                        // 「!==」を「≠」に変換
+                        const operatorBinary = expression.operator === '!==' ? ComparisonOperatorDncl.NotEqualToOperator : expression.operator || "";
                         const rightBinary = getExpressionString(expression.right as InitExpression);
                         return `${leftBinary} ${operatorBinary} ${rightBinary}`;
                     case 'ArrayExpression':
