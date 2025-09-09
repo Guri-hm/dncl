@@ -331,6 +331,20 @@ export const cnvToDivision = (targetString: string): string => {
   return targetString.replace(/(\w+)\s*÷\s*(\w+)/g, 'Math.floor($1 / $2)');
 }
 
+function validateRandomArgs(m: string, n: string, errorMsgArray: string[]): boolean {
+  const isNumM = /^\d+$/.test(m);
+  const isNumN = /^\d+$/.test(n);
+  if (isNumM && isNumN) {
+    const numM = parseInt(m, 10);
+    const numN = parseInt(n, 10);
+    if (numM > numN) {
+      errorMsgArray.push(`第1引数の値は第2引数の値よりも小さくしてください`);
+      return false;
+    }
+  }
+  return true;
+}
+
 // 文字列を二乗する形式に変換する関数
 function squareString(str: string) {
   // "Square" で始まる部分を見つけて置換
@@ -362,16 +376,10 @@ export const tryParseToJsFunction = (targetString: string): { errorMsgArray: str
   const errorMsgArray: string[] = [];
 
   // "Random(m,n)" という文字列をJavaScriptの乱数生成コードに変換する関数
-  function convertRandomString(str: string): string {
-    // 正規表現を使って "Random(m,n)" の部分を検出
+  function convertRandomStringJs(str: string): string {
     const result = str.replace(/Random\s*\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, (match, m, n) => {
-      const numM = parseInt(m, 10);
-      const numN = parseInt(n, 10);
-      if (numM > numN) {
-        errorMsgArray.push(`第1引数の値は第2引数の値よりも小さくしてください`);
-        return '';  // mがnより大きい場合は空文字を返す
-      }
-      return `Math.floor(Math.random() * (${numN} - ${numM} + 1)) + ${numM}`;
+      if (!validateRandomArgs(m, n, errorMsgArray)) return '';
+      return `Math.floor(Math.random() * (${n} - ${m} + 1)) + ${m}`;
     });
     return result;
   }
@@ -388,7 +396,7 @@ export const tryParseToJsFunction = (targetString: string): { errorMsgArray: str
   }
   targetString = squareString(targetString);
   targetString = exponentiateString(targetString);
-  targetString = convertRandomString(targetString);
+  targetString = convertRandomStringJs(targetString);
   targetString = replaceOddFunctions(targetString);
   targetString = convertBinaryFunctions(targetString);
   targetString = removeWord(targetString, UserDefinedFuncDncl.UserDefined);
@@ -408,16 +416,10 @@ export const tryParseToPyFunc = (targetString: string): { errorMsgArray: string[
 
   // "Random(m,n)" という文字列をPythonの乱数生成コードに変換する関数
   //randomモジューラのimportが必要
-  function convertRandomString(str: string): string {
-    // 正規表現を使って "Random(m,n)" の部分を検出
+  function convertRandomStringPy(str: string): string {
     const result = str.replace(/Random\s*\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, (match, m, n) => {
-      const numM = parseInt(m, 10);
-      const numN = parseInt(n, 10);
-      if (numM > numN) {
-        errorMsgArray.push(`第1引数の値は第2引数の値よりも小さくしてください`);
-        return '';  // mがnより大きい場合は空文字を返す
-      }
-      return `random.randint(${numM}, ${numN}`;
+      if (!validateRandomArgs(m, n, errorMsgArray)) return '';
+      return `random.randint(${m}, ${n})`;
     });
     return result;
   }
@@ -434,7 +436,7 @@ export const tryParseToPyFunc = (targetString: string): { errorMsgArray: string[
   }
   targetString = squareString(targetString);
   targetString = exponentiateString(targetString);
-  targetString = convertRandomString(targetString);
+  targetString = convertRandomStringPy(targetString);
   targetString = replaceOddFunctions(targetString);
   targetString = convertBinaryFunctions(targetString);
   targetString = removeWord(targetString, UserDefinedFuncDncl.UserDefined);
@@ -461,16 +463,10 @@ export const tryParseToVbaFunc = (targetString: string): { errorMsgArray: string
     return result;
   }
 
-  function convertRandomString(str: string): string {
-    // 正規表現を使って "Random(m,n)" の部分を検出
+  function convertRandomStringVba(str: string): string {
     const result = str.replace(/Random\s*\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, (match, m, n) => {
-      const numM = parseInt(m, 10);
-      const numN = parseInt(n, 10);
-      if (numM > numN) {
-        errorMsgArray.push(`第1引数の値は第2引数の値よりも小さくしてください`);
-        return '';  // mがnより大きい場合は空文字を返す
-      }
-      return `Int((${numN} - ${numM} + 1) * Rnd + ${numM})`;
+      if (!validateRandomArgs(m, n, errorMsgArray)) return '';
+      return `Int((${n} - ${m} + 1) * Rnd + ${m})`;
     });
     return result;
   }
@@ -494,7 +490,7 @@ export const tryParseToVbaFunc = (targetString: string): { errorMsgArray: string
   }
   targetString = squareString(targetString);
   targetString = exponentiateString(targetString);
-  targetString = convertRandomString(targetString);
+  targetString = convertRandomStringVba(targetString);
   targetString = replaceOddFunctions(targetString);
   targetString = convertBinaryFunctions(targetString);
   targetString = removeWord(targetString, UserDefinedFuncDncl.UserDefined);

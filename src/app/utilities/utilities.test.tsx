@@ -2,6 +2,25 @@ import { tryParseToJsFunction } from './utilities';
 
 // squareString, exponentiateString, replaceOddFunctions, convertBinaryFunctions, removeWord を間接的にテスト
 describe('tryParseToJsFunction (間接的なユーティリティ関数のテスト)', () => {
+
+    it('Random(1, 5)がMath.floor(Math.random() * (5 - 1 + 1)) + 1に変換される', () => {
+        const result = tryParseToJsFunction('Random(1, 5)');
+        expect(result.convertedStr).toBe('Math.floor(Math.random() * (5 - 1 + 1)) + 1');
+        expect(result.hasError).toBe(false);
+    });
+
+    it('Random(a, b)がMath.floor(Math.random() * (b - a + 1)) + aに変換され、NaNやエラーにならない', () => {
+        const result = tryParseToJsFunction('Random(a, b)');
+        expect(result.convertedStr).toBe('Math.floor(Math.random() * (b - a + 1)) + a');
+        expect(result.hasError).toBe(false);
+    });
+
+    it('Random(5, 1)は第1引数が第2引数より大きいのでエラーになる', () => {
+        const result = tryParseToJsFunction('Random(5, 1)');
+        expect(result.hasError).toBe(true);
+        expect(result.errorMsgArray[0]).toContain('第1引数の値は第2引数の値よりも小さくしてください');
+    });
+
     it('Square(5)が(5 * 5)に変換される', () => {
         const result = tryParseToJsFunction('Square(5)');
         expect(result.convertedStr).toBe('(5 * 5)');
