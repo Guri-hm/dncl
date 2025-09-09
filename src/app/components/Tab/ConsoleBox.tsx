@@ -3,6 +3,7 @@ import { BoxProps, useMediaQuery, useTheme } from '@mui/system';
 import { Button } from '@mui/material';
 import cmnStyles from '@/app/components/common.module.css';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Grid from '@mui/material/Grid2';
 import React, { Dispatch, SetStateAction, useCallback } from 'react';
 
@@ -59,15 +60,23 @@ type Props = {
     children: React.ReactNode | React.ReactNode[];
     tabLabels: string[];
     setRunResults: Dispatch<SetStateAction<string[]>>;
+    runResults: string[];
 }
 
-export const ConsoleBox: React.FC<Props> = React.memo(({ children, tabLabels, setRunResults }) => {
+export const ConsoleBox: React.FC<Props> = React.memo(({ children, tabLabels, setRunResults, runResults }) => {
     const theme = useTheme();
     const isSm = useMediaQuery(theme.breakpoints.up('sm'));
 
     const handleReset = useCallback(() => {
         setRunResults([]);
     }, [setRunResults]);
+
+    const handleCopy = useCallback(() => {
+        if (runResults && runResults.length > 0) {
+            navigator.clipboard.writeText(runResults.join('\n'));
+            alert("クリップボードにコピーしました");
+        }
+    }, [runResults]);
 
     return (
         <StyledBox>
@@ -92,14 +101,23 @@ export const ConsoleBox: React.FC<Props> = React.memo(({ children, tabLabels, se
                 <Grid>
                     <Button
                         size={isSm ? 'small' : 'medium'}
-                        variant="contained"
+                        variant="outlined"
+                        startIcon={<ContentCopyIcon />}
+                        sx={{
+                            marginRight: 1,
+                            color: 'white',
+                            borderColor: 'var(--darkgray)'
+                        }}
+                        onClick={handleCopy}
+                    >
+                        コピー
+                    </Button>
+                    <Button
+                        size={isSm ? 'small' : 'medium'}
+                        variant="outlined"
                         startIcon={<ClearAllIcon />}
                         sx={{
-                            paddingLeft: '6px',
-                            paddingRight: '4px',
-                            paddingTop: '2px',
-                            paddingBottom: '2px',
-                            backgroundColor: 'var(--darkgray)',
+                            borderColor: 'var(--darkgray)',
                             color: 'white'
                         }}
                         onClick={handleReset}

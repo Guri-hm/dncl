@@ -24,7 +24,7 @@ interface Props {
 
 export const ConsoleWrapper: FC<Props> = React.memo(({ setRunResults, ...props }) => {
     return (
-        <ConsoleBox tabLabels={['コンソール']} setRunResults={setRunResults}>
+        <ConsoleBox tabLabels={['コンソール']} setRunResults={setRunResults } runResults={props.runResults}>
             <Suspense fallback={<ConsoleLoadingFallback />}>
                 <ConsoleTab {...props} setRunResults={setRunResults} />
             </Suspense>
