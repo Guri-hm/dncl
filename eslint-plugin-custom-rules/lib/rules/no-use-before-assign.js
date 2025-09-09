@@ -21,6 +21,7 @@ module.exports = {
         const allowedGlobalsWithMethods = {
             console: new Set(["log"]),
             Array: new Set(["fill"]),
+            Math: new Set(["floor", "random"]),
         };
         const reportedErrors = new Set();
 
