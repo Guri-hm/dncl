@@ -12,7 +12,21 @@ interface CustomBoxProps extends BoxProps {
   children: React.ReactNode;
   treeItems: TreeItems;
 }
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+
+const apiBaseUrl = (() => {
+  // 強制的に本番APIを使用するフラグ
+  const useProdApi = process.env.NEXT_PUBLIC_USE_PROD_API === 'true';
+
+  if (useProdApi) {
+    return 'https://solopg.com/next/dncl';
+  }
+  // 開発環境では相対パス
+  if (process.env.NODE_ENV === 'development') {
+    return process.env.NEXT_PUBLIC_BASE_PATH || '';
+  }
+  // 本番環境では絶対URL
+  return process.env.NEXT_PUBLIC_API_BASE_URL || 'https://solopg.com/next/dncl';
+})();
 
 export const FlowTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx, ...props }) => {
   const [nodes, setNodes] = useState<React.ReactNode>(children);
@@ -134,7 +148,7 @@ export const FlowTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx
     }
 
     try {
-      const response = await fetch(`${basePath}/api/lint`, {
+      const response = await fetch(`${apiBaseUrl}/api/lint`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
