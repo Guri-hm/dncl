@@ -1,7 +1,7 @@
 # DNCL学習アプリ
 
 <div align="center">
-  <img src="public/webp/title_character.webp" alt="DNCL学習アプリのマスコット" width="200" height="auto">
+  <img src="public/title_character.webp" alt="DNCL学習アプリのマスコット" width="200" height="auto">
 </div>
 
 ## デモページ
