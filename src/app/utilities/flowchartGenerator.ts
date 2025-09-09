@@ -170,6 +170,12 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 switch (expression.type) {
                     case 'AssignmentExpression':
                         const left = getExpressionString(expression.left as InitExpression);
+                        // 右辺が乱数式か判定
+                        const rightExpr = expression.right as Expression;
+                        const randomPattern = parseRandomExpression(rightExpr);
+                        if (randomPattern) {
+                            return `${left} = 乱数(${randomPattern.min}, ${randomPattern.max})`;
+                        }
                         const operator = expression.operator || "";
                         const right = getExpressionString(expression.right as InitExpression);
                         return `${left} ${operator} ${right}`;
@@ -204,6 +210,56 @@ export const generateFlowchartXML = (ast: ASTNode) => {
             return "";
         }
     };
+
+    // 乱数式パターンを解析する関数
+    function parseRandomExpression(expr: Expression): { min: number, max: number } | null {
+        // expr: BinaryExpression (+)
+        if (expr.type === 'BinaryExpression' && expr.operator === '+') {
+            // 左: Math.floor(Math.random() * (max - min + 1))
+            // 右: min (Literal)
+            const left = expr.left;
+            const right = expr.right;
+            if (
+                left.type === 'CallExpression' &&
+                left.callee.type === 'MemberExpression' &&
+                left.callee.object.name === 'Math' &&
+                left.callee.property.name === 'floor' &&
+                left.arguments.length === 1
+            ) {
+                // parseRandomExpression関数内
+                const arg = left.arguments[0] as Expression;
+                // arg: Math.random() * (max - min + 1)
+                if (
+                    arg.type === 'BinaryExpression' &&
+                    arg.operator === '*' &&
+                    arg.left.type === 'CallExpression' &&
+                    arg.left.callee.type === 'MemberExpression' &&
+                    arg.left.callee.object.name === 'Math' &&
+                    arg.left.callee.property.name === 'random' &&
+                    arg.left.arguments.length === 0 &&
+                    arg.right.type === 'BinaryExpression' &&
+                    arg.right.operator === '+' &&
+                    arg.right.right.type === 'Literal' &&
+                    arg.right.right.value === 1
+                ) {
+                    // arg.right.left: (max - min)
+                    const minusExpr = arg.right.left;
+                    if (
+                        minusExpr.type === 'BinaryExpression' &&
+                        minusExpr.operator === '-' &&
+                        minusExpr.left.type === 'Literal' &&
+                        minusExpr.right.type === 'Literal' &&
+                        right.type === 'Literal'
+                    ) {
+                        const max = minusExpr.left.value as number;
+                        const min = minusExpr.right.value as number;
+                        return { min, max };
+                    }
+                }
+            }
+        }
+        return null;
+    }
 
     const processNode = (node: ASTNode, x: number, y: number, parentNodeId: number | null) => {
         switch (node.type) {
