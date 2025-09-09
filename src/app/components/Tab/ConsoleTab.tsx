@@ -80,8 +80,11 @@ export const ConsoleTab: React.FC<CustomBoxProps> = React.memo(({
     const execute = useCallback(async (code: string) => {
         setDnclValidation(null);
 
+        // Math.randomが含まれている場合はキャッシュを使わず毎回実行
+        const useCache = !code.includes('Math.random');
+
         // 実行結果のキャッシュチェック
-        if (executionCache.has(code)) {
+        if (useCache && executionCache.has(code)) {
             const cached = executionCache.get(code)!;
             if (cached.result) {
                 setRunResults((prevResults: string[]) => (
