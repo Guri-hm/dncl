@@ -57,7 +57,7 @@ export default function Home() {
           </Grid>
           <Grid size={{ xs: 8, md: 3 }} sx={{ textAlign: 'center' }}>
             <Image
-              src={`${process.env.NEXT_PUBLIC_BASE_PATH}/front.svg`}
+              src={`${process.env.NEXT_PUBLIC_BASE_PATH}/front.webp`}
               alt="女の子の真正面"
               width={300}
               height={300}

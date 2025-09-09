@@ -9,7 +9,7 @@ export const HeaderTitle = () => {
         <Link href={'/'} passHref style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
             <Image
                 aria-hidden
-                src={`${process.env.NEXT_PUBLIC_BASE_PATH}/logo.svg`}
+                src={`${process.env.NEXT_PUBLIC_BASE_PATH}/logo.webp`}
                 alt="ロゴ"
                 width={50}
                 height={50}

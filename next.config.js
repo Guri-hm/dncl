@@ -1,18 +1,17 @@
 const path = require('path');
 
 const isIISBuild = process.env.BUILD_TARGET === 'iis';
+const safeBasePath = process.env.NEXT_PUBLIC_BASE_PATH === '/' ? '' : process.env.NEXT_PUBLIC_BASE_PATH || '';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // 基本はGitHub用（export）、IIS用のみサーバーモード
   ...(!isIISBuild && { output: 'export' }),
 
-  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
-  assetPrefix: process.env.NEXT_PUBLIC_BASE_PATH || '',
+  basePath: safeBasePath,
 
   ...(isIISBuild && {
     basePath: '/next/dncl',
-    assetPrefix: '/next/dncl',
   }),
 
   images: {

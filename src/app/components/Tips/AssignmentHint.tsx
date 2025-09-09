@@ -40,7 +40,7 @@ export const AssignmentHint = () => {
             </Box>
             <Box sx={{ textAlign: 'center', marginX: 'auto', marginY: '10px', width: '50%' }}>
                 <Image
-                    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/assignment.svg`}
+                    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/assignment.webp`}
                     alt="代入文"
                     width={300}
                     height={300}

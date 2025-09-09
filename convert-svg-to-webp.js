@@ -17,8 +17,14 @@ fs.readdirSync(publicDir)
         const outputPath = path.join(webpDir, file.replace(/\.svg$/, '.webp'));
 
         sharp(inputPath)
-            .webp()
-            .toFile(outputPath)
+            .metadata()
+            .then(meta => {
+                let transformer = sharp(inputPath);
+                if (meta.width && meta.width > 400) {
+                    transformer = transformer.resize({ width: 400 });
+                }
+                return transformer.webp().toFile(outputPath);
+            })
             .then(() => console.log(`Converted: ${file} → webp/${path.basename(outputPath)}`))
             .catch(err => console.error(`Error converting ${file}:`, err));
-    }); // ← ここが抜
+    });

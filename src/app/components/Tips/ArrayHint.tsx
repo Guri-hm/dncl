@@ -38,7 +38,7 @@ export const ArrayHint: FC = () => {
             <p>配列は，変数をいくつも集めて１つの名前をつけたものです。箱が順番に並んでいるイメージです。</p>
             <Box sx={{ textAlign: 'center', marginX: 'auto', marginY: '10px', width: '50%' }}>
                 <Image
-                    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/array.svg`}
+                    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/array.webp`}
                     alt="配列の例え"
                     width={300}
                     height={300}
