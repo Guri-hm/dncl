@@ -40,16 +40,17 @@ export function DnclEditDialog({ type = StatementEnum.Input, isEdit = false, ...
     const [error, setError] = useState<string[]>([]);
     const [showDescription, setShowDescription] = useState(false);
     const [isRestoring, setIsRestoring] = useState(false);
+    const formData = params.item?.formData;
 
     useEffect(() => {
-        if (isEdit && params.item?.formData && params.open) {
+        if (isEdit && formData && params.open) {
             setIsRestoring(true);
             const timer = setTimeout(() => {
-                if (!params.item?.formData) return;
+                if (!formData) return;
 
                 // 1. Operationコンポーネントにオペランド復元を依頼
                 const restoreEvent = new CustomEvent('restoreOperands', {
-                    detail: { formData: params.item.formData }
+                    detail: { formData: formData }
                 });
                 window.dispatchEvent(restoreEvent);
 
@@ -525,7 +526,7 @@ export function DnclEditDialog({ type = StatementEnum.Input, isEdit = false, ...
                         </DialogContentText>
                     </Collapse>
                     <Box sx={{ position: 'relative' }}>
-                        <EditorBox statementType={type} treeItems={params.treeItems}></EditorBox>
+                        <EditorBox statementType={type} treeItems={params.treeItems} formData={formData}></EditorBox>
 
                         {isRestoring && (
                             <Box

@@ -14,7 +14,8 @@ import { useUpdateEffect } from "@/app/hooks";
 type Props = {
     children?: ReactNode;
     processType: ProcessEnum;
-    treeItems?: TreeItems
+    treeItems?: TreeItems;
+    formData?: { [key: string]: string };
 };
 
 type DraggableOperatorsProps = {
@@ -30,7 +31,7 @@ const DraggableOperatorsBox: FC<DraggableOperatorsProps> = ({ children }) => {
     );
 };
 
-export const Operation: FC<Props> = ({ children, processType, treeItems = [] }) => {
+export const Operation: FC<Props> = ({ children, processType, treeItems = [], formData }) => {
 
     const [isDragging, setIsDragging] = useState(false);
     const [operandComponents, setOperandComponents] = useState<DnclTextFieldProps[]>([{ name: keyPrefixEnum.RigthSide }]);
@@ -46,17 +47,23 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [] }) 
             .filter(key => key.includes('RigthSide_') && !key.includes('_Operator') && !key.includes('_Type') && !key.includes('_LeftOfOperand') && !key.includes('_RightOfOperand'))
             .length;
 
-        if (operandCount > 1) {
+        if (operandCount > 0) {
             const newOperands: DnclTextFieldProps[] = [];
             for (let i = 0; i < operandCount; i++) {
                 const operatorKey = `RigthSide_${i}_Operator`;
-                const operator = formData[operatorKey] as OperationEnum;
+                const leftKey = `RigthSide_${i}_LeftOfOperand`;
+                const rightKey = `RigthSide_${i}_RightOfOperand`;
+
+                const operator = formData[operatorKey] as OperationEnum | undefined;
+                // left/rightはカンマ区切りで保存されている前提
+                const leftOfOperandValue = formData[leftKey] ? formData[leftKey].split(',') : [];
+                const rightOfOperandValue = formData[rightKey] ? formData[rightKey].split(',') : [];
 
                 newOperands.push({
                     name: keyPrefixEnum.RigthSide,
                     operator: operator || null as unknown as OperationEnum,
-                    leftOfOperandValue: [],
-                    rightOfOperandValue: []
+                    leftOfOperandValue: leftOfOperandValue,
+                    rightOfOperandValue: rightOfOperandValue
                 });
             }
 
@@ -64,19 +71,11 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [] }) 
         }
     }, []);
 
-    // 60行目付近にuseEffectを追加
     useEffect(() => {
-        // 外部から復元要求があった場合
-        const handleRestore = (event: CustomEvent) => {
-            restoreOperands(event.detail.formData);
-        };
-
-        window.addEventListener('restoreOperands', handleRestore as EventListener);
-
-        return () => {
-            window.removeEventListener('restoreOperands', handleRestore as EventListener);
-        };
-    }, [restoreOperands]);
+        if (formData) {
+            restoreOperands(formData);
+        }
+    }, []);
 
     const checkBraketPair = useCallback(() => {
 
@@ -263,7 +262,7 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [] }) 
                 return inputTypeEnum.SwitchVariableOrNumberOrArray;
         }
     }
-
+    console.log(operandComponents)
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
             <DndContext
