@@ -31,6 +31,7 @@ const ResponsiveImage: React.FC<ResponsiveImageProps> = ({ src, alt, style, onIn
             alt={alt}
             width={300}
             height={300}
+            priority={true}
             style={{ width, ...style }}
             onClick={onInteraction}
             onDragStart={onInteraction}
