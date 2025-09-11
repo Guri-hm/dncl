@@ -78,7 +78,7 @@ export function EditorBox({ statementType, treeItems, formData }: EditorBoxProps
                 return <>
                     <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArray} initialRestoreValues={leftInitial}></DnclTextField>
                     <NowrapText text={'を'}></NowrapText>
-                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SwitchVariableOrNumberOrArray} initialRestoreValues={rightInitial}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SwitchVariableOrNumberOrArray} initialRestoreValues={rightRestoreMap ? rightRestoreMap[0] : undefined}></DnclTextField>
                     <NowrapText text={index == ProcessEnum.Increment ? '増やす' : '減らす'}></NowrapText>
                     {hdnInput(index)}
                 </>
