@@ -11,10 +11,10 @@ module.exports = {
         messages: {
             useBeforeDeclaration: "'{{name}}' は定義される前に使用されています",
             constantReassignment: "定数「{{name}}」に再代入はできません",
+            constAlreadyExists: "定数 '{{name}}' を定義しようとしていますが、すでに同名の変数が存在します",
         },
     },
     create(context) {
-        console.log("カスタムルールが読み込まれました");
         const assignedVariables = new Map(); // 直接代入された変数を追跡
         const declaredConstants = new Set();
         const definedFunctions = new Set(); // 定義された関数を追跡
@@ -54,6 +54,13 @@ module.exports = {
                 node.declarations.forEach(declaration => {
                     if (declaration.id.type === 'Identifier') {
                         if (node.kind === 'const') {
+                            if (assignedVariables.has(declaration.id.name)) {
+                                context.report({
+                                    node: declaration.id,
+                                    messageId: "constAlreadyExists",
+                                    data: { name: declaration.id.name }
+                                });
+                            }
                             // 定数の重複チェック
                             if (declaredConstants.has(declaration.id.name)) {
                                 context.report({
