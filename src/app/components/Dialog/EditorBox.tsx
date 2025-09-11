@@ -18,11 +18,12 @@ type EditorBoxProps = {
 
 export function EditorBox({ statementType, treeItems, formData }: EditorBoxProps) {
 
-    const [statement, setStatement] = useState<ReactElement | null>(null);
+    const initialIndex = Number.isFinite(Number(formData?.processIndex)) ? Number(formData!.processIndex) : ProcessEnum.SetValToVariableOrArray;
+    const [selectValue, setSelectValue] = useState<string>(String(initialIndex));
 
     const handleChange = (event: SelectChangeEvent) => {
         const index = Number(event.target.value) ?? ProcessEnum.SetValToVariableOrArray
-        setStatement(StatementEditor(index));
+        setSelectValue(String(index));
     }
 
     const sideMaps = useMemo(() => buildSideRestoreMaps(formData, [keyPrefixEnum.RigthSide, keyPrefixEnum.LeftSide]), [formData]);
@@ -213,7 +214,7 @@ export function EditorBox({ statementType, treeItems, formData }: EditorBoxProps
             <InputLabel id="process-select-label">文の内容</InputLabel>
             <Select
                 labelId="process-select-label"
-                value={result.length > 0 ? result[0].value.toString() : ""}
+                value={selectValue}
                 onChange={handleChange}
                 label="文の内容"
             >
@@ -228,56 +229,56 @@ export function EditorBox({ statementType, treeItems, formData }: EditorBoxProps
         case StatementEnum.Output:
             return <>
                 <CustomBox>
-                    {statement ?? StatementEditor(ProcessEnum.Output)}
+                    {StatementEditor(Number(selectValue) || ProcessEnum.Output)}
                 </CustomBox>
             </>
         case StatementEnum.Input:
             return <>
                 {ddl}
                 <CustomBox>
-                    {statement ?? StatementEditor(ProcessEnum.SetValToVariableOrArray)}
+                    {StatementEditor(Number(selectValue) || ProcessEnum.SetValToVariableOrArray)}
                 </CustomBox>
             </>
         case StatementEnum.Condition:
             return <>
                 {ddl}
                 <CustomBox>
-                    {statement ?? StatementEditor(ProcessEnum.If)}
+                    {StatementEditor(Number(selectValue) || ProcessEnum.If)}
                 </CustomBox>
             </>
         case StatementEnum.ConditionalLoopPreTest:
             return <>
                 {ddl}
                 <CustomBox>
-                    {statement ?? StatementEditor(ProcessEnum.While)}
+                    {StatementEditor(Number(selectValue) || ProcessEnum.While)}
                 </CustomBox>
             </>
         case StatementEnum.ConditionalLoopPostTest:
             return <>
                 {ddl}
                 <CustomBox>
-                    {statement ?? StatementEditor(ProcessEnum.DoWhile)}
+                    {StatementEditor(Number(selectValue) || ProcessEnum.DoWhile)}
                 </CustomBox>
             </>
         case StatementEnum.SequentialIteration:
             return <>
                 {ddl}
                 <CustomBox>
-                    {statement ?? StatementEditor(ProcessEnum.ForIncrement)}
+                    {StatementEditor(Number(selectValue) || ProcessEnum.ForIncrement)}
                 </CustomBox>
             </>
         case StatementEnum.UserDefinedfunction:
             return <>
                 {ddl}
                 <CustomBox>
-                    {statement ?? StatementEditor(ProcessEnum.DefineFunction)}
+                    {StatementEditor(Number(selectValue) || ProcessEnum.DefineFunction)}
                 </CustomBox>
             </>
         case StatementEnum.ExecuteUserDefinedFunction:
             return <>
                 {ddl}
                 <CustomBox>
-                    {statement ?? StatementEditor(ProcessEnum.ExecuteUserDefinedFunction)}
+                    {StatementEditor(Number(selectValue) || ProcessEnum.ExecuteUserDefinedFunction)}
                 </CustomBox>
             </>
         default:
