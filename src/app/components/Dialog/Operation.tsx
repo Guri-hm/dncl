@@ -126,13 +126,9 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [], fo
     };
 
     const removeOneSideOfOperand = (id: string) => {
-
-        const popElment = (array: string[] | undefined): string[] => {
-            if (!array) return [];
-            array.pop();
-            return array;
+        const removeLastChar = (str: string): string => {
+            return str.slice(0, -1);
         }
-
         //(左辺または右辺)_(オペランドのインデックス)_(オペランドの左側または右側)という文字列を想定
         const overIdSplitArray = id.split('_');
         const item: DnclTextFieldProps | undefined = operandComponents.find((item: DnclTextFieldProps, i: number) =>
@@ -140,20 +136,27 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [], fo
             ));
         if (!item) return;
 
-        let newArray: string[] = [];
+        let newValue: string[] = [];
         let propertyName = '';
         if (overIdSplitArray[2] == keyPrefixEnum.LeftOfOperand) {
-            newArray = popElment(item.leftOfOperandValue);
+            // 文字列として結合
+            const joined = (item.leftOfOperandValue ?? []).join('');
+            // 末尾1文字消す
+            const removed = removeLastChar(joined);
+            // 1文字ずつ配列に戻す
+            newValue = removed.split('');
             propertyName = 'leftOfOperandValue';
         } else {
-            newArray = popElment(item.rightOfOperandValue)
+            const joined = (item.rightOfOperandValue ?? []).join('');
+            const removed = removeLastChar(joined);
+            newValue = removed.split('');
             propertyName = 'rightOfOperandValue';
         }
-        //プロパティに変数を使うときは[]をつける
         setOperandComponents((prevItems) =>
             prevItems.map((item: DnclTextFieldProps, i: number) =>
-                i === Number(overIdSplitArray[1]) ? { ...item, [propertyName]: newArray } : item
-            ));
+                i === Number(overIdSplitArray[1]) ? { ...item, [propertyName]: newValue } : item
+            )
+        );
     }
 
     const setOperator = (id: string) => {
@@ -192,10 +195,10 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [], fo
         const draggingString = getValueByKey(draggableStringList, activeId);
 
         if (overIdSplitArray[2] == keyPrefixEnum.LeftOfOperand) {
-            newArray = (item.leftOfOperandValue ?? []).concat(draggingString);
+            newArray = (item.leftOfOperandValue ?? []).concat(draggingString.split(''));
             propertyName = 'leftOfOperandValue';
         } else {
-            newArray = (item.rightOfOperandValue ?? []).concat(draggingString);
+            newArray = (item.rightOfOperandValue ?? []).concat(draggingString.split(''));
             propertyName = 'rightOfOperandValue';
         }
         //プロパティに変数を使うときは[]をつける
@@ -320,7 +323,9 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [], fo
                     <Box>
                         {operandComponents.map((component, index) => (
                             <Stack direction="row" spacing={0} key={`${component.name}_${index}`}>
-                                {(index == 0) && (processType == ProcessEnum.InitializeArray) ? <EmphasiseBox>{BraketSymbolEnum.OpenSquareBracket}</EmphasiseBox> : ''}
+                                {
+                                    // 左括弧[
+                                    (index == 0) && (processType == ProcessEnum.InitializeArray) ? <EmphasiseBox>{BraketSymbolEnum.OpenSquareBracket}</EmphasiseBox> : ''}
                                 {
                                     //演算子ドロップエリア
                                     (index != 0) && <DroppableOperator id={`${component.name}_${index}_${keyPrefixEnum.Operator}`} name={`${component.name}`} parentIndex={index} operatorDefaultIndex={component.operatorIndex} isDragging={isDragging && isActiveIdOperator(activeId)} endOfArrayEvent={() => removeOperator(index)} type={component.operator}></DroppableOperator>
