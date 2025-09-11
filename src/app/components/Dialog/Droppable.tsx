@@ -9,10 +9,10 @@ type DroppableProp = {
     id: string
     isDragging: boolean;
     onClick?: () => void;
-    stringArray?: string[];
+    stringValue?: string;
 };
 
-export const Droppable: FC<DroppableProp> = ({ children, id, isDragging, onClick, stringArray = [] }) => {
+export const Droppable: FC<DroppableProp> = ({ children, id, isDragging, onClick, stringValue = "" }) => {
     const {
         setNodeRef,
         isOver
@@ -33,8 +33,8 @@ export const Droppable: FC<DroppableProp> = ({ children, id, isDragging, onClick
                 paddingRight: isDragging ? '10px' : 0,
             }}
         >
-            <Button onClick={onClick} size="large" sx={{ paddingLeft: isDragging || stringArray.length > 0 ? '8px' : 0, paddingRight: isDragging || stringArray.length > 0 ? '8px' : 0, minWidth: 0, fontWeight: 700 }}>{children}</Button>
-            <input type="hidden" name={id} value={`${stringArray.join('')}`} />
+            <Button onClick={onClick} size="large" sx={{ paddingLeft: isDragging || stringValue.length > 0 ? '8px' : 0, paddingRight: isDragging || stringValue.length > 0 ? '8px' : 0, minWidth: 0, fontWeight: 700 }}>{children}</Button>
+            <input type="hidden" name={id} value={stringValue} />
         </Grid>
     )
 }

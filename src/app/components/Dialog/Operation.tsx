@@ -18,6 +18,14 @@ type Props = {
     formData?: { [key: string]: string };
 };
 
+type OperandComponent = {
+    name: string;
+    operator?: OperationEnum;
+    operatorIndex?: number;
+    leftOfOperandValue?: string;
+    rightOfOperandValue?: string;
+};
+
 type DraggableOperatorsProps = {
     children?: ReactNode;
 };
@@ -34,7 +42,7 @@ const DraggableOperatorsBox: FC<DraggableOperatorsProps> = ({ children }) => {
 export const Operation: FC<Props> = ({ children, processType, treeItems = [], formData }) => {
 
     const [isDragging, setIsDragging] = useState(false);
-    const [operandComponents, setOperandComponents] = useState<DnclTextFieldProps[]>([{ name: keyPrefixEnum.RigthSide }]);
+    const [operandComponents, setOperandComponents] = useState<OperandComponent[]>([{ name: keyPrefixEnum.RigthSide }]);
     const [activeId, setActiveId] = useState<string>("");
     const [braketError, setBraketError] = useState<string[]>([]);
 
@@ -48,7 +56,7 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [], fo
             .length;
 
         if (operandCount > 0) {
-            const newOperands: DnclTextFieldProps[] = [];
+            const newOperands: OperandComponent[] = [];
             for (let i = 0; i < operandCount; i++) {
                 const operatorKey = `RigthSide_${i}_Operator`;
                 const operatorStr = formData[operatorKey] as string | undefined;
@@ -62,9 +70,9 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [], fo
                 const leftKey = `RigthSide_${i}_LeftOfOperand`;
                 const rightKey = `RigthSide_${i}_RightOfOperand`;
 
-                // left/rightはカンマ区切りで保存されている前提
-                const leftOfOperandValue = formData[leftKey] ? formData[leftKey].split(',') : [];
-                const rightOfOperandValue = formData[rightKey] ? formData[rightKey].split(',') : [];
+                // left/right は文字列として保存されている
+                const leftOfOperandValue = formData[leftKey] ?? '';
+                const rightOfOperandValue = formData[rightKey] ?? '';
 
                 newOperands.push({
                     name: keyPrefixEnum.RigthSide,
@@ -131,25 +139,22 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [], fo
         }
         //(左辺または右辺)_(オペランドのインデックス)_(オペランドの左側または右側)という文字列を想定
         const overIdSplitArray = id.split('_');
-        const item: DnclTextFieldProps | undefined = operandComponents.find((item: DnclTextFieldProps, i: number) =>
+        const item: OperandComponent | undefined = operandComponents.find((item: OperandComponent, i: number) =>
             i === Number(overIdSplitArray[1]
             ));
         if (!item) return;
 
-        let newValue: string[] = [];
-        let propertyName = '';
+        let newValue = '';
+        let propertyName: 'leftOfOperandValue' | 'rightOfOperandValue' = 'leftOfOperandValue';
         if (overIdSplitArray[2] == keyPrefixEnum.LeftOfOperand) {
-            // 文字列として結合
-            const joined = (item.leftOfOperandValue ?? []).join('');
-            // 末尾1文字消す
-            const removed = removeLastChar(joined);
-            // 1文字ずつ配列に戻す
-            newValue = removed.split('');
+            const current = item.leftOfOperandValue ?? '';
+            const removed = removeLastChar(current);
+            newValue = removed;
             propertyName = 'leftOfOperandValue';
         } else {
-            const joined = (item.rightOfOperandValue ?? []).join('');
-            const removed = removeLastChar(joined);
-            newValue = removed.split('');
+            const current = item.rightOfOperandValue ?? '';
+            const removed = removeLastChar(current);
+            newValue = removed;
             propertyName = 'rightOfOperandValue';
         }
         setOperandComponents((prevItems) =>
@@ -186,25 +191,28 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [], fo
 
         //(左辺または右辺)_(オペランドのインデックス)_(オペランドの左側または右側)という文字列を想定
         const overIdSplitArray = id.split('_');
-        const item: DnclTextFieldProps | undefined = operandComponents.find((item: DnclTextFieldProps, i: number) =>
+        const item: OperandComponent | undefined = operandComponents.find((item: OperandComponent, i: number) =>
             i === Number(overIdSplitArray[1]
             ));
         if (!item) return;
-        let newArray: string[] = [];
-        let propertyName = '';
         const draggingString = getValueByKey(draggableStringList, activeId);
+        let newValue = '';
+        let propertyName: 'leftOfOperandValue' | 'rightOfOperandValue' = 'leftOfOperandValue';
 
-        if (overIdSplitArray[2] == keyPrefixEnum.LeftOfOperand) {
-            newArray = (item.leftOfOperandValue ?? []).concat(draggingString.split(''));
+        if (overIdSplitArray[2] === keyPrefixEnum.LeftOfOperand) {
+            const current = item.leftOfOperandValue ?? '';
+            newValue = current + draggingString;
             propertyName = 'leftOfOperandValue';
         } else {
-            newArray = (item.rightOfOperandValue ?? []).concat(draggingString.split(''));
+            const current = item.rightOfOperandValue ?? '';
+            newValue = current + draggingString;
             propertyName = 'rightOfOperandValue';
         }
+
         //プロパティに変数を使うときは[]をつける
         setOperandComponents((prevItems) =>
-            prevItems.map((item: DnclTextFieldProps, i: number) =>
-                i === Number(overIdSplitArray[1]) ? { ...item, [propertyName]: newArray } : item
+            prevItems.map((item: OperandComponent, i: number) =>
+                i === Number(overIdSplitArray[1]) ? { ...item, [propertyName]: newValue } : item
             ));
     }
 
@@ -339,10 +347,10 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [], fo
                                     (processType == ProcessEnum.InitializeArray && index > 0) &&
                                     <Operator name={`${component.name}`} parentIndex={index} type={OperationEnum.Comma}></Operator>
                                 }
-                                <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfOperand}`} isDragging={isDragging && isNotActiveIdOperator(activeId)} onClick={() => removeOneSideOfOperand(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfOperand}`)} stringArray={component.leftOfOperandValue}>{component.leftOfOperandValue?.join('')}</Droppable>
+                                <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfOperand}`} isDragging={isDragging && isNotActiveIdOperator(activeId)} onClick={() => removeOneSideOfOperand(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfOperand}`)} stringValue={component.leftOfOperandValue}>{component.leftOfOperandValue ?? ''}</Droppable>
 
                                 <DnclTextField name={`${component.name}`} index={index} inputType={getSwitchType(processType)} treeItems={treeItems} />
-                                <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfOperand}`} isDragging={isDragging && isNotActiveIdOperator(activeId)} onClick={() => removeOneSideOfOperand(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfOperand}`)} stringArray={component.rightOfOperandValue}>{component.rightOfOperandValue?.join('')}</Droppable>
+                                <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfOperand}`} isDragging={isDragging && isNotActiveIdOperator(activeId)} onClick={() => removeOneSideOfOperand(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfOperand}`)} stringValue={component.rightOfOperandValue}>{component.rightOfOperandValue ?? ''}</Droppable>
 
                                 {([ProcessEnum.If, ProcessEnum.ElseIf].includes(processType) && index != 0) && <Operator name={`${component.name}`} parentIndex={index} type={OperationEnum.Negation}></Operator>}
 

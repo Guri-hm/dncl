@@ -19,8 +19,6 @@ export interface DnclTextFieldProps {
   index?: number
   suffixValue?: string
   treeItems?: TreeItems
-  leftOfOperandValue?: string[]
-  rightOfOperandValue?: string[]
   operator?: OperationEnum
   operatorIndex?: number;
 }
