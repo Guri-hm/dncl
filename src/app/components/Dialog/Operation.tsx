@@ -1,4 +1,4 @@
-import { defaultDropAnimationSideEffects, DndContext, DragOverlay } from "@dnd-kit/core";
+import { defaultDropAnimationSideEffects, DndContext, DragOverlay, rectIntersection } from "@dnd-kit/core";
 import { FC, ReactNode, useEffect, useState } from "react";
 import { Box, Button, Divider, FormHelperText, IconButton, Stack } from '@mui/material';
 import BackspaceIcon from '@mui/icons-material/Backspace';
@@ -284,6 +284,7 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [], fo
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
             <DndContext
+                collisionDetection={rectIntersection}
                 onDragStart={(event) => {
                     const { active } = event;
                     if (active == null) {
