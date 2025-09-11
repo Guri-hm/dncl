@@ -22,6 +22,7 @@ export interface DnclTextFieldProps {
   leftOfOperandValue?: string[]
   rightOfOperandValue?: string[]
   operator?: OperationEnum
+  operatorIndex?: number;
 }
 
 const AntSwitch = styled(Switch)(({ theme }) => ({

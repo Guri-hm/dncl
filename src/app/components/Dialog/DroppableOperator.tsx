@@ -11,10 +11,11 @@ type DroppableProp = {
     isDragging: boolean;
     endOfArrayEvent?: () => void;
     parentIndex?: number
+    operatorDefaultIndex?: number
     type?: OperationEnum
 };
 
-export const DroppableOperator: FC<DroppableProp> = ({ id, name, isDragging, endOfArrayEvent, type, parentIndex }) => {
+export const DroppableOperator: FC<DroppableProp> = ({ id, name, isDragging, endOfArrayEvent, type, parentIndex, operatorDefaultIndex }) => {
     const {
         setNodeRef,
         isOver
@@ -33,7 +34,7 @@ export const DroppableOperator: FC<DroppableProp> = ({ id, name, isDragging, end
             }}
         >
             {type &&
-                <Operator name={`${name}`} parentIndex={parentIndex} type={type} event={endOfArrayEvent}></Operator>
+                <Operator name={`${name}`} parentIndex={parentIndex} operatorDefaultIndex={operatorDefaultIndex} type={type} event={endOfArrayEvent}></Operator>
             }
         </Grid>
     )

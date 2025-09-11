@@ -6,7 +6,7 @@ import { Operator, Droppable, DroppableOperator, ErrorMsgBox, DraggableItem, Dnc
 import { bracketEnum, inputTypeEnum, keyPrefixEnum } from "./Enum";
 import { BraketSymbolEnum, OperationEnum, OperatorTypeJpEnum, ProcessEnum } from "@/app/enum";
 import AddIcon from '@mui/icons-material/Add';
-import { checkParenthesesBalance, enumsToObjects, getValueByKey } from "@/app/utilities";
+import { checkParenthesesBalance, enumsToObjects, getOperatorTypeAndIndex, getValueByKey } from "@/app/utilities";
 import { TreeItems } from "@/app/types";
 import { useCallback } from 'react';
 import { useUpdateEffect } from "@/app/hooks";
@@ -51,17 +51,25 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [], fo
             const newOperands: DnclTextFieldProps[] = [];
             for (let i = 0; i < operandCount; i++) {
                 const operatorKey = `RigthSide_${i}_Operator`;
+                const operatorStr = formData[operatorKey] as string | undefined;
+                let operatorType: OperationEnum | null = null;
+                let operatorIndex: number | null = null;
+                if (operatorStr) {
+                    const info = getOperatorTypeAndIndex(operatorStr);
+                    operatorType = info?.type ?? null;
+                    operatorIndex = info?.index ?? null;
+                }
                 const leftKey = `RigthSide_${i}_LeftOfOperand`;
                 const rightKey = `RigthSide_${i}_RightOfOperand`;
 
-                const operator = formData[operatorKey] as OperationEnum | undefined;
                 // left/rightはカンマ区切りで保存されている前提
                 const leftOfOperandValue = formData[leftKey] ? formData[leftKey].split(',') : [];
                 const rightOfOperandValue = formData[rightKey] ? formData[rightKey].split(',') : [];
 
                 newOperands.push({
                     name: keyPrefixEnum.RigthSide,
-                    operator: operator || null as unknown as OperationEnum,
+                    operator: operatorType ?? undefined,
+                    operatorIndex: operatorIndex ?? undefined,
                     leftOfOperandValue: leftOfOperandValue,
                     rightOfOperandValue: rightOfOperandValue
                 });
@@ -262,7 +270,6 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [], fo
                 return inputTypeEnum.SwitchVariableOrNumberOrArray;
         }
     }
-    console.log(operandComponents)
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
             <DndContext
@@ -314,7 +321,10 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [], fo
                         {operandComponents.map((component, index) => (
                             <Stack direction="row" spacing={0} key={`${component.name}_${index}`}>
                                 {(index == 0) && (processType == ProcessEnum.InitializeArray) ? <EmphasiseBox>{BraketSymbolEnum.OpenSquareBracket}</EmphasiseBox> : ''}
-                                {(index != 0) && <DroppableOperator id={`${component.name}_${index}_${keyPrefixEnum.Operator}`} name={`${component.name}`} parentIndex={index} isDragging={isDragging && isActiveIdOperator(activeId)} endOfArrayEvent={() => removeOperator(index)} type={component.operator}></DroppableOperator>}
+                                {
+                                    //演算子ドロップエリア
+                                    (index != 0) && <DroppableOperator id={`${component.name}_${index}_${keyPrefixEnum.Operator}`} name={`${component.name}`} parentIndex={index} operatorDefaultIndex={component.operatorIndex} isDragging={isDragging && isActiveIdOperator(activeId)} endOfArrayEvent={() => removeOperator(index)} type={component.operator}></DroppableOperator>
+                                }
                                 {
                                     //表示文
                                     (processType == ProcessEnum.Output && index > 0) &&

@@ -128,7 +128,8 @@ type Props = {
   type: OperationEnum
   name?: string
   parentIndex?: number
-  event?: () => void;
+  operatorDefaultIndex?: number
+  event?: () => void
 }
 
 const ArithmeticOperatorArray: React.FC<SvgIconComponentProps>[] = [
@@ -160,8 +161,8 @@ const NegationOperatorArray: React.FC<SvgIconProps & { onClick: () => void }>[] 
   (props) => <TextIcon {...props} text="でない" />,
 ];
 
-export function Operator({ type, name = "", parentIndex = 0, event, ...props }: Props) {
-  const [operatorIndex, setOperatorIndex] = useState<number>(0);
+export function Operator({ type, name = "", parentIndex = 0, operatorDefaultIndex = 0, event, ...props }: Props) {
+  const [operatorIndex, setOperatorIndex] = useState<number>(operatorDefaultIndex);
 
   let elms: ReactElement = <></>;
   const handleOnClick = () => {

@@ -1,4 +1,5 @@
-import { tryParseToJsFunction } from './utilities';
+import { tryParseToJsFunction, getOperatorTypeAndIndex } from './utilities';
+import { OperationEnum, ArithmeticOperator, ComparisonOperator } from '@/app/enum';
 
 // squareString, exponentiateString, replaceOddFunctions, convertBinaryFunctions, removeWord を間接的にテスト
 describe('tryParseToJsFunction (間接的なユーティリティ関数のテスト)', () => {
@@ -61,5 +62,33 @@ describe('tryParseToJsFunction (間接的なユーティリティ関数のテス
         const result = tryParseToJsFunction('Square(a) + Exponentiation(2,3) + Odd(b) + Binary(c) + UserDefined bar');
         expect(result.convertedStr).toBe('(a * a) + (2**3) + b % 2 !== 0 + (c).toString(2) + bar');
         expect(result.hasError).toBe(false);
+    });
+});
+
+
+describe('getOperatorTypeAndIndex', () => {
+    it('算術演算子 "+" で Arithmetic と index=0 を返す', () => {
+        const result = getOperatorTypeAndIndex(ArithmeticOperator.AdditionOperator);
+        expect(result).toEqual({ type: OperationEnum.Arithmetic, index: 0 });
+    });
+
+    it('算術演算子 "*" で Arithmetic と index=2 を返す', () => {
+        const result = getOperatorTypeAndIndex(ArithmeticOperator.MultiplicationOperator);
+        expect(result).toEqual({ type: OperationEnum.Arithmetic, index: 2 });
+    });
+
+    it('比較演算子 "==" で Comparison と index=0 を返す', () => {
+        const result = getOperatorTypeAndIndex(ComparisonOperator.EqualToOperator);
+        expect(result).toEqual({ type: OperationEnum.Comparison, index: 0 });
+    });
+
+    it('比較演算子 "<=" で Comparison と index=5 を返す', () => {
+        const result = getOperatorTypeAndIndex(ComparisonOperator.LessThanOrEqualToOperator);
+        expect(result).toEqual({ type: OperationEnum.Comparison, index: 5 });
+    });
+
+    it('未定義演算子は null を返す', () => {
+        const result = getOperatorTypeAndIndex('???');
+        expect(result).toBeNull();
     });
 });

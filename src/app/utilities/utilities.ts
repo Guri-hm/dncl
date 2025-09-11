@@ -2,7 +2,7 @@ import { arrayMove } from '@dnd-kit/sortable';
 import { UniqueIdentifier } from "@dnd-kit/core";
 
 import type { FlattenedItem, TreeItem, TreeItems, ErrObj } from '../types';
-import { BraketSymbolEnum, ReturnFuncDncl, ProcessEnum, UserDefinedFuncDncl, VoidFuncDncl } from '@/app/enum';
+import { BraketSymbolEnum, ReturnFuncDncl, ProcessEnum, UserDefinedFuncDncl, VoidFuncDncl, OperationEnum, ArithmeticOperator, ComparisonOperator } from '@/app/enum';
 import { inputTypeEnum, keyPrefixEnum, ValidationEnum } from '../components/Dialog/Enum';
 
 import Kuroshiro from 'kuroshiro';
@@ -1377,3 +1377,16 @@ export const checkForLoopInfinite = (
 
   return { errorMsgArray: [], hasError: false };
 };
+
+export function getOperatorTypeAndIndex(operatorStr: string): { type: OperationEnum, index: number } | null {
+  // 算術演算子
+  const arithmeticIndex = Object.values(ArithmeticOperator).indexOf(operatorStr as ArithmeticOperator);
+  if (arithmeticIndex !== -1) return { type: OperationEnum.Arithmetic, index: arithmeticIndex };
+
+  // 比較演算子
+  const comparisonIndex = Object.values(ComparisonOperator).indexOf(operatorStr as ComparisonOperator);
+  if (comparisonIndex !== -1) return { type: OperationEnum.Comparison, index: comparisonIndex };
+
+  // 他の演算子も同様に追加
+  return null;
+}
