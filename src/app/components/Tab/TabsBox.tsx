@@ -251,26 +251,20 @@ const TabsBox = ({ tabItems, disabled, containerId = 'box', setTabItemsObj, ...p
                         <TabFillerInner>
                             {tabItems[safeValue] && tabItems[safeValue].label == 'フローチャート' ? '' :
                                 <IconButton size='small' sx={{ color: 'var(--slate-500)', display: 'flex', alignItems: 'center', '&:hover': { color: 'var(--stone-50)' } }} aria-label="clipboard" onClick={() => {
-                                    if (contentRef.current) {
-                                        const replaceDivWithNewline = (html: string) => {
-                                            // divタグを改行コードに変換
-                                            let formattedText = html.replace(/<div[^>]*>/g, '\n').replace(/<\/div>/g, '');
-                                            // 不要な空行を削除
-                                            formattedText = formattedText.replace(/\n\s*\n/g, '\n').trim();
-                                            return formattedText;
-                                        }
-                                        const innerHTML = contentRef.current.innerHTML;
-                                        if (!innerHTML) {
-                                            return;
-                                        }
-                                        const formattedText = replaceDivWithNewline(innerHTML);
-                                        navigator.clipboard.writeText(formattedText).then(() => {
-                                            setSnackbar({ ...snackbar, open: true, text: 'クリップボードにコピーしました' });
-                                        }, (err) => {
-                                            console.error(err);
-                                            setSnackbar({ ...snackbar, open: true, text: '失敗しました' });
-                                        });
-                                    }
+                                    if (!contentRef.current) return;
+
+                                    // 表示されているテキスト（HTMLエンティティはデコード済み）を取得
+                                    const visibleText = contentRef.current.innerText ?? contentRef.current.textContent ?? '';
+
+                                    // 不要な空行を削除してトリム
+                                    const formattedText = visibleText.replace(/\n\s*\n/g, '\n').trim();
+
+                                    navigator.clipboard.writeText(formattedText).then(() => {
+                                        setSnackbar({ ...snackbar, open: true, text: 'クリップボードにコピーしました' });
+                                    }, (err) => {
+                                        console.error(err);
+                                        setSnackbar({ ...snackbar, open: true, text: '失敗しました' });
+                                    });
                                 }}>
                                     <AssignmentIcon />
                                 </IconButton>
