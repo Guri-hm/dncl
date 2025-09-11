@@ -30,6 +30,19 @@ type OperandComponent = {
 type DraggableOperatorsProps = {
     children?: ReactNode;
 };
+
+const OperandProp = {
+    OPERATOR: 'operator' as const,
+    OPERATOR_INDEX: 'operatorIndex' as const,
+    LEFT: 'leftOfOperandValue' as const,
+    RIGHT: 'rightOfOperandValue' as const,
+};
+type OperandPropKey = typeof OperandProp[keyof typeof OperandProp];
+
+const Keys = {
+    OPERATOR_KEY: 'operator',
+} as const;
+
 const DraggableOperatorsBox: FC<DraggableOperatorsProps> = ({ children }) => {
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
@@ -173,17 +186,17 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [], ri
         if (!item) return;
 
         let newValue = '';
-        let propertyName: 'leftOfOperandValue' | 'rightOfOperandValue' = 'leftOfOperandValue';
+        let propertyName: typeof OperandProp.LEFT | typeof OperandProp.RIGHT = OperandProp.LEFT;
         if (overIdSplitArray[2] == keyPrefixEnum.LeftOfOperand) {
-            const current = item.leftOfOperandValue ?? '';
+            const current = (item[OperandProp.LEFT as keyof OperandComponent] ?? '') as string;
             const removed = removeLastChar(current);
             newValue = removed;
-            propertyName = 'leftOfOperandValue';
+            propertyName = OperandProp.LEFT;
         } else {
-            const current = item.rightOfOperandValue ?? '';
+            const current = (item[OperandProp.RIGHT as keyof OperandComponent] ?? '') as string;
             const removed = removeLastChar(current);
             newValue = removed;
-            propertyName = 'rightOfOperandValue';
+            propertyName = OperandProp.RIGHT;
         }
         setOperandComponents((prevItems) =>
             prevItems.map((item: OperandComponent, i: number) =>
@@ -194,23 +207,20 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [], ri
 
     const setOperator = (id: string) => {
         const overIdSplitArray = id.split('_');
-        const propertyName = 'operator'; // constを使用
-
         setOperandComponents((prevItems) =>
             prevItems.map((item, i) =>
                 i === Number(overIdSplitArray[1])
-                    ? { ...item, [propertyName]: activeId } as OperandComponent
+                    ? { ...item, [OperandProp.OPERATOR]: activeId } as OperandComponent
                     : item
             )
         );
     };
 
     const removeOperator = (index: number) => {
-        const propertyName = 'operator'; // constを使用
         setOperandComponents((prevItems) =>
             prevItems.map((item, i) =>
                 i === Number(index)
-                    ? { ...item, [propertyName]: null as unknown as OperationEnum } // 型アサーションを使用して null を変換
+                    ? { ...item, [OperandProp.OPERATOR]: null as unknown as OperationEnum } // 型アサーションを使用して null を変換
                     : item
             )
         );
@@ -225,17 +235,17 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [], ri
             ));
         if (!item) return;
         const draggingString = getValueByKey(draggableStringList, activeId);
+        let propertyName: typeof OperandProp.LEFT | typeof OperandProp.RIGHT = OperandProp.LEFT;
         let newValue = '';
-        let propertyName: 'leftOfOperandValue' | 'rightOfOperandValue' = 'leftOfOperandValue';
 
         if (overIdSplitArray[2] === keyPrefixEnum.LeftOfOperand) {
-            const current = item.leftOfOperandValue ?? '';
+            const current = (item[OperandProp.LEFT as keyof OperandComponent] ?? '') as string;
             newValue = current + draggingString;
-            propertyName = 'leftOfOperandValue';
+            propertyName = OperandProp.LEFT;
         } else {
-            const current = item.rightOfOperandValue ?? '';
+            const current = (item[OperandProp.RIGHT as keyof OperandComponent] ?? '') as string;
             newValue = current + draggingString;
-            propertyName = 'rightOfOperandValue';
+            propertyName = OperandProp.RIGHT;
         }
 
         //プロパティに変数を使うときは[]をつける
