@@ -312,9 +312,15 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 }
                 break;
             case 'IfStatement':
-                const test = node.test as Test;
-                const testString = `${test.left.name} ${test.operator} ${test.right.value}`;
+                // test は BinaryExpression 等なので汎用的に左右を文字列化する
+                const testNode: any = node.test;
+                const leftStr = testNode && testNode.left ? getExpressionString(testNode.left as InitExpression) : '';
+                const rightStr = testNode && testNode.right ? getExpressionString(testNode.right as InitExpression) : '';
+                // operator の表示変換（!== → ≠ など）は getExpressionString 側で行っている場合は不要だが安全にハンドル
+                const op = testNode && testNode.operator ? (testNode.operator === '!==' ? ComparisonOperatorDncl.NotEqualToOperator : testNode.operator) : '';
+                const testString = `${leftStr} ${op} ${rightStr}`.trim();
                 addNode(testString, 'rhombus;whiteSpace=wrap;html=1;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
+
 
                 const ifNodeId = nodeId - 1;
                 let nodeIds: number[] = [];
