@@ -20,7 +20,8 @@ export interface DnclTextFieldProps {
   suffixValue?: string
   treeItems?: TreeItems
   operator?: OperationEnum
-  operatorIndex?: number;
+  operatorIndex?: number
+  initialRestoreValues?: { [key: string]: string }
 }
 
 const AntSwitch = styled(Switch)(({ theme }) => ({
@@ -82,7 +83,7 @@ const CustomToggleButton = styled(ToggleButton)`
   }
 `;
 
-export function DnclTextField({ label, name, inputType, index = 0, suffixValue, treeItems }: DnclTextFieldProps) {
+export function DnclTextField({ label, name, inputType, index = 0, suffixValue, treeItems, initialRestoreValues }: DnclTextFieldProps) {
 
   const [checked, setChecked] = useState(false);
   const [radioValue, setRadioValue] = useState<inputTypeEnum>(inputTypeEnum.Number);
@@ -119,6 +120,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
       setIsConstantMode(value === 'true');
     }
 
+
     if (fieldName === `${name}_${index}` ||
       fieldName === `${name}_${index}_${keyPrefixEnum.Suffix}` ||
       fieldName.includes(`${name}_${index}_`)) {
@@ -130,18 +132,11 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
   }, [name, index]);
 
   useEffect(() => {
-    // 外部から復元要求があった場合
-    const handleRestore = (event: CustomEvent) => {
-      const { fieldName, value } = event.detail;
+    if (!initialRestoreValues) return;
+    Object.entries(initialRestoreValues).forEach(([fieldName, value]) => {
       restoreRadioState(fieldName, value);
-    };
-
-    window.addEventListener('restoreRadioState', handleRestore as EventListener);
-
-    return () => {
-      window.removeEventListener('restoreRadioState', handleRestore as EventListener);
-    };
-  }, [restoreRadioState]);
+    });
+  }, [initialRestoreValues, restoreRadioState]);
 
   const handleChangeToggle = (
     event: React.MouseEvent<HTMLElement>,

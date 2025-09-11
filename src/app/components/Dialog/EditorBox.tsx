@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ReactElement } from "react";
 import Box from '@mui/material/Box';
 import { DnclTextField } from "./DnclTextField";
@@ -8,14 +8,15 @@ import { Divider, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent }
 import Grid from '@mui/material/Grid2';
 import { TreeItems } from "@/app/types";
 import { Operator, Operation, CustomBox, WrapText, NowrapText } from '@/app/components/Dialog';
+import { buildSideRestoreMaps } from "@/app/utilities";
 
-type Props = {
+type EditorBoxProps = {
     statementType: StatementEnum
     treeItems: TreeItems
     formData?: { [key: string]: string }
 }
 
-export function EditorBox(params: Props) {
+export function EditorBox({ statementType, treeItems, formData }: EditorBoxProps) {
 
     const [statement, setStatement] = useState<ReactElement | null>(null);
 
@@ -23,6 +24,10 @@ export function EditorBox(params: Props) {
         const index = Number(event.target.value) ?? ProcessEnum.SetValToVariableOrArray
         setStatement(StatementEditor(index));
     }
+
+    const sideMaps = useMemo(() => buildSideRestoreMaps(formData, [keyPrefixEnum.RigthSide, keyPrefixEnum.LeftSide]), [formData]);
+    const rightRestoreMap = sideMaps ? sideMaps[keyPrefixEnum.RigthSide] : undefined;
+    const leftRestoreMap = sideMaps ? sideMaps[keyPrefixEnum.LeftSide] : undefined;
 
     const StatementEditor = (index: number): ReactElement => {
 
@@ -34,11 +39,15 @@ export function EditorBox(params: Props) {
             )
         }
 
+        // 左辺は常にインデックス0、右辺はプロセスインデックスに対応する
+        const leftInitial = leftRestoreMap ? leftRestoreMap[0] : undefined;
+        const rightInitial = rightRestoreMap ? rightRestoreMap[index] : undefined;
+
         switch (index) {
             case ProcessEnum.SetValToVariableOrArray:
                 return <>
-                    <Operation processType={ProcessEnum.SetValToVariableOrArray} treeItems={params.treeItems} formData={params.formData}>
-                        <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArrayWithConstant}></DnclTextField>
+                    <Operation processType={ProcessEnum.SetValToVariableOrArray} treeItems={treeItems} rightRestoreMap={rightRestoreMap}>
+                        <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArrayWithConstant} initialRestoreValues={leftInitial}></DnclTextField>
                         <Operator type={OperationEnum.ForDncl}></Operator>
                     </Operation>
                     {hdnInput(index)}
@@ -47,8 +56,8 @@ export function EditorBox(params: Props) {
             case ProcessEnum.InitializeArray:
                 //配列の初期化
                 return <>
-                    <Operation treeItems={params.treeItems} processType={ProcessEnum.InitializeArray} formData={params.formData}>
-                        <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.ArrayWithoutSuffix}></DnclTextField>
+                    <Operation treeItems={treeItems} processType={ProcessEnum.InitializeArray} rightRestoreMap={rightRestoreMap}>
+                        <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.ArrayWithoutSuffix} initialRestoreValues={leftInitial}></DnclTextField>
                         <Operator type={OperationEnum.ForDncl}></Operator>
                     </Operation>
                     {hdnInput(index)}
@@ -56,24 +65,24 @@ export function EditorBox(params: Props) {
                 </>
             case ProcessEnum.BulkAssignToArray:
                 return <>
-                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.ArrayWithoutSuffix}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.ArrayWithoutSuffix} initialRestoreValues={leftInitial}></DnclTextField>
                     <NowrapText text={'のすべての要素に'}></NowrapText>
-                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SwitchVariableOrNumberOrArray}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SwitchVariableOrNumberOrArray} initialRestoreValues={rightInitial}></DnclTextField>
                     <NowrapText text={'を代入する'}></NowrapText>
                     {hdnInput(index)}
                 </>
             case ProcessEnum.Increment:
             case ProcessEnum.Decrement:
                 return <>
-                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArray}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArray} initialRestoreValues={leftInitial}></DnclTextField>
                     <NowrapText text={'を'}></NowrapText>
-                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SwitchVariableOrNumberOrArray}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SwitchVariableOrNumberOrArray} initialRestoreValues={rightInitial}></DnclTextField>
                     <NowrapText text={index == ProcessEnum.Increment ? '増やす' : '減らす'}></NowrapText>
                     {hdnInput(index)}
                 </>
             case ProcessEnum.Output:
                 return <>
-                    <Operation processType={ProcessEnum.Output} treeItems={params.treeItems} formData={params.formData}></Operation>
+                    <Operation processType={ProcessEnum.Output} treeItems={treeItems} rightRestoreMap={rightRestoreMap}></Operation>
                     <Divider sx={{ marginLeft: 1 }} orientation="vertical" flexItem />
                     <NowrapText text={'を表示する'}></NowrapText>
                     {hdnInput(index)}
@@ -82,7 +91,7 @@ export function EditorBox(params: Props) {
                 return <>
                     <NowrapText text={'もし'}></NowrapText>
                     <Divider sx={{ marginRight: 1 }} orientation="vertical" flexItem />
-                    <Operation processType={ProcessEnum.If} treeItems={params.treeItems} formData={params.formData}>
+                    <Operation processType={ProcessEnum.If} treeItems={treeItems} rightRestoreMap={rightRestoreMap}>
                     </Operation>
                     <Divider sx={{ marginLeft: 1 }} orientation="vertical" flexItem />
                     <NowrapText text={'ならば'}></NowrapText>
@@ -92,7 +101,7 @@ export function EditorBox(params: Props) {
                 return <>
                     <WrapText text={'を実行し，そうでなくもし'}></WrapText>
                     <Divider sx={{ marginRight: 1 }} orientation="vertical" flexItem />
-                    <Operation processType={ProcessEnum.ElseIf} treeItems={params.treeItems} formData={params.formData}>
+                    <Operation processType={ProcessEnum.ElseIf} treeItems={treeItems} rightRestoreMap={rightRestoreMap}>
                     </Operation>
                     <Divider sx={{ marginLeft: 1 }} orientation="vertical" flexItem />
                     <NowrapText text={'ならば'}></NowrapText>
@@ -110,7 +119,7 @@ export function EditorBox(params: Props) {
                 </>
             case ProcessEnum.While:
                 return <>
-                    <Operation processType={ProcessEnum.While} treeItems={params.treeItems} formData={params.formData}>
+                    <Operation processType={ProcessEnum.While} treeItems={treeItems} rightRestoreMap={rightRestoreMap}>
                     </Operation>
                     <Divider sx={{ marginLeft: 1 }} orientation="vertical" flexItem />
                     <NowrapText text={'の間，'}></NowrapText>
@@ -130,7 +139,7 @@ export function EditorBox(params: Props) {
                 return <>
                     <NowrapText text={'を，'}></NowrapText>
                     <Divider sx={{ marginRight: 1 }} orientation="vertical" flexItem />
-                    <Operation processType={ProcessEnum.EndDoWhile} formData={params.formData}>
+                    <Operation processType={ProcessEnum.EndDoWhile} rightRestoreMap={rightRestoreMap}>
                     </Operation>
                     <Divider sx={{ marginLeft: 1 }} orientation="vertical" flexItem />
                     <NowrapText text={'になるまで実行する'}></NowrapText>
@@ -142,7 +151,7 @@ export function EditorBox(params: Props) {
                     <Grid container spacing={1} direction='column'>
                         <Grid container direction='row'>
                             <Grid size='grow'>
-                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.VariableOnly}></DnclTextField>
+                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.VariableOnly} initialRestoreValues={rightInitial}></DnclTextField>
                             </Grid>
                             <NowrapText text={'を'}></NowrapText>
                             <Grid size='grow'>
@@ -152,11 +161,11 @@ export function EditorBox(params: Props) {
                         </Grid>
                         <Grid container direction='row'>
                             <Grid size='grow'>
-                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.EndValue}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.EndValue} inputType={inputTypeEnum.ForValue} label={"終了値"}></DnclTextField>
+                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.EndValue}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.EndValue} inputType={inputTypeEnum.ForValue} label={"終了値"} initialRestoreValues={rightInitial}></DnclTextField>
                             </Grid>
                             <NowrapText text={'まで'}></NowrapText>
                             <Grid size='grow'>
-                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.Difference}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.Difference} inputType={inputTypeEnum.ForValue} label={"差分"}></DnclTextField>
+                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.Difference}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.Difference} inputType={inputTypeEnum.ForValue} label={"差分"} initialRestoreValues={rightInitial}></DnclTextField>
                             </Grid>
                             <NowrapText text={index == ProcessEnum.ForIncrement ? 'ずつ増やしながら，' : 'ずつ減らしながら，'}></NowrapText>
                         </Grid>
@@ -184,7 +193,7 @@ export function EditorBox(params: Props) {
                 </>
             case ProcessEnum.ExecuteUserDefinedFunction:
                 return <>
-                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.UserDefinedfunction}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.UserDefinedfunction} inputType={inputTypeEnum.ExecuteUserDefinedFunction} treeItems={params.treeItems}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.UserDefinedfunction}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.UserDefinedfunction} inputType={inputTypeEnum.ExecuteUserDefinedFunction} treeItems={treeItems}></DnclTextField>
                     {hdnInput(index)}
                 </>
             default:
@@ -192,7 +201,7 @@ export function EditorBox(params: Props) {
         }
     }
 
-    const result = processNames.filter(item => item.statementType == params.statementType)
+    const result = processNames.filter(item => item.statementType == statementType)
         .flatMap(item => item.names);
     // const defaultProps = {
     //     options: result,
@@ -215,7 +224,7 @@ export function EditorBox(params: Props) {
         </FormControl>
     </Box>
 
-    switch (params.statementType) {
+    switch (statementType) {
         case StatementEnum.Output:
             return <>
                 <CustomBox>

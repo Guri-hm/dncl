@@ -1390,3 +1390,19 @@ export function getOperatorTypeAndIndex(operatorStr: string): { type: OperationE
   // 他の演算子も同様に追加
   return null;
 }
+
+export const buildSideRestoreMaps = (formData?: { [k: string]: string }, prefixes: string[] = ['RigthSide', 'LeftSide']) => {
+  if (!formData) return undefined;
+  const re = new RegExp(`^(${prefixes.join('|')})_(\\d+)(?:_|$)`);
+  const maps: Record<string, Record<number, Record<string, string>>> = {};
+  prefixes.forEach(p => (maps[p] = {}));
+  Object.entries(formData).forEach(([k, v]) => {
+    const m = k.match(re);
+    if (!m) return;
+    const side = m[1];
+    const idx = Number(m[2]);
+    maps[side][idx] = maps[side][idx] ?? {};
+    maps[side][idx][k] = v;
+  });
+  return maps;
+};

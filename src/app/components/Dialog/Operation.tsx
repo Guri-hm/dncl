@@ -2,7 +2,7 @@ import { defaultDropAnimationSideEffects, DndContext, DragOverlay, rectIntersect
 import { FC, ReactNode, useEffect, useState } from "react";
 import { Box, Button, Divider, FormHelperText, IconButton, Stack } from '@mui/material';
 import BackspaceIcon from '@mui/icons-material/Backspace';
-import { Operator, Droppable, DroppableOperator, ErrorMsgBox, DraggableItem, DnclTextField, DnclTextFieldProps, EmphasiseBox } from '@/app/components/Dialog';
+import { Operator, Droppable, DroppableOperator, ErrorMsgBox, DraggableItem, DnclTextField, EmphasiseBox } from '@/app/components/Dialog';
 import { bracketEnum, inputTypeEnum, keyPrefixEnum } from "./Enum";
 import { BraketSymbolEnum, OperationEnum, OperatorTypeJpEnum, ProcessEnum } from "@/app/enum";
 import AddIcon from '@mui/icons-material/Add';
@@ -15,7 +15,7 @@ type Props = {
     children?: ReactNode;
     processType: ProcessEnum;
     treeItems?: TreeItems;
-    formData?: { [key: string]: string };
+    rightRestoreMap?: { [index: number]: { [key: string]: string } } | undefined;
 };
 
 type OperandComponent = {
@@ -24,6 +24,7 @@ type OperandComponent = {
     operatorIndex?: number;
     leftOfOperandValue?: string;
     rightOfOperandValue?: string;
+    initialRestoreValues?: { [key: string]: string };
 };
 
 type DraggableOperatorsProps = {
@@ -39,7 +40,7 @@ const DraggableOperatorsBox: FC<DraggableOperatorsProps> = ({ children }) => {
     );
 };
 
-export const Operation: FC<Props> = ({ children, processType, treeItems = [], formData }) => {
+export const Operation: FC<Props> = ({ children, processType, treeItems = [], rightRestoreMap }) => {
 
     const [isDragging, setIsDragging] = useState(false);
     const [operandComponents, setOperandComponents] = useState<OperandComponent[]>([{ name: keyPrefixEnum.RigthSide }]);
@@ -48,50 +49,34 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [], fo
 
     const draggableStringList = enumsToObjects([BraketSymbolEnum, OperatorTypeJpEnum]);
 
-    const restoreOperands = useCallback((formData: { [key: string]: string }) => {
-
-        // オペランドの数を計算
-        const operandCount = Object.keys(formData)
-            .filter(key => key.includes('RigthSide_') && !key.includes('_Operator') && !key.includes('_Type') && !key.includes('_LeftOfOperand') && !key.includes('_RightOfOperand'))
-            .length;
-
-        if (operandCount > 0) {
-            const newOperands: OperandComponent[] = [];
-            for (let i = 0; i < operandCount; i++) {
-                const operatorKey = `RigthSide_${i}_Operator`;
-                const operatorStr = formData[operatorKey] as string | undefined;
-                let operatorType: OperationEnum | null = null;
-                let operatorIndex: number | null = null;
-                if (operatorStr) {
-                    const info = getOperatorTypeAndIndex(operatorStr);
-                    operatorType = info?.type ?? null;
-                    operatorIndex = info?.index ?? null;
-                }
-                const leftKey = `RigthSide_${i}_LeftOfOperand`;
-                const rightKey = `RigthSide_${i}_RightOfOperand`;
-
-                // left/right は文字列として保存されている
-                const leftOfOperandValue = formData[leftKey] ?? '';
-                const rightOfOperandValue = formData[rightKey] ?? '';
-
-                newOperands.push({
-                    name: keyPrefixEnum.RigthSide,
-                    operator: operatorType ?? undefined,
-                    operatorIndex: operatorIndex ?? undefined,
-                    leftOfOperandValue: leftOfOperandValue,
-                    rightOfOperandValue: rightOfOperandValue
-                });
-            }
-
-            setOperandComponents(newOperands);
-        }
-    }, []);
-
     useEffect(() => {
-        if (formData) {
-            restoreOperands(formData);
+        if (!rightRestoreMap) {
+            setOperandComponents([{ name: keyPrefixEnum.RigthSide }]);
+            return;
         }
-    }, []);
+        const indices = Object.keys(rightRestoreMap).map(Number).sort((a, b) => a - b);
+        if (indices.length === 0) {
+            setOperandComponents([{ name: keyPrefixEnum.RigthSide }]);
+            return;
+        }
+        const newOperands = indices.map(i => {
+            const block = rightRestoreMap[i] ?? {};
+            const prefix = `${keyPrefixEnum.RigthSide}_${i}`;
+            const operatorStr = block[`${prefix}_${keyPrefixEnum.Operator}`] ?? Object.entries(block).find(([k]) => k.endsWith(`_${keyPrefixEnum.Operator}`))?.[1];
+            const left = block[`${prefix}_${keyPrefixEnum.LeftOfOperand}`] ?? Object.entries(block).find(([k]) => k.endsWith(`_${keyPrefixEnum.LeftOfOperand}`))?.[1] ?? '';
+            const right = block[`${prefix}_${keyPrefixEnum.RightOfOperand}`] ?? Object.entries(block).find(([k]) => k.endsWith(`_${keyPrefixEnum.RightOfOperand}`))?.[1] ?? '';
+            const info = operatorStr ? getOperatorTypeAndIndex(operatorStr) : undefined;
+            return {
+                name: keyPrefixEnum.RigthSide,
+                operator: info?.type ?? null,
+                operatorIndex: info?.index ?? null,
+                leftOfOperandValue: left,
+                rightOfOperandValue: right,
+                initialRestoreValues: block
+            } as OperandComponent;
+        });
+        setOperandComponents(newOperands);
+    }, [rightRestoreMap]);
 
     const checkBraketPair = useCallback(() => {
 
@@ -158,7 +143,7 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [], fo
             propertyName = 'rightOfOperandValue';
         }
         setOperandComponents((prevItems) =>
-            prevItems.map((item: DnclTextFieldProps, i: number) =>
+            prevItems.map((item: OperandComponent, i: number) =>
                 i === Number(overIdSplitArray[1]) ? { ...item, [propertyName]: newValue } : item
             )
         );
@@ -170,7 +155,7 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [], fo
         setOperandComponents((prevItems) =>
             prevItems.map((item, i) =>
                 i === Number(overIdSplitArray[1])
-                    ? { ...item, [propertyName]: activeId } as DnclTextFieldProps
+                    ? { ...item, [propertyName]: activeId } as OperandComponent
                     : item
             )
         );
@@ -350,7 +335,7 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [], fo
                                 }
                                 <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfOperand}`} isDragging={isDragging && isNotActiveIdOperator(activeId)} onClick={() => removeOneSideOfOperand(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfOperand}`)} stringValue={component.leftOfOperandValue}>{component.leftOfOperandValue ?? ''}</Droppable>
 
-                                <DnclTextField name={`${component.name}`} index={index} inputType={getSwitchType(processType)} treeItems={treeItems} />
+                                <DnclTextField name={`${component.name}`} index={index} inputType={getSwitchType(processType)} treeItems={treeItems} initialRestoreValues={component.initialRestoreValues} />
                                 <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfOperand}`} isDragging={isDragging && isNotActiveIdOperator(activeId)} onClick={() => removeOneSideOfOperand(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfOperand}`)} stringValue={component.rightOfOperandValue}>{component.rightOfOperandValue ?? ''}</Droppable>
 
                                 {([ProcessEnum.If, ProcessEnum.ElseIf].includes(processType) && index != 0) && <Operator name={`${component.name}`} parentIndex={index} type={OperationEnum.Negation}></Operator>}

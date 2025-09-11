@@ -10,8 +10,6 @@ import DialogTitle from '@mui/material/DialogTitle';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import HelpOutline from '@mui/icons-material/HelpOutline';
 import Collapse from '@mui/material/Collapse';
-import CircularProgress from '@mui/material/CircularProgress';
-import Typography from '@mui/material/Typography';
 import { DnclEditorProps, TreeItems } from "@/app/types";
 import { StatementName, StatementDesc, EditorBox, ErrorMsgBox } from '@/app/components/Dialog';
 import { keyPrefixEnum } from './Enum';
@@ -39,109 +37,7 @@ export function DnclEditDialog({ type = StatementEnum.Input, isEdit = false, ...
 
     const [error, setError] = useState<string[]>([]);
     const [showDescription, setShowDescription] = useState(false);
-    const [isRestoring, setIsRestoring] = useState(false);
     const formData = params.item?.formData;
-
-    useEffect(() => {
-        if (isEdit && formData && params.open) {
-            setIsRestoring(true);
-            const timer = setTimeout(() => {
-                if (!formData) return;
-
-                // 1. Operationコンポーネントにオペランド復元を依頼
-                const restoreEvent = new CustomEvent('restoreOperands', {
-                    detail: { formData: formData }
-                });
-                window.dispatchEvent(restoreEvent);
-
-                // 2. 少し待ってからフォームデータとUI状態を復元
-                setTimeout(() => {
-                    // フォームデータの復元（型安全性を確保）
-                    if (params.item?.formData) {
-                        Object.entries(params.item.formData).forEach(([key, value]) => {
-                            if (!key.includes('_Type') && !key.includes('processIndex')) {
-                                // テキストフィールドの値をDnclTextFieldに送信
-                                const restoreEvent = new CustomEvent('restoreRadioState', {
-                                    detail: { fieldName: key, value: value }
-                                });
-                                window.dispatchEvent(restoreEvent);
-                            }
-                        });
-                    }
-
-                    // UI状態の復元
-                    if (params.item?.uiState) {
-                        // ラジオボタンの復元
-                        const radioSelections = params.item.uiState.radioSelections;
-                        if (radioSelections) {
-                            Object.entries(radioSelections).forEach(([name, value]) => {
-                                if (name.includes('_Type')) {
-                                    // 隠しフィールドを設定
-                                    const hiddenField = document.querySelector(`input[name="${name}"]`) as HTMLInputElement;
-                                    if (hiddenField) {
-                                        hiddenField.value = value;
-                                        hiddenField.dispatchEvent(new Event('change', { bubbles: true }));
-                                    }
-
-                                    // DnclTextFieldコンポーネントに状態復元を依頼
-                                    const restoreEvent = new CustomEvent('restoreRadioState', {
-                                        detail: { fieldName: name, value: value }
-                                    });
-                                    window.dispatchEvent(restoreEvent);
-                                }
-                            });
-                        }
-
-                        // スイッチの復元
-                        const switchStates = params.item.uiState.switchStates;
-                        if (switchStates) {
-                            Object.entries(switchStates).forEach(([name, checked]) => {
-                                // DnclTextFieldコンポーネントに状態復元を依頼
-                                const restoreEvent = new CustomEvent('restoreRadioState', {
-                                    detail: { fieldName: name, value: checked.toString() }
-                                });
-                                window.dispatchEvent(restoreEvent);
-
-                                // DOM要素も設定（保険）
-                                const switchContainer = document.querySelector(`[data-switch-name="${name}"]`);
-                                if (switchContainer) {
-                                    const switchElement = switchContainer.querySelector('input[type="checkbox"]') as HTMLInputElement;
-                                    if (switchElement) {
-                                        switchElement.checked = checked;
-                                        switchElement.dispatchEvent(new Event('change', { bubbles: true }));
-                                    }
-                                }
-                            });
-                        }
-                    }
-
-                    // 復元完了イベントを発行
-                    const completeEvent = new CustomEvent('restoreComplete');
-                    window.dispatchEvent(completeEvent);
-
-                }, 300); // Operationコンポーネントの更新完了後
-
-            }, 200);
-
-            return () => clearTimeout(timer);
-        } else {
-            setIsRestoring(false);
-        }
-    }, [isEdit, params.item?.formData, params.item?.uiState, params.open]);
-
-    useEffect(() => {
-        const handleRestoreComplete = () => {
-            setTimeout(() => {
-                setIsRestoring(false);
-            }, 100); // 少し余裕をもって
-        };
-
-        window.addEventListener('restoreComplete', handleRestoreComplete);
-
-        return () => {
-            window.removeEventListener('restoreComplete', handleRestoreComplete);
-        };
-    }, []);
 
     const checkStatement = (data: { [k: string]: string; }, keyword: keyPrefixEnum, treeItems: TreeItems): boolean => {
 
@@ -527,37 +423,12 @@ export function DnclEditDialog({ type = StatementEnum.Input, isEdit = false, ...
                     </Collapse>
                     <Box sx={{ position: 'relative' }}>
                         <EditorBox statementType={type} treeItems={params.treeItems} formData={formData}></EditorBox>
-
-                        {isRestoring && (
-                            <Box
-                                sx={{
-                                    position: 'absolute',
-                                    top: 0,
-                                    left: 0,
-                                    right: 0,
-                                    bottom: 0,
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                                    zIndex: 1000,
-                                    minHeight: '200px',
-                                    gap: 2
-                                }}
-                            >
-                                <CircularProgress size={40} />
-                                <Typography variant="body2" color="text.secondary">
-                                    データを復元中...
-                                </Typography>
-                            </Box>
-                        )}
                     </Box>
                 </DialogContent>
                 <DialogActions>
                     <ErrorMsgBox sx={{ display: 'flex', flexDirection: 'column' }} errorArray={error}></ErrorMsgBox>
-                    <Button onClick={handleClose} disabled={isRestoring}>キャンセル</Button>
-                    <Button variant="outlined" type="submit" disabled={isRestoring}>
+                    <Button onClick={handleClose}>キャンセル</Button>
+                    <Button variant="outlined" type="submit">
                         {isEdit ? '更新' : '決定'}
                     </Button>
                 </DialogActions>
