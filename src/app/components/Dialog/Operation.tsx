@@ -49,6 +49,25 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [], ri
 
     const draggableStringList = enumsToObjects([BraketSymbolEnum, OperatorTypeJpEnum]);
 
+    const allowedForProcess = (ptype: ProcessEnum): OperationEnum[] => {
+        switch (ptype) {
+            case ProcessEnum.SetValToVariableOrArray:
+                return [OperationEnum.Arithmetic];
+            case ProcessEnum.Output:
+                return [OperationEnum.JoinString];
+            case ProcessEnum.If:
+            case ProcessEnum.ElseIf:
+                return [OperationEnum.Arithmetic, OperationEnum.Comparison, OperationEnum.Logical, OperationEnum.Negation];
+            case ProcessEnum.While:
+            case ProcessEnum.EndDoWhile:
+                return [OperationEnum.Comparison];
+            case ProcessEnum.InitializeArray:
+                return [];
+            default:
+                return [OperationEnum.Arithmetic, OperationEnum.Comparison, OperationEnum.Logical];
+        }
+    };
+
     useEffect(() => {
         if (!rightRestoreMap) {
             setOperandComponents([{ name: keyPrefixEnum.RigthSide }]);
@@ -59,24 +78,48 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [], ri
             setOperandComponents([{ name: keyPrefixEnum.RigthSide }]);
             return;
         }
+
+        const allowedOps = allowedForProcess(processType);
+
         const newOperands = indices.map(i => {
             const block = rightRestoreMap[i] ?? {};
             const prefix = `${keyPrefixEnum.RigthSide}_${i}`;
+
             const operatorStr = block[`${prefix}_${keyPrefixEnum.Operator}`] ?? Object.entries(block).find(([k]) => k.endsWith(`_${keyPrefixEnum.Operator}`))?.[1];
             const left = block[`${prefix}_${keyPrefixEnum.LeftOfOperand}`] ?? Object.entries(block).find(([k]) => k.endsWith(`_${keyPrefixEnum.LeftOfOperand}`))?.[1] ?? '';
             const right = block[`${prefix}_${keyPrefixEnum.RightOfOperand}`] ?? Object.entries(block).find(([k]) => k.endsWith(`_${keyPrefixEnum.RightOfOperand}`))?.[1] ?? '';
-            const info = operatorStr ? getOperatorTypeAndIndex(operatorStr) : undefined;
+
+            // operator を検証し、許可されない場合は破棄する
+            let operatorType: OperationEnum | undefined = undefined;
+            let operatorIndex: number | undefined = undefined;
+            if (operatorStr) {
+                const info = getOperatorTypeAndIndex(operatorStr);
+                if (info && allowedOps.includes(info.type)) {
+                    operatorType = info.type;
+                    operatorIndex = info.index ?? undefined;
+                } else {
+                    operatorType = undefined;
+                    operatorIndex = undefined;
+                }
+            }
+
+            // initialRestoreValues は許可されない operator キーを削って渡す（ここでサニタイズ）
+            const sanitizedBlock = Object.fromEntries(
+                Object.entries(block).filter(([k]) => !k.endsWith(`_${keyPrefixEnum.Operator}`))
+            );
+            const initialVals = Object.keys(sanitizedBlock).length ? sanitizedBlock : undefined;
+
             return {
                 name: keyPrefixEnum.RigthSide,
-                operator: info?.type ?? null,
-                operatorIndex: info?.index ?? null,
+                operator: operatorType,
+                operatorIndex: operatorIndex,
                 leftOfOperandValue: left,
                 rightOfOperandValue: right,
-                initialRestoreValues: block
+                initialRestoreValues: initialVals
             } as OperandComponent;
         });
         setOperandComponents(newOperands);
-    }, [rightRestoreMap]);
+    }, [rightRestoreMap, processType]);
 
     const checkBraketPair = useCallback(() => {
 
@@ -152,6 +195,7 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [], ri
     const setOperator = (id: string) => {
         const overIdSplitArray = id.split('_');
         const propertyName = 'operator'; // constを使用
+
         setOperandComponents((prevItems) =>
             prevItems.map((item, i) =>
                 i === Number(overIdSplitArray[1])
@@ -285,6 +329,7 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [], ri
                     if (over == null) {
                         return;
                     }
+
                     if (over.id.toString().includes(keyPrefixEnum.Operator)) {
                         if (isNotActiveIdOperator(activeId)) return;
                         setOperator(over.id.toString())
@@ -317,31 +362,86 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [], ri
                     <Box>
                         {operandComponents.map((component, index) => (
                             <Stack direction="row" spacing={0} key={`${component.name}_${index}`}>
-                                {
-                                    // 左括弧[
-                                    (index == 0) && (processType == ProcessEnum.InitializeArray) ? <EmphasiseBox>{BraketSymbolEnum.OpenSquareBracket}</EmphasiseBox> : ''}
-                                {
-                                    //演算子ドロップエリア
-                                    (index != 0) && <DroppableOperator id={`${component.name}_${index}_${keyPrefixEnum.Operator}`} name={`${component.name}`} parentIndex={index} operatorDefaultIndex={component.operatorIndex} isDragging={isDragging && isActiveIdOperator(activeId)} endOfArrayEvent={() => removeOperator(index)} type={component.operator}></DroppableOperator>
-                                }
-                                {
-                                    //表示文
-                                    (processType == ProcessEnum.Output && index > 0) &&
-                                    <Operator name={`${component.name}`} parentIndex={index} type={OperationEnum.JoinString}></Operator>
-                                }
-                                {
-                                    (processType == ProcessEnum.InitializeArray && index > 0) &&
-                                    <Operator name={`${component.name}`} parentIndex={index} type={OperationEnum.Comma}></Operator>
-                                }
-                                <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfOperand}`} isDragging={isDragging && isNotActiveIdOperator(activeId)} onClick={() => removeOneSideOfOperand(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfOperand}`)} stringValue={component.leftOfOperandValue}>{component.leftOfOperandValue ?? ''}</Droppable>
+                                {(() => {
+                                    // processType による表示差分を switch でまとめる
+                                    const leftBracket = (index === 0 && processType === ProcessEnum.InitializeArray)
+                                        ? <EmphasiseBox>{BraketSymbolEnum.OpenSquareBracket}</EmphasiseBox>
+                                        : null;
 
-                                <DnclTextField name={`${component.name}`} index={index} inputType={getSwitchType(processType)} treeItems={treeItems} initialRestoreValues={component.initialRestoreValues} />
-                                <Droppable id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfOperand}`} isDragging={isDragging && isNotActiveIdOperator(activeId)} onClick={() => removeOneSideOfOperand(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfOperand}`)} stringValue={component.rightOfOperandValue}>{component.rightOfOperandValue ?? ''}</Droppable>
+                                    // デフォルトは DroppableOperator を表示（index != 0）
+                                    let operatorDrop = (index !== 0) ? (
+                                        <DroppableOperator
+                                            id={`${component.name}_${index}_${keyPrefixEnum.Operator}`}
+                                            name={`${component.name}`}
+                                            parentIndex={index}
+                                            operatorDefaultIndex={component.operatorIndex}
+                                            isDragging={isDragging && isActiveIdOperator(activeId)}
+                                            endOfArrayEvent={() => removeOperator(index)}
+                                            type={component.operator}
+                                        />
+                                    ) : null;
 
-                                {([ProcessEnum.If, ProcessEnum.ElseIf].includes(processType) && index != 0) && <Operator name={`${component.name}`} parentIndex={index} type={OperationEnum.Negation}></Operator>}
+                                    // processType 固有の中間表示（JoinString / Comma / Negation 等）
+                                    let middleOp: React.ReactNode = null;
+                                    if (processType === ProcessEnum.Output && index > 0) {
+                                        middleOp = <Operator name={`${component.name}`} parentIndex={index} type={OperationEnum.JoinString} />;
+                                    } else if (processType === ProcessEnum.InitializeArray && index > 0) {
+                                        // InitializeArray のときは演算子ドロップを無効にしてカンマを出す
+                                        operatorDrop = null;
+                                        middleOp = <Operator name={`${component.name}`} parentIndex={index} type={OperationEnum.Comma} />;
+                                    } else if ([ProcessEnum.If, ProcessEnum.ElseIf].includes(processType) && index !== 0) {
+                                        // 否定演算子は右側に表示（既存ロジックと同じ場所で出す）
+                                        // Negation は後ろで条件付きで出す（下の別行で出しているならここは不要）
+                                    }
 
-                                {(operandComponents.length - 1 == index) && (processType == ProcessEnum.InitializeArray) ? <EmphasiseBox>{BraketSymbolEnum.CloseSquareBracket}</EmphasiseBox> : ''}
-                                {(index == operandComponents.length - 1 && index != 0) && <IconButton aria-label="delete" onClick={() => removeOperandComponent(index)}><BackspaceIcon /></IconButton>}
+                                    const leftDroppable = (processType !== ProcessEnum.InitializeArray) ? (
+                                        <Droppable
+                                            id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfOperand}`}
+                                            isDragging={isDragging && isNotActiveIdOperator(activeId)}
+                                            onClick={() => removeOneSideOfOperand(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.LeftOfOperand}`)}
+                                            stringValue={component.leftOfOperandValue}
+                                        >
+                                            {component.leftOfOperandValue ?? ''}
+                                        </Droppable>
+                                    ) : null;
+
+                                    const rightDroppable = (processType !== ProcessEnum.InitializeArray) ? (
+                                        <Droppable
+                                            id={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfOperand}`}
+                                            isDragging={isDragging && isNotActiveIdOperator(activeId)}
+                                            onClick={() => removeOneSideOfOperand(`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.RightOfOperand}`)}
+                                            stringValue={component.rightOfOperandValue}
+                                        >
+                                            {component.rightOfOperandValue ?? ''}
+                                        </Droppable>
+                                    ) : null;
+
+                                    const closeBracket = ((operandComponents.length - 1 === index) && (processType === ProcessEnum.InitializeArray))
+                                        ? <EmphasiseBox>{BraketSymbolEnum.CloseSquareBracket}</EmphasiseBox>
+                                        : null;
+
+                                    const deleteButton = (index === operandComponents.length - 1 && index !== 0)
+                                        ? <IconButton aria-label="delete" onClick={() => removeOperandComponent(index)}><BackspaceIcon /></IconButton>
+                                        : null;
+
+                                    const negationOp = ([ProcessEnum.If, ProcessEnum.ElseIf].includes(processType) && index !== 0)
+                                        ? <Operator name={`${component.name}`} parentIndex={index} type={OperationEnum.Negation}></Operator>
+                                        : null;
+
+                                    return (
+                                        <>
+                                            {leftBracket}
+                                            {operatorDrop}
+                                            {middleOp}
+                                            {leftDroppable}
+                                            <DnclTextField name={`${component.name}`} index={index} inputType={getSwitchType(processType)} treeItems={treeItems} initialRestoreValues={component.initialRestoreValues} />
+                                            {rightDroppable}
+                                            {negationOp}
+                                            {closeBracket}
+                                            {deleteButton}
+                                        </>
+                                    );
+                                })()}
                             </Stack>
                         ))}
 

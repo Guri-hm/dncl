@@ -27,9 +27,10 @@ export function EditorBox({ statementType, treeItems, formData }: EditorBoxProps
     }
 
     const sideMaps = useMemo(() => buildSideRestoreMaps(formData, [keyPrefixEnum.RigthSide, keyPrefixEnum.LeftSide]), [formData]);
-    const rightRestoreMap = sideMaps ? sideMaps[keyPrefixEnum.RigthSide] : undefined;
     const leftRestoreMap = sideMaps ? sideMaps[keyPrefixEnum.LeftSide] : undefined;
+    const rightRestoreMap = sideMaps ? sideMaps[keyPrefixEnum.RigthSide] : undefined;
 
+    console.log('rightRestoreMap', rightRestoreMap);
     const StatementEditor = (index: number): ReactElement => {
 
         const hdnInput = (index: number): ReactElement => {
@@ -68,7 +69,7 @@ export function EditorBox({ statementType, treeItems, formData }: EditorBoxProps
                 return <>
                     <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.ArrayWithoutSuffix} initialRestoreValues={leftInitial}></DnclTextField>
                     <NowrapText text={'のすべての要素に'}></NowrapText>
-                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SwitchVariableOrNumberOrArray} initialRestoreValues={rightInitial}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SwitchVariableOrNumberOrArray} initialRestoreValues={rightRestoreMap ? rightRestoreMap[0] : undefined}></DnclTextField>
                     <NowrapText text={'を代入する'}></NowrapText>
                     {hdnInput(index)}
                 </>

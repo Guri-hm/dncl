@@ -162,8 +162,8 @@ const NegationOperatorArray: React.FC<SvgIconProps & { onClick: () => void }>[] 
 ];
 
 export function Operator({ type, name = "", parentIndex = 0, operatorDefaultIndex = 0, event, ...props }: Props) {
-  const [operatorIndex, setOperatorIndex] = useState<number>(operatorDefaultIndex);
-
+  const safeDefaultIndex = Number(operatorDefaultIndex ?? 0);
+  const [operatorIndex, setOperatorIndex] = useState<number>(Number.isFinite(safeDefaultIndex) ? safeDefaultIndex : 0);
   let elms: ReactElement = <></>;
   const handleOnClick = () => {
     let newIndex: number = operatorIndex + 1;
