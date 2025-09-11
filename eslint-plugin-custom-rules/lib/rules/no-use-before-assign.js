@@ -15,6 +15,7 @@ module.exports = {
         },
     },
     create(context) {
+        console.log("Custom ESLint Rule Loaded: no-use-before-assign");
         const assignedVariables = new Map(); // 直接代入された変数を追跡
         const declaredConstants = new Set();
         const definedFunctions = new Set(); // 定義された関数を追跡
