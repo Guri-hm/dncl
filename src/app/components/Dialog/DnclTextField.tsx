@@ -84,7 +84,6 @@ const CustomToggleButton = styled(ToggleButton)`
 `;
 
 export function DnclTextField({ label, name, inputType, index = 0, suffixValue, treeItems, initialRestoreValues }: DnclTextFieldProps) {
-  console.log(initialRestoreValues)
   const [checked, setChecked] = useState(false);
   const [radioValue, setRadioValue] = useState<inputTypeEnum>(inputTypeEnum.Number);
   const [boolString, setBoolString] = useState<string>('true');

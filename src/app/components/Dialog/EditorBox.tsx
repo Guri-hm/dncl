@@ -18,11 +18,18 @@ type EditorBoxProps = {
 
 export function EditorBox({ statementType, treeItems, formData }: EditorBoxProps) {
 
-    const initialIndex = Number.isFinite(Number(formData?.processIndex)) ? Number(formData!.processIndex) : ProcessEnum.SetValToVariableOrArray;
+    const result = processNames.filter(item => item.statementType == statementType)
+        .flatMap(item => item.names);
+    // 編集モード判定（formData がある = 再編集）
+    const isEditing = Boolean(formData && Object.keys(formData).length > 0);
+    const initialIndex = isEditing && Number.isFinite(Number(formData?.processIndex))
+        ? Number(formData!.processIndex)
+        : (result.length > 0 ? result[0].value : ProcessEnum.SetValToVariableOrArray);
+
     const [selectValue, setSelectValue] = useState<string>(String(initialIndex));
 
     const handleChange = (event: SelectChangeEvent) => {
-        const index = Number(event.target.value) ?? ProcessEnum.SetValToVariableOrArray
+        const index = Number(event.target.value) ?? ProcessEnum.SetValToVariableOrArray;
         setSelectValue(String(index));
     }
 
@@ -30,7 +37,6 @@ export function EditorBox({ statementType, treeItems, formData }: EditorBoxProps
     const leftRestoreMap = sideMaps ? sideMaps[keyPrefixEnum.LeftSide] : undefined;
     const rightRestoreMap = sideMaps ? sideMaps[keyPrefixEnum.RigthSide] : undefined;
 
-    console.log('rightRestoreMap', rightRestoreMap);
     const StatementEditor = (index: number): ReactElement => {
 
         const hdnInput = (index: number): ReactElement => {
@@ -203,8 +209,6 @@ export function EditorBox({ statementType, treeItems, formData }: EditorBoxProps
         }
     }
 
-    const result = processNames.filter(item => item.statementType == statementType)
-        .flatMap(item => item.names);
     // const defaultProps = {
     //     options: result,
     //     getOptionLabel: (option: processTypes) => option.title,
