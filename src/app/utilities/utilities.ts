@@ -332,11 +332,14 @@ export const cnvToDivision = (targetString: string): string => {
 }
 
 function validateRandomArgs(m: string, n: string, errorMsgArray: string[]): boolean {
-  const isNumM = /^\d+$/.test(m);
-  const isNumN = /^\d+$/.test(n);
+  const mm = String(m ?? '').trim();
+  const nn = String(n ?? '').trim();
+  const intPattern = /^[+-]?\d+$/;
+  const isNumM = intPattern.test(mm);
+  const isNumN = intPattern.test(nn);
   if (isNumM && isNumN) {
-    const numM = parseInt(m, 10);
-    const numN = parseInt(n, 10);
+    const numM = parseInt(mm, 10);
+    const numN = parseInt(nn, 10);
     if (numM > numN) {
       errorMsgArray.push(`第1引数の値は第2引数の値よりも小さくしてください`);
       return false;
