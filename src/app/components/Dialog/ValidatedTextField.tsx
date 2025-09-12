@@ -16,12 +16,15 @@ const getErrorMessage = (value: string, pattern: string): string => {
   const regex = new RegExp(pattern);
   if (!regex.test(value)) {
     // パターンに応じたエラーメッセージを分岐
+    console.log(pattern)
     if (pattern === ValidationEnum.Variable) {
       return `変数名は英字で始まる英数字と「_」の並びを入力してください`;
     } else if (pattern === ValidationEnum.Number) {
       return `整数または小数で入力してください`;
     } else if (pattern === ValidationEnum.VariableOrPositiveInteger) {
       return `正の整数または変数名（英字で始まる英数字と「_」の並び）を入力してください`;
+    } else if (pattern === ValidationEnum.VariableOrInteger) {
+      return `整数または変数名（英字で始まる英数字と「_」の並び）を入力してください`;
     } else if (pattern === ValidationEnum.Parameters) {
       return `変数名または数値をカンマ区切りで入力してください`;
     } else if (pattern === ValidationEnum.Constant) {
