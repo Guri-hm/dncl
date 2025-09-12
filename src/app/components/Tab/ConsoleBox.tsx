@@ -6,7 +6,7 @@ import ClearAllIcon from '@mui/icons-material/ClearAll';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Grid from '@mui/material/Grid2';
 import React, { Dispatch, SetStateAction, useCallback } from 'react';
-
+import Snackbar from '@mui/material/Snackbar';
 interface TabPanelProps {
     children?: React.ReactNode;
     index: number;
@@ -66,17 +66,26 @@ type Props = {
 export const ConsoleBox: React.FC<Props> = React.memo(({ children, tabLabels, setRunResults, runResults }) => {
     const theme = useTheme();
     const isSm = useMediaQuery(theme.breakpoints.up('sm'));
-
+    const [snackbar, setSnackbar] = React.useState<{ open: boolean, duration: number, text: string }>({
+        open: false,
+        duration: 3000,
+        text: ''
+    });
     const handleReset = useCallback(() => {
         setRunResults([]);
+        setSnackbar({ open: true, duration: 2000, text: 'リセットしました' });
     }, [setRunResults]);
 
     const handleCopy = useCallback(() => {
         if (runResults && runResults.length > 0) {
             navigator.clipboard.writeText(runResults.join('\n'));
-            alert("クリップボードにコピーしました");
+            setSnackbar({ open: true, duration: 3000, text: 'クリップボードにコピーしました' });
         }
     }, [runResults]);
+
+    const handleCloseSnackbar = () => {
+        setSnackbar(prev => ({ ...prev, open: false }));
+    };
 
     return (
         <StyledBox>
@@ -131,6 +140,13 @@ export const ConsoleBox: React.FC<Props> = React.memo(({ children, tabLabels, se
                     {child}
                 </TabPanel>
             ))}
+            <Snackbar
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                autoHideDuration={snackbar.duration}
+                open={snackbar.open}
+                onClose={handleCloseSnackbar}
+                message={snackbar.text}
+            />
         </StyledBox>
     );
 });
