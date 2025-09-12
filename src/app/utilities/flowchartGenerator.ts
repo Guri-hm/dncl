@@ -235,54 +235,74 @@ export const generateFlowchartXML = (ast: ASTNode) => {
             return "";
         }
     };
-
-    // 乱数式パターンを解析する関数
+    // 式から数値リテラルを取り出す（Unary/Parenthesized/Literal を許容）
+    const getNumericValue = (expr: any): number | null => {
+        if (!expr) return null;
+        if (expr.type === 'Literal' && typeof expr.value === 'number') return expr.value;
+        if (expr.type === 'UnaryExpression' && (expr.operator === '-' || expr.operator === '+')) {
+            const v = getNumericValue(expr.argument);
+            return v !== null ? (expr.operator === '-' ? -v : v) : null;
+        }
+        if (expr.type === 'ParenthesizedExpression' && expr.expression) {
+            return getNumericValue(expr.expression);
+        }
+        return null;
+    };
+    /**
+ * 乱数式（Math.floor(Math.random() * (max - min + 1)) + min のような形）を解析して {min,max} を返す。
+ * 負の数や括弧・Unary を許容するよう堅牢化。
+ */
     function parseRandomExpression(expr: Expression): { min: number, max: number } | null {
-        // expr: BinaryExpression (+)
-        if (expr.type === 'BinaryExpression' && expr.operator === '+') {
-            // 左: Math.floor(Math.random() * (max - min + 1))
-            // 右: min (Literal)
-            const left = expr.left;
-            const right = expr.right;
-            if (
-                left.type === 'CallExpression' &&
-                left.callee.type === 'MemberExpression' &&
-                left.callee.object.name === 'Math' &&
-                left.callee.property.name === 'floor' &&
-                left.arguments.length === 1
-            ) {
-                // parseRandomExpression関数内
-                const arg = left.arguments[0] as Expression;
-                // arg: Math.random() * (max - min + 1)
-                if (
-                    arg.type === 'BinaryExpression' &&
-                    arg.operator === '*' &&
-                    arg.left.type === 'CallExpression' &&
-                    arg.left.callee.type === 'MemberExpression' &&
-                    arg.left.callee.object.name === 'Math' &&
-                    arg.left.callee.property.name === 'random' &&
-                    arg.left.arguments.length === 0 &&
-                    arg.right.type === 'BinaryExpression' &&
-                    arg.right.operator === '+' &&
-                    arg.right.right.type === 'Literal' &&
-                    arg.right.right.value === 1
-                ) {
-                    // arg.right.left: (max - min)
-                    const minusExpr = arg.right.left;
-                    if (
-                        minusExpr.type === 'BinaryExpression' &&
-                        minusExpr.operator === '-' &&
-                        minusExpr.left.type === 'Literal' &&
-                        minusExpr.right.type === 'Literal' &&
-                        right.type === 'Literal'
-                    ) {
-                        const max = minusExpr.left.value as number;
-                        const min = minusExpr.right.value as number;
-                        return { min, max };
-                    }
-                }
+        if (expr.type !== 'BinaryExpression' || expr.operator !== '+') return null;
+
+        const left = expr.left;
+        const right = expr.right;
+
+        const min = getNumericValue(right as any);
+        if (min === null) return null;
+
+        // left が CallExpression で Math.floor(...) か確認
+        if (left.type !== 'CallExpression') return null;
+        const call = left as any;
+        if (!(call.callee && call.callee.type === 'MemberExpression')) return null;
+        const member = call.callee as any;
+        if (!(member.object && member.object.name === 'Math' && member.property && member.property.name === 'floor')) return null;
+        if (!Array.isArray(call.arguments) || call.arguments.length !== 1) return null;
+
+        let arg = call.arguments[0] as any;
+        if (arg.type === 'ParenthesizedExpression' && arg.expression) arg = arg.expression;
+
+        // arg が BinaryExpression で '*' か確認
+        if (!(arg.type === 'BinaryExpression' && arg.operator === '*')) return null;
+        const leftArg = arg.left;
+        const rightArg = arg.right;
+
+        // leftArg が Math.random() の呼び出しか
+        if (!(leftArg && leftArg.type === 'CallExpression')) return null;
+        const leftCall = leftArg as any;
+        if (!(leftCall.callee && leftCall.callee.type === 'MemberExpression')) return null;
+        const leftMember = leftCall.callee as any;
+        if (!(leftMember.object && leftMember.object.name === 'Math' && leftMember.property && leftMember.property.name === 'random')) return null;
+
+        // rightArg は (max - min + 1) の形
+        let rangeExpr = rightArg;
+        if (rangeExpr.type === 'ParenthesizedExpression' && rangeExpr.expression) rangeExpr = rangeExpr.expression;
+
+        if (rangeExpr.type === 'BinaryExpression' && rangeExpr.operator === '+') {
+            const addLeft = rangeExpr.left;
+            const addRight = rangeExpr.right;
+            const plusOne = getNumericValue(addRight);
+            if (plusOne !== 1) return null;
+
+            if (addLeft.type === 'BinaryExpression' && addLeft.operator === '-') {
+                const maxVal = getNumericValue(addLeft.left);
+                const minValInRange = getNumericValue(addLeft.right);
+                if (maxVal === null || minValInRange === null) return null;
+                // 右辺 min と一致しない場合でも、右辺 literal を優先して min を決める
+                return { min: min, max: maxVal };
             }
         }
+
         return null;
     }
 
