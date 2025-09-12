@@ -419,30 +419,32 @@ export const TabsBoxWrapper: FC<Props> = ({ treeItems, tabsBoxWrapperVisible, se
                 const keys = Object.keys(prev);
                 const newObj: TabItemsObj = {};
 
+                // ユニークID生成関数
+                const makeUniqueId = (itemLabel: string) => `${itemLabel.toLowerCase()}_${generateUniqueKey()}`;
+
                 if (isMd) {
                     newObj[newKey1] = {
                         ...prev[keys[0]],
-                        items: prev[keys[0]].items.map((item, index) => ({
+                        items: prev[keys[0]].items.map((item) => ({
                             ...item,
-                            id: index === 0 ? `dncl_${Date.now()}` : `flow_${Date.now() + 1}`
+                            id: makeUniqueId(item.label)
                         }))
                     };
                     if (keys[1]) {
                         newObj[newKey2] = {
                             ...prev[keys[1]],
-                            items: prev[keys[1]].items.map((item, index) => ({
+                            items: prev[keys[1]].items.map((item) => ({
                                 ...item,
-                                id: index === 0 ? `js_${Date.now() + 2}` :
-                                    index === 1 ? `python_${Date.now() + 3}` : `vba_${Date.now() + 4}`
+                                id: makeUniqueId(item.label)
                             }))
                         };
                     }
                 } else {
                     newObj[newKey1] = {
                         ...prev[keys[0]],
-                        items: prev[keys[0]].items.map((item, index) => ({
+                        items: prev[keys[0]].items.map((item) => ({
                             ...item,
-                            id: `${item.label.toLowerCase()}_${Date.now() + index}`
+                            id: makeUniqueId(item.label)
                         }))
                     };
                 }
