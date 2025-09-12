@@ -383,10 +383,13 @@ export const tryParseToJsFunction = (targetString: string): { errorMsgArray: str
 
   // "Random(m,n)" という文字列をJavaScriptの乱数生成コードに変換する関数
   function convertRandomStringJs(str: string): string {
-    const result = str.replace(/Random\s*\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, (match, m, n) => {
-      if (!validateRandomArgs(m, n, errorMsgArray)) return '';
-      return `Math.floor(Math.random() * (${n} - ${m} + 1)) + ${m}`;
-    });
+    const result = str.replace(
+      /Random\s*\(\s*([+-]?\d+(?:\.\d+)?|[a-zA-Z_][a-zA-Z0-9_]*)\s*,\s*([+-]?\d+(?:\.\d+)?|[a-zA-Z_][a-zA-Z0-9_]*)\s*\)/g,
+      (match, m, n) => {
+        if (!validateRandomArgs(m, n, errorMsgArray)) return '';
+        return `Math.floor(Math.random() * (${n} - ${m} + 1)) + ${m}`;
+      }
+    );
     return result;
   }
 
@@ -423,10 +426,13 @@ export const tryParseToPyFunc = (targetString: string): { errorMsgArray: string[
   // "Random(m,n)" という文字列をPythonの乱数生成コードに変換する関数
   //randomモジューラのimportが必要
   function convertRandomStringPy(str: string): string {
-    const result = str.replace(/Random\s*\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, (match, m, n) => {
-      if (!validateRandomArgs(m, n, errorMsgArray)) return '';
-      return `random.randint(${m}, ${n})`;
-    });
+    const result = str.replace(
+      /Random\s*\(\s*([+-]?\d+(?:\.\d+)?|[a-zA-Z_][a-zA-Z0-9_]*)\s*,\s*([+-]?\d+(?:\.\d+)?|[a-zA-Z_][a-zA-Z0-9_]*)\s*\)/g,
+      (match, m, n) => {
+        if (!validateRandomArgs(m, n, errorMsgArray)) return '';
+        return `random.randint(${m}, ${n})`;
+      }
+    );
     return result;
   }
 
@@ -461,10 +467,13 @@ export const tryParseToVbaFunc = (targetString: string): { errorMsgArray: string
   const errorMsgArray: string[] = [];
 
   function convertRandomStringVba(str: string): string {
-    const result = str.replace(/Random\s*\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, (match, m, n) => {
-      if (!validateRandomArgs(m, n, errorMsgArray)) return '';
-      return `Int((${n} - ${m} + 1) * Rnd + ${m})`;
-    });
+    const result = str.replace(
+      /Random\s*\(\s*([+-]?\d+(?:\.\d+)?|[a-zA-Z_][a-zA-Z0-9_]*)\s*,\s*([+-]?\d+(?:\.\d+)?|[a-zA-Z_][a-zA-Z0-9_]*)\s*\)/g,
+      (match, m, n) => {
+        if (!validateRandomArgs(m, n, errorMsgArray)) return '';
+        return `Int((${n} - ${m} + 1) * Rnd + ${m})`;
+      }
+    );
     return result;
   }
 
