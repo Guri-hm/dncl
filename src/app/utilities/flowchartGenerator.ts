@@ -65,6 +65,14 @@ interface ArrayExpression {
     elements: Expression[];
 }
 
+interface UnaryExpression {
+    type: 'UnaryExpression';
+    operator: string;
+    // 引数は他の Expression を許容（再帰的に表現）
+    argument: Expression | Literal | Identifier | BinaryExpression | CallExpression | ArrayExpression | UpdateExpression;
+    prefix?: boolean;
+}
+
 interface VariableDeclarator {
     id: {
         name: string;
@@ -78,7 +86,7 @@ interface VariableDeclaration {
     declarations: VariableDeclarator[];
 }
 
-type Expression = AssignmentExpression | UpdateExpression | BinaryExpression | Identifier | Literal | CallExpression | ArrayExpression;
+type Expression = AssignmentExpression | UpdateExpression | BinaryExpression | UnaryExpression | Identifier | Literal | CallExpression | ArrayExpression;
 type InitExpression = VariableDeclaration | Expression
 
 interface Test {
@@ -102,7 +110,6 @@ const escape = (str: string): string => {
 };
 
 export const generateFlowchartXML = (ast: ASTNode) => {
-    console.log(ast)
     let xml = `
 <mxGraphModel>
   <root>
@@ -192,6 +199,14 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                         const argument = getExpressionString(expression.argument as InitExpression);
                         const updateOperator = expression.operator || "";
                         return `${argument}${updateOperator}`;
+                    case 'UnaryExpression':
+                        // 例: -2 を安全に扱う（累乗の左辺になる場合は括弧で囲う）
+                        {
+                            const arg = getExpressionString((expression as any).argument as InitExpression);
+                            const op = (expression as any).operator || '';
+                            // 再現性を保つため括弧で囲む（(-2) ** 2 のようなケースを正しく表現）
+                            return `(${op}${arg})`;
+                        }
                     case 'BinaryExpression':
                         const leftBinary = getExpressionString(expression.left as InitExpression);
                         // 「!==」を「≠」に変換
