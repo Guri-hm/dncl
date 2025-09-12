@@ -101,8 +101,11 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
   const restoreRadioState = useCallback((fieldName: string, value: string) => {
 
     // このコンポーネントに関連するフィールドかチェック
-    if (fieldName === `${name}_${index}_Type`) {
+    if (fieldName === `${name}_${index}_${keyPrefixEnum.Type}`) {
       setRadioValue(value as inputTypeEnum);
+      if (inputType === inputTypeEnum.SwitchVariableOrNumberOrArray || inputType === inputTypeEnum.All) {
+        setThreeWayValue(value as inputTypeEnum);
+      }
     }
 
     // For文の値タイプの復元
@@ -247,6 +250,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
                       <FormControlLabel sx={{ margin: 0, paddingBottom: 0 }} value={inputTypeEnum.Variable} control={<Radio size="small" />} label={SwitchJpEnum.Variable} />
                       <FormControlLabel sx={{ margin: 0, paddingBottom: 0 }} value={inputTypeEnum.Array} control={<Radio size="small" />} label={SwitchJpEnum.Array} />
                     </RadioGroup>
+                    <input type='hidden' name={`${name}_${index}_${keyPrefixEnum.Type}`} value={`${threeWayValue}`}></input>
                   </Grid>
                 ) : (
                   // 従来の2つ選択のスイッチ

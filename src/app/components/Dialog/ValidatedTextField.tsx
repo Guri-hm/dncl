@@ -16,7 +16,6 @@ const getErrorMessage = (value: string, pattern: string): string => {
   const regex = new RegExp(pattern);
   if (!regex.test(value)) {
     // パターンに応じたエラーメッセージを分岐
-    console.log(pattern)
     if (pattern === ValidationEnum.Variable) {
       return `変数名は英字で始まる英数字と「_」の並びを入力してください`;
     } else if (pattern === ValidationEnum.Number) {
