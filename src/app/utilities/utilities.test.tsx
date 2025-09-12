@@ -22,39 +22,45 @@ describe('tryParseToJsFunction (間接的なユーティリティ関数のテス
         expect(result.errorMsgArray[0]).toContain('第1引数の値は第2引数の値よりも小さくしてください');
     });
 
-    it('Square(5)が(5 * 5)に変換される', () => {
+    it('Random(-1, -5)は第1引数が第2引数より大きいのでエラーになる', () => {
+        const result = tryParseToJsFunction('Random(-1, -5)');
+        expect(result.hasError).toBe(true);
+        expect(result.errorMsgArray[0]).toContain('第1引数の値は第2引数の値よりも小さくしてください');
+    });
+
+    it('Square(5)が( 5 * 5 )に変換される', () => {
         const result = tryParseToJsFunction('Square(5)');
-        expect(result.convertedStr).toBe('(5 * 5)');
+        expect(result.convertedStr).toBe('( 5 * 5 )');
         expect(result.hasError).toBe(false);
     });
 
-    it('Square(a)が(a * a)に変換される（NaNにならない）', () => {
+    it('Square(a)が( a * a )に変換される（NaNにならない）', () => {
         const result = tryParseToJsFunction('Square(a)');
-        expect(result.convertedStr).toBe('(a * a)');
+        expect(result.convertedStr).toBe('( a * a )');
         expect(result.hasError).toBe(false);
     });
 
-    it('Exponentiation(2,3)が(2**3)に変換される', () => {
+    it('Exponentiation(2,3)が( 2 ** 3 )に変換される', () => {
         const result = tryParseToJsFunction('Exponentiation(2,3)');
-        expect(result.convertedStr).toBe('(2**3)');
+        expect(result.convertedStr).toBe('( 2 ** 3 )');
         expect(result.hasError).toBe(false);
     });
 
-    it('Exponentiation(-2, 7)が(-2**7)に変換される', () => {
+    it('Exponentiation(-2, 7)が( (-2) ** 7 )に変換される', () => {
         const result = tryParseToJsFunction('Exponentiation(-2, 7)');
-        expect(result.convertedStr).toBe('(-2**7)');
+        expect(result.convertedStr).toBe('( (-2) ** 7 )');
         expect(result.hasError).toBe(false);
     });
 
-    it('Exponentiation(2.5, 3)が(2.5**3)に変換される', () => {
+    it('Exponentiation(2.5, 3)が( 2.5 ** 3 )に変換される', () => {
         const result = tryParseToJsFunction('Exponentiation(2.5, 3)');
-        expect(result.convertedStr).toBe('(2.5**3)');
+        expect(result.convertedStr).toBe('( 2.5 ** 3 )');
         expect(result.hasError).toBe(false);
     });
 
-    it('Exponentiation(a, b)が(a**b)に変換される', () => {
+    it('Exponentiation(a, b)が( a ** b )に変換される', () => {
         const result = tryParseToJsFunction('Exponentiation(a, b)');
-        expect(result.convertedStr).toBe('(a**b)');
+        expect(result.convertedStr).toBe('( a ** b )');
         expect(result.hasError).toBe(false);
     });
 
@@ -64,9 +70,9 @@ describe('tryParseToJsFunction (間接的なユーティリティ関数のテス
         expect(result.hasError).toBe(false);
     });
 
-    it('Square( a )が(a * a)に変換される', () => {
+    it('Square( a )が( a * a)に変換される', () => {
         const result = tryParseToJsFunction('Square(a)');
-        expect(result.convertedStr).toBe('(a * a)');
+        expect(result.convertedStr).toBe('( a * a )');
         expect(result.hasError).toBe(false);
     });
 
@@ -84,7 +90,7 @@ describe('tryParseToJsFunction (間接的なユーティリティ関数のテス
 
     it('複数の変換が混在しても正しく処理される', () => {
         const result = tryParseToJsFunction('Square(a) + Exponentiation(2,3) + Odd(b) + Binary(c) + UserDefined bar');
-        expect(result.convertedStr).toBe('(a * a) + (2**3) + b % 2 !== 0 + (c).toString(2) + bar');
+        expect(result.convertedStr).toBe('( a * a ) + ( 2 ** 3 ) + b % 2 !== 0 + (c).toString(2) + bar');
         expect(result.hasError).toBe(false);
     });
 });

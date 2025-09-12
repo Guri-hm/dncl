@@ -364,7 +364,7 @@ function exponentiateString(str: string) {
     (match, base, exponent) => {
       // baseが負の数なら括弧で囲む
       const baseNeedsParens = /^-/.test(base) ? `(${base})` : base;
-      return `(${baseNeedsParens}**${exponent})`;
+      return `( ${baseNeedsParens} ** ${exponent} )`;
     }
   );
   return result;
