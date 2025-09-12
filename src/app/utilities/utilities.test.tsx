@@ -40,6 +40,24 @@ describe('tryParseToJsFunction (間接的なユーティリティ関数のテス
         expect(result.hasError).toBe(false);
     });
 
+    it('Exponentiation(-2, 7)が(-2**7)に変換される', () => {
+        const result = tryParseToJsFunction('Exponentiation(-2, 7)');
+        expect(result.convertedStr).toBe('(-2**7)');
+        expect(result.hasError).toBe(false);
+    });
+
+    it('Exponentiation(2.5, 3)が(2.5**3)に変換される', () => {
+        const result = tryParseToJsFunction('Exponentiation(2.5, 3)');
+        expect(result.convertedStr).toBe('(2.5**3)');
+        expect(result.hasError).toBe(false);
+    });
+
+    it('Exponentiation(a, b)が(a**b)に変換される', () => {
+        const result = tryParseToJsFunction('Exponentiation(a, b)');
+        expect(result.convertedStr).toBe('(a**b)');
+        expect(result.hasError).toBe(false);
+    });
+
     it('Odd(a)がa % 2 !== 0に変換される', () => {
         const result = tryParseToJsFunction('Odd(a)');
         expect(result.convertedStr).toBe('a % 2 !== 0');

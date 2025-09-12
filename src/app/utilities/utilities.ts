@@ -352,16 +352,19 @@ function squareString(str: string) {
     /Square\s*\(\s*([+-]?\d+(?:\.\d+)?|[a-zA-Z_][a-zA-Z0-9_]*)\s*\)/g, (match, num) => {
       // 数値なら数値型、変数ならそのまま
       const isNumber = /^\d+$/.test(num);
-      return isNumber ? `(${parseInt(num, 10)} * ${parseInt(num, 10)})` : `(${num} * ${num})`;
+      return isNumber ? `( ${parseInt(num, 10)} * ${parseInt(num, 10)} )` : `( ${num} * ${num} )`;
     });
   return result;
 }
 // 文字列を指数形式に変換する関数
 function exponentiateString(str: string) {
   // "Exponentiation" で始まる部分を見つけて置換
-  const result = str.replace(/Exponentiation\s*\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, (match, base, exponent) => {
-    return `(${base}**${exponent})`;
-  });
+  const result = str.replace(
+    /Exponentiation\s*\(\s*([+-]?\d+(?:\.\d+)?|[a-zA-Z_][a-zA-Z0-9_]*)\s*,\s*([+-]?\d+(?:\.\d+)?|[a-zA-Z_][a-zA-Z0-9_]*)\s*\)/g,
+    (match, base, exponent) => {
+      return `( ${base}**${exponent} )`;
+    }
+  );
   return result;
 }
 function replaceOddFunctions(str: string) {
@@ -454,15 +457,6 @@ export const tryParseToPyFunc = (targetString: string): { errorMsgArray: string[
 export const tryParseToVbaFunc = (targetString: string): { errorMsgArray: string[]; hasError: boolean; convertedStr: string } => {
 
   const errorMsgArray: string[] = [];
-
-  // 文字列を指数形式に変換する関数
-  function exponentiateString(str: string) {
-    // "Exponentiation" で始まる部分を見つけて置換
-    const result = str.replace(/Exponentiation\s*\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, (match, base, exponent) => {
-      return `(${base}^${exponent})`;
-    });
-    return result;
-  }
 
   function convertRandomStringVba(str: string): string {
     const result = str.replace(/Random\s*\(\s*([a-zA-Z0-9_]+)\s*,\s*([a-zA-Z0-9_]+)\s*\)/g, (match, m, n) => {
