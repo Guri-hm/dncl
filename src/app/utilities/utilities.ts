@@ -348,11 +348,12 @@ function validateRandomArgs(m: string, n: string, errorMsgArray: string[]): bool
 // 文字列を二乗する形式に変換する関数
 function squareString(str: string) {
   // "Square" で始まる部分を見つけて置換
-  const result = str.replace(/Square\s*\(\s*([a-zA-Z0-9_]+)\s*\)/g, (match, num) => {
-    // 数値なら数値型、変数ならそのまま
-    const isNumber = /^\d+$/.test(num);
-    return isNumber ? `(${parseInt(num, 10)} * ${parseInt(num, 10)})` : `(${num} * ${num})`;
-  });
+  const result = str.replace(
+    /Square\s*\(\s*([+-]?\d+(?:\.\d+)?|[a-zA-Z_][a-zA-Z0-9_]*)\s*\)/g, (match, num) => {
+      // 数値なら数値型、変数ならそのまま
+      const isNumber = /^\d+$/.test(num);
+      return isNumber ? `(${parseInt(num, 10)} * ${parseInt(num, 10)})` : `(${num} * ${num})`;
+    });
   return result;
 }
 // 文字列を指数形式に変換する関数
@@ -943,7 +944,8 @@ export const cnvObjToArray = (obj: { [k: string]: string; }, operandsMaxIndex: n
     }
     const joinedStr = tmpArguments.join(",");
     if (joinedStr.length > 0) {
-      pushIfNotEmpty(strArray, `${functionName}(${joinedStr})`);
+      //括弧内の値は両側に半角スペースを入れる→コード変換用の正規表現に利用
+      pushIfNotEmpty(strArray, `${functionName}( ${joinedStr} )`);
     } else {
       pushIfNotEmpty(strArray, `${functionName}`);
     }

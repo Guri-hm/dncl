@@ -46,6 +46,12 @@ describe('tryParseToJsFunction (間接的なユーティリティ関数のテス
         expect(result.hasError).toBe(false);
     });
 
+    it('Square( a )が(a * a)に変換される', () => {
+        const result = tryParseToJsFunction('Square(a)');
+        expect(result.convertedStr).toBe('(a * a)');
+        expect(result.hasError).toBe(false);
+    });
+
     it('Binary(x)が(x).toString(2)に変換される', () => {
         const result = tryParseToJsFunction('Binary(x)');
         expect(result.convertedStr).toBe('(x).toString(2)');
