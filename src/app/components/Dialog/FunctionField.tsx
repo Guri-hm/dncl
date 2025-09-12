@@ -28,7 +28,7 @@ type Props = {
   event?: () => void;
   funcType: inputTypeEnum
   treeItems?: TreeItems
-  argumentValues?: string[];
+  restoreValues?: { [key: string]: string };
 }
 
 const ReturnFunctions = [
@@ -52,10 +52,22 @@ const ExecuteUserDefinedFunc = [
 //   return pattern;
 // }
 
-export function FunctionField({ name = "", parentIndex = 0, event, funcType, treeItems = [], argumentValues }: Props) {
+export function FunctionField({ name = "", parentIndex = 0, event, funcType, treeItems = [], restoreValues }: Props) {
 
   const [operatorIndex, setOperatorIndex] = useState<number>(0);
   const [selectedValue, setSelectedValue] = useState<string>('0');
+  const userDefinedFunctionInfoArray: UserDefinedFunctionInfo[] = getUserDefinedFunctionInfoArray(treeItems);
+
+  const initializedRef = React.useRef(false);
+
+  const argumentValues = Object.entries(restoreValues ?? {})
+    .filter(([key]) => key.startsWith(`${name}_${parentIndex}_Argument_`))
+    .sort((a, b) => {
+      const ai = Number(a[0].split('_').pop());
+      const bi = Number(b[0].split('_').pop());
+      return ai - bi;
+    })
+    .map(([_, value]) => value);
 
   function getFuncs(funcType: inputTypeEnum) {
     switch (funcType) {
@@ -69,6 +81,9 @@ export function FunctionField({ name = "", parentIndex = 0, event, funcType, tre
         return UserDefine;
     }
   }
+
+  const funcs = getFuncs(funcType);
+
   function getArgumentCount(funcType: inputTypeEnum) {
     switch (funcType) {
       case inputTypeEnum.ReturnFunction:
@@ -85,7 +100,20 @@ export function FunctionField({ name = "", parentIndex = 0, event, funcType, tre
     }
   }
 
-  const funcs = getFuncs(funcType);
+  useEffect(() => {
+    if (initializedRef.current) return;
+    const key = `${name}_${parentIndex}_${keyPrefixEnum.Function}`;
+    const restored = restoreValues?.[key];
+    if (!restored) return;
+    if (funcType === inputTypeEnum.ExecuteUserDefinedFunction) {
+      const idx = userDefinedFunctionInfoArray.findIndex(u => u.funcName === restored);
+      if (idx >= 0) setSelectedValue(String(idx));
+    } else {
+      const idx = funcs.map(f => f.name).indexOf(restored as any);
+      if (idx >= 0) setOperatorIndex(idx);
+    }
+    initializedRef.current = true;
+  }, [restoreValues, name, parentIndex, funcType, funcs, userDefinedFunctionInfoArray]);
 
   const handleOnClick = () => {
     let newIndex: number = operatorIndex + 1;
@@ -109,7 +137,6 @@ export function FunctionField({ name = "", parentIndex = 0, event, funcType, tre
   const SvgIconButton = funcs.map(func => func.icon)[newIndex];
 
   const ArgumentFields: React.ReactNode[] = [];
-  const userDefinedFunctionInfoArray: UserDefinedFunctionInfo[] = getUserDefinedFunctionInfoArray(treeItems);
   const argumentCount = getArgumentCount(funcType);
   //「新しい関数の定義」以外の場合、定義した関数がなければユーザ定義関数のリストを表示するエリアに空の内容を返す
   const isDisabledUserDefined = (funcs.map(func => func.name)[newIndex] == UserDefinedFuncDncl.UserDefined) && (userDefinedFunctionInfoArray.length == 0);

@@ -129,18 +129,6 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
     }
   }, [name, index]);
 
-  const argumentValues = Object.entries(restoreValues)
-    .filter(([key]) =>
-      key.startsWith(`${name}_${index}_Argument_`)
-    )
-    .sort((a, b) => {
-      // 引数番号で昇順ソート
-      const ai = Number(a[0].split('_').pop());
-      const bi = Number(b[0].split('_').pop());
-      return ai - bi;
-    })
-    .map(([_, value]) => value);
-
   useEffect(() => {
     if (!initialRestoreValues) return;
     Object.entries(initialRestoreValues).forEach(([fieldName, value]) => {
@@ -327,7 +315,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
                 <input type='hidden' name={`${name}_${index}_${keyPrefixEnum.Type}`} value={`${radioValue}`}></input>
                 {(radioValue == inputTypeEnum.ReturnFunction || radioValue == inputTypeEnum.Void) &&
                   <>
-                    <FunctionField name={`${name}`} parentIndex={index} funcType={radioValue} treeItems={treeItems} argumentValues={argumentValues}></FunctionField>
+                    <FunctionField name={`${name}`} parentIndex={index} funcType={radioValue} treeItems={treeItems} restoreValues={restoreValues}></FunctionField>
                   </>
                 }
                 {radioValue == inputTypeEnum.Array &&
@@ -409,11 +397,11 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
         </Grid>;
       case inputTypeEnum.UserDefinedfunction:
         return <Grid size="grow">
-          <FunctionField name={`${name}`} parentIndex={index} funcType={inputTypeEnum.UserDefinedfunction} treeItems={treeItems}></FunctionField>
+          <FunctionField name={`${name}`} parentIndex={index} funcType={inputTypeEnum.UserDefinedfunction} treeItems={treeItems} restoreValues={restoreValues}></FunctionField>
         </Grid>
       case inputTypeEnum.ExecuteUserDefinedFunction:
         return <Grid size="grow">
-          <FunctionField name={`${name}`} parentIndex={index} funcType={inputTypeEnum.ExecuteUserDefinedFunction} treeItems={treeItems}></FunctionField>
+          <FunctionField name={`${name}`} parentIndex={index} funcType={inputTypeEnum.ExecuteUserDefinedFunction} treeItems={treeItems} restoreValues={restoreValues}></FunctionField>
         </Grid>
 
       case inputTypeEnum.ForValue:
