@@ -362,7 +362,9 @@ function exponentiateString(str: string) {
   const result = str.replace(
     /Exponentiation\s*\(\s*([+-]?\d+(?:\.\d+)?|[a-zA-Z_][a-zA-Z0-9_]*)\s*,\s*([+-]?\d+(?:\.\d+)?|[a-zA-Z_][a-zA-Z0-9_]*)\s*\)/g,
     (match, base, exponent) => {
-      return `( ${base}**${exponent} )`;
+      // baseが負の数なら括弧で囲む
+      const baseNeedsParens = /^-/.test(base) ? `(${base})` : base;
+      return `(${baseNeedsParens}**${exponent})`;
     }
   );
   return result;
