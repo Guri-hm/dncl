@@ -28,6 +28,7 @@ type Props = {
   event?: () => void;
   funcType: inputTypeEnum
   treeItems?: TreeItems
+  argumentValues?: string[];
 }
 
 const ReturnFunctions = [
@@ -51,7 +52,7 @@ const ExecuteUserDefinedFunc = [
 //   return pattern;
 // }
 
-export function FunctionField({ name = "", parentIndex = 0, event, funcType, treeItems = [] }: Props) {
+export function FunctionField({ name = "", parentIndex = 0, event, funcType, treeItems = [], argumentValues }: Props) {
 
   const [operatorIndex, setOperatorIndex] = useState<number>(0);
   const [selectedValue, setSelectedValue] = useState<string>('0');
@@ -123,7 +124,7 @@ export function FunctionField({ name = "", parentIndex = 0, event, funcType, tre
           <React.Fragment key={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${newIndex}_${i}_fragment`}>
             {ArgumentFields.length > 0 && <Grid size="auto" key={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${newIndex}_${i}_comma`}><FixedHeightGrid>,</FixedHeightGrid></Grid>}
             <Grid size="grow" key={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${newIndex}_${i}`}>
-              <ValidatedTextField name={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${i}`} label={InputTypeJpEnum.Argument} pattern={ValidationEnum.VariableOrInteger}></ValidatedTextField>
+              <ValidatedTextField name={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${i}`} label={InputTypeJpEnum.Argument} pattern={ValidationEnum.VariableOrInteger} restoreValue={argumentValues?.[i] ?? ""}></ValidatedTextField>
             </Grid>
           </React.Fragment>
         );

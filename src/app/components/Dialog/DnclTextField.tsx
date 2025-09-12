@@ -119,7 +119,6 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
       setIsConstantMode(value === 'true');
     }
 
-
     if (fieldName === `${name}_${index}` ||
       fieldName === `${name}_${index}_${keyPrefixEnum.Suffix}` ||
       fieldName.includes(`${name}_${index}_`)) {
@@ -129,6 +128,18 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
       }));
     }
   }, [name, index]);
+
+  const argumentValues = Object.entries(restoreValues)
+    .filter(([key]) =>
+      key.startsWith(`${name}_${index}_Argument_`)
+    )
+    .sort((a, b) => {
+      // 引数番号で昇順ソート
+      const ai = Number(a[0].split('_').pop());
+      const bi = Number(b[0].split('_').pop());
+      return ai - bi;
+    })
+    .map(([_, value]) => value);
 
   useEffect(() => {
     if (!initialRestoreValues) return;
@@ -309,14 +320,14 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
                 {(radioValue == inputTypeEnum.Variable || radioValue == inputTypeEnum.Number || radioValue == inputTypeEnum.Array || radioValue == inputTypeEnum.String) &&
                   <>
                     <Grid size='grow'>
-                      <ValidatedTextField name={`${name}_${index}`} label={tmpLabel} pattern={pattern} restoreValue={restoreValues[`${name}_${index}`]} ></ValidatedTextField>
+                      <ValidatedTextField name={`${name}_${index}`} label={tmpLabel} pattern={pattern} restoreValue={restoreValues[`${name}_${index}`]}></ValidatedTextField>
                     </Grid>
                   </>
                 }
                 <input type='hidden' name={`${name}_${index}_${keyPrefixEnum.Type}`} value={`${radioValue}`}></input>
                 {(radioValue == inputTypeEnum.ReturnFunction || radioValue == inputTypeEnum.Void) &&
                   <>
-                    <FunctionField name={`${name}`} parentIndex={index} funcType={radioValue} treeItems={treeItems}></FunctionField>
+                    <FunctionField name={`${name}`} parentIndex={index} funcType={radioValue} treeItems={treeItems} argumentValues={argumentValues}></FunctionField>
                   </>
                 }
                 {radioValue == inputTypeEnum.Array &&
