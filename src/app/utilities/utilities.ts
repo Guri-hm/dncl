@@ -1103,7 +1103,7 @@ export const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedIte
     case ProcessEnum.InitializeArray:
     case ProcessEnum.BulkAssignToArray: {
       if (targetItem.children.length > 0) {
-        result = { errors: [`${lineNum}行目:この行には別の処理をぶら下げられません`], hasError: true };
+        result = { errors: [`${lineNum}行目:この次の行にはインデントを入れられません`], hasError: true };
         break;
       }
       break;
@@ -1154,7 +1154,7 @@ export const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedIte
         break;
       }
       if (targetItem.children.length > 0) {
-        result = { errors: [`${lineNum}行目:この行には別の処理をぶら下げられません`], hasError: true };
+        result = { errors: [`${lineNum}行目:この次の行にはインデントを入れられません`], hasError: true };
         break;
       }
       break;
@@ -1177,7 +1177,7 @@ export const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedIte
         break;
       }
       if (targetItem.children.length > 0) {
-        result = { errors: [`${lineNum}行目:この行には別の処理をぶら下げられません`], hasError: true };
+        result = { errors: [`${lineNum}行目:この次の行にはインデントを入れられません`], hasError: true };
         break;
       }
       break;
@@ -1199,7 +1199,7 @@ export const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedIte
         break;
       }
       if (targetItem.children.length > 0) {
-        result = { errors: [`${lineNum}行目:この行には別の処理をぶら下げられません`], hasError: true };
+        result = { errors: [`${lineNum}行目:この次の行にはインデントを入れられません`], hasError: true };
         break;
       }
       break;
@@ -1222,7 +1222,7 @@ export const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedIte
         break;
       }
       if (targetItem.children.length > 0) {
-        result = { errors: [`${lineNum}行目:この行には別の処理をぶら下げられません`], hasError: true };
+        result = { errors: [`${lineNum}行目:この次の行にはインデントを入れられません`], hasError: true };
         break;
       }
       break;
@@ -1244,7 +1244,7 @@ export const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedIte
         break;
       }
       if (targetItem.children.length > 0) {
-        result = { errors: [`${lineNum}行目:この行には別の処理をぶら下げられません`], hasError: true };
+        result = { errors: [`${lineNum}行目:この次の行にはインデントを入れられません`], hasError: true };
         break;
       }
       break;
@@ -1273,7 +1273,7 @@ export const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedIte
       }
 
       if (targetItem.children.length > 0) {
-        result = { errors: [`${lineNum}行目:この行には別の処理をぶら下げられません`], hasError: true };
+        result = { errors: [`${lineNum}行目:この次の行にはインデントを入れられません`], hasError: true };
         break;
       }
       break;
