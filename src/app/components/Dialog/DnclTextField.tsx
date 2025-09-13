@@ -137,7 +137,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
     Object.entries(initialRestoreValues).forEach(([fieldName, value]) => {
       restoreRadioState(fieldName, value);
     });
-  }, [initialRestoreValues, restoreRadioState]);
+  }, [initialRestoreValues, restoreRadioState, inputType]);
 
   const handleChangeToggle = (
     event: React.MouseEvent<HTMLElement>,

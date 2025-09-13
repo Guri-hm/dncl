@@ -109,7 +109,7 @@ export function FunctionField({ name = "", parentIndex = 0, event, funcType, tre
       const idx = userDefinedFunctionInfoArray.findIndex(u => u.funcName === restored);
       if (idx >= 0) setSelectedValue(String(idx));
     } else {
-      const idx = funcs.map(f => f.name).indexOf(restored as any);
+      const idx = funcs.findIndex(f => f.name === restored);
       if (idx >= 0) setOperatorIndex(idx);
     }
     initializedRef.current = true;
