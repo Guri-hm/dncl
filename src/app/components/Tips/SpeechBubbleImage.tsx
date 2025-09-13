@@ -1,5 +1,6 @@
 import React from 'react';
 import Grid from '@mui/material/Grid2';
+import { Typography } from '@mui/material';
 
 interface Props {
     children: React.ReactNode;
@@ -19,7 +20,8 @@ export const SpeechBubbleImage = ({ children, msg, open = true }: Props) => {
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    height: 'auto',
+                    width: '100%',
+                    height: '100%',
                     position: 'relative'
                 }}
             >
@@ -28,7 +30,7 @@ export const SpeechBubbleImage = ({ children, msg, open = true }: Props) => {
                         textAlign: open ? 'left' : 'center',
                         position: 'absolute',
                         width: 'auto',
-                        top: '-20px',
+                        top: '-30px',
                         bgcolor: "var(--stone-50)",
                         borderRadius: "10px",
                         padding: "10px",

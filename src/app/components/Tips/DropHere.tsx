@@ -62,7 +62,7 @@ export const DropHere = ({ visible = true }: Props) => {
                     <ResponsiveImage
                         src={`${process.env.NEXT_PUBLIC_BASE_PATH}/${imageSrc}`}
                         alt={imageAlt}
-                        style={{ height: "auto" }}
+                        style={{ height: "100%" }}
                         onInteraction={handleInteraction}
                     />
                 </SpeechBubbleImage>

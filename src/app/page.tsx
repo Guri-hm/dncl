@@ -9,6 +9,7 @@ import { HeaderBar, HeaderTitle } from '@/app/components/Header';
 import Image from 'next/image';
 import { ThemeToggleButton } from '@/app/components/Header';
 import GitHubIcon from '@mui/icons-material/GitHub';
+import { Spotlight } from './components/Tips';
 
 export default function Home() {
 
@@ -56,14 +57,17 @@ export default function Home() {
             </Grid>
           </Grid>
           <Grid size={{ xs: 8, md: 3 }} sx={{ textAlign: 'center' }}>
-            <Image
-              src={`${process.env.NEXT_PUBLIC_BASE_PATH}/front.webp`}
-              alt="女の子の真正面"
-              width={300}
-              height={300}
-              priority
-              style={{ width: "100%", maxWidth: "300px", height: "auto" }}
-            />
+            <Box sx={{ width: '100%', maxWidth: 300, mx: 'auto', position: 'relative', aspectRatio: '1 / 1' }}>
+              <Spotlight>
+                <Image
+                  src={`${process.env.NEXT_PUBLIC_BASE_PATH}/front.webp`}
+                  alt="女の子の真正面"
+                  fill
+                  priority
+                  style={{ objectFit: 'contain' }}
+                />
+              </Spotlight>
+            </Box>
           </Grid>
         </Grid>
       </ContentWrapper>
