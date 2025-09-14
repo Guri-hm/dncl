@@ -25,7 +25,7 @@ export const VariableHint: FC = () => {
             <p>変数は，数値や文字列を入れる名前付きの「箱」に例えられます。中身は入れ替え可能です。</p>
             <Box sx={{ textAlign: 'center', marginX: 'auto', marginY: '10px', width: '50%' }}>
                 <Image
-                    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/box.webp`}
+                    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/box.svg`}
                     alt="箱"
                     layout="responsive"
                     width={300}
