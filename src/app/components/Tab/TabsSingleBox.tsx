@@ -17,7 +17,7 @@ type Props = {
     setTabItemsObj?: Dispatch<SetStateAction<TabItemsObj>>;
 }
 const StyledBox: React.FC<BoxProps> = ({ children }) => {
-    return (<Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', border: '1px solid var(--slategray)', position: 'relative', zIndex: 10, gridColumn: 'span 3', backgroundColor: '#1e293b', boxShadow: '0 10px 15px rgba(0, 0, 0, 0.1)', '@xl': { marginLeft: 0 } }}>
+    return (<Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 10, gridColumn: 'span 3', backgroundColor: '#1e293b', boxShadow: '0 10px 15px rgba(0, 0, 0, 0.1)', '@xl': { marginLeft: 0 } }}>
         {children}
     </Box>);
 };

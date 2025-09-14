@@ -32,6 +32,7 @@ export const SpeechBubbleImage = ({ children, msg, open = true }: Props) => {
                         width: 'auto',
                         top: '-30px',
                         bgcolor: "var(--stone-50)",
+                        color: 'var(--foreground)',
                         borderRadius: "10px",
                         padding: "10px",
                         boxShadow: "0px 2px 4px rgba(0,0,0,0.2)",

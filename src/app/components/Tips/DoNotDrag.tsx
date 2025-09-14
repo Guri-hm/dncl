@@ -24,6 +24,7 @@ export const DoNotDrag = () => {
                     position: 'relative',
                     top: '-10px',
                     backgroundColor: 'var(--stone-50)',
+                    color: 'var(--foreground)',
                     borderRadius: '10px',
                     padding: '10px',
                     marginRight: '10px',
