@@ -26,7 +26,7 @@
 
 .dark {
     box-shadow: none;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--slate-700);
     background-color: #1e293b;
 }
 
