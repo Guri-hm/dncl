@@ -23,8 +23,30 @@ export const Spotlight: React.FC<BoxProps> = ({ children }) => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: isDark ? '0 0 20px rgba(0, 0, 0, 0.5)' : 'none', // 周囲の影
-                background: isDark ? 'radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 70%)' : 'none',// スポットライトの効果
+                // 内側のハイライト
+                background: isDark
+                    ? 'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 65%)'
+                    : 'none',
+                // 外縁のぼかしを擬似要素で作る
+                '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    inset: 0,
+                    borderRadius: '50%',
+                    // 少し拡大してぼかしを外側まで伸ばす
+                    transform: 'scale(1.15)',
+                    background: isDark
+                        ? 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 60%)'
+                        : 'radial-gradient(circle, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0) 60%)',
+                    filter: 'blur(18px)',
+                    pointerEvents: 'none',
+                    zIndex: 0,
+                },
+                // 中身は擬似要素より上に表示
+                '& > *': {
+                    position: 'relative',
+                    zIndex: 1,
+                },
             }}
         >
             {children}
