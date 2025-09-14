@@ -8,8 +8,7 @@ import { BubblePaper } from '@/app/components/Bubble';
 import { HeaderBar, HeaderTitle } from '@/app/components/Header';
 import Image from 'next/image';
 import { ThemeToggleButton } from '@/app/components/Header';
-import GitHubIcon from '@mui/icons-material/GitHub';
-import { Spotlight } from './components/Tips';
+import { Spotlight } from '@/app/components/Tips';
 import { Footer } from '@/app/components/Footer';
 
 export default function Home() {
@@ -59,7 +58,7 @@ export default function Home() {
           <Grid size={{ xs: 8, md: 3 }} sx={{ textAlign: 'center' }}>
             <Box sx={{ width: '100%', maxWidth: 300, mx: 'auto', position: 'relative', aspectRatio: '1 / 1' }}>
               <Spotlight>
-                <Box sx={{ width: '70%', height: '70%', position: 'absolute' }}>
+                <Box sx={{ width: '60%', height: '60%', position: 'absolute' }}>
 
                   <Image
                     src={`${process.env.NEXT_PUBLIC_BASE_PATH}/front.svg`}
