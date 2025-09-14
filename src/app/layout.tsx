@@ -13,6 +13,9 @@ const InitialLoader = () => (
 export const metadata: Metadata = {
   title: "ぎじげんごいじるこ",
   description: "大学共通テストの疑似言語「DNCL」で実際にプログラミングしてみましょう",
+  icons: [
+    { url: `${process.env.NEXT_PUBLIC_BASE_PATH}/favicon.ico`, type: 'image/x-icon' }
+  ]
 };
 
 export default function RootLayout({
