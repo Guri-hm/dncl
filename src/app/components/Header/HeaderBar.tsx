@@ -21,6 +21,7 @@ export const HeaderBar: FC<HeaderBarProps> = ({
             alignItems: 'center',
             justifyContent: leftContent || rightContent ? 'space-between' : 'flex-start',
             width: '100%',
+            backgroundColor: 'var(--slate-900)',
             ...sx,
         }}
         {...props}

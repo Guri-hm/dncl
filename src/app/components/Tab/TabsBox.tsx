@@ -95,7 +95,7 @@ const TabFillerInner: FC<BoxProps> = ({ children }) => {
             alignItems: 'center',
             display: 'flex',
             marginRight: '-1px',
-            backgroundColor: 'rgba(71, 85, 105, 0.5)', // bg-slate-700/50
+            backgroundColor: 'rgba(var(--slate-500-rgb), 0.5)',
             border: '1px solid rgba(71, 85, 105, 0.3)', // border-slate-500/30
         }} >
             {children}

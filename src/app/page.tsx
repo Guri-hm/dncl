@@ -23,7 +23,6 @@ export default function Home() {
         <Grid container direction={"column"} sx={{
           justifyContent: "center",
           alignItems: "center", height: '100%',
-          backgroundColor: 'var(--stone-50)'
         }} >
           <Box sx={{ mb: 6, px: 2, pt: 2, textAlign: 'center' }}>
             <Typography variant="h2" sx={{ fontWeight: 'bold', mb: 1 }}>
@@ -59,13 +58,16 @@ export default function Home() {
           <Grid size={{ xs: 8, md: 3 }} sx={{ textAlign: 'center' }}>
             <Box sx={{ width: '100%', maxWidth: 300, mx: 'auto', position: 'relative', aspectRatio: '1 / 1' }}>
               <Spotlight>
-                <Image
-                  src={`${process.env.NEXT_PUBLIC_BASE_PATH}/front.webp`}
-                  alt="女の子の真正面"
-                  fill
-                  priority
-                  style={{ objectFit: 'contain' }}
-                />
+                <Box sx={{ width: '70%', height: '70%', position: 'absolute' }}>
+
+                  <Image
+                    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/front.webp`}
+                    alt="女の子の真正面"
+                    fill
+                    priority
+                    style={{ objectFit: 'contain' }}
+                  />
+                </Box>
               </Spotlight>
             </Box>
           </Grid>

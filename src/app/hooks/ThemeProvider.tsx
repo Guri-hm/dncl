@@ -62,6 +62,10 @@ export const CustomThemeProvider: React.FC<{ children: React.ReactNode }> = ({ c
     let theme = createTheme({
         palette: {
             mode: actualMode,
+            ...(actualMode === 'dark'
+                ? { text: { primary: '#fafaf9' } }
+                : { text: { primary: '#171717' } }
+            ),
         },
         typography: {
             fontFamily: 'YakuHanJPs, Roboto, "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3", Arial, nc3Jp, sans-serif',
@@ -73,6 +77,7 @@ export const CustomThemeProvider: React.FC<{ children: React.ReactNode }> = ({ c
             },
             h2: {
                 fontSize: '1.5rem !important',
+                color: actualMode === 'dark' ? 'var(--stone-50)' : 'var(--foreground)',
                 '@media (min-width:600px)': {
                     fontSize: '2.0rem !important',
                 },

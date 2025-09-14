@@ -1,5 +1,5 @@
 :root {
-  --background: #ededed;
+  --background: #fafaf9;
   --foreground: #171717;
   --bg-opacity: 1;
   --slate-300: #cbd5e1;
@@ -15,18 +15,7 @@
   --slategray: #4b5563;
 }
 
-/* ダークモード対応 */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #ededed;
-    --foreground: #171717;
-  }
-
-}
-
 body {
-  color: var(--foreground) !important;
-  background: var(--background);
   font-family: YakuHanJPs, Roboto, "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3", Arial, nc3Jp, sans-serif !important;
 }
 

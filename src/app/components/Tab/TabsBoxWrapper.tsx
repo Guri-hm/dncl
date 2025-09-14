@@ -193,7 +193,7 @@ const DragOverlayTabsBox = ({ containerId, tabItems, originalWidth }: {
                 <Box
                     key={item.id}
                     style={{
-                        backgroundColor: 'rgba(71, 85, 105, 0.8)',
+                        backgroundColor: 'rgba(var(--slate-500-rgb), 0.8)',
                         color: '#cbd5e1',
                         fontSize: '0.75rem',
                         padding: '2px 6px',
