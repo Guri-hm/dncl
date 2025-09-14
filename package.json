@@ -18,7 +18,8 @@
     "test:validation": "jest validation.test.tsx",
     "test:syntax": "jest syntax.test.tsx",
     "test:utility": "jest utilities.test.tsx",
-    "test:integration": "jest integration.test.tsx"
+    "test:integration": "jest integration.test.tsx",
+    "svgo": "npx svgo -r public -o optimized/public --config=svgo.config.js --multipass"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

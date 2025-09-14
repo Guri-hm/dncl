@@ -61,7 +61,7 @@ export default function Home() {
                 <Box sx={{ width: '70%', height: '70%', position: 'absolute' }}>
 
                   <Image
-                    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/front.webp`}
+                    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/front.svg`}
                     alt="女の子の真正面"
                     fill
                     priority
