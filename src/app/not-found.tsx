@@ -4,9 +4,10 @@ import { ContentWrapper } from '@/app/components/ContentWrapper';
 import { PageWrapper } from '@/app/components/PageWrapper';
 import { Typography, Box, Button } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import { HeaderBar, HeaderTitle } from '@/app/components/Header';
+import { HeaderBar, HeaderTitle, ThemeToggleButton } from '@/app/components/Header';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { Spotlight } from '@/app/components/Tips';
 
 export default function NotFound() {
     const router = useRouter();
@@ -29,23 +30,27 @@ export default function NotFound() {
         <PageWrapper>
             <HeaderBar>
                 <HeaderTitle />
+                <ThemeToggleButton sx={{ marginLeft: "auto" }} />
             </HeaderBar>
             <ContentWrapper>
                 <Grid container direction={"column"} sx={{
                     justifyContent: "center",
                     alignItems: "center",
                     height: '100%',
-                    backgroundColor: 'var(--stone-50)'
                 }}>
                     <Box sx={{ textAlign: 'center', maxWidth: '600px', padding: 3 }}>
-                        <Image
-                            src={`${process.env.NEXT_PUBLIC_BASE_PATH}/not-found.svg`}
-                            alt="not found"
-                            width={200}
-                            height={200}
-                            priority
-                            style={{ margin: "0 auto", display: "block" }}
-                        />
+                        <Box sx={{ width: '100%', maxWidth: 300, mx: 'auto', position: 'relative', aspectRatio: '1 / 1' }}>
+                            <Spotlight>
+                                <Image
+                                    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/not-found.svg`}
+                                    alt="not found"
+                                    width={200}
+                                    height={200}
+                                    priority
+                                    style={{ margin: "0 auto", display: "block" }}
+                                />
+                            </Spotlight>
+                        </Box>
                         <Typography variant="h1" sx={{ fontSize: '4rem', fontWeight: 'bold', mb: 2 }}>
                             404
                         </Typography>
