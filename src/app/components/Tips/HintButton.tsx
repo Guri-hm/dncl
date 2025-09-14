@@ -11,7 +11,7 @@ export const HintButton = () => {
 
     return (
         <Grid>
-            <Button sx={{ backgroundColor: 'var(--sky-500)', borderRadius: 5 }} variant="contained" onClick={() => setOpen(true)} startIcon={<TipsAndUpdatesIcon />}>
+            <Button sx={{ borderRadius: 5 }} variant="contained" onClick={() => setOpen(true)} startIcon={<TipsAndUpdatesIcon />}>
                 構文のヒント
             </Button>
             {open && <FullScreenDialog title="構文のヒント" open={open} setOpen={setOpen}><HintMenu />
