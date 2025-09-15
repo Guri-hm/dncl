@@ -84,7 +84,7 @@ export const InfoStepper = () => {
                         onClick={handleNext}
                         disabled={activeStep === maxSteps - 1}
                     >
-                        Next
+                        次へ
                         {theme.direction === 'rtl' ? (
                             <KeyboardArrowLeft />
                         ) : (
@@ -99,7 +99,7 @@ export const InfoStepper = () => {
                         ) : (
                             <KeyboardArrowLeft />
                         )}
-                        Back
+                        戻る
                     </Button>
                 }
             />

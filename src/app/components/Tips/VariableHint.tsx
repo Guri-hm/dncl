@@ -3,7 +3,7 @@ import { FlattenedItem } from "@/app/types";
 import { v4 as uuidv4 } from 'uuid'
 import { SampleTreeItems } from "@/app/components/Tips";
 import { FC } from "react";
-import Image from "next/image";
+import ResponsiveImage from "../ResponsiveImage";
 
 const sampleItems: FlattenedItem[] = [
     {
@@ -23,32 +23,20 @@ export const VariableHint: FC = () => {
     return (
         <Box>
             <p>変数は，数値や文字列を入れる名前付きの「箱」に例えられます。中身は入れ替え可能です。</p>
-            <Box sx={{ textAlign: 'center', marginX: 'auto', marginY: '10px', width: '50%' }}>
-                <Image
-                    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/box.svg`}
-                    alt="箱"
-                    layout="responsive"
-                    width={300}
-                    height={300}
-                    style={{ width: "100%", maxWidth: "150px" }}
-                />
-            </Box>
+            <ResponsiveImage
+                src={`${process.env.NEXT_PUBLIC_BASE_PATH}/box.svg`}
+                alt="箱をもつ女の子" maxWidth={200}
+            />
             <p>規則はありますが，変数の名前は自由に決められます。名前を見て，どのような数値や文字列か入っているかがわかるように名づけましょう。</p>
             <p>変数に数値や文字列を入れることを「代入」と言います。DNCLでは次のように書きます。</p>
 
             <SampleTreeItems sampleItems={sampleItems} ></SampleTreeItems>
 
             <p>なお，変数は数値や文字列などにつける「ラベル」にも例えられます。「箱」と「ラベル」のどちらがよい例えかは，ここでは言及しません。</p>
-            <Box sx={{ textAlign: 'center', marginX: 'auto', marginY: '10px', width: '50%' }}>
-                <Image
-                    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/label.webp`}
-                    alt="ラベル"
-                    width={300}
-                    height={300}
-                    style={{ width: "100%", maxWidth: "150px" }}
-                />
-            </Box>
-            <p>変数は数値や文字列などにつける「ラベル」にも例えられます。「箱」と「ラベル」のどちらがよい例えかは，ここでは言及しません。</p>
+            <ResponsiveImage
+                src={`${process.env.NEXT_PUBLIC_BASE_PATH}/label.svg`}
+                alt="ラベル"
+            />
 
         </Box>
     )

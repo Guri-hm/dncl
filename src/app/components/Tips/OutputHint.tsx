@@ -2,7 +2,7 @@ import { Box } from "@mui/material"
 import { FlattenedItem } from "@/app/types";
 import { v4 as uuidv4 } from 'uuid'
 import { SampleTreeItems } from "@/app/components/Tips";
-import Image from "next/image";
+import ResponsiveImage from "../ResponsiveImage";
 
 
 const sampleItems: FlattenedItem[] = [
@@ -37,15 +37,10 @@ export const OutputHint = () => {
                 <p>次のようにアイテムを並べると，コンソールに「こんにちは」と表示されます。</p>
                 <SampleTreeItems sampleItems={sampleItems} ></SampleTreeItems>
             </Box>
-            <Box sx={{ textAlign: 'center', marginX: 'auto', marginY: '10px', width: '50%' }}>
-                <Image
-                    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/output.webp`}
-                    alt="表示文"
-                    width={300}
-                    height={300}
-                    style={{ width: "100%", maxWidth: "150px" }}
-                />
-            </Box>
+            <ResponsiveImage
+                src={`${process.env.NEXT_PUBLIC_BASE_PATH}/output.svg`}
+                alt="メガホンをもつ女の子" maxWidth={200}
+            />
         </Box>
     )
 }

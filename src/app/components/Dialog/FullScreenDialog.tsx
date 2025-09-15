@@ -40,7 +40,7 @@ export const FullScreenDialog = ({ open, setOpen, title = "", children }: Props)
                 onClose={handleClose}
                 slots={{ transition: Transition }}
             >
-                <AppBar sx={{ position: 'relative', backgroundColor: 'var(--slate-900)' }}>
+                <AppBar sx={{ position: 'relative', backgroundColor: 'var(--slate-950)' }}>
                     <Toolbar>
                         <IconButton
                             edge="start"

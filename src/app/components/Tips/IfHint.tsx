@@ -2,6 +2,7 @@ import { Box } from "@mui/material"
 import { FlattenedItem } from "@/app/types";
 import { SampleTreeItems } from "@/app/components/Tips";
 import Image from "next/image";
+import ResponsiveImage from "../ResponsiveImage";
 
 
 const sampleItems: FlattenedItem[] = [
@@ -188,15 +189,10 @@ export const IfHint = () => {
                 <p>条件分岐文は，最後に「を実行する」が必要であること，分岐ごとの処理にインデント（行の先頭をずらすこと）が必要であること，を忘れないようにしましょう。</p>
 
             </Box>
-            <Box sx={{ textAlign: 'center', marginX: 'auto', marginY: '10px', width: '50%' }}>
-                <Image
-                    src={`${process.env.NEXT_PUBLIC_BASE_PATH}/if.webp`}
-                    alt="表示文"
-                    width={300}
-                    height={300}
-                    style={{ width: "100%", maxWidth: "200px" }}
-                />
-            </Box>
+            <ResponsiveImage
+                src={`${process.env.NEXT_PUBLIC_BASE_PATH}/if.webp`}
+                alt="if文を示す女の子" maxWidth={200}
+            />
         </Box>
     )
 }
