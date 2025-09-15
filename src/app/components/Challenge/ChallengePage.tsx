@@ -21,6 +21,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import Divider from '@mui/material/Divider';
 import { ThemeToggleButton } from '@/app/components/Header';
+import ResizerHint from '@/app/components/ResizerHint';
 
 // 重いコンポーネントを遅延読み込み
 const SortableTree = lazy(() => import("@/app/components/SortableTree").then(module => ({ default: module.SortableTree })));
@@ -198,6 +199,7 @@ const ChallengePage = ({ challenge }: Props) => {
                 問：{`${challenge.task}`}
             </Question>
             <ContentWrapper>
+                <ResizerHint />
                 {isSm ? (
                     <Allotment vertical defaultSizes={[200, 100]}>
                         <Allotment separator={false}>

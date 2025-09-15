@@ -19,6 +19,7 @@ import { SwiperTabs } from "@/app/components/Tab";
 import { SwiperSlide } from "swiper/react";
 import { ThemeToggleButton } from '@/app/components/Header';
 import SaveIcon from '@mui/icons-material/Save';
+import ResizerHint from '@/app/components/ResizerHint';
 
 // 遅延読み込みコンポーネント（実際に存在するもののみ）
 const SortableTree = lazy(() => import("@/app/components/SortableTree").then(module => ({ default: module.SortableTree })));
@@ -147,6 +148,7 @@ export default function Home() {
         }
       />
       <ContentWrapper className={styles.bgSlate900}>
+        <ResizerHint />
         {isSm ? (
           <Allotment vertical defaultSizes={[200, 100]}>
             <Allotment separator={false}>
