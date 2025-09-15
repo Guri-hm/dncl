@@ -49,7 +49,7 @@ const StyledBox: React.FC<BoxProps> = React.memo(({ children }) => {
             position: 'relative',
             zIndex: 10,
             gridColumn: 'span 3',
-            backgroundColor: isDark ? 'var(--slate-800)' : 'var(--stone-50)',
+            backgroundColor: isDark ? 'var(--slate-800)' : '#c4c4c4',
             boxShadow: '0 10px 15px rgba(0, 0, 0, 0.1)',
             '@xl': { marginLeft: 0 }
         }}>
