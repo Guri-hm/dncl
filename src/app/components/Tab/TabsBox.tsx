@@ -11,6 +11,7 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import MenuIcon from '@mui/icons-material/Menu';
 import { TabItem, TabItemsObj } from "@/app/types";
+import { useTheme } from '@mui/material/styles';
 
 //a11yはaccessibilityの略記
 export function a11yProps(index: number) {
@@ -21,16 +22,20 @@ export function a11yProps(index: number) {
 }
 
 const TabsWrapper: FC<BoxProps> = ({ children, ref, style }) => {
+    const theme = useTheme();
     return (
         <Box
             ref={ref}
-            className={`${styles.tabsWrapper} ${styles.dark}`}
+            className={`${styles.tabsWrapper}`}
             sx={{
                 ...style,
+                border: theme.palette.mode === 'dark' ? '1px solid var(--slate-700)' : '1px solid var(--slate-300)',
+                backgroundColor: theme.palette.mode === 'dark' ? 'var(--slate-800)' : 'var(--stone-50)',
+                boxShadow: 'none',
                 // ドラッグ要素のオーバーフローのみ表示、他は通常通り
                 overflow: 'visible !important',
                 position: 'relative',
-                zIndex: 1,
+                zIndex: 10,
                 contain: 'none',
                 isolation: 'auto',
                 clipPath: 'none',
@@ -244,8 +249,6 @@ const TabsBox = ({ tabItems, disabled, containerId = 'box', setTabItemsObj, ...p
                         onChange={handleChange}
                         a11yProps={a11yProps}
                         tabItems={tabItems}
-                        tabClasses={tabItems.map((_, index) => `${safeValue === index ? styles.tabSelected : styles.tab}`)}
-                        disabled={disabled}
                     />
                     <TabFillerContainer>
                         <TabFillerInner>

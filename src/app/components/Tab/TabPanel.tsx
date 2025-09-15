@@ -18,7 +18,6 @@ const TabPanel = forwardRef<HTMLDivElement, TabPanelProps>(({ children, index, v
                     sx={{
                         wordBreak: 'break-all',
                         flex: 1,
-                        color: 'white',
                         margin: '15px',
                         // 明示的にオーバーフロー設定を上書き
                         overflow: 'auto !important',

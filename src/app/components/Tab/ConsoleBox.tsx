@@ -22,7 +22,6 @@ const TabPanel = React.memo<TabPanelProps>(({ children, value, index }) => {
             sx={{
                 wordBreak: 'break-all',
                 flex: 1,
-                color: 'white',
                 paddingLeft: '15px',
                 paddingRight: '10px',
                 paddingTop: '10px',
@@ -38,6 +37,9 @@ const TabPanel = React.memo<TabPanelProps>(({ children, value, index }) => {
 });
 
 const StyledBox: React.FC<BoxProps> = React.memo(({ children }) => {
+    const theme = useTheme();
+    const isDark = theme.palette?.mode === 'dark';
+
     return (
         <Box sx={{
             height: '100%',
@@ -47,7 +49,7 @@ const StyledBox: React.FC<BoxProps> = React.memo(({ children }) => {
             position: 'relative',
             zIndex: 10,
             gridColumn: 'span 3',
-            backgroundColor: '#1e293b',
+            backgroundColor: isDark ? 'var(--slate-800)' : 'var(--stone-50)',
             boxShadow: '0 10px 15px rgba(0, 0, 0, 0.1)',
             '@xl': { marginLeft: 0 }
         }}>

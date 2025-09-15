@@ -8,7 +8,8 @@
   --slate-800: #1e293b;
   --slate-900: #0F172A;
   --slate-950: #020617;
-  --sky-300: rgb(125 211 252 / var(--bg-opacity, 1));
+  --sky-300: #7DD3FC;
+  --blue-600: #1976d2;
   --stone-50: #fafaf9;
   --error: #FF4500;
   --warnning: #FFFF00;

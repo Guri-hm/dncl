@@ -23,7 +23,7 @@ export const DoNotDrag = () => {
                     marginLeft: 'auto',
                     position: 'relative',
                     top: '-10px',
-                    backgroundColor: 'var(--stone-50)',
+                    backgroundColor: 'white',
                     color: 'var(--foreground)',
                     borderRadius: '10px',
                     padding: '10px',

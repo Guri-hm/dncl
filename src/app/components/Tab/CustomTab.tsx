@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { TabItem } from "@/app/types";
 import { useSortable } from "@dnd-kit/sortable";
-import { Box, Tab } from "@mui/material";
+import { Box, Tab, useTheme } from "@mui/material";
 import { CSS } from "@dnd-kit/utilities";
 import cmnStyles from '@/app/components/common.module.css';
 import { Handle } from "@/app/components/TreeItem/Handle";
@@ -10,12 +10,15 @@ interface CustomTabProps {
     item: TabItem;
     children?: React.ReactNode;
     index: number;
-    tabClasses?: string[];
+    isSelected?: boolean;
     a11yProps: (index: number) => { id: string; 'aria-controls': string };
     onClick: (event: React.SyntheticEvent) => void;
+    disabled?: boolean;
 }
 
-export const CustomTab: FC<CustomTabProps> = ({ item, a11yProps, index, onClick, tabClasses = [] }) => {
+export const CustomTab: FC<CustomTabProps> = ({ item, a11yProps, index, onClick, isSelected = false, disabled = false }) => {
+    const theme = useTheme();
+    const isDark = theme.palette.mode === 'dark';
     const {
         isDragging,
         setActivatorNodeRef,
@@ -31,8 +34,24 @@ export const CustomTab: FC<CustomTabProps> = ({ item, a11yProps, index, onClick,
 
     return (
         <Box
-            className={`${isDragging ? cmnStyles.zIndexMax : ''} ${tabClasses[index] || ''}`}
+            className={`${isDragging ? cmnStyles.zIndexMax : ''}`}
             ref={setNodeRef}
+            sx={{
+                ...(isSelected
+                    ? {
+                        // color: 'var(--sky-300)',
+                        backgroundColor: isDark ? 'var(--slate-800)' : 'var(--stone-50)',
+                        color: isDark ? 'var(--sky-300)' : 'var(--blue-600)',
+
+                    }
+                    : {
+                        color: 'var(--slate-500) !important',
+                        backgroundColor: 'rgb(51 65 85 / 0.5) !important',
+                        '&:hover': {
+                            color: '#fff !important',
+                        },
+                    }),
+            }}
             style={{
                 // ドラッグ中は透明にするが位置は保持（DragOverlayが代わりに表示される）
                 transform: CSS.Transform.toString(transform),
@@ -80,9 +99,9 @@ export const CustomTab: FC<CustomTabProps> = ({ item, a11yProps, index, onClick,
                     paddingLeft: '3px',
                     paddingRight: '10px',
                     margin: '0px',
-                    color: 'inherit',
                     pointerEvents: isDragging ? 'none' : 'auto',
                     whiteSpace: 'nowrap',
+                    color: 'inherit'
                 }}
             />
         </Box>

@@ -8,11 +8,10 @@ interface TabsProps {
     onChange: (event: React.SyntheticEvent, newValue: number) => void;
     a11yProps: (index: number) => { id: string; 'aria-controls': string };
     tabItems: TabItem[];
-    tabClasses?: string[];
     disabled?: boolean;
 }
 
-export const CustomTabs: FC<TabsProps> = ({ value, onChange, a11yProps, tabItems, tabClasses = [] }) => {
+export const CustomTabs: FC<TabsProps> = ({ value, onChange, a11yProps, tabItems, disabled }) => {
     // tabItemsが空の場合は何も表示しない
     if (tabItems.length === 0) {
         return null;
@@ -51,16 +50,20 @@ export const CustomTabs: FC<TabsProps> = ({ value, onChange, a11yProps, tabItems
             onChange={onChange}
             aria-label="tabs"
         >
-            {tabItems.map((item, index) => (
-                <CustomTab
-                    key={item.id}
-                    item={item}
-                    index={index}
-                    onClick={(event) => onChange(event, index)}
-                    tabClasses={tabClasses}
-                    a11yProps={a11yProps}
-                />
-            ))}
+            {tabItems.map((item, index) => {
+                const isSelected = index === safeValue;
+                return (
+                    <CustomTab
+                        key={item.id}
+                        item={item}
+                        index={index}
+                        onClick={(event) => onChange(event, index)}
+                        isSelected={isSelected}
+                        a11yProps={a11yProps}
+                        disabled={disabled}
+                    />
+                );
+            })}
         </Tabs>
     );
 };

@@ -146,7 +146,7 @@ export default function Home() {
           </>
         }
       />
-      <ContentWrapper>
+      <ContentWrapper className={styles.bgSlate900}>
         {isSm ? (
           <Allotment vertical defaultSizes={[200, 100]}>
             <Allotment separator={false}>
