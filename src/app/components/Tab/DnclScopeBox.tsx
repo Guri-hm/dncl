@@ -11,13 +11,13 @@ interface ScopeBoxProps {
 
 const StyledDiv = styled(Box, {
     shouldForwardProp: (prop) => prop !== 'nested',
-})<ScopeBoxProps>(({ nested, depth }) => ({
+})<ScopeBoxProps>(({ theme, nested, depth }) => ({
     '::before': {
         left: '-1.5rem',
     },
     // paddingLeft: nested ? '20px' : '0px',
     '& > div': {
-        borderLeft: '2px solid white',
+        borderLeft: `${theme.palette?.mode === 'dark' ? '2' : '1'}px solid ${theme.palette?.mode === 'dark' ? 'white' : 'var(--foreground)'}`,
         paddingLeft: '1.5rem',
         marginLeft: '0.5rem'
     },
