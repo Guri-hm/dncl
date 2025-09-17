@@ -2,11 +2,11 @@ import React, { Dispatch, SetStateAction, useCallback, useMemo } from 'react';
 import { Box, BoxProps } from "@mui/material";
 import { useEffect, useState, Fragment } from "react";
 import { DnclValidationType, FlattenedItem, TreeItems } from "@/app/types";
-import { BraketSymbolEnum, SimpleAssignmentOperator, ProcessEnum, UserDefinedFunc, OutputEnum, ConditionEnum, ComparisonOperator, LoopEnum, ArithmeticOperator } from "@/app/enum";
-import { checkDNCLSyntax, cnvToDivision, containsJapanese, flattenTree, tryParseToJsFunction } from "@/app/utilities";
+import { checkDNCLSyntax, flattenTree } from "@/app/utilities";
 import Divider from '@mui/material/Divider';
 import { cnvToJs } from "@/app/utilities/cnvToJs";
 import Image from 'next/image';
+import { useTheme } from '@mui/material/styles';
 
 interface CustomBoxProps extends BoxProps {
     children?: React.ReactNode;
@@ -56,7 +56,7 @@ const cnvToJsMemoized = (() => {
 
 const Color = {
     error: 'var(--error)',
-    warnning: 'var(--warnning)',
+    warnning: 'var(--yellow-700)',
     darkgray: 'var(--darkgray)',
     white: 'white'
 }
@@ -68,6 +68,8 @@ export const ConsoleTab: React.FC<CustomBoxProps> = React.memo(({
     setDnclValidation,
     dnclValidation
 }) => {
+    const theme = useTheme();
+    const warnningColor = theme.palette.mode === 'dark' ? 'var(--yellow-500)' : Color.warnning;
     const [shouldRunEffect, setShouldRunEffect] = useState(false);
     const [tmpMsg, setTmpMsg] = useState<string>('ここに出力結果が表示されます');
 
@@ -162,7 +164,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = React.memo(({
                     return `${lineNumber}行目：${cached.messages[index]}`;
                 });
                 const result: DnclValidationType = {
-                    color: Color.warnning,
+                    color: warnningColor,
                     errors: formattedMessages,
                     hasError: true,
                     lineNum: cached.lineNumbers
@@ -201,7 +203,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = React.memo(({
                     return `${lineNumber}行目：${data.messages[index]}`;
                 });
                 const result: DnclValidationType = {
-                    color: Color.warnning,
+                    color: warnningColor,
                     errors: formattedMessages,
                     hasError: true,
                     lineNum: data.lineNumbers
@@ -334,7 +336,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = React.memo(({
                 {tmpMsg}
             </Box>}
             {(dnclValidation?.hasError) && (
-                <Box sx={{ padding: 1, color: dnclValidation?.color || Color.warnning }}>
+                <Box sx={{ padding: 1, color: dnclValidation?.color || warnningColor }}>
                     エラーを解決してください
                     <Box>
                         {dnclValidation?.errors ? convertNewLinesToBreaks(dnclValidation?.errors.join('\n')) : ''}

@@ -4,6 +4,7 @@
   --bg-opacity: 1;
   --slate-300: #cbd5e1;
   --slate-500: rgb(100 116 139 / var(--tw-text-opacity, 1));
+  --slate-600: #334155;
   --slate-700: #353e4f;
   --slate-800: #1e293b;
   --slate-900: #0F172A;
@@ -11,8 +12,12 @@
   --sky-300: #7DD3FC;
   --blue-600: #1976d2;
   --stone-50: #fafaf9;
+  --stone-200: #EBECEE;
+  --gray-50: #F9FAFB;
+  --gray-300: #d1d5db;
   --error: #FF4500;
-  --warnning: #FFFF00;
+  --yellow-500: #FFD400;
+  --yellow-700: #A67C00;
   --darkgray: #424242;
   --slategray: #4b5563;
 }

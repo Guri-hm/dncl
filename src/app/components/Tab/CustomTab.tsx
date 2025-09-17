@@ -46,7 +46,7 @@ export const CustomTab: FC<CustomTabProps> = ({ item, a11yProps, index, onClick,
                     }
                     : {
                         color: 'var(--slate-500) !important',
-                        backgroundColor: 'rgb(51 65 85 / 0.5) !important',
+                        backgroundColor: isDark ? 'var(--slate-600)' : 'var(--stone-200)',
                         '&:hover': {
                             color: '#fff !important',
                         },
