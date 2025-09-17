@@ -93,6 +93,7 @@ const TabFillerContainer: FC<BoxProps> = ({ children }) => {
 };
 
 const TabFillerInner: FC<BoxProps> = ({ children }) => {
+    const theme = useTheme();
     return (
         <Box sx={{
             flex: '1',
@@ -100,8 +101,7 @@ const TabFillerInner: FC<BoxProps> = ({ children }) => {
             alignItems: 'center',
             display: 'flex',
             marginRight: '-1px',
-            backgroundColor: 'rgba(var(--slate-500-rgb), 0.5)',
-            border: '1px solid rgba(71, 85, 105, 0.3)', // border-slate-500/30
+            border: theme.palette.mode === 'dark' ? '1px solid rgba(71, 85, 105, 0.3)' : '1px solid rgba(71, 85, 105, 0.1)',
         }} >
             {children}
         </Box>
