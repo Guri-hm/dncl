@@ -423,8 +423,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 addNode('', 'strokeWidth=1;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;flipH=0;flipV=1;', x, y + 90 + 60 * (bodyLength), nodeId - 1);
 
                 break;
-            case 'ForStatement':
-
+            case 'ForStatement': {
                 const parseExpression = (expression: string): { operator: string, rightSide: string } => {
                     const match = expression.match(/([+-])\s*(.*)/);
                     if (match) {
@@ -435,14 +434,52 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                     return { operator: '', rightSide: '' };
                 };
 
+                // init 文字列から変数名と開始値を取り出す（"a = 1" / "a←1" / "a ← 1" 等に対応）
                 const forInit = node.init ? getExpressionString(node.init as InitExpression) : '';
-                const [variable, fromNum] = forInit.split('=').map(str => str.trim());
+                let variable = '';
+                let fromNum = '';
+                const initMatch = forInit.match(/^\s*([^\s←=]+)\s*(?:←|=)\s*(.+)$/);
+                if (initMatch) {
+                    variable = initMatch[1].trim();
+                    fromNum = initMatch[2].trim();
+                } else {
+                    const parts = forInit.split(/[:=←]/).map(s => s.trim());
+                    variable = parts[0] || '';
+                    fromNum = parts[1] || '';
+                }
+
+                // test 文字列から比較演算子と終了値を取り出す（<=, <, >=, > に対応）
                 const forTest = node.test ? getExpressionString(node.test as InitExpression) : '';
-                const [, toNum] = forTest.split('<=').map(str => str.trim());
+                let compareOp = '';
+                let toNum = '';
+                const testMatch = forTest.match(/(.*?)(<=|<|>=|>)\s*(.+)/);
+                if (testMatch) {
+                    compareOp = testMatch[2].trim();
+                    toNum = testMatch[3].trim();
+                } else {
+                    const parts = forTest.split(/<=|<|>=|>/).map(s => s.trim());
+                    toNum = parts[1] || parts[0] || '';
+                }
+
+                // 比較演算子ごとの日本語表現
+                const compareWord = compareOp === '<=' ? 'まで'
+                    : compareOp === '<' ? '未満'
+                        : compareOp === '>=' ? '以上'
+                            : compareOp === '>' ? 'より大きい'
+                                : 'まで';
+
+                // update 部分（増分）を解析
                 const forUpdate = node.update ? getExpressionString(node.update as InitExpression) : '';
                 const result = parseExpression(forUpdate);
-                // ループ開始端子
-                addNode(`${variable}を${fromNum}から${toNum}まで${result.rightSide}ずつ${result.operator == '+' ? '増やしながら' : '減らしながら'}`, 'strokeWidth=1;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;', x, y, nodeId - 1);
+                const stepText = result.rightSide ? `${result.rightSide}ずつ` : '';
+                const direction = result.operator === '+' ? '増やしながら' : result.operator === '-' ? '減らしながら' : 'しながら';
+
+                // ループ開始端子（変数/開始/終了/増減の表現を組み立てる）
+                addNode(
+                    `${variable}を${fromNum}から${toNum}${compareWord}${stepText}${direction}`,
+                    'strokeWidth=1;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;',
+                    x, y, nodeId - 1
+                );
 
                 let forBodyLength: number = 0;
 
@@ -464,6 +501,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 addNode('', 'strokeWidth=1;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;flipH=0;flipV=1;', x, y + 60 + 60 * (forBodyLength), nodeId - 1);
 
                 break;
+            }
 
             case 'FunctionDeclaration':
             case 'FunctionExpression':
