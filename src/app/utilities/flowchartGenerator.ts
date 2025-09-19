@@ -392,37 +392,52 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 break;
             }
 
-            case 'WhileStatement':
-                const whileTest = node.test as Test;
-                const whileTestString = `${whileTest.left.name} ${whileTest.operator} ${whileTest.right.value}`;
+            case 'WhileStatement': {
+                const testNode = node.test as any;
+
+                let whileTestString = '';
+                if (!testNode) {
+                    whileTestString = '条件の間';
+                } else if (testNode.type === 'BinaryExpression') {
+                    const left = getExpressionString((testNode as BinaryExpression).left as InitExpression);
+                    const right = getExpressionString((testNode as BinaryExpression).right as InitExpression);
+                    const op = (testNode as BinaryExpression).operator === '!==' ? ComparisonOperatorDncl.NotEqualToOperator : (testNode as BinaryExpression).operator;
+                    whileTestString = `${left} ${op} ${right}`;
+                } else if (testNode.type === 'Test') {
+                    whileTestString = `${(testNode as Test).left.name} ${(testNode as Test).operator} ${String((testNode as Test).right.value)}`;
+                } else if (testNode.type === 'Identifier') {
+                    whileTestString = (testNode as Identifier).name;
+                } else if (testNode.type === 'Literal') {
+                    whileTestString = String((testNode as Literal).value);
+                } else {
+                    // フォールバックで汎用的に文字列化
+                    whileTestString = getExpressionString(testNode as InitExpression) || '条件の間';
+                }
 
                 // ループ開始端子
-                // console.log(`ループ開始y:${y + 30}`)
-                addNode(`${whileTestString}の間`, 'strokeWidth=1;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;', x, y + 30, nodeId - 1);
+                addNode(`${whileTestString}の間`, 'strokeWidth=1;html=1;shape=loopLimit;whiteSpace=wrap;', x, y, nodeId - 1);
 
                 let bodyLength: number = 0;
 
                 if (node.body) {
                     if (Array.isArray(node.body)) {
                         node.body.forEach((bodyNode: ASTNode, index: number) => {
-                            // console.log(`ループ内要素${(index + 1)}の開始y:${y + 30 + 60 * (index + 1)}`)
                             processNode(bodyNode, x, y + 30 + 60 * (index + 1), null);
                         });
                         bodyLength = node.body.length;
                     } else if (Array.isArray(node.body.body)) {
                         node.body.body.forEach((bodyNode: ASTNode, index: number) => {
-                            // console.log(`ループ内要素${(index + 1)}の開始y:${y + 30 + 60 * (index + 1)}`)
                             processNode(bodyNode, x, y + 30 + 60 * (index + 1), null);
                         });
                         bodyLength = node.body.body.length;
                     }
-                };
+                }
 
                 // ループ終了端子
-                // console.log(`ループ終了y:${y + 90 + 60 * (bodyLength)}`)
-                addNode('', 'strokeWidth=1;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;flipH=0;flipV=1;', x, y + 90 + 60 * (bodyLength), nodeId - 1);
+                addNode('', 'strokeWidth=1;html=1;shape=loopLimit;whiteSpace=wrap;flipH=0;flipV=1;', x, y + 90 + 60 * (bodyLength), nodeId - 1);
 
                 break;
+            }
             case 'ForStatement': {
                 const parseExpression = (expression: string): { operator: string, rightSide: string } => {
                     const match = expression.match(/([+-])\s*(.*)/);
