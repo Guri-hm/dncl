@@ -477,7 +477,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 // ループ開始端子（変数/開始/終了/増減の表現を組み立てる）
                 addNode(
                     `${variable}を${fromNum}から${toNum}${compareWord}${stepText}${direction}`,
-                    'strokeWidth=1;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;',
+                    'strokeWidth=1;html=1;shape=loopLimit;whiteSpace=wrap;',
                     x, y, nodeId - 1
                 );
 
@@ -498,7 +498,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 };
 
                 // ループ終了端子
-                addNode('', 'strokeWidth=1;html=1;shape=mxgraph.flowchart.loop_limit;whiteSpace=wrap;flipH=0;flipV=1;', x, y + 60 + 60 * (forBodyLength), nodeId - 1);
+                addNode('', 'strokeWidth=1;html=1;shape=loopLimit;whiteSpace=wrap;flipH=0;flipV=1;', x, y + 60 + 60 * (forBodyLength), nodeId - 1);
 
                 break;
             }
