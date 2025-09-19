@@ -50,7 +50,7 @@ export function EditorBox({ statementType, treeItems, formData }: EditorBoxProps
         // 左辺は常にインデックス0、右辺はプロセスインデックスに対応する
         const leftInitial = leftRestoreMap ? leftRestoreMap[0] : undefined;
         const rightInitial = rightRestoreMap ? rightRestoreMap[index] : undefined;
-
+        
         switch (index) {
             case ProcessEnum.SetValToVariableOrArray:
                 return <>
@@ -159,21 +159,21 @@ export function EditorBox({ statementType, treeItems, formData }: EditorBoxProps
                     <Grid container spacing={1} direction='column'>
                         <Grid container direction='row'>
                             <Grid size='grow'>
-                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.VariableOnly} initialRestoreValues={rightInitial}></DnclTextField>
+                                <DnclTextField key={`${keyPrefixEnum.RigthSide}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.VariableOnly} initialRestoreValues={rightRestoreMap ? rightRestoreMap[0] : undefined}></DnclTextField>
                             </Grid>
                             <NowrapText text={'を'}></NowrapText>
                             <Grid size='grow'>
-                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.InitialValue}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.InitialValue} inputType={inputTypeEnum.ForValue} label={"初期値"}></DnclTextField>
+                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.InitialValue}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.InitialValue} inputType={inputTypeEnum.ForValue} label={"初期値"} initialRestoreValues={rightRestoreMap ? rightRestoreMap[0] : undefined}></DnclTextField>
                             </Grid>
                             <NowrapText text={'から'}></NowrapText>
                         </Grid>
                         <Grid container direction='row'>
                             <Grid size='grow'>
-                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.EndValue}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.EndValue} inputType={inputTypeEnum.ForValue} label={"終了値"} initialRestoreValues={rightInitial}></DnclTextField>
+                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.EndValue}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.EndValue} inputType={inputTypeEnum.ForValue} label={"終了値"} initialRestoreValues={rightRestoreMap ? rightRestoreMap[0] : undefined}></DnclTextField>
                             </Grid>
                             <NowrapText text={'まで'}></NowrapText>
                             <Grid size='grow'>
-                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.Difference}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.Difference} inputType={inputTypeEnum.ForValue} label={"差分"} initialRestoreValues={rightInitial}></DnclTextField>
+                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.Difference}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.Difference} inputType={inputTypeEnum.ForValue} label={"差分"} initialRestoreValues={rightRestoreMap ? rightRestoreMap[0] : undefined}></DnclTextField>
                             </Grid>
                             <NowrapText text={index == ProcessEnum.ForIncrement ? 'ずつ増やしながら，' : 'ずつ減らしながら，'}></NowrapText>
                         </Grid>
