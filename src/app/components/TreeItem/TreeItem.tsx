@@ -1,4 +1,4 @@
-import React, { forwardRef, HTMLAttributes } from "react";
+import React, { forwardRef, HTMLAttributes, useEffect, useRef, useState } from "react";
 import classNames from "classnames";
 import { Action } from "./Action";
 import { Handle } from "./Handle";
@@ -7,6 +7,7 @@ import { Edit } from "./Edit";
 import styles from "./TreeItem.module.scss";
 import { DraggableAttributes } from "@dnd-kit/core";
 import { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
+import { Tooltip, Typography } from "@mui/material";
 
 export interface Props extends HTMLAttributes<HTMLLIElement> {
   childCount?: number;
@@ -57,6 +58,47 @@ const TreeItem = forwardRef<HTMLDivElement, Props>(
   ) => {
     // fixedがtrueの場合は強制的にcanEditをfalseにする
     const effectiveCanEdit = fixed ? false : canEdit;
+    const textRef = useRef<HTMLSpanElement | null>(null);
+    const [isEllipsis, setIsEllipsis] = useState(false);
+    const [tooltipOpen, setTooltipOpen] = useState(false);
+
+    const checkEllipsis = () => {
+      const el = textRef.current;
+      if (!el) { setIsEllipsis(false); return false; }
+      const ell = el.scrollWidth > el.clientWidth;
+      setIsEllipsis(ell);
+      return ell;
+    };
+
+    useEffect(() => {
+      // 初回と value 変更時に判定
+      checkEllipsis();
+    }, [value]);
+
+    useEffect(() => {
+      // リサイズ時に判定して tooltip が開いていたら閉じる
+      let timeoutId: number | undefined;
+      const onResize = () => {
+        if (timeoutId) window.clearTimeout(timeoutId);
+        timeoutId = window.setTimeout(() => {
+          const ell = checkEllipsis();
+          if (!ell) setTooltipOpen(false);
+        }, 100);
+      };
+      window.addEventListener('resize', onResize);
+      return () => {
+        window.removeEventListener('resize', onResize);
+        if (timeoutId) window.clearTimeout(timeoutId);
+      };
+    }, []);
+    const handleMouseEnter = () => {
+      const ell = checkEllipsis();
+      if (ell) setTooltipOpen(true);
+    };
+    const handleMouseLeave = () => setTooltipOpen(false);
+    const handleFocus = () => { if (checkEllipsis()) setTooltipOpen(true); };
+    const handleBlur = () => setTooltipOpen(false);
+
     return (
       <li
         className={classNames(
@@ -92,7 +134,22 @@ const TreeItem = forwardRef<HTMLDivElement, Props>(
               {collapseIcon}
             </Action>
           )}
-          <span className={styles.Text}>{value}</span>
+          <Tooltip title={value || ''} arrow open={tooltipOpen && isEllipsis}>
+            <Typography
+              component="span"
+              className={styles.Text}
+              ref={textRef}
+              noWrap
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              onTouchStart={handleMouseEnter}
+              onTouchEnd={handleMouseLeave}
+            >
+              {value}
+            </Typography>
+          </Tooltip>
           {!clone && !fixed && effectiveCanEdit && (
             <Edit onClick={onEdit} />
           )}
