@@ -167,6 +167,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
     };
 
     const addNode = (value: string, style: string, x: number, y: number, previousNodeId: number | null, width: number = 120, height: number = nodeDefaultHeight) => {
+        console.log(`addNode: ${value} at (${x}, ${y})`);
         const node = createNode(value, style, x, y, width, height);
         xml += node;
         if (previousNodeId !== null) {
@@ -422,19 +423,19 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 if (node.body) {
                     if (Array.isArray(node.body)) {
                         node.body.forEach((bodyNode: ASTNode, index: number) => {
-                            processNode(bodyNode, x, y + 30 + 60 * (index + 1), null);
+                            processNode(bodyNode, x, y + 60 * (index + 1), null);
                         });
                         bodyLength = node.body.length;
                     } else if (Array.isArray(node.body.body)) {
                         node.body.body.forEach((bodyNode: ASTNode, index: number) => {
-                            processNode(bodyNode, x, y + 30 + 60 * (index + 1), null);
+                            processNode(bodyNode, x, y + 60 * (index + 1), null);
                         });
                         bodyLength = node.body.body.length;
                     }
                 }
 
                 // ループ終了端子
-                addNode('', 'strokeWidth=1;html=1;shape=loopLimit;whiteSpace=wrap;flipH=0;flipV=1;', x, y + 90 + 60 * (bodyLength), nodeId - 1);
+                addNode('', 'strokeWidth=1;html=1;shape=loopLimit;whiteSpace=wrap;flipH=0;flipV=1;', x, y + 60 + 60 * (bodyLength), nodeId - 1);
 
                 break;
             }
@@ -583,9 +584,18 @@ export const generateFlowchartXML = (ast: ASTNode) => {
     addNode('開始', 'html=1;dashed=0;whiteSpace=wrap;shape=mxgraph.dfd.start', drawX, 30, null);
 
     if (Array.isArray(ast.body)) {
-        ast.body.forEach((node: ASTNode, index: number) => {
-            processNode(node, drawX, 30 + 60 * (index + 1), null);
-        });
+        // ast.body.forEach((node: ASTNode, index: number) => {
+        //     console.log(node);
+        //     console.log(`TopNode ${index + 1} y:${30 + 60 * (index + 1)}`);
+        //     processNode(node, drawX, 30 + 60 * (index + 1), null);
+        // });
+        for (const node of ast.body) {
+            // 直近の最深 Y の下に配置
+            const startY = maxY + 60;
+            console.log(node);
+            console.log(`TopNode y:${startY}`);
+            processNode(node, drawX, startY, null);
+        }
     }
 
     addNode('終了', 'html=1;dashed=0;whiteSpace=wrap;shape=mxgraph.dfd.start', drawX, maxY + 60, nodeId - 1);
