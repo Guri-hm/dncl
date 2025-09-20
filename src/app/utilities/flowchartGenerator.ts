@@ -564,7 +564,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 addNode(`${whileTestString}の間`, 'strokeWidth=1;html=1;shape=loopLimit;whiteSpace=wrap;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
 
                 let bodyLength: number = 0;
-
+                const beforeLoopMaxY = maxY;
                 if (node.body) {
                     if (Array.isArray(node.body)) {
                         for (let index = 0; index < node.body.length; index++) {
@@ -582,7 +582,14 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                     }
                 }
 
-                addNode('', 'strokeWidth=1;html=1;shape=loopLimit;whiteSpace=wrap;flipH=0;flipV=1;', x, y + 60 + 60 * (bodyLength), nodeId - 1);
+                // ループ終端の top Y は、ループ内で生成された最大の bottom を基準にする
+                // 最低でも「開始ノードの下 + ギャップ」を保証
+                const loopEndTop = Math.max(
+                    beforeLoopMaxY + 60,    // 何も深くならなかった場合に備えた最小位置
+                    maxY + 20               // ループ内で生成された要素の下に配置（余白20）
+                );
+
+                addNode('', 'strokeWidth=1;html=1;shape=loopLimit;whiteSpace=wrap;flipH=0;flipV=1;', x, loopEndTop, nodeId - 1);
                 return { endId: nodeId - 1, endY: getNodeBottomY(nodeId - 1), centerY: nodePositions[nodeId - 1].y + (nodePositions[nodeId - 1].height || nodeDefaultHeight) / 2 };
             }
 
@@ -639,25 +646,30 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                     x, y, nodeId - 1
                 );
 
-                let forBodyLength: number = 0;
+                // ループ開始前の maxY を保持し、ボディ処理後に実際の maxY を参照して終端位置を決める
+                const beforeLoopMaxY = maxY;
                 if (node.body) {
                     if (Array.isArray(node.body)) {
                         for (let index = 0; index < node.body.length; index++) {
                             const bodyNode = node.body[index];
-                            const res = processNode(bodyNode, x, y + 60 * (index + 1), null);
-                            forBodyLength = index + 1;
+                            processNode(bodyNode, x, y + 60 * (index + 1), null);
                         }
                     } else if (Array.isArray(node.body.body)) {
                         const arr = (node.body as any).body as ASTNode[];
                         for (let index = 0; index < arr.length; index++) {
                             const bodyNode = arr[index];
-                            const res = processNode(bodyNode, x, y + 60 * (index + 1), null);
-                            forBodyLength = index + 1;
+                            processNode(bodyNode, x, y + 60 * (index + 1), null);
                         }
                     }
-                };
+                }
 
-                addNode('', 'strokeWidth=1;html=1;shape=loopLimit;whiteSpace=wrap;flipH=0;flipV=1;', x, y + 60 + 60 * (forBodyLength), nodeId - 1);
+                // ループ終端の top Y を、ループ内で生成された maxY（bottomベース）から決定する
+                const loopEndTop = Math.max(
+                    beforeLoopMaxY + 60, // 最低限の位置
+                    maxY + 20            // ループ内の生成物の下に配置（余白20）
+                );
+
+                addNode('', 'strokeWidth=1;html=1;shape=loopLimit;whiteSpace=wrap;flipH=0;flipV=1;', x, loopEndTop, nodeId - 1);
                 return { endId: nodeId - 1, endY: getNodeBottomY(nodeId - 1), centerY: nodePositions[nodeId - 1].y + (nodePositions[nodeId - 1].height || nodeDefaultHeight) / 2 };
             }
 
