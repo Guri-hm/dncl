@@ -113,12 +113,29 @@ export const ConsoleTab: React.FC<CustomBoxProps> = React.memo(({
                 body: JSON.stringify({ code }),
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Something went wrong');
+            // 先に JSON をパースして sandboxError フラグを確認（HTTP 200 で sandbox エラーを返す可能性があるため）
+            const data = await response.json().catch(() => ({}));
+
+            // サンドボックス実行由来のエラー（サーバが sandboxError フラグで返している場合）
+            if (data && data.sandboxError) {
+                const message = data.error || 'サンドボックス実行でエラーが発生しました';
+                executionCache.set(code, { error: message });
+
+                const result: DnclValidationType = {
+                    color: Color.error,
+                    errors: [message],
+                    hasError: true,
+                    lineNum: data.line ? [data.line] : []
+                };
+                setDnclValidation(result);
+                return;
             }
 
-            const data = await response.json();
+            // HTTP レスポンス自体がエラー（500 等）は例外扱い
+            if (!response.ok) {
+                const errorMessage = (data && data.error) ? data.error : 'Something went wrong';
+                throw new Error(errorMessage);
+            }
 
             // 成功結果をキャッシュ
             executionCache.set(code, { result: data.result });

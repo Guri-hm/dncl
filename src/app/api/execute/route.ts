@@ -60,8 +60,9 @@ export async function POST(req: NextRequest) {
             }
         );
     } catch (error) {
-        const errorMessage = (error as Error).message;
-        const lineNumberMatch = (error as Error).stack?.split('\n')[0].match(/:(\d+)$/);
+        const err = error as Error;
+        const errorMessage = err.message || 'エラーが発生しました';
+        const lineNumberMatch = err.stack?.split('\n')[0].match(/:(\d+)$/);
         let responseMessage = errorMessage;
 
         if (errorMessage.includes('Script execution timed out')) {
@@ -71,6 +72,33 @@ export async function POST(req: NextRequest) {
         } else if (error instanceof ReferenceError) {
             responseMessage = '参照エラーが発生しました';
         }
+
+        // サンドボックス実行由来と判断できるか（上記判定を基に判定）
+        const isSandboxError = (
+            errorMessage.includes('Script execution timed out') ||
+            err instanceof SyntaxError ||
+            err instanceof ReferenceError ||
+            /Unexpected token|Unexpected end of input|is not defined|Cannot read properties of/.test(errorMessage)
+        );
+
+        if (isSandboxError) {
+            const body: any = {
+                sandboxError: true,
+                error: responseMessage
+            };
+            if (lineNumberMatch) body.line = Number(lineNumberMatch[1]);
+
+            return NextResponse.json(body, {
+                status: 200,
+                headers: {
+                    'Access-Control-Allow-Origin': allowedOrigin,
+                    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                },
+            });
+        }
+
+        // 本当のサーバ内部エラーは従来通り 500 を返す
         if (lineNumberMatch) {
             return NextResponse.json(
                 { error: responseMessage, line: lineNumberMatch[1] },
