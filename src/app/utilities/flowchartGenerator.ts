@@ -99,7 +99,7 @@ interface Test {
     };
     operator: string;
     right: {
-        value: string | number | boolean | object; // 汎用的な型を指定
+        value: string | number | boolean | object;
     };
 }
 
@@ -135,7 +135,6 @@ export const generateFlowchartXML = (ast: ASTNode) => {
     let edgeId = 1000; // エッジ用のIDを別に管理
     let maxY = 0; //ノード追加時にy座標を記録
     let lastPlacedY = 30;
-    let mainFlowlastNodetId = 0;
     const drawX = 240;
     const nodeDefaultHeight = 30;
     //ノードの真下
@@ -186,7 +185,6 @@ export const generateFlowchartXML = (ast: ASTNode) => {
     };
 
     const addNode = (value: string, style: string, x: number, y: number, previousNodeId: number | null, width: number = 120, height: number = nodeDefaultHeight) => {
-        console.log(`addNode: ${value} at (${x}, ${y})`);
         const node = createNode(value, style, x, y, width, height);
         xml += node;
         if (previousNodeId !== null) {
@@ -355,6 +353,14 @@ export const generateFlowchartXML = (ast: ASTNode) => {
 
     const resPlaceholder = (): number => nodeId - 1;
 
+    const getBodyNodes = (body: unknown): ASTNode[] | undefined => {
+        if (!body) return undefined;
+        if (Array.isArray(body)) return body as ASTNode[];
+        const maybe = body as { body?: unknown };
+        if (maybe.body && Array.isArray(maybe.body)) return maybe.body as ASTNode[];
+        return undefined;
+    };
+
     const processNode = (node: ASTNode, x: number, y: number, parentNodeId: number | null): ProcessResult => {
         switch (node.type) {
             case 'ExpressionStatement': {
@@ -368,11 +374,11 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                     } else if (expression.type === 'CallExpression') {
                         const callee = expression.callee;
                         let calleeName = '';
-
-                        if ((callee as any).type === 'Identifier') {
+                        const calleeKind = (callee as Identifier | MemberExpression).type;
+                        if (calleeKind === 'Identifier') {
                             calleeName = (callee as Identifier).name;
-                        } else if ((callee as any).type === 'MemberExpression') {
-                            calleeName = ((callee as MemberExpression).object).name;
+                        } else if (calleeKind === 'MemberExpression') {
+                            calleeName = (callee as MemberExpression).object.name;
                         }
 
                         const args = expression.arguments.map((arg: Argument) => {
@@ -383,15 +389,20 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                             }
                         }).join(', ');
 
-                        if ((callee as any).type === 'MemberExpression' && (callee as MemberExpression).object.name === 'console' && (callee as MemberExpression).property.name === 'log') {
-                            addNode(`${args}を表示する`, 'endArrow=none;html=1;rounded=0;entryX=0.5;entryY=0.5;entryDx=0;entryDy=15;entryPerimeter=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
-                            const id = nodeId - 1;
-                            return { endId: id, endY: getNodeBottomY(id), centerY: nodePositions[id].y + (nodePositions[id].height || nodeDefaultHeight) / 2 };
-                        } else {
-                            addNode(`${calleeName}(${args})を実行する`, 'shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
-                            const id = nodeId - 1;
-                            return { endId: id, endY: getNodeBottomY(id), centerY: nodePositions[id].y + (nodePositions[id].height || nodeDefaultHeight) / 2 };
+                        // MemberExpression 判定は型ガードで明示的に行う
+                        if (calleeKind === 'MemberExpression') {
+                            const memberCallee = callee as MemberExpression;
+                            if (memberCallee.object?.name === 'console' && memberCallee.property?.name === 'log') {
+                                addNode(`${args}を表示する`, 'endArrow=none;html=1;rounded=0;entryX=0.5;entryY=0.5;entryDx=0;entryDy=15;entryPerimeter=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
+                                const id = nodeId - 1;
+                                return { endId: id, endY: getNodeBottomY(id), centerY: nodePositions[id].y + (nodePositions[id].height || nodeDefaultHeight) / 2 };
+                            }
                         }
+
+                        addNode(`${calleeName}(${args})を実行する`, 'shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
+                        const id = nodeId - 1;
+                        return { endId: id, endY: getNodeBottomY(id), centerY: nodePositions[id].y + (nodePositions[id].height || nodeDefaultHeight) / 2 };
+
                     } else if (expression.type === 'UpdateExpression') {
                         const argument = expression.argument as Identifier;
                         const operator = expression.operator;
@@ -409,11 +420,11 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 let rightStr = '';
                 let op = '';
 
-                if (testNode && (testNode as any).type === 'BinaryExpression') {
+                if (testNode && (testNode as BinaryExpression).type === 'BinaryExpression') {
                     leftStr = getExpressionString((testNode as BinaryExpression).left as InitExpression);
                     rightStr = getExpressionString((testNode as BinaryExpression).right as InitExpression);
                     op = mapComparisonOperator((testNode as BinaryExpression).operator);
-                } else if (testNode && (testNode as any).type === 'Test') {
+                } else if (testNode && (testNode as Test).type === 'Test') {
                     leftStr = (testNode as Test).left.name;
                     rightStr = String((testNode as Test).right.value);
                     op = mapComparisonOperator((testNode as Test).operator);
@@ -563,22 +574,12 @@ export const generateFlowchartXML = (ast: ASTNode) => {
 
                 addNode(`${whileTestString}の間`, 'strokeWidth=1;html=1;shape=loopLimit;whiteSpace=wrap;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
 
-                let bodyLength: number = 0;
                 const beforeLoopMaxY = maxY;
-                if (node.body) {
-                    if (Array.isArray(node.body)) {
-                        for (let index = 0; index < node.body.length; index++) {
-                            const bodyNode = node.body[index];
-                            const res = processNode(bodyNode, x, y + 60 * (index + 1), null);
-                            bodyLength = index + 1;
-                        }
-                    } else if (Array.isArray(node.body.body)) {
-                        const arr = (node.body as any).body as ASTNode[];
-                        for (let index = 0; index < arr.length; index++) {
-                            const bodyNode = arr[index];
-                            const res = processNode(bodyNode, x, y + 60 * (index + 1), null);
-                            bodyLength = index + 1;
-                        }
+                const arr = getBodyNodes(node.body);
+                if (arr) {
+                    for (let index = 0; index < arr.length; index++) {
+                        const bodyNode = arr[index];
+                        const res = processNode(bodyNode, x, y + 60 * (index + 1), null);
                     }
                 }
 
@@ -648,18 +649,11 @@ export const generateFlowchartXML = (ast: ASTNode) => {
 
                 // ループ開始前の maxY を保持し、ボディ処理後に実際の maxY を参照して終端位置を決める
                 const beforeLoopMaxY = maxY;
-                if (node.body) {
-                    if (Array.isArray(node.body)) {
-                        for (let index = 0; index < node.body.length; index++) {
-                            const bodyNode = node.body[index];
-                            processNode(bodyNode, x, y + 60 * (index + 1), null);
-                        }
-                    } else if (Array.isArray(node.body.body)) {
-                        const arr = (node.body as any).body as ASTNode[];
-                        for (let index = 0; index < arr.length; index++) {
-                            const bodyNode = arr[index];
-                            processNode(bodyNode, x, y + 60 * (index + 1), null);
-                        }
+                const arrFor = getBodyNodes(node.body);
+                if (arrFor) {
+                    for (let index = 0; index < arrFor.length; index++) {
+                        const bodyNode = arrFor[index];
+                        processNode(bodyNode, x, y + 60 * (index + 1), null);
                     }
                 }
 
@@ -681,18 +675,11 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 if (functionName) {
                     addNode(`関数${functionName}`, 'html=1;dashed=0;whiteSpace=wrap;shape=mxgraph.dfd.start;', x + 400, y, null);
 
-                    if (node.body) {
-                        if (Array.isArray(node.body)) {
-                            for (let index = 0; index < node.body.length; index++) {
-                                const bodyNode = node.body[index];
-                                processNode(bodyNode, x + 400, maxY + 60, null);
-                            }
-                        } else if (Array.isArray((node.body as any).body)) {
-                            const arr = (node.body as any).body as ASTNode[];
-                            for (let index = 0; index < arr.length; index++) {
-                                const bodyNode = arr[index];
-                                processNode(bodyNode, x + 400, maxY + 60, null);
-                            }
+                    const arrFunc = getBodyNodes(node.body);
+                    if (arrFunc) {
+                        for (let index = 0; index < arrFunc.length; index++) {
+                            const bodyNode = arrFunc[index];
+                            processNode(bodyNode, x + 400, maxY + 60, null);
                         }
                     }
 
@@ -719,18 +706,21 @@ export const generateFlowchartXML = (ast: ASTNode) => {
             const yCenter = pos ? pos.y + (pos.height || nodeDefaultHeight) / 2 : maxY + nodeDefaultHeight / 2;
             nodeIds.push({ id: lastNodeId, x, yCenter });
             return res;
-        } else if (node.body && Array.isArray(node.body)) {
-            let lastRes: ProcessResult | null = null;
-            for (let index = 0; index < node.body.length; index++) {
-                const alternateNode = node.body[index];
-                const res = processNode(alternateNode, x, y + 60 * (index + 1), index === 0 ? parentNodeId : resPlaceholder());
-                lastNodeId = res.endId;
-                lastRes = res;
+        } else {
+            const arrAlt = getBodyNodes(node.body);
+            if (arrAlt) {
+                let lastRes: ProcessResult | null = null;
+                for (let index = 0; index < arrAlt.length; index++) {
+                    const alternateNode = arrAlt[index];
+                    const res = processNode(alternateNode, x, y + 60 * (index + 1), index === 0 ? parentNodeId : resPlaceholder());
+                    lastNodeId = res.endId;
+                    lastRes = res;
+                }
+                const pos = nodePositions[lastNodeId];
+                const yCenter = pos ? pos.y + (pos.height || nodeDefaultHeight) / 2 : maxY + nodeDefaultHeight / 2;
+                nodeIds.push({ id: lastNodeId, x, yCenter });
+                return lastRes;
             }
-            const pos = nodePositions[lastNodeId];
-            const yCenter = pos ? pos.y + (pos.height || nodeDefaultHeight) / 2 : maxY + nodeDefaultHeight / 2;
-            nodeIds.push({ id: lastNodeId, x, yCenter });
-            return lastRes;
         }
         return null;
     };
@@ -740,7 +730,6 @@ export const generateFlowchartXML = (ast: ASTNode) => {
     if (Array.isArray(ast.body)) {
         for (const node of ast.body) {
             const startY = Math.max(30, lastPlacedY + 60);
-            console.log(node);
             const res = processNode(node, drawX, startY, null);
             // maxY は底辺ベースで更新
             maxY = Math.max(maxY, res.endY);
