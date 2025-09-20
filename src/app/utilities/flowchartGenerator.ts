@@ -389,7 +389,51 @@ export const generateFlowchartXML = (ast: ASTNode) => {
 
                 const testString = `${leftStr} ${op} ${rightStr}`.trim();
                 addNode(testString, 'rhombus;whiteSpace=wrap;html=1;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
-                // ...以降の処理...
+
+
+                const ifNodeId = nodeId - 1;
+                let nodeIds: number[] = [];
+
+                // 真の分岐
+                if (node.consequent && node.consequent.body) {
+                    label = 'はい';
+                    node.consequent.body.forEach((consequentNode: ASTNode, index: number) => {
+                        // console.log(`条件分岐y:${y + 30 * (index + 1)}`)
+                        processNode(consequentNode, x, y + 60 * (index + 1), index == 0 ? ifNodeId : nodeId - 1);
+                        lastNodeId = nodeId - 1;
+                    });
+                    nodeIds.push(lastNodeId);
+                }
+
+                // 偽の分岐（`else` または `else if`）
+                if (node.alternate) {
+                    exitXY = rightCenter;
+                    label = 'いいえ';
+                    processAlternate(node.alternate as ASTNode, x + 160, y, ifNodeId, nodeIds);
+                }
+
+                // ダミーノード(分岐を収束させる)
+                addNode('', 'shape=ellipse;whiteSpace=wrap;html=1;', x + 60, maxY + 60, null, 0, 0);
+                const mergeNodeId = nodeId - 1;
+
+                // 真と偽のノードから収束ノードへのエッジを追加
+                nodeIds.forEach(id => {
+                    xml += createEdge(id, mergeNodeId, 'endArrow=none;');
+                });
+                nodeIds = [];
+
+                //ifのみでも分岐の線を引く
+                if (!node.alternate) {
+                    const wayPoint = `
+                            <Array as="points">
+                            <mxPoint x="${x + 200}" y="${y + 15}" />
+                            <mxPoint x="${x + 200}" y="${maxY}" />
+                            </Array>
+                    `
+                    label = 'いいえ';
+                    xml += createEdge(ifNodeId, mergeNodeId, 'endArrow=block;', wayPoint);
+                }
+
                 break;
             }
 
