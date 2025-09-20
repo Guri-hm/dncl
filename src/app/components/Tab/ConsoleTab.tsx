@@ -238,7 +238,7 @@ export const ConsoleTab: React.FC<CustomBoxProps> = React.memo(({
             setDnclValidation(result);
             setTmpMsg('');
         }
-    }, [execute, setDnclValidation]);
+    }, [execute, setDnclValidation, warnningColor]);
 
     // コード変換処理の最適化（キャッシュ付き）
     const renderCode = useCallback(async (nodes: TreeItems): Promise<string> => {

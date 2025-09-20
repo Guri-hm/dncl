@@ -82,7 +82,12 @@ export async function POST(req: NextRequest) {
         );
 
         if (isSandboxError) {
-            const body: any = {
+            type SandboxErrorBody = {
+                sandboxError: true;
+                error: string;
+                line?: number;
+            };
+            const body: SandboxErrorBody = {
                 sandboxError: true,
                 error: responseMessage
             };

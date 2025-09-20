@@ -130,7 +130,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
         [fieldName]: value
       }));
     }
-  }, [name, index]);
+  }, [name, index, inputType]);
 
   useEffect(() => {
     if (!initialRestoreValues) return;

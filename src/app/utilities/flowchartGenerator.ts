@@ -438,7 +438,15 @@ export const generateFlowchartXML = (ast: ASTNode) => {
             }
 
             case 'WhileStatement': {
-                const testNode = node.test as any;
+                const testNode = node.test as
+                    | BinaryExpression
+                    | Test
+                    | Identifier
+                    | Literal
+                    | ParenthesizedExpression
+                    | UnaryExpression
+                    | undefined
+                    | null;
 
                 let whileTestString = '';
                 if (!testNode) {
