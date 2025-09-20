@@ -5,6 +5,7 @@ import { ComparisonOperatorDncl, SimpleAssignmentOperator } from '../enum';
 export const parseCode = (code: string) => {
     return acorn.parse(code, { ecmaVersion: 2020 }) as ASTNode;
 };
+
 interface ExtendedASTNode extends ASTNode {
     key?: { name?: string };
 }
@@ -48,11 +49,6 @@ interface BinaryExpression {
     left: Expression;
     operator: string;
     right: Expression;
-}
-
-interface Identifier {
-    type: 'Identifier';
-    name: string;
 }
 
 interface Literal {
@@ -117,6 +113,16 @@ const escape = (str: string): string => {
         .replace(/'/g, '&apos;');
 };
 
+// 比較演算子を DNCL 表記にマッピングするヘルパー
+const mapComparisonOperator = (op?: string): string => {
+    if (!op) return '';
+    // == / === を = に変換
+    if (op === '==' || op === '===') return '=';
+    // != / !== を ≠ に変換
+    if (op === '!=' || op === '!==') return ComparisonOperatorDncl.NotEqualToOperator;
+    return op;
+};
+
 export const generateFlowchartXML = (ast: ASTNode) => {
     let xml = `
 <mxGraphModel>
@@ -128,6 +134,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
     let nodeId = 2;
     let edgeId = 1000; // エッジ用のIDを別に管理
     let maxY = 0; //ノード追加時にy座標を記録
+    let lastPlacedY = 30;
     let mainFlowlastNodetId = 0;
     const drawX = 240;
     const nodeDefaultHeight = 30;
@@ -136,22 +143,34 @@ export const generateFlowchartXML = (ast: ASTNode) => {
     let lastNodeId: number;
     let label: string = '';
 
+    // 各ノードの位置を保存（id -> {x,y,width,height}）
+    const nodePositions: Record<number, { x: number; y: number; width: number; height: number }> = {};
+
     const createNode = (value: string, style: string, x: number, y: number, width: number = 120, height: number = nodeDefaultHeight): string => {
         const node = `
     <mxCell id="${nodeId}" value="${escape(value)}" style="whiteSpace=wrap;${style}" vertex="1" parent="1">
       <mxGeometry x="${x}" y="${y}" width="${width}" height="${height}" as="geometry" />
     </mxCell>
     `;
-        maxY = y > maxY ? y : maxY;
+        // 作成ノードの位置を保存（作成前の nodeId がこのノードの id）
+        const createdId = nodeId;
+        nodePositions[createdId] = { x, y, width, height };
+        const bottomY = y + height;
+        maxY = bottomY > maxY ? bottomY : maxY;
+        lastPlacedY = y;
         nodeId++;
-        lastNodeId = nodeId;
+        lastNodeId = createdId;
         return node;
     };
 
     const createEdge = (source: number, target: number, style: string = 'endArrow=none;', wayPoints: string = ''): string => {
+        const edgeStylePart = exitXY
+            ? `exitX=${exitXY.x};exitY=${exitXY.y};edgeStyle=orthogonalEdgeStyle;`
+            : `edgeStyle=orthogonalEdgeStyle;`;
+        const fullStyle = `${style}${edgeStylePart}rounded=0;curved=0;`;
 
         const edge = `
-    <mxCell id="${edgeId}" value="${label}" style="${style}${exitXY ? `exitX=${exitXY.x};exitY=${exitXY.y};` : 'orthogonalEdgeStyle'};rounded=0;curved=0;" edge="1" parent="1" source="${source}" target="${target}">
+    <mxCell id="${edgeId}" value="${label}" style="${fullStyle}" edge="1" parent="1" source="${source}" target="${target}">
       <mxGeometry relative="1" as="geometry">
         <mxPoint x="300" y="200" as="sourcePoint" />
         ${wayPoints}
@@ -218,8 +237,8 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                         return "";
                     case 'BinaryExpression':
                         const leftBinary = getExpressionString(expression.left as InitExpression);
-                        // 「!==」を「≠」に変換
-                        const operatorBinary = expression.operator === '!==' ? ComparisonOperatorDncl.NotEqualToOperator : expression.operator || "";
+                        // 比較演算子を DNCL 表記に変換（== -> =, !=/!== -> ≠ 等）
+                        const operatorBinary = mapComparisonOperator(expression.operator);
                         const rightBinary = getExpressionString(expression.right as InitExpression);
                         return `${leftBinary} ${operatorBinary} ${rightBinary}`;
                     case 'ArrayExpression':
@@ -326,23 +345,34 @@ export const generateFlowchartXML = (ast: ASTNode) => {
         return null;
     }
 
-    const processNode = (node: ASTNode, x: number, y: number, parentNodeId: number | null) => {
+    type ProcessResult = { endId: number; endY: number; centerY?: number };
+
+    const getNodeBottomY = (id: number): number => {
+        const pos = nodePositions[id];
+        if (!pos) return maxY;
+        return pos.y + (pos.height || nodeDefaultHeight);
+    };
+
+    const resPlaceholder = (): number => nodeId - 1;
+
+    const processNode = (node: ASTNode, x: number, y: number, parentNodeId: number | null): ProcessResult => {
         switch (node.type) {
-            case 'ExpressionStatement':
+            case 'ExpressionStatement': {
                 if (node.expression) {
                     const expression = node.expression as Expression;
                     if (expression.type === 'AssignmentExpression') {
                         const expressionString = getExpressionString(expression);
                         addNode(expressionString, 'endArrow=none;html=1;rounded=0;entryX=0.5;entryY=0.5;entryDx=0;entryDy=15;entryPerimeter=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
+                        const id = nodeId - 1;
+                        return { endId: id, endY: getNodeBottomY(id), centerY: (nodePositions[id].y + (nodePositions[id].height || nodeDefaultHeight) / 2) };
                     } else if (expression.type === 'CallExpression') {
-                        //関数の実行やconsole.logは「CallExpression」
                         const callee = expression.callee;
                         let calleeName = '';
 
-                        if (callee.type === 'Identifier') {
-                            calleeName = callee.name;
-                        } else if (callee.type === 'MemberExpression') {
-                            calleeName = callee.object.name;
+                        if ((callee as any).type === 'Identifier') {
+                            calleeName = (callee as Identifier).name;
+                        } else if ((callee as any).type === 'MemberExpression') {
+                            calleeName = ((callee as MemberExpression).object).name;
                         }
 
                         const args = expression.arguments.map((arg: Argument) => {
@@ -353,88 +383,153 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                             }
                         }).join(', ');
 
-                        if (callee.type === 'MemberExpression' && callee.object.name === 'console' && callee.property.name === 'log') {
+                        if ((callee as any).type === 'MemberExpression' && (callee as MemberExpression).object.name === 'console' && (callee as MemberExpression).property.name === 'log') {
                             addNode(`${args}を表示する`, 'endArrow=none;html=1;rounded=0;entryX=0.5;entryY=0.5;entryDx=0;entryDy=15;entryPerimeter=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
+                            const id = nodeId - 1;
+                            return { endId: id, endY: getNodeBottomY(id), centerY: nodePositions[id].y + (nodePositions[id].height || nodeDefaultHeight) / 2 };
                         } else {
-                            // 定義済み関数の呼び出しの場合の処理
                             addNode(`${calleeName}(${args})を実行する`, 'shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
+                            const id = nodeId - 1;
+                            return { endId: id, endY: getNodeBottomY(id), centerY: nodePositions[id].y + (nodePositions[id].height || nodeDefaultHeight) / 2 };
                         }
                     } else if (expression.type === 'UpdateExpression') {
                         const argument = expression.argument as Identifier;
                         const operator = expression.operator;
                         addNode(`${argument.name}${operator}`, 'endArrow=none;html=1;rounded=0;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
+                        const id = nodeId - 1;
+                        return { endId: id, endY: getNodeBottomY(id), centerY: nodePositions[id].y + (nodePositions[id].height || nodeDefaultHeight) / 2 };
                     }
                 }
-                break;
+                return { endId: nodeId - 1, endY: maxY };
+            }
             case 'IfStatement': {
-                // testNodeの型ガード
-                const testNode = node.test as BinaryExpression | Test | Expression;
+                const testNode = node.test as BinaryExpression | Test | Expression | undefined | null;
 
                 let leftStr = '';
                 let rightStr = '';
                 let op = '';
 
-                // BinaryExpressionまたはTest型の場合のみプロパティにアクセス
-                if (testNode.type === 'BinaryExpression') {
+                if (testNode && (testNode as any).type === 'BinaryExpression') {
                     leftStr = getExpressionString((testNode as BinaryExpression).left as InitExpression);
                     rightStr = getExpressionString((testNode as BinaryExpression).right as InitExpression);
-                    op = (testNode as BinaryExpression).operator === '!==' ? ComparisonOperatorDncl.NotEqualToOperator : (testNode as BinaryExpression).operator;
-                } else if (testNode.type === 'Test') {
+                    op = mapComparisonOperator((testNode as BinaryExpression).operator);
+                } else if (testNode && (testNode as any).type === 'Test') {
                     leftStr = (testNode as Test).left.name;
                     rightStr = String((testNode as Test).right.value);
-                    op = (testNode as Test).operator === '!==' ? ComparisonOperatorDncl.NotEqualToOperator : (testNode as Test).operator;
-                } else {
+                    op = mapComparisonOperator((testNode as Test).operator);
+                } else if (testNode) {
                     leftStr = getExpressionString(testNode as InitExpression);
                 }
 
                 const testString = `${leftStr} ${op} ${rightStr}`.trim();
                 addNode(testString, 'rhombus;whiteSpace=wrap;html=1;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
 
-
                 const ifNodeId = nodeId - 1;
-                let nodeIds: number[] = [];
+                // 合流用に id とその x 座標・垂直中心を保持する
+                let nodeIds: { id: number; x: number; yCenter: number }[] = [];
 
-                // 真の分岐
+                // ブランチ用の基準 Y（テストノードの下端）
+                const branchBaseTop = y + (nodeDefaultHeight);
+
+                // 真の分岐（逐次処理して最後の endId を取得）
+                // 真の分岐（逐次処理して最後の endId を取得）
                 if (node.consequent && node.consequent.body) {
                     label = 'はい';
-                    node.consequent.body.forEach((consequentNode: ASTNode, index: number) => {
-                        // console.log(`条件分岐y:${y + 30 * (index + 1)}`)
-                        processNode(consequentNode, x, y + 60 * (index + 1), index == 0 ? ifNodeId : nodeId - 1);
-                        lastNodeId = nodeId - 1;
-                    });
-                    nodeIds.push(lastNodeId);
+                    // ブランチ内の lastPlacedY を親と独立させる（他のブランチへ影響させない）
+                    const prevLastPlacedY = lastPlacedY;
+                    lastPlacedY = branchBaseTop;
+
+                    let lastRes: ProcessResult | null = null;
+                    for (let index = 0; index < node.consequent.body.length; index++) {
+                        const consequentNode = node.consequent.body[index];
+                        // ブランチ内はテストノード直下からの相対配置を使う
+                        const startY = branchBaseTop + 60 * (index + 1);
+                        const res = processNode(consequentNode, x, startY, index === 0 ? ifNodeId : resPlaceholder());
+                        lastRes = res;
+                    }
+
+                    // ブランチ処理後に global lastPlacedY を復元
+                    lastPlacedY = prevLastPlacedY;
+
+                    if (lastRes) {
+                        lastNodeId = lastRes.endId;
+                        const pos = nodePositions[lastNodeId];
+                        const yCenter = pos ? pos.y + (pos.height || nodeDefaultHeight) / 2 : maxY + nodeDefaultHeight / 2;
+                        nodeIds.push({ id: lastNodeId, x: x, yCenter });
+                    }
                 }
 
-                // 偽の分岐（`else` または `else if`）
                 if (node.alternate) {
                     exitXY = rightCenter;
                     label = 'いいえ';
-                    processAlternate(node.alternate as ASTNode, x + 160, y, ifNodeId, nodeIds);
+                    // alternate も同様に branchBaseTop を基準に処理（lastPlacedY を一時的に置き換える）
+                    const prevLastPlacedY2 = lastPlacedY;
+                    lastPlacedY = branchBaseTop;
+                    processAlternate(node.alternate as ASTNode, x + 160, branchBaseTop, ifNodeId, nodeIds);
+                    lastPlacedY = prevLastPlacedY2;
                 }
 
-                // ダミーノード(分岐を収束させる)
-                addNode('', 'shape=ellipse;whiteSpace=wrap;html=1;', x + 60, maxY + 60, null, 0, 0);
+                const branchCenters = nodeIds.filter(it => (it.yCenter ?? 0) >= (y + nodeDefaultHeight / 2));
+                const averageCenter = branchCenters.length > 0
+                    ? Math.round(branchCenters.reduce((acc, it) => acc + (it.yCenter || 0), 0) / branchCenters.length)
+                    : (maxY + 60);
+
+                // 各分岐ノードの下端の最大値を求め、合流 center の下限をそこから半ノード高さ分下に設定する
+                const sourceBottomMax = nodeIds.reduce((acc, it) => {
+                    const p = nodePositions[it.id];
+                    const bottom = p ? (p.y + (p.height || nodeDefaultHeight)) : acc;
+                    return Math.max(acc, bottom);
+                }, 0);
+                const minMergeCenter = sourceBottomMax + Math.round(nodeDefaultHeight / 2);
+
+                const calculatedMergeCenterY = Math.max(averageCenter, minMergeCenter, maxY + 20);
+
+                // merge ノードは高さ 1 の透明ダミーにして中心位置を厳密に合わせる
+                const mergeHeight = 1;
+                const mergeTopY = calculatedMergeCenterY - Math.floor(mergeHeight / 2);
+                addNode('', 'shape=ellipse;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;', x + 60, mergeTopY, null, 0, mergeHeight);
                 const mergeNodeId = nodeId - 1;
+                if (nodePositions[mergeNodeId]) {
+                    nodePositions[mergeNodeId].y = mergeTopY;
+                    nodePositions[mergeNodeId].height = mergeHeight;
+                    nodePositions[mergeNodeId].width = 0;
+                }
 
-                // 真と偽のノードから収束ノードへのエッジを追加
-                nodeIds.forEach(id => {
-                    xml += createEdge(id, mergeNodeId, 'endArrow=none;');
-                });
-                nodeIds = [];
+                const mergeX = x + 60;
+                const mergeY = calculatedMergeCenterY;
 
-                //ifのみでも分岐の線を引く
+                // if に alternate が無い場合でも「いいえ」経路を明示的に描画する（以前の挙動を再現）
                 if (!node.alternate) {
                     const wayPoint = `
-                            <Array as="points">
-                            <mxPoint x="${x + 200}" y="${y + 15}" />
-                            <mxPoint x="${x + 200}" y="${maxY}" />
-                            </Array>
-                    `
+                        <Array as="points">
+                            <mxPoint x="${x + 200}" y="${y + Math.round(nodeDefaultHeight / 2)}" />
+                            <mxPoint x="${x + 200}" y="${mergeY}" />
+                        </Array>
+                    `;
                     label = 'いいえ';
                     xml += createEdge(ifNodeId, mergeNodeId, 'endArrow=block;', wayPoint);
                 }
 
-                break;
+                nodeIds.forEach(item => {
+                    const srcId = item.id;
+                    const srcPos = nodePositions[srcId];
+                    const nodeWidth = srcPos?.width ?? 120;
+                    const nodeHeight = srcPos?.height ?? nodeDefaultHeight;
+                    const srcCenterX = (srcPos?.x ?? item.x) + nodeWidth / 2;
+                    // ソースの下端（bottom）から垂直に降ろす
+                    const srcBottomY = (srcPos?.y ?? (mergeY - nodeHeight)) + nodeHeight;
+                    const wayPoint = `
+                        <Array as="points">
+                            <mxPoint x="${srcCenterX}" y="${srcBottomY}" />
+                            <mxPoint x="${srcCenterX}" y="${mergeY}" />
+                            <mxPoint x="${mergeX}" y="${mergeY}" />
+                        </Array>
+                    `;
+                    xml += createEdge(srcId, mergeNodeId, 'endArrow=none;', wayPoint);
+                });
+                nodeIds = [];
+
+                return { endId: mergeNodeId, endY: getNodeBottomY(mergeNodeId), centerY: nodePositions[mergeNodeId].y + (nodePositions[mergeNodeId].height || nodeDefaultHeight) / 2 };
             }
 
             case 'WhileStatement': {
@@ -454,7 +549,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 } else if (testNode.type === 'BinaryExpression') {
                     const left = getExpressionString((testNode as BinaryExpression).left as InitExpression);
                     const right = getExpressionString((testNode as BinaryExpression).right as InitExpression);
-                    const op = (testNode as BinaryExpression).operator === '!==' ? ComparisonOperatorDncl.NotEqualToOperator : (testNode as BinaryExpression).operator;
+                    const op = mapComparisonOperator((testNode as BinaryExpression).operator);
                     whileTestString = `${left} ${op} ${right}`;
                 } else if (testNode.type === 'Test') {
                     whileTestString = `${(testNode as Test).left.name} ${(testNode as Test).operator} ${String((testNode as Test).right.value)}`;
@@ -463,34 +558,34 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 } else if (testNode.type === 'Literal') {
                     whileTestString = String((testNode as Literal).value);
                 } else {
-                    // フォールバックで汎用的に文字列化
                     whileTestString = getExpressionString(testNode as InitExpression) || '条件の間';
                 }
 
-                // ループ開始端子
-                addNode(`${whileTestString}の間`, 'strokeWidth=1;html=1;shape=loopLimit;whiteSpace=wrap;', x, y, nodeId - 1);
+                addNode(`${whileTestString}の間`, 'strokeWidth=1;html=1;shape=loopLimit;whiteSpace=wrap;', x, y, parentNodeId ? parentNodeId : nodeId - 1);
 
                 let bodyLength: number = 0;
 
                 if (node.body) {
                     if (Array.isArray(node.body)) {
-                        node.body.forEach((bodyNode: ASTNode, index: number) => {
-                            processNode(bodyNode, x, y + 60 * (index + 1), null);
-                        });
-                        bodyLength = node.body.length;
+                        for (let index = 0; index < node.body.length; index++) {
+                            const bodyNode = node.body[index];
+                            const res = processNode(bodyNode, x, y + 60 * (index + 1), null);
+                            bodyLength = index + 1;
+                        }
                     } else if (Array.isArray(node.body.body)) {
-                        node.body.body.forEach((bodyNode: ASTNode, index: number) => {
-                            processNode(bodyNode, x, y + 60 * (index + 1), null);
-                        });
-                        bodyLength = node.body.body.length;
+                        const arr = (node.body as any).body as ASTNode[];
+                        for (let index = 0; index < arr.length; index++) {
+                            const bodyNode = arr[index];
+                            const res = processNode(bodyNode, x, y + 60 * (index + 1), null);
+                            bodyLength = index + 1;
+                        }
                     }
                 }
 
-                // ループ終了端子
                 addNode('', 'strokeWidth=1;html=1;shape=loopLimit;whiteSpace=wrap;flipH=0;flipV=1;', x, y + 60 + 60 * (bodyLength), nodeId - 1);
-
-                break;
+                return { endId: nodeId - 1, endY: getNodeBottomY(nodeId - 1), centerY: nodePositions[nodeId - 1].y + (nodePositions[nodeId - 1].height || nodeDefaultHeight) / 2 };
             }
+
             case 'ForStatement': {
                 const parseExpression = (expression: string): { operator: string, rightSide: string } => {
                     const match = expression.match(/([+-])\s*(.*)/);
@@ -502,7 +597,6 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                     return { operator: '', rightSide: '' };
                 };
 
-                // init 文字列から変数名と開始値を取り出す（"a = 1" / "a←1" / "a ← 1" 等に対応）
                 const forInit = node.init ? getExpressionString(node.init as InitExpression) : '';
                 let variable = '';
                 let fromNum = '';
@@ -516,7 +610,6 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                     fromNum = parts[1] || '';
                 }
 
-                // test 文字列から比較演算子と終了値を取り出す（<=, <, >=, > に対応）
                 const forTest = node.test ? getExpressionString(node.test as InitExpression) : '';
                 let compareOp = '';
                 let toNum = '';
@@ -529,20 +622,17 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                     toNum = parts[1] || parts[0] || '';
                 }
 
-                // 比較演算子ごとの日本語表現
                 const compareWord = compareOp === '<=' ? 'まで'
                     : compareOp === '<' ? '未満'
                         : compareOp === '>=' ? '以上'
                             : compareOp === '>' ? 'より大きい'
                                 : 'まで';
 
-                // update 部分（増分）を解析
                 const forUpdate = node.update ? getExpressionString(node.update as InitExpression) : '';
                 const result = parseExpression(forUpdate);
                 const stepText = result.rightSide ? `${result.rightSide}ずつ` : '';
                 const direction = result.operator === '+' ? '増やしながら' : result.operator === '-' ? '減らしながら' : 'しながら';
 
-                // ループ開始端子（変数/開始/終了/増減の表現を組み立てる）
                 addNode(
                     `${variable}を${fromNum}から${toNum}${compareWord}${stepText}${direction}`,
                     'strokeWidth=1;html=1;shape=loopLimit;whiteSpace=wrap;',
@@ -550,107 +640,103 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 );
 
                 let forBodyLength: number = 0;
-
                 if (node.body) {
                     if (Array.isArray(node.body)) {
-                        node.body.forEach((bodyNode: ASTNode, index: number) => {
-                            processNode(bodyNode, x, y + 60 * (index + 1), null);
-                        });
-                        forBodyLength = node.body.length;
+                        for (let index = 0; index < node.body.length; index++) {
+                            const bodyNode = node.body[index];
+                            const res = processNode(bodyNode, x, y + 60 * (index + 1), null);
+                            forBodyLength = index + 1;
+                        }
                     } else if (Array.isArray(node.body.body)) {
-                        node.body.body.forEach((bodyNode: ASTNode, index: number) => {
-                            processNode(bodyNode, x, y + 60 * (index + 1), null);
-                        });
-                        forBodyLength = node.body.body.length;
+                        const arr = (node.body as any).body as ASTNode[];
+                        for (let index = 0; index < arr.length; index++) {
+                            const bodyNode = arr[index];
+                            const res = processNode(bodyNode, x, y + 60 * (index + 1), null);
+                            forBodyLength = index + 1;
+                        }
                     }
                 };
 
-                // ループ終了端子
                 addNode('', 'strokeWidth=1;html=1;shape=loopLimit;whiteSpace=wrap;flipH=0;flipV=1;', x, y + 60 + 60 * (forBodyLength), nodeId - 1);
-
-                break;
+                return { endId: nodeId - 1, endY: getNodeBottomY(nodeId - 1), centerY: nodePositions[nodeId - 1].y + (nodePositions[nodeId - 1].height || nodeDefaultHeight) / 2 };
             }
 
             case 'FunctionDeclaration':
-            case 'FunctionExpression':
-
-                mainFlowlastNodetId = nodeId - 1;
+            case 'FunctionExpression': {
+                const mainFlowlastNodetId = nodeId - 1;
                 const mainFlowMaxY = maxY;
                 const functionName = (node as ExtendedASTNode).id?.name || (node as ExtendedASTNode).key?.name || null;
                 if (functionName) {
-                    // 定義済み関数の場合はノードを作成しない
                     addNode(`関数${functionName}`, 'html=1;dashed=0;whiteSpace=wrap;shape=mxgraph.dfd.start;', x + 400, y, null);
 
-                    // let bodyLength: number = 0;
-
-                    // 関数のボディを再帰的に処理
                     if (node.body) {
                         if (Array.isArray(node.body)) {
-                            node.body.forEach((bodyNode: ASTNode, index: number) => {
-                                // console.log(`関数の子要素${(index + 1)}y:${maxY + 60}`)
+                            for (let index = 0; index < node.body.length; index++) {
+                                const bodyNode = node.body[index];
                                 processNode(bodyNode, x + 400, maxY + 60, null);
-                            });
-                            // bodyLength = node.body.length;
-                        } else if (Array.isArray(node.body.body)) {
-                            node.body.body.forEach((bodyNode: ASTNode, index: number) => {
-                                // console.log(`関数の子要素${(index + 1)}y:${maxY + 60}`)
+                            }
+                        } else if (Array.isArray((node.body as any).body)) {
+                            const arr = (node.body as any).body as ASTNode[];
+                            for (let index = 0; index < arr.length; index++) {
+                                const bodyNode = arr[index];
                                 processNode(bodyNode, x + 400, maxY + 60, null);
-                            });
-                            // bodyLength = node.body.body.length;
+                            }
                         }
                     }
 
-                    // 関数の終了ノードを追加
                     addNode(`終了`, 'html=1;dashed=0;whiteSpace=wrap;shape=mxgraph.dfd.start;', x + 400, maxY + 60, nodeId - 1);
-
-                    // ダミーノード(関数は主フローと切り離すため，このダミーノードで主フローのエッジ連結に軌道修正)
                     addNode('', 'shape=ellipse;whiteSpace=wrap;html=1;', x + 60, y, mainFlowlastNodetId, 0, 0);
-                    // 主フローの最深Yに戻す
                     maxY = mainFlowMaxY;
-                    return;
-
+                    return { endId: mainFlowlastNodetId, endY: maxY };
                 }
                 break;
+            }
 
             default:
                 break;
         }
+
+        return { endId: nodeId - 1, endY: maxY };
     };
 
-    const processAlternate = (node: ASTNode, x: number, y: number, parentNodeId: number, nodeIds: number[]) => {
+    const processAlternate = (node: ASTNode, x: number, y: number, parentNodeId: number, nodeIds: { id: number; x: number; yCenter?: number }[]): ProcessResult | null => {
         if (node.type === 'IfStatement') {
-            processNode(node, x, y, parentNodeId);
-            //呼び出し先のダミーノードのid
-            //これが呼び出し元のダミーノードのidと結ばれることでメインの流れに処理が戻る
-            lastNodeId = nodeId - 1;
-            nodeIds.push(lastNodeId);
+            const res = processNode(node, x, y + 60, parentNodeId);
+            lastNodeId = res.endId;
+            const pos = nodePositions[lastNodeId];
+            const yCenter = pos ? pos.y + (pos.height || nodeDefaultHeight) / 2 : maxY + nodeDefaultHeight / 2;
+            nodeIds.push({ id: lastNodeId, x, yCenter });
+            return res;
         } else if (node.body && Array.isArray(node.body)) {
-            node.body.forEach((alternateNode: ASTNode, index: number) => {
-                processNode(alternateNode, x, y + 120 * (index + 1), index == 0 ? parentNodeId : nodeId - 1);
-                lastNodeId = nodeId - 1;
-            });
-            nodeIds.push(lastNodeId);
+            let lastRes: ProcessResult | null = null;
+            for (let index = 0; index < node.body.length; index++) {
+                const alternateNode = node.body[index];
+                const res = processNode(alternateNode, x, y + 60 * (index + 1), index === 0 ? parentNodeId : resPlaceholder());
+                lastNodeId = res.endId;
+                lastRes = res;
+            }
+            const pos = nodePositions[lastNodeId];
+            const yCenter = pos ? pos.y + (pos.height || nodeDefaultHeight) / 2 : maxY + nodeDefaultHeight / 2;
+            nodeIds.push({ id: lastNodeId, x, yCenter });
+            return lastRes;
         }
+        return null;
     };
 
     addNode('開始', 'html=1;dashed=0;whiteSpace=wrap;shape=mxgraph.dfd.start', drawX, 30, null);
 
     if (Array.isArray(ast.body)) {
-        // ast.body.forEach((node: ASTNode, index: number) => {
-        //     console.log(node);
-        //     console.log(`TopNode ${index + 1} y:${30 + 60 * (index + 1)}`);
-        //     processNode(node, drawX, 30 + 60 * (index + 1), null);
-        // });
         for (const node of ast.body) {
-            // 直近の最深 Y の下に配置
-            const startY = maxY + 60;
+            const startY = Math.max(30, lastPlacedY + 60);
             console.log(node);
-            console.log(`TopNode y:${startY}`);
-            processNode(node, drawX, startY, null);
+            const res = processNode(node, drawX, startY, null);
+            // maxY は底辺ベースで更新
+            maxY = Math.max(maxY, res.endY);
         }
     }
 
-    addNode('終了', 'html=1;dashed=0;whiteSpace=wrap;shape=mxgraph.dfd.start', drawX, maxY + 60, nodeId - 1);
+    const endStartY = Math.max(lastPlacedY + 30, maxY + 20);
+    addNode('終了', 'html=1;dashed=0;whiteSpace=wrap;shape=mxgraph.dfd.start', drawX, endStartY, nodeId - 1);
     xml += `
   </root>
 </mxGraphModel>
