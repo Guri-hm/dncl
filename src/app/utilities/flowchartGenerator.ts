@@ -137,7 +137,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
     let lastPlacedY = 30;
     const drawX = 240;
     const nodeDefaultHeight = 30;
-    const nodeDefaultWidth = 30;
+    const nodeDefaultWidth = 120;
     //ノードの真下
     let exitXY: { x: number, y: number } | null = null;
     let lastNodeId: number;
