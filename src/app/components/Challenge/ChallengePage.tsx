@@ -129,7 +129,8 @@ const ChallengePage = ({ challenge }: Props) => {
     const specialElementRef2 = useRef<HTMLDivElement | null>(null);
     // このページ表示中に一度でも成功ダイアログを出したかを記録（再表示防止）
     const shownDialogRef = useRef<boolean>(false);
-
+    const lastAnswerRef = useRef<string | null>(null);
+    const lastMismatchRef = useRef<string | null>(null);
     const memoizedSetDnclValidation = useCallback(
         (validation: DnclValidationType | null) => setDnclValidation(validation),
         [setDnclValidation]
@@ -168,37 +169,47 @@ const ChallengePage = ({ challenge }: Props) => {
     };
 
     useEffect(() => {
+        lastMismatchRef.current = null;
+        lastAnswerRef.current = null;
+    }, [items]);
+
+    useEffect(() => {
         if (challenge.answer.length === 0) return;
         const answerString = challenge.answer.join('\n');
 
         // runResults に正解が含まれていて、ページ内でまだダイアログを表示していなければ表示する
         if (shownDialogRef.current) return;
 
-        for (const result of runResults) {
-            if (result === answerString) {
-                if (challenge.requiredItems) {
-                    const lines = getLines(items);
-                    const allMatched = challenge.requiredItems.every(item => {
-                        return lines.some(line => arraysHaveSameElements(item.line.split(' '), line.split(' ')));
-                    });
-                    if (!allMatched) {
+        const latest = runResults.length > 0 ? runResults[runResults.length - 1] : null;
+        if (!latest) return;
+
+        if (latest === answerString) {
+            if (challenge.requiredItems) {
+                const lines = getLines(items);
+                const allMatched = challenge.requiredItems.every(item => {
+                    return lines.some(line => arraysHaveSameElements(item.line.split(' '), line.split(' ')));
+                });
+                if (!allMatched) {
+                    // 同じ answerString に対して既に通知済みなら再通知しない（無限ループ防止）
+                    const mismatchKey = `${challenge.id}::${answerString}`;
+                    if (lastMismatchRef.current !== mismatchKey) {
+                        lastMismatchRef.current = mismatchKey;
                         setSnackbar(prev => ({ ...prev, open: true, text: '適切な答えと一致しません' }));
-                        break;
                     }
+                    return;
                 }
-
-                // ページ内で一度表示したら再表示しない（永続的な達成情報は別途保持）
-                shownDialogRef.current = true;
-
-                // 永続的未達成なら記録する（達成済みでもダイアログは表示する）
-                const alreadyAchieved = !!achievements?.[challenge.id]?.isAchieved;
-                if (!alreadyAchieved) {
-                    addAchievement(challenge.id, { isAchieved: true });
-                }
-
-                setOpenSuccessDialog(true);
-                break;
             }
+
+            // ページ内で一度表示したら再表示しない（永続的な達成情報は別途保持）
+            shownDialogRef.current = true;
+
+            // 永続的未達成なら記録する（達成済みでもダイアログは表示する）
+            const alreadyAchieved = !!achievements?.[challenge.id]?.isAchieved;
+            if (!alreadyAchieved) {
+                addAchievement(challenge.id, { isAchieved: true });
+            }
+
+            setOpenSuccessDialog(true);
         }
     }, [runResults, addAchievement, challenge.answer, challenge.id, challenge.requiredItems, items, setSnackbar, achievements]);
 

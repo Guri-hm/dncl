@@ -59,7 +59,7 @@ const practiceArithmeticOperation: Challenge = {
         }
     ],
     title: '算術演算しましょう',
-    task: "変数aを使い，コンソールに'10'と表示しましょう",
+    task: "算術演算の結果を変数aに代入し，コンソールに'10'と表示しましょう",
     hint: "変数aにa+8を代入します",
     answer: ["10"],
     requiredItems: [
