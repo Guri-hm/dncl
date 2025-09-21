@@ -8,7 +8,7 @@ import Grid from '@mui/material/Grid2';
 import { HeaderTitle } from "../components/Header";
 import { Avatar, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Typography } from "@mui/material";
 import { styled } from '@mui/system';
-import { CheckedIcon, allChallengesItems, UnachievedIcon } from "@/app/components/Challenge";
+import { CheckedIcon, allChallengesItems, UnachievedIcon, advancedChallenges } from "@/app/components/Challenge";
 import { useAchievements, storageKey } from "@/app/hooks";
 import { useRef, useState } from "react";
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
@@ -119,6 +119,26 @@ export default function Home() {
             <CustomTypography variant="h2">
               <span>応用</span>
             </CustomTypography>
+            {/* <List sx={{ width: '100%', maxWidth: 360 }}>
+              {advancedChallenges.map((challenge, index) => (
+                <ListItem key={index}>
+                  <ListItemButton component="a" href={`${basePath}/chlng/${challenge.id}`}>
+                    <ListItemAvatar>
+                      <Avatar>
+                        {achievements[challenge.id] && achievements[challenge.id].isAchieved
+                          ?
+                          <CheckedIcon sx={(theme) => ({ color: theme.palette.mode === 'dark' ? '#49cc39' : '#228B22' })} />
+                          :
+                          <UnachievedIcon />
+                        }
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText primary={challenge.title} secondary={achievements[challenge.id] ? achievements[challenge.id].achievedDate : ''} />
+                  </ListItemButton>
+                </ListItem>
+
+              ))}
+            </List> */}
           </Grid>
         </Grid>
 

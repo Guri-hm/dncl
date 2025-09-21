@@ -186,6 +186,35 @@ export const allChallengesItems: Challenge[] = [
     practiceArrayLoop
 ];
 
+const advancedLoop: Challenge = {
+    id: "7",
+    items: [
+        {
+            id: uuidv4(),
+            line: "sumを表示する",
+            children: [],
+            lineTokens: ["sum"],
+            processIndex: ProcessEnum.Output,
+            fixed: true
+        },
+    ],
+    title: '繰り返し文による合計計算',
+    task: "1から10までの合計を計算し、変数sumに代入してコンソールに出力しましょう。",
+    hint: "繰り返し（ループ）を使います。",
+    answer: ["55"],
+    usableItems: [
+        StatementJpEnum.Input,
+        StatementJpEnum.ConditionalLoopPreTest,
+        StatementJpEnum.ConditionalLoopPostTest,
+        StatementJpEnum.SequentialIteration,
+    ],
+    // 必要なら requiredItems を追加して「繰り返し構文を使うこと」をチェックできます（後でルール追加可）
+};
+
+export const advancedChallenges: Challenge[] = [
+    advancedLoop,
+];
+
 export const getChallengeById = (id: string) => {
     return allChallengesItems.find(item => item.id === id);
 };

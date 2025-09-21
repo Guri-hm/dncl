@@ -1,4 +1,4 @@
-export { getChallengeById, allChallengesItems } from "./Challenges";
+export { getChallengeById, allChallengesItems, advancedChallenges } from "./Challenges";
 export { Question } from "./Question";
 export { default as ChallengePage } from "./ChallengePage";
 export { CheckedIcon } from "./CheckedIcon";
