@@ -16,22 +16,30 @@ import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { ThemeToggleButton } from '@/app/components/Header';
 
 const CustomTypography = styled(Typography)(({ theme }) => ({
-  position: 'relative',
-  padding: '0 65px',
+  display: 'flex',
+  width: '100%',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: 0,
   textAlign: 'center',
-  '&:before': {
-    position: 'absolute',
-    top: 'calc(50% - 1px)',
-    left: 0,
-    width: '100%',
-    height: '2px',
+  position: 'relative',
+
+  '&::before, &::after': {
     content: '""',
-    background: '#000',
+    display: 'block',
+    flex: '1 1 auto',
+    minWidth: 8,
+    height: 2,
+    alignSelf: 'center',
+    // ダークモードは白寄り、ライトモードは黒寄りで濃さを調整
+    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)',
+    margin: '0 8px', // 文字に近づける（左右の余白を短く）
   },
+
   '& span': {
-    position: 'relative',
-    padding: '0 1em',
-    background: 'var(--stone-50)',
+    padding: '0 0.5em',
+    background: 'transparent', // 背景不要
+    zIndex: 2,
   },
 }));
 
@@ -82,7 +90,6 @@ export default function Home() {
           justifyContent: "flex-start",
           alignItems: "center",
           height: '100%',
-          backgroundColor: 'var(--stone-50)'
         }} >
           <Grid spacing={3} size='auto' sx={{ margin: 2 }}>
             <CustomTypography variant="h2">
@@ -93,7 +100,7 @@ export default function Home() {
                 <ListItem key={index}>
                   <ListItemButton component="a" href={`${basePath}/chlng/${challenge.id}`}>
                     <ListItemAvatar>
-                      <Avatar sx={{ bgcolor: 'black' }}>
+                      <Avatar>
                         {achievements[challenge.id] && achievements[challenge.id].isAchieved
                           ?
                           <CheckedIcon sx={{ color: 'rgb(73, 204, 57)' }} />

@@ -6,7 +6,7 @@ import { defaultFragments } from "@/app/components/SortableTree";
 import styles from '@/app/components/common.module.css';
 import { Challenge, DnclValidationType, FragmentItems, TreeItems } from "@/app/types";
 import { PageWrapper } from "@/app/components/PageWrapper";
-import { HeaderBar, HeaderTitle } from "@/app/components/Header";
+import { HeaderBar, HeaderButton, HeaderTitle } from "@/app/components/Header";
 import { HintButton, HowToButton, Door } from "@/app/components/Tips";
 import { ContentWrapper } from "@/app/components/ContentWrapper";
 import { useCallback, useEffect, useRef, useState, Suspense, lazy } from "react";
@@ -22,6 +22,7 @@ import { useTheme } from '@mui/material/styles';
 import Divider from '@mui/material/Divider';
 import { ThemeToggleButton } from '@/app/components/Header';
 import ResizerHint from '@/app/components/ResizerHint';
+import { useRouter } from 'next/navigation'
 
 // 重いコンポーネントを遅延読み込み
 const SortableTree = lazy(() => import("@/app/components/SortableTree").then(module => ({ default: module.SortableTree })));
@@ -117,6 +118,8 @@ const ChallengePage = ({ challenge }: Props) => {
     const isSm = useMediaQuery(theme.breakpoints.up('sm'));//600px以上
     const specialElementRef1 = useRef<HTMLDivElement | null>(null);
     const specialElementRef2 = useRef<HTMLDivElement | null>(null);
+    // このページ表示中に一度でも成功ダイアログを出したかを記録（再表示防止）
+    const shownDialogRef = useRef<boolean>(false);
 
     const memoizedSetDnclValidation = useCallback(
         (validation: DnclValidationType | null) => setDnclValidation(validation),
@@ -156,26 +159,39 @@ const ChallengePage = ({ challenge }: Props) => {
     };
 
     useEffect(() => {
-        if (challenge.answer.length > 0) {
-            const answerString = challenge.answer.join('\n');
-            runResults.map(result => {
-                if (result == answerString) {
-                    if (challenge.requiredItems) {
-                        const lines = getLines(items);
-                        const allMatched = challenge.requiredItems.every(item => {
-                            return lines.some(line => arraysHaveSameElements(item.line.split(' '), line.split(' ')));
-                        });
-                        if (!allMatched) {
-                            setSnackbar(prev => ({ ...prev, open: true, text: '適切な答えと一致しません' }));
-                            return;
-                        }
+        if (challenge.answer.length === 0) return;
+        const answerString = challenge.answer.join('\n');
+
+        // runResults に正解が含まれていて、ページ内でまだダイアログを表示していなければ表示する
+        if (shownDialogRef.current) return;
+
+        for (const result of runResults) {
+            if (result === answerString) {
+                if (challenge.requiredItems) {
+                    const lines = getLines(items);
+                    const allMatched = challenge.requiredItems.every(item => {
+                        return lines.some(line => arraysHaveSameElements(item.line.split(' '), line.split(' ')));
+                    });
+                    if (!allMatched) {
+                        setSnackbar(prev => ({ ...prev, open: true, text: '適切な答えと一致しません' }));
+                        break;
                     }
-                    addAchievement(challenge.id, { isAchieved: true });
-                    setOpenSuccessDialog(true);
                 }
-            });
+
+                // ページ内で一度表示したら再表示しない（永続的な達成情報は別途保持）
+                shownDialogRef.current = true;
+
+                // 永続的未達成なら記録する（達成済みでもダイアログは表示する）
+                const alreadyAchieved = !!(achievements && (achievements as any)[challenge.id] && (achievements as any)[challenge.id].isAchieved);
+                if (!alreadyAchieved) {
+                    addAchievement(challenge.id, { isAchieved: true });
+                }
+
+                setOpenSuccessDialog(true);
+                break;
+            }
         }
-    }, [runResults, addAchievement, challenge.answer, challenge.id, challenge.requiredItems, items, setSnackbar]);
+    }, [runResults, addAchievement, challenge.answer, challenge.id, challenge.requiredItems, items, setSnackbar, achievements]);
 
     useEffect(() => {
         const updateDimensions = () => {
@@ -188,12 +204,22 @@ const ChallengePage = ({ challenge }: Props) => {
         return () => window.removeEventListener('resize', updateDimensions);
     }, []);
 
+    const router = useRouter();
+    const handleRedirect = () => {
+        router.push('/chlng');
+    };
+
     return (
         <PageWrapper>
-            <HeaderBar>
-                <HeaderTitle />
-                <ThemeToggleButton sx={{ marginLeft: "auto" }} />
-            </HeaderBar>
+            <HeaderBar
+                leftContent={<HeaderTitle />}
+                rightContent={
+                    <>
+                        <HeaderButton onClick={handleRedirect} >一覧へ戻る</HeaderButton>
+                        <ThemeToggleButton />
+                    </>
+                }
+            />
             <Divider sx={{ borderColor: 'var(--slategray)' }} />
             <Question>
                 問：{`${challenge.task}`}

@@ -36,6 +36,17 @@ export const SpeechBubbleImage = ({ children, msg, open = true }: Props) => {
                         borderRadius: "10px",
                         padding: "10px",
                         boxShadow: "0px 2px 4px rgba(0,0,0,0.2)",
+                        '&::before': {
+                            content: '""',
+                            position: 'absolute',
+                            bottom: '-22px',                // 色三角形より少し下に配置して影らしくする
+                            left: '70%',
+                            transform: 'translateX(-50%)',
+                            borderWidth: '12px',            // 影は少し大きめ
+                            borderStyle: 'solid',
+                            borderColor: 'rgba(0,0,0,0.18) transparent transparent transparent',
+                            zIndex: -1,
+                        },
                         '&::after': {
                             content: '""',
                             position: 'absolute',
@@ -44,7 +55,7 @@ export const SpeechBubbleImage = ({ children, msg, open = true }: Props) => {
                             transform: 'translateX(-50%)', // 真ん中に位置合わせ
                             borderWidth: '10px',
                             borderStyle: 'solid',
-                            borderColor: 'var(--stone-50) transparent transparent transparent',
+                            borderColor: 'white transparent transparent transparent',
                         },
                     }}
                 >

@@ -37,7 +37,7 @@ export const Spotlight: React.FC<BoxProps> = ({ children }) => {
                     transform: 'scale(1.15)',
                     background: isDark
                         ? 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 60%)'
-                        : 'radial-gradient(circle, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0) 60%)',
+                        : 'none',
                     filter: 'blur(18px)',
                     pointerEvents: 'none',
                     zIndex: 0,

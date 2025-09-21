@@ -3,7 +3,7 @@ import { FC } from "react";
 
 export const Question: FC<TypographyProps> = ({ children }) => {
     return (
-        <Typography variant="h2" sx={{ fontSize: '1.7rem', color: 'white', fontWeight: 800, padding: 1 }}>
+        <Typography variant="h2" sx={{ fontSize: '1.7rem', fontWeight: 800, padding: 1 }}>
             {children}
         </Typography>
     );

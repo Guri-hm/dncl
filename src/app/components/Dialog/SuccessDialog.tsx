@@ -35,7 +35,7 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({ open, onClose, mes
                         alt="喜ぶ女の子"
                         width={300}
                         height={300}
-                        style={{ width: "80%", maxWidth: "200px" }}
+                        style={{ width: "80%", maxWidth: "200px", height: "auto", objectFit: "contain" }}
                     />
                 </Box>
             </DialogContent>
