@@ -1,4 +1,4 @@
-import { tryParseToJsFunction, getOperatorTypeAndIndex } from './utilities';
+import { tryParseToJsFunction, getOperatorTypeAndIndex, sanitizeInput } from './utilities';
 import { OperationEnum, ArithmeticOperator, ComparisonOperator } from '@/app/enum';
 
 // squareString, exponentiateString, replaceOddFunctions, convertBinaryFunctions, removeWord を間接的にテスト
@@ -120,5 +120,63 @@ describe('getOperatorTypeAndIndex', () => {
     it('未定義演算子は null を返す', () => {
         const result = getOperatorTypeAndIndex('???');
         expect(result).toBeNull();
+    });
+});
+
+
+describe('sanitizeInput', () => {
+    const allowedSamples = [
+        'abc123',
+        '～', //全角チルダ
+        '〜', //波ダッシュ
+        'HelloWorld',
+        'あいうえお',
+        'アイウエオ',
+        '漢字テスト',
+        'ＡＢＣ１２３',             // 全角英数字
+        'hello 世界',               // 半角+日本語
+        'スペース テスト　全角',     // 半角スペース + 全角スペース
+        '.,!、。-＿,!',             // 句読点・記号（許可された範囲）
+    ];
+
+    const forbiddenSamples = [
+        '<script>alert(1)</script>',
+        'javascript:alert(1)',
+        'onclick=doSomething()',   // onxxx= 属性挿入パターン
+        'a<b',                     // 不正な記号 <
+        'brace{',                  // { は禁止
+        'dollar$',                 // $ は禁止
+        'back\\slash',             // バックスラッシュ禁止
+        'pipe|pipe',               // パイプ禁止
+        ';semicolon',              // セミコロン禁止
+        '`backtick`',              // バックチック禁止
+        String.fromCharCode(0),    // 制御文字は不可
+        '😊',                      // 絵文字は許可対象外（期待通り弾かれる）
+        '',                        // 空文字は不許可（空文字が返る）
+    ];
+
+    test.each(allowedSamples)('許可されるべき入力: %p', (s) => {
+        const out = sanitizeInput(s);
+        expect(out).toBe(s);
+    });
+
+    test.each(forbiddenSamples)('拒否されるべき入力: %p', (s) => {
+        const out = sanitizeInput(s);
+        expect(out).toBe('');
+    });
+
+    test('境界: 数字と日本語混合', () => {
+        const str = '変数123と値';
+        expect(sanitizeInput(str)).toBe(str);
+    });
+
+    test('タグやスニペットが含まれる複合ケースは拒否', () => {
+        const str = '表示: <b>太字</b>';
+        expect(sanitizeInput(str)).toBe('');
+    });
+
+    test('オンイベント属性を含むケースを拒否', () => {
+        const str = 'foo onclick=alert(1)';
+        expect(sanitizeInput(str)).toBe('');
     });
 });

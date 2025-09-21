@@ -123,16 +123,25 @@ export function DnclEditDialog({ type = StatementEnum.Input, isEdit = false, ...
             });
             return true;
         } catch (err) {
-            let errMsg = (err as Error).message;
+            const e = err as any;
+            let errMsg = (e && e.message) ? String(e.message) : String(err);
+
+            // 日本語で一行表示する方針：行・列情報は表示しない
             if (errMsg.includes('Unexpected token')) {
-                const matches = errMsg.match(/"([^"]*)"/g);
-                const extracted = matches ? matches[0] : null;
-                if (extracted) {
-                    errMsg = `誤った位置に${extracted.replace('!', '「でない」')}が使われています`;
+                // トークンを抽出して安全に表示（エスケープして可能な限り短く）
+                const m = errMsg.match(/Unexpected token\s*(?:'([^']*)'|"([^"]*)"|`([^`]*)`|(\S))/);
+                const token = m ? (m[1] || m[2] || m[3] || m[4]) : null;
+                if (token) {
+                    const safe = String(token).replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                    errMsg = `予期しない記号「${safe}」が使われています`;
                 } else {
                     errMsg = '予期しない記号が使われています';
                 }
+            } else {
+                // その他の一般的な構文エラーは簡潔に一行で表現
+                errMsg = '構文エラーが検出されました';
             }
+
             result.errorMsgArray.push(errMsg);
             setError(result.errorMsgArray);
             return false;

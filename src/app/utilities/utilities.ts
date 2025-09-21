@@ -560,17 +560,30 @@ export const getOperandsMaxIndex = (obj: { [k: string]: string; }, keyword: keyP
 }
 
 export const sanitizeInput = (targetString: string) => {
-  // 許可された文字セット: アルファベット、数字、スペース、および一部の記号、日本語 
-  const regex = /^[a-zA-Z0-9_ ぁ-んァ-ンｧ-ﾝﾞﾟ一-龠々 \.,!?<>=!&|\+\-\*/\(\)%!""\[\]\u3000]*$/;
 
-  // 制御文字（ASCII 0 - 31）を排除 
-  const controlChars = /[\x00-\x1F]/;
+  // 制御文字（ASCII 0 - 31）は常に拒否
+  if (/[\x00-\x1F]/.test(targetString)) return "";
 
-  if (regex.test(targetString) && !controlChars.test(targetString)) {
-    return targetString;
-  } else {
-    return "";
-  }
+  // 明らかに危険なスニペットをブラックリスト（HTML属性挿入やjavascript:等）
+  const dangerousPatterns = [
+    /<\s*script/i,
+    /<\/\s*script/i,
+    /javascript:/i,
+    /on\w+\s*=/i, // onclick= 等
+  ];
+  if (dangerousPatterns.some(rx => rx.test(targetString))) return "";
+
+  // ここで明示的に禁止する単体文字（コンテキストによって調整）
+  // ユーザ入力で特に問題にしたい文字を並べる（例：バックティックやパイプ等）
+  const forbiddenChars = /[<>&`{}\$\\\/\[\]\|;]/;
+  if (forbiddenChars.test(targetString)) return "";
+
+  // 許可パターン（Unicode 文字種を広く許可：文字・数字・句読点・空白，U+301C（波ダッシュ）と U+FF5E（全角チルダ））
+  // u フラグで \p{L}/\p{N} を使用。環境が古い場合は調整が必要。
+  const allowed = /^[\p{L}\p{N}\p{P}\p{Zs}\u3000\u301C\uFF5E]+$/u;
+  if (!allowed.test(targetString)) return "";
+
+  return targetString;
 }
 
 export const escapeHtml = (unsafe: string) => {
