@@ -117,7 +117,7 @@ export default function Home() {
           </Grid>
           <Grid spacing={3} size='auto' sx={{ margin: 2 }}>
             <CustomTypography variant="h2">
-              <span>初級</span>
+              <span>応用</span>
             </CustomTypography>
           </Grid>
         </Grid>
