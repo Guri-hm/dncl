@@ -123,9 +123,15 @@ export function DnclEditDialog({ type = StatementEnum.Input, isEdit = false, ...
             });
             return true;
         } catch (err) {
-            const e = err as any;
-            let errMsg = (e && e.message) ? String(e.message) : String(err);
-
+            const getErrorMessage = (e: unknown): string => {
+                if (typeof e === 'string') return e;
+                if (e instanceof Error) return e.message;
+                if (typeof e === 'object' && e !== null && 'message' in e && typeof (e as Record<string, unknown>).message === 'string') {
+                    return String((e as Record<string, unknown>).message);
+                }
+                return String(e);
+            };
+            let errMsg = getErrorMessage(err);
             // 日本語で一行表示する方針：行・列情報は表示しない
             if (errMsg.includes('Unexpected token')) {
                 // トークンを抽出して安全に表示（エスケープして可能な限り短く）

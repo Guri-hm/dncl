@@ -191,7 +191,7 @@ const ChallengePage = ({ challenge }: Props) => {
                 shownDialogRef.current = true;
 
                 // 永続的未達成なら記録する（達成済みでもダイアログは表示する）
-                const alreadyAchieved = !!(achievements && (achievements as any)[challenge.id] && (achievements as any)[challenge.id].isAchieved);
+                const alreadyAchieved = !!achievements?.[challenge.id]?.isAchieved;
                 if (!alreadyAchieved) {
                     addAchievement(challenge.id, { isAchieved: true });
                 }
