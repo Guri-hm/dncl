@@ -580,7 +580,7 @@ export const sanitizeInput = (targetString: string) => {
   if (dangerousPatterns.some(rx => rx.test(targetString))) return "";
 
   // 単体で禁止したい記号（テンプレート破壊やコマンド注入になり得るもの）
-  const forbiddenChars = /[`{}\$\\\[\]\|;]/;
+  const forbiddenChars = /[`{}\$\\\|;]/;
   if (forbiddenChars.test(targetString)) return "";
 
   // '<' '>' は HTML タグのトリガになりうるため、許可する場合は「比較演算子として使われている」ことを明示的に判定

@@ -108,6 +108,7 @@ export function DnclEditDialog({ type = StatementEnum.Input, isEdit = false, ...
         statement = escapeHtml(cnvResult.convertedStr);
 
         if (sanitizeInput(statement) == "") {
+            console.log(`不適切な文字が使用されています: ${statement}`);
             setError(["不適切な文字が使用されています"]);
             return false;
         }

@@ -96,14 +96,16 @@ const practiceIf: Challenge = {
                         "\"こんにちは\""
                     ],
                     processIndex: 0,
-                    variables: []
+                    variables: [],
+                    fixed: true
                 }
             ],
             lineTokens: [
                 "a > 10"
             ],
             processIndex: 6,
-            variables: []
+            variables: [],
+            fixed: true
         },
         {
             id: uuidv4(),
@@ -111,7 +113,8 @@ const practiceIf: Challenge = {
             children: [],
             lineTokens: [],
             processIndex: 9,
-            variables: []
+            variables: [],
+            fixed: true
         }
     ],
     title: '条件分岐文の実行',
@@ -120,7 +123,6 @@ const practiceIf: Challenge = {
     answer: ["こんにちは"],
     usableItems: [
         StatementJpEnum.Input,
-        StatementJpEnum.Output,
     ]
 };
 
@@ -150,12 +152,38 @@ const practiceArray: Challenge = {
     ]
 };
 
+const practiceArrayLoop: Challenge = {
+    id: "6",
+    items: [
+        {
+            id: uuidv4(),
+            line: "Ten ← [64 , 70 , 47]",
+            children: [],
+            lineTokens: ["Ten", "64 , 70 , 47"],
+            variables: ["Ten"],
+            processIndex: ProcessEnum.InitializeArray,
+            fixed: true
+        },
+    ],
+    title: '繰り返し文の実行',
+    task: "配列 Ten のすべての要素を繰り返しを使って順にコンソールへ出力してください。",
+    hint: "繰り返し（ループ）を使って Ten[i] を順に出力します。",
+    answer: ["64,70,47"],
+    usableItems: [
+        StatementJpEnum.Input,
+        StatementJpEnum.Output,
+        StatementJpEnum.ConditionalLoopPreTest
+    ],
+    // 必要なら requiredItems を追加して「繰り返し構文を使うこと」をチェックできます（後でルール追加可）
+};
+
 export const allChallengesItems: Challenge[] = [
     practiceAssignment,
     practiceOutput,
     practiceArithmeticOperation,
     practiceIf,
-    practiceArray
+    practiceArray,
+    practiceArrayLoop
 ];
 
 export const getChallengeById = (id: string) => {

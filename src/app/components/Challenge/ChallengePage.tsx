@@ -178,13 +178,20 @@ const ChallengePage = ({ challenge }: Props) => {
         if (challenge.answer.length === 0) return;
         const answerString = challenge.answer.join('\n');
 
+        const normalizeForCompare = (s: string | null | undefined) => {
+            if (!s) return '';
+            // 終端 CRLF を正規化 -> 行ごとにトリム -> 空行を除去 -> カンマで結合
+            const lines = String(s).replace(/\r\n/g, '\n').split('\n').map(l => l.trim()).filter(Boolean);
+            return lines.join(',');
+        };
+
         // runResults に正解が含まれていて、ページ内でまだダイアログを表示していなければ表示する
         if (shownDialogRef.current) return;
 
         const latest = runResults.length > 0 ? runResults[runResults.length - 1] : null;
         if (!latest) return;
 
-        if (latest === answerString) {
+        if (latest === answerString || normalizeForCompare(latest) === normalizeForCompare(answerString)) {
             if (challenge.requiredItems) {
                 const lines = getLines(items);
                 // requiredItems の様々な表現（line / rhs + lhs / variables / lineTokens）に対応する正規化

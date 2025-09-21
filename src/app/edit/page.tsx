@@ -131,6 +131,7 @@ export default function Home() {
   // 開発環境のみ表示するボタンのハンドラ
   const handleLogTreeItems = () => {
     console.log("TreeItems:", items);
+    console.log("runResults:", runResults);
   };
 
   return (
