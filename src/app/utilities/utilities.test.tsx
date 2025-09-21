@@ -125,6 +125,25 @@ describe('getOperatorTypeAndIndex', () => {
 
 
 describe('sanitizeInput', () => {
+    const operatorSamples = [
+        '1 + 2',
+        'a+b',
+        'x - y',
+        '3 * 5',
+        '10/2',
+        '5 % 2',
+        '2 ** 3',
+        '(a + b) * c',
+        'a < b',
+        'a <= b',
+        'a > b',
+        'a >= b',
+        'a == b',
+        'a === b',
+        'a != b',
+        'a !== b',
+    ];
+
     const allowedSamples = [
         'abc123',
         '～', //全角チルダ
@@ -143,7 +162,7 @@ describe('sanitizeInput', () => {
         '<script>alert(1)</script>',
         'javascript:alert(1)',
         'onclick=doSomething()',   // onxxx= 属性挿入パターン
-        'a<b',                     // 不正な記号 <
+        'a<b',                     // 不正な記号 <(前後空白スペースなし)
         'brace{',                  // { は禁止
         'dollar$',                 // $ は禁止
         'back\\slash',             // バックスラッシュ禁止
@@ -154,6 +173,11 @@ describe('sanitizeInput', () => {
         '😊',                      // 絵文字は許可対象外（期待通り弾かれる）
         '',                        // 空文字は不許可（空文字が返る）
     ];
+
+    test.each(operatorSamples)('演算子を含む入力を許可する: %p', (s) => {
+        const out = sanitizeInput(s);
+        expect(out).toBe(s);
+    });
 
     test.each(allowedSamples)('許可されるべき入力: %p', (s) => {
         const out = sanitizeInput(s);

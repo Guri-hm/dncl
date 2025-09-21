@@ -18,6 +18,9 @@ const practiceAssignment: Challenge = {
     task: "コンソールに'30'と表示しましょう",
     hint: "代入文を使い，変数aに値を入れます",
     answer: ["30"],
+    usableItems: [
+        StatementJpEnum.Input,
+    ],
 };
 const practiceOutput: Challenge = {
     id: "2",
@@ -35,6 +38,9 @@ const practiceOutput: Challenge = {
     task: "コンソールに'こんにちは'と表示しましょう",
     hint: "表示文で変数または文字列を表示します",
     answer: ["こんにちは"],
+    usableItems: [
+        StatementJpEnum.Output,
+    ],
 };
 const practiceArithmeticOperation: Challenge = {
     id: "3",
@@ -62,19 +68,16 @@ const practiceArithmeticOperation: Challenge = {
     task: "算術演算の結果を変数aに代入し，コンソールに'10'と表示しましょう",
     hint: "変数aにa+8を代入します",
     answer: ["10"],
+    usableItems: [
+        StatementJpEnum.Input,
+    ],
     requiredItems: [
         {
             id: uuidv4(),
-            "line": "a ← a + 8",
-            "children": [],
-            "lineTokens": [
-                "a",
-                "a + 8"
-            ],
-            "processIndex": 1,
-            "variables": [
-                "a"
-            ]
+            lhs: "a",
+            rhs: "a + 8",
+            processIndex: ProcessEnum.SetValToVariableOrArray,
+            variables: ["a"],
         },
     ]
 };

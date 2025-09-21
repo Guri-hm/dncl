@@ -91,6 +91,25 @@ export interface TabItemsObj {
   [key: UniqueIdentifier]: TabGroup;
 }
 
+type MatchType = 'assignment' | 'lineExact' | 'lineRegex' | 'processIndex' | 'containsTokens' | 'behavior';
+
+export interface RequiredItem {
+  id: string;
+  matchType?: MatchType;
+  // assignment 用
+  lhs?: string;
+  rhs?: string;
+  // 正規表現マッチ用
+  lineRegex?: string;
+  // トークン包含チェック
+  tokens?: string[];
+  // processIndex マッチ
+  processIndex?: number;
+  // 振る舞いベース（例: expected console output）
+  expectedOutput?: string[];
+  variables?: string[];
+}
+
 export interface Challenge {
   title: string;
   items: TreeItems;
@@ -98,7 +117,7 @@ export interface Challenge {
   hint: string;
   answer: string[];
   id: string;
-  requiredItems?: TreeItems
+  requiredItems?: RequiredItem[]
   usableItems?: StatementJpEnum[]
 }
 

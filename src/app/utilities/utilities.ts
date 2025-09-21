@@ -560,27 +560,40 @@ export const getOperandsMaxIndex = (obj: { [k: string]: string; }, keyword: keyP
 }
 
 export const sanitizeInput = (targetString: string) => {
+  // 空文字は不許可
+  if (!targetString) return "";
 
-  // 制御文字（ASCII 0 - 31）は常に拒否
-  if (/[\x00-\x1F]/.test(targetString)) return "";
+  // 制御文字／0幅／BIDI 制御文字は拒否（視覚的なごまかし防止）
+  if (/[\u0000-\u001F\u200B-\u200F\u202A-\u202E\uFEFF]/.test(targetString)) return "";
 
-  // 明らかに危険なスニペットをブラックリスト（HTML属性挿入やjavascript:等）
+  // 絵文字・絵文字に該当する拡張絵文字表現は拒否（許可したくない場合）
+  if (/\p{Extended_Pictographic}/u.test(targetString)) return "";
+
+  // 明らかに危険なスニペット（scriptタグ・javascript:・onXXX= など）を拒否
   const dangerousPatterns = [
     /<\s*script/i,
     /<\/\s*script/i,
     /javascript:/i,
     /on\w+\s*=/i, // onclick= 等
+    /<[^>]+>/i,   // 生の HTML タグ（<> で囲まれた部分）を拒否
   ];
   if (dangerousPatterns.some(rx => rx.test(targetString))) return "";
 
-  // ここで明示的に禁止する単体文字（コンテキストによって調整）
-  // ユーザ入力で特に問題にしたい文字を並べる（例：バックティックやパイプ等）
-  const forbiddenChars = /[<>&`{}\$\\\/\[\]\|;]/;
+  // 単体で禁止したい記号（テンプレート破壊やコマンド注入になり得るもの）
+  const forbiddenChars = /[`{}\$\\\[\]\|;]/;
   if (forbiddenChars.test(targetString)) return "";
 
-  // 許可パターン（Unicode 文字種を広く許可：文字・数字・句読点・空白，U+301C（波ダッシュ）と U+FF5E（全角チルダ））
-  // u フラグで \p{L}/\p{N} を使用。環境が古い場合は調整が必要。
-  const allowed = /^[\p{L}\p{N}\p{P}\p{Zs}\u3000\u301C\uFF5E]+$/u;
+  // '<' '>' は HTML タグのトリガになりうるため、許可する場合は「比較演算子として使われている」ことを明示的に判定
+  // ここでは比較演算子として有効とみなすのは「前後に空白がある」形式のみ許可する（例: "a < b"）
+  if (/[<>]/.test(targetString)) {
+    const angleOk = /(^|\s)(<=|>=|<|>)(\s|$)/.test(targetString);
+    if (!angleOk) return "";
+  }
+
+  // 許可パターン：文字・数字・句読点・記号・空白・波ダッシュ類を広く許可
+  // \p{S} を入れると算術記号（+ - * / % 等）や通貨記号も含まれる
+  // 実行環境で Unicode property escape が有効である前提
+  const allowed = /^[\p{L}\p{N}\p{P}\p{S}\p{Zs}\u3000\u301C\uFF5E]+$/u;
   if (!allowed.test(targetString)) return "";
 
   return targetString;
@@ -1428,4 +1441,64 @@ export const buildSideRestoreMaps = (formData?: { [k: string]: string }, prefixe
     maps[side][idx][k] = v;
   });
   return maps;
+};
+
+/** 簡易安全チェック（許可トークンのみ） */
+const isSafeExpression = (expr: string): boolean => {
+  if (!expr) return false;
+  if (/[`{}$\\\[\]\|;]/.test(expr)) return false;
+  return /^[\s0-9A-Za-z_\+\-\*\/\%\(\)<>=!]+$/.test(expr);
+};
+
+const extractVariables = (expr: string): string[] => {
+  const m = expr.match(/\b[A-Za-z_]\w*\b/g);
+  if (!m) return [];
+  return Array.from(new Set(m.filter(t => !/^\d+$/.test(t))));
+};
+
+const evalWithBindings = (expr: string, bindings: Record<string, number>): number | null => {
+  try {
+    if (!isSafeExpression(expr)) return null;
+    let replaced = expr;
+    for (const [k, v] of Object.entries(bindings)) {
+      replaced = replaced.replace(new RegExp(`\\b${k}\\b`, 'g'), `(${v})`);
+    }
+    // eslint-disable-next-line no-new-func
+    const fn = new Function(`"use strict"; return (${replaced});`);
+    const val = fn();
+    if (typeof val === 'number' && Number.isFinite(val)) return val;
+    return null;
+  } catch {
+    return null;
+  }
+};
+
+/** ランダム代入で意味的等価を判定 */
+export const expressionsAreEquivalent = (expected: string, actual: string, iterations = 6): boolean => {
+  if (!isSafeExpression(expected) || !isSafeExpression(actual)) return false;
+  const vars = Array.from(new Set([...extractVariables(expected), ...extractVariables(actual)]));
+  if (vars.length === 0) {
+    const eVal = evalWithBindings(expected, {});
+    const aVal = evalWithBindings(actual, {});
+    return eVal !== null && aVal !== null && Math.abs(eVal - aVal) < 1e-9;
+  }
+  for (let i = 0; i < iterations; i++) {
+    const bindings: Record<string, number> = {};
+    for (const v of vars) {
+      const rnd = (Math.random() * 200) - 100;
+      bindings[v] = Math.abs(rnd) < 1e-6 ? 1.2345 : rnd;
+    }
+    const ev = evalWithBindings(expected, bindings);
+    const av = evalWithBindings(actual, bindings);
+    if (ev === null || av === null) return false;
+    if (Math.abs(ev - av) > 1e-6) return false;
+  }
+  return true;
+};
+
+/** "a ← 8 + a" のような代入を lhs/rhs に分解する（← または <- をサポート） */
+export const parseAssignment = (line: string): { lhs: string; rhs: string } | null => {
+  const m = line.match(/^\s*([A-Za-z_]\w*)\s*(?:←|<-)\s*(.+)$/);
+  if (!m) return null;
+  return { lhs: m[1], rhs: m[2].trim() };
 };

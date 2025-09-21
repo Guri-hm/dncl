@@ -4,7 +4,7 @@ import "allotment/dist/style.css";
 import "@/app/components/allotment-custom.css";
 import { defaultFragments } from "@/app/components/SortableTree";
 import styles from '@/app/components/common.module.css';
-import { Challenge, DnclValidationType, FragmentItems, TreeItems } from "@/app/types";
+import { Challenge, DnclValidationType, FragmentItems, TreeItems, RequiredItem } from "@/app/types";
 import { PageWrapper } from "@/app/components/PageWrapper";
 import { HeaderBar, HeaderButton, HeaderTitle } from "@/app/components/Header";
 import { HintButton, HowToButton, Door } from "@/app/components/Tips";
@@ -25,6 +25,7 @@ import ResizerHint from '@/app/components/ResizerHint';
 import { useRouter } from 'next/navigation'
 import { SwiperSlide } from "swiper/react";
 import { SwiperTabs } from "@/app/components/Tab";
+import { parseAssignment, expressionsAreEquivalent } from "@/app/utilities/utilities";
 
 // 重いコンポーネントを遅延読み込み
 const SortableTree = lazy(() => import("@/app/components/SortableTree").then(module => ({ default: module.SortableTree })));
@@ -186,9 +187,53 @@ const ChallengePage = ({ challenge }: Props) => {
         if (latest === answerString) {
             if (challenge.requiredItems) {
                 const lines = getLines(items);
-                const allMatched = challenge.requiredItems.every(item => {
-                    return lines.some(line => arraysHaveSameElements(item.line.split(' '), line.split(' ')));
+                // requiredItems の様々な表現（line / rhs + lhs / variables / lineTokens）に対応する正規化
+                type LegacyReqShape = { line?: string; lineTokens?: unknown[]; rhs?: string; lhs?: string; variables?: unknown[] };
+                const normalizeReq = (req: RequiredItem | LegacyReqShape): { lhs?: string; rhs: string } | null => {
+                    const r = req as Record<string, unknown>;
+                    // 1) req.line が "a ← b" の形なら分解
+                    if (typeof r.line === 'string') {
+                        const parsed = parseAssignment(r.line);
+                        if (parsed) return parsed;
+                    }
+                    // 2) 明示的 rhs を持つ場合
+                    if (typeof r.rhs === 'string' && r.rhs.trim() !== '') {
+                        const lhs = typeof r.lhs === 'string'
+                            ? r.lhs
+                            : (Array.isArray(r.variables) && r.variables.length > 0 && typeof r.variables[0] === 'string' ? r.variables[0] as string : undefined);
+                        return { lhs, rhs: r.rhs.trim() };
+                    }
+
+                    // 3) lineTokens 互換（互換性確保）
+                    if (Array.isArray(r.lineTokens) && r.lineTokens.length >= 2) {
+                        const first = r.lineTokens[0];
+                        const rest = r.lineTokens.slice(1).map(t => String(t));
+                        if (typeof first === 'string') {
+                            return { lhs: first, rhs: rest.join(' ') };
+                        }
+                    }
+                    // 4) 最終手段：line を rhs として扱う（lhs 不在）
+                    if (typeof r.line === 'string' && r.line.trim() !== '') {
+                        return { rhs: r.line.trim() };
+                    }
+                    return null;
+                };
+
+                const allMatched = challenge.requiredItems.every((req: RequiredItem | LegacyReqShape) => {
+                    const reqNorm = normalizeReq(req);
+                    if (!reqNorm) return false;
+
+                    // lines の中に意味的に一致する代入があるか確認
+                    return lines.some(line => {
+                        const candAssign = parseAssignment(line);
+                        if (!candAssign) return false;
+                        // lhs が指定されている場合は左辺一致を要求
+                        if (reqNorm.lhs && candAssign.lhs !== reqNorm.lhs) return false;
+                        // 右辺を意味的に比較（例: "a + 8" と "8 + a" を同一視）
+                        return expressionsAreEquivalent(reqNorm.rhs, candAssign.rhs);
+                    });
                 });
+
                 if (!allMatched) {
                     // 同じ answerString に対して既に通知済みなら再通知しない（無限ループ防止）
                     const mismatchKey = `${challenge.id}::${answerString}`;
