@@ -2,7 +2,6 @@
 
 "use client"
 import { PageWrapper } from "@/app/components/PageWrapper";
-import { Header } from "@/app/components/Header/Header";
 import { HeaderBar } from "@/app/components/Header/HeaderBar";
 import { ContentWrapper } from "@/app/components/ContentWrapper";
 import Grid from '@mui/material/Grid2';
@@ -103,7 +102,7 @@ export default function Home() {
                       <Avatar>
                         {achievements[challenge.id] && achievements[challenge.id].isAchieved
                           ?
-                          <CheckedIcon sx={{ color: 'rgb(73, 204, 57)' }} />
+                          <CheckedIcon sx={(theme) => ({ color: theme.palette.mode === 'dark' ? '#49cc39' : '#228B22' })} />
                           :
                           <UnachievedIcon />
                         }
