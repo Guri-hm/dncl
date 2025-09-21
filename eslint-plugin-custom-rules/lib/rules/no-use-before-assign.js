@@ -12,6 +12,7 @@ module.exports = {
             useBeforeDeclaration: "'{{name}}' は定義される前に使用されています",
             constantReassignment: "定数「{{name}}」に再代入はできません",
             constAlreadyExists: "定数 '{{name}}' を定義しようとしていますが、すでに同名の変数が存在します",
+            arrayIndexOOB: "配列 '{{name}}' のインデックスが範囲外です (インデックス: {{index}})",
         },
     },
     create(context) {
@@ -25,11 +26,19 @@ module.exports = {
             Math: new Set(["floor", "random"]),
         };
         const reportedErrors = new Set();
-
+        // 配列リテラルの長さを追跡（静的に判定できる場合のみ）
+        const arrayLengths = new Map();
         return {
             VariableDeclarator(node) {
                 if (node.id && node.id.type === "Identifier") {
                     assignedVariables.set(node.id.name, "other");
+                    // 配列リテラルで初期化されている場合に長さを記録
+                    if (node.init && node.init.type === "ArrayExpression") {
+                        arrayLengths.set(node.id.name, (node.init.elements || []).length);
+                    } else {
+                        // リテラル以外で初期化されたら既知の配列情報をクリア
+                        if (arrayLengths.has(node.id.name)) arrayLengths.delete(node.id.name);
+                    }
                 }
                 // 関数式（変数に代入された関数）を追跡
                 if (
@@ -107,8 +116,10 @@ module.exports = {
 
                     if (node.right.type === "ArrayExpression") {
                         assignedVariables.set(node.left.name, "array"); // 配列が代入された場合
+                        arrayLengths.set(node.left.name, (node.right.elements || []).length);
                     } else {
                         assignedVariables.set(node.left.name, "other");
+                        if (arrayLengths.has(node.left.name)) arrayLengths.delete(node.left.name);
                     }
                     context.markVariableAsUsed(node.left.name);
                 }
@@ -117,6 +128,34 @@ module.exports = {
                 //     context.markVariableAsUsed(node.left.name);
                 // }
             },
+
+            // MemberExpression を監視して定数インデックスによる範囲外アクセスを検出
+            MemberExpression(node) {
+                // computed === true で括弧付きアクセス（a[0]）を扱う
+                if (node.computed && node.object && node.object.type === 'Identifier' && node.property) {
+                    const objName = node.object.name;
+                    // インデックスがリテラル数値の場合のみ静的判定
+                    if (node.property.type === 'Literal' && typeof node.property.value === 'number') {
+                        const idx = node.property.value;
+                        if (arrayLengths.has(objName)) {
+                            const len = arrayLengths.get(objName);
+                            // 整数でない、負、もしくは範囲外なら報告
+                            if (!Number.isInteger(idx) || idx < 0 || idx >= len) {
+                                const key = `${objName}::${idx}::oob`;
+                                if (!reportedErrors.has(key)) {
+                                    context.report({
+                                        node: node.property,
+                                        messageId: "arrayIndexOOB",
+                                        data: { name: objName, index: String(idx), length: String(len) }
+                                    });
+                                    reportedErrors.add(key);
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+
             Identifier(node) {
                 const parent = node.parent;
 
@@ -149,27 +188,34 @@ module.exports = {
                 }
                 // プロパティアクセス (e.g., a.fill) の場合
                 if (parent && parent.type === "MemberExpression") {
-                    const objectName = parent.object.name;
-                    const propertyName = parent.property.name;
+                    // 安全に object/property 名を取り出す
+                    const objectIsIdentifier = parent.object && parent.object.type === 'Identifier';
+                    const propertyIsIdentifier = parent.property && parent.property.type === 'Identifier';
+                    const objectName = objectIsIdentifier ? parent.object.name : null;
+                    const propertyName = propertyIsIdentifier ? parent.property.name : null;
 
-                    if (propertyName === "fill") {
-                        return; // 'fill' メソッドについてのエラーメッセージが重複しないようにする
-                    }
+                    // 'fill' のような許容メソッドは無視
+                    if (propertyName === "fill") return;
 
-                    // 代入された変数が配列であればメソッド呼び出しを許可
-                    if (assignedVariables.has(objectName) && assignedVariables.get(objectName) === "array") {
-                        return; // 配列ならメソッド呼び出しを許可
-                    }
+                    // オブジェクトが識別子でない場合はここでの判定対象外
+                    if (!objectName) return;
 
-                    // 配列以外の型であれば、エラーを報告
-                    const errorKey = `${objectName}.${propertyName}`;
-                    if (!reportedErrors.has(errorKey)) {
-                        context.report({
-                            node,
-                            message: "'{{name}}' は配列ではないため使えません",
-                            data: { name: objectName }
-                        });
-                        reportedErrors.add(errorKey); // エラーメッセージを報告済みとして記録
+                    // まだその変数が「既知の型」として追跡されていない（後で代入される可能性がある）場合は
+                    // 「配列ではない」エラーを出さずに use-before-declaration 側のエラーに任せる。
+                    if (assignedVariables.has(objectName)) {
+                        // 追跡中で配列なら問題なし
+                        if (assignedVariables.get(objectName) === "array") return;
+
+                        // 追跡中かつ配列でない -> エラーを報告
+                        const errorKey = `${objectName}.${propertyName || '<prop>'}`;
+                        if (!reportedErrors.has(errorKey)) {
+                            context.report({
+                                node,
+                                message: "'{{name}}' は配列ではないため使えません",
+                                data: { name: objectName }
+                            });
+                            reportedErrors.add(errorKey);
+                        }
                     }
                 }
 
