@@ -84,7 +84,7 @@ export default function Home() {
   const isSm = useMediaQuery(theme.breakpoints.up('sm')); // 600px以上
   const specialElementRef1 = useRef<HTMLDivElement | null>(null);
   const specialElementRef2 = useRef<HTMLDivElement | null>(null);
-
+  const [hoverPane, setHoverPane] = useState(false);
   const memoizedSetDnclValidation = useCallback(
     (validation: DnclValidationType | null) => setDnclValidation(validation),
     [setDnclValidation]
@@ -175,8 +175,14 @@ export default function Home() {
                 </Suspense>
               </Allotment.Pane>
               {tabsBoxWrapperVisible ? '' : (
-                <Allotment.Pane minSize={60} maxSize={60} className={styles.paneHover}>
-                  <Door setVisible={() => setTabsBoxWrapperVisible(true)} title={"パネルを表示したいですか？"} />
+                <Allotment.Pane key={hoverPane ? 'pane-wide' : 'pane-narrow'} minSize={60} maxSize={300} className={styles.paneHover} preferredSize={hoverPane ? 300 : 60}>
+                  <div
+                    onMouseEnter={() => setHoverPane(true)}
+                    onMouseLeave={() => setHoverPane(false)}
+                    style={{ width: '100%', height: '100%' }}
+                  >
+                    <Door setVisible={() => setTabsBoxWrapperVisible(true)} title={"パネルを再表示したいですか？"} />
+                  </div>
                 </Allotment.Pane>
               )}
             </Allotment>
@@ -242,6 +248,6 @@ export default function Home() {
         <HintButton />
         <HowToButton />
       </FooterOverlay>
-    </PageWrapper>
+    </PageWrapper >
   );
 }

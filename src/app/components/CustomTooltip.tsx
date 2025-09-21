@@ -11,7 +11,7 @@ export const CustomTooltip = styled(({ className, arrowDirection, ...props }: Cu
 ))<CustomTooltipProps>(({ arrowDirection = 'right' }) => {
     return {
         [`& .${tooltipClasses.tooltip}`]: {
-            backgroundColor: 'var(--stone-50)',
+            backgroundColor: 'white',
             color: 'rgba(0, 0, 0, 1)',
             boxShadow: '0px 2px 4px rgba(0,0,0,0.2)',
             fontSize: '1rem',
