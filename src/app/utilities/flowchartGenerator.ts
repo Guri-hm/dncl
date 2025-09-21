@@ -137,6 +137,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
     let lastPlacedY = 30;
     const drawX = 240;
     const nodeDefaultHeight = 30;
+    const nodeDefaultWidth = 30;
     //ノードの真下
     let exitXY: { x: number, y: number } | null = null;
     let lastNodeId: number;
@@ -145,7 +146,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
     // 各ノードの位置を保存（id -> {x,y,width,height}）
     const nodePositions: Record<number, { x: number; y: number; width: number; height: number }> = {};
 
-    const createNode = (value: string, style: string, x: number, y: number, width: number = 120, height: number = nodeDefaultHeight): string => {
+    const createNode = (value: string, style: string, x: number, y: number, width: number = nodeDefaultWidth, height: number = nodeDefaultHeight): string => {
         const node = `
     <mxCell id="${nodeId}" value="${escape(value)}" style="whiteSpace=wrap;${style}" vertex="1" parent="1">
       <mxGeometry x="${x}" y="${y}" width="${width}" height="${height}" as="geometry" />
@@ -184,7 +185,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
         return edge;
     };
 
-    const addNode = (value: string, style: string, x: number, y: number, previousNodeId: number | null, width: number = 120, height: number = nodeDefaultHeight) => {
+    const addNode = (value: string, style: string, x: number, y: number, previousNodeId: number | null, width: number = nodeDefaultWidth, height: number = nodeDefaultHeight) => {
         const node = createNode(value, style, x, y, width, height);
         xml += node;
         if (previousNodeId !== null) {
@@ -524,7 +525,7 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                 nodeIds.forEach(item => {
                     const srcId = item.id;
                     const srcPos = nodePositions[srcId];
-                    const nodeWidth = srcPos?.width ?? 120;
+                    const nodeWidth = srcPos?.width ?? nodeDefaultWidth;
                     const nodeHeight = srcPos?.height ?? nodeDefaultHeight;
                     const srcCenterX = (srcPos?.x ?? item.x) + nodeWidth / 2;
                     // ソースの下端（bottom）から垂直に降ろす
