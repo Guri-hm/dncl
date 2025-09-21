@@ -1,5 +1,5 @@
 import Box from '@mui/material/Box';
-import { BoxProps } from '@mui/system';
+import { BoxProps, useTheme } from '@mui/system';
 import { IconButton, ListItemIcon, Menu, MenuItem, Snackbar } from '@mui/material';
 import cmnStyles from '@/app/components/common.module.css';
 import { Children, Dispatch, SetStateAction, useMemo, useRef, useState } from 'react';
@@ -17,7 +17,8 @@ type Props = {
     setTabItemsObj?: Dispatch<SetStateAction<TabItemsObj>>;
 }
 const StyledBox: React.FC<BoxProps> = ({ children }) => {
-    return (<Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 10, gridColumn: 'span 3', backgroundColor: '#1e293b', boxShadow: '0 10px 15px rgba(0, 0, 0, 0.1)', '@xl': { marginLeft: 0 } }}>
+    const theme = useTheme();
+    return (<Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 10, gridColumn: 'span 3', border: theme.palette.mode === 'dark' ? '1px solid rgba(71, 85, 105, 0.3)' : '1px solid rgba(71, 85, 105, 0.1)', boxShadow: '0 10px 15px rgba(0, 0, 0, 0.1)', '@xl': { marginLeft: 0 } }}>
         {children}
     </Box>);
 };
