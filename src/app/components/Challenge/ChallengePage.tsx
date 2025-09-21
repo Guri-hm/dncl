@@ -23,12 +23,12 @@ import Divider from '@mui/material/Divider';
 import { ThemeToggleButton } from '@/app/components/Header';
 import ResizerHint from '@/app/components/ResizerHint';
 import { useRouter } from 'next/navigation'
+import { SwiperSlide } from "swiper/react";
+import { SwiperTabs } from "@/app/components/Tab";
 
 // 重いコンポーネントを遅延読み込み
 const SortableTree = lazy(() => import("@/app/components/SortableTree").then(module => ({ default: module.SortableTree })));
 const ConsoleWrapper = lazy(() => import("@/app/components/ConsoleWrapper").then(module => ({ default: module.ConsoleWrapper })));
-const SwiperTabs = lazy(() => import("@/app/components/Tab").then(module => ({ default: module.SwiperTabs })));
-const SwiperSlide = lazy(() => import("swiper/react").then(module => ({ default: module.SwiperSlide })));
 const Tip = lazy(() => import("@/app/components/Tips").then(module => ({ default: module.Tip })));
 const SuccessDialog = lazy(() => import("@/app/components/Dialog").then(module => ({ default: module.SuccessDialog })));
 
@@ -38,23 +38,32 @@ interface Props {
 
 // ローディングコンポーネント
 const TreeLoadingFallback = () => (
-    <Box display="flex" justifyContent="center" alignItems="center" height="200px">
+    <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="200px"
+        flexDirection="column"
+    >
         <CircularProgress size={24} />
-        <Box ml={1}>プログラムエディタを読み込み中...</Box>
+        <Box mt={1} fontSize="0.875rem" color="text.secondary">
+            プログラムエディタを読み込み中...
+        </Box>
     </Box>
 );
 
 const ConsoleLoadingFallback = () => (
-    <Box display="flex" justifyContent="center" alignItems="center" height="150px">
+    <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="150px"
+        flexDirection="column"
+    >
         <CircularProgress size={24} />
-        <Box ml={1}>コンソールを読み込み中...</Box>
-    </Box>
-);
-
-const SwiperLoadingFallback = () => (
-    <Box display="flex" justifyContent="center" alignItems="center" height="100px">
-        <CircularProgress size={20} />
-        <Box ml={1}>タブを読み込み中...</Box>
+        <Box mt={1} fontSize="0.875rem" color="text.secondary">
+            コンソールを読み込み中...
+        </Box>
     </Box>
 );
 
@@ -264,39 +273,37 @@ const ChallengePage = ({ challenge }: Props) => {
                         </Allotment.Pane>
                     </Allotment>
                 ) : (
-                    <Suspense fallback={<SwiperLoadingFallback />}>
-                        <SwiperTabs labels={['プログラム', 'コンソール', 'ヒント']} specialElementsRefs={[specialElementRef1, specialElementRef2]}>
+                    <SwiperTabs labels={['プログラム', 'コンソール', 'ヒント']} specialElementsRefs={[specialElementRef1, specialElementRef2]}>
+                        <SwiperSlide>
                             <Suspense fallback={<TreeLoadingFallback />}>
-                                <SwiperSlide>
-                                    <SortableTree
-                                        treeItems={items}
-                                        setTreeItems={setItems}
-                                        dnclValidation={dnclValidation}
-                                        specialElementsRefs={[specialElementRef1, specialElementRef2]}
-                                        collapsible
-                                        indicator
-                                        removable
-                                    />
-                                </SwiperSlide>
+                                <SortableTree
+                                    treeItems={items}
+                                    setTreeItems={setItems}
+                                    dnclValidation={dnclValidation}
+                                    specialElementsRefs={[specialElementRef1, specialElementRef2]}
+                                    collapsible
+                                    indicator
+                                    removable
+                                />
                             </Suspense>
+                        </SwiperSlide>
+                        <SwiperSlide>
                             <Suspense fallback={<ConsoleLoadingFallback />}>
-                                <SwiperSlide>
-                                    <ConsoleWrapper
-                                        dnclValidation={dnclValidation}
-                                        setDnclValidation={memoizedSetDnclValidation}
-                                        treeItems={items}
-                                        runResults={runResults}
-                                        setRunResults={setRunResults}
-                                    />
-                                </SwiperSlide>
+                                <ConsoleWrapper
+                                    dnclValidation={dnclValidation}
+                                    setDnclValidation={memoizedSetDnclValidation}
+                                    treeItems={items}
+                                    runResults={runResults}
+                                    setRunResults={setRunResults}
+                                />
                             </Suspense>
+                        </SwiperSlide>
+                        <SwiperSlide>
                             <Suspense fallback={<TipLoadingFallback />}>
-                                <SwiperSlide>
-                                    <Tip onClose={() => setHintVisible(false)} hint={challenge.hint} open={hintVisible} />
-                                </SwiperSlide>
+                                <Tip onClose={() => setHintVisible(false)} hint={challenge.hint} open={hintVisible} />
                             </Suspense>
-                        </SwiperTabs>
-                    </Suspense>
+                        </SwiperSlide>
+                    </SwiperTabs>
                 )}
             </ContentWrapper>
             <Snackbar
