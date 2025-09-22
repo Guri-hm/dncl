@@ -3,7 +3,8 @@ import { Challenge } from "@/app/types";
 import { v4 as uuidv4 } from 'uuid'
 
 const practiceAssignment: Challenge = {
-    id: "1",
+    id: "basic-1",
+    difficulty: "basic",
     items: [
         {
             id: uuidv4(),
@@ -23,7 +24,8 @@ const practiceAssignment: Challenge = {
     ],
 };
 const practiceOutput: Challenge = {
-    id: "2",
+    id: "basic-2",
+    difficulty: "basic",
     items: [
         {
             id: uuidv4(),
@@ -43,7 +45,8 @@ const practiceOutput: Challenge = {
     ],
 };
 const practiceArithmeticOperation: Challenge = {
-    id: "3",
+    id: "basic-3",
+    difficulty: "basic",
     items: [
         {
             id: uuidv4(),
@@ -82,8 +85,10 @@ const practiceArithmeticOperation: Challenge = {
     ]
 };
 const practiceIf: Challenge = {
-    id: "4",
+    id: "basic-4",
+    difficulty: "basic",
     items: [
+
         {
             id: uuidv4(),
             line: "もしa > 10ならば",
@@ -127,7 +132,8 @@ const practiceIf: Challenge = {
 };
 
 const practiceArray: Challenge = {
-    id: "5",
+    id: "basic-5",
+    difficulty: "basic",
     items: [
         {
             id: uuidv4(),
@@ -153,7 +159,8 @@ const practiceArray: Challenge = {
 };
 
 const practiceArrayLoop: Challenge = {
-    id: "6",
+    id: "basic-6",
+    difficulty: "basic",
     items: [
         {
             id: uuidv4(),
@@ -177,7 +184,7 @@ const practiceArrayLoop: Challenge = {
     // 必要なら requiredItems を追加して「繰り返し構文を使うこと」をチェックできます（後でルール追加可）
 };
 
-export const allChallengesItems: Challenge[] = [
+export const basicChallenges: Challenge[] = [
     practiceAssignment,
     practiceOutput,
     practiceArithmeticOperation,
@@ -187,7 +194,8 @@ export const allChallengesItems: Challenge[] = [
 ];
 
 const advancedLoop: Challenge = {
-    id: "7",
+    id: "adv-1",
+    difficulty: "advanced",
     items: [
         {
             id: uuidv4(),
@@ -215,7 +223,15 @@ export const advancedChallenges: Challenge[] = [
     advancedLoop,
 ];
 
+export const combinedChallenges: Challenge[] = (() => {
+    const map = new Map<string, Challenge>();
+    for (const c of [...basicChallenges, ...advancedChallenges]) {
+        if (!map.has(c.id)) map.set(c.id, c);
+    }
+    return Array.from(map.values());
+})();
+
 export const getChallengeById = (id: string) => {
-    return allChallengesItems.find(item => item.id === id);
+    return combinedChallenges.find(item => item.id === id);
 };
 

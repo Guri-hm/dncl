@@ -110,6 +110,8 @@ export interface RequiredItem {
   variables?: string[];
 }
 
+export type Difficulty = 'basic' | 'advanced' | 'other';
+
 export interface Challenge {
   title: string;
   items: TreeItems;
@@ -117,6 +119,7 @@ export interface Challenge {
   hint: string;
   answer: string[];
   id: string;
+  difficulty?: Difficulty;
   requiredItems?: RequiredItem[]
   usableItems?: StatementJpEnum[]
 }

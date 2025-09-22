@@ -8,7 +8,7 @@ import Grid from '@mui/material/Grid2';
 import { HeaderTitle } from "../components/Header";
 import { Avatar, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Typography } from "@mui/material";
 import { styled } from '@mui/system';
-import { CheckedIcon, allChallengesItems, UnachievedIcon, advancedChallenges } from "@/app/components/Challenge";
+import { CheckedIcon, basicChallenges, UnachievedIcon, advancedChallenges } from "@/app/components/Challenge";
 import { useAchievements, storageKey } from "@/app/hooks";
 import { useRef, useState } from "react";
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
@@ -95,7 +95,7 @@ export default function Home() {
               <span>基本</span>
             </CustomTypography>
             <List sx={{ width: '100%', maxWidth: 360 }}>
-              {allChallengesItems.map((challenge, index) => (
+              {basicChallenges.map((challenge, index) => (
                 <ListItem key={index}>
                   <ListItemButton component="a" href={`${basePath}/chlng/${challenge.id}`}>
                     <ListItemAvatar>
@@ -119,7 +119,7 @@ export default function Home() {
             <CustomTypography variant="h2">
               <span>応用</span>
             </CustomTypography>
-            {/* <List sx={{ width: '100%', maxWidth: 360 }}>
+            <List sx={{ width: '100%', maxWidth: 360 }}>
               {advancedChallenges.map((challenge, index) => (
                 <ListItem key={index}>
                   <ListItemButton component="a" href={`${basePath}/chlng/${challenge.id}`}>
@@ -138,7 +138,7 @@ export default function Home() {
                 </ListItem>
 
               ))}
-            </List> */}
+            </List>
           </Grid>
         </Grid>
 
