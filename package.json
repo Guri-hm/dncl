@@ -19,6 +19,7 @@
     "test:syntax": "jest syntax.test.tsx",
     "test:utility": "jest utilities.test.tsx",
     "test:integration": "jest integration.test.tsx",
+    "test:rules": "jest --runInBand --testPathPatterns=eslint-plugin-custom-rules/test",
     "svgo": "node scripts/svgo-preview.js"
   },
   "dependencies": {
