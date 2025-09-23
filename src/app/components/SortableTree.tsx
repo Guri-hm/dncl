@@ -123,7 +123,7 @@ export function SortableTree({
   const [openDrawer, setOpenDrawer] = React.useState(false);
 
   //ツリー要素追加時はこの定数にアイテムが入る
-  const additionItem = fragments.find(({ id }) => id == activeId);
+  const additionItem = fragments.find(({ id, disabled }) => id == activeId && !disabled);
 
   const flattenedItems: FlattenedItem[] = useMemo(() => {
     const flattenedTree = flattenTree(treeItems);
@@ -143,6 +143,17 @@ export function SortableTree({
       activeId ? [activeId, ...collapsedItems] : collapsedItems
     );
   }, [activeId, treeItems, additionItem]);
+
+  // 各 statementType の現在の使用数を算出（ツリー内の既存要素）
+  const usedCounts = useMemo(() => {
+    const map = new Map<StatementEnum, number>();
+    flattenedItems.forEach(item => {
+      if (item.statementType !== undefined) {
+        map.set(item.statementType, (map.get(item.statementType) || 0) + 1);
+      }
+    });
+    return map;
+  }, [flattenedItems]);
 
   const projected =
     activeId && overId
@@ -190,6 +201,19 @@ export function SortableTree({
 
   // Helper functions
   function handleDragStart({ active: { id: activeId } }: DragStartEvent) {
+    const frag = fragments.find(f => f.id === activeId.toString());
+
+    if (frag) {
+      // frag.statementType と frag.maxUsage から現在の使用数を参照して残りを計算
+      const used = frag.statementType !== undefined ? (usedCounts.get(frag.statementType) || 0) : 0;
+      const max = frag.maxUsage;
+      const remaining = typeof max === 'number' ? Math.max(0, max - used) : undefined;
+
+      // 残りが 0 の場合はドラッグ開始をキャンセル
+      if (typeof remaining === 'number' && remaining === 0) {
+        return;
+      }
+    }
     setActiveId(activeId.toString());
     setOverId(activeId.toString());
 
@@ -439,13 +463,21 @@ export function SortableTree({
             <Allotment.Pane visible={visible} className={`${styles.leftPane} ${styles.paneBg}`} snap>
               <Box sx={{ padding: '10px' }} className={`${cmnStyles.hFull} ${cmnStyles.overflowAuto}`}>
                 <DoNotDrag />
-                {fragments.map(({ id, line }) => (
-                  <FragmentsListItem
-                    key={id}
-                    id={id}
-                    value={line}
-                  />
-                ))}
+                {fragments.map(({ id, line, statementType, maxUsage }) => {
+                  const used = statementType !== undefined ? (usedCounts.get(statementType) || 0) : 0;
+                  const remaining = typeof maxUsage === 'number' ? Math.max(0, maxUsage - used) : undefined;
+                  const disabled = remaining === 0;
+                  return (
+                    <FragmentsListItem
+                      key={id}
+                      id={id}
+                      value={line}
+                      disabled={disabled}
+                      remaining={remaining}
+                      maxUsage={maxUsage}
+                    />
+                  );
+                })}
               </Box>
             </Allotment.Pane>
 

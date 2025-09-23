@@ -50,6 +50,10 @@ export type SensorContext = RefObject<{
 //ツリーに追加する要素の型
 export interface FragmentItem extends FlattenedItem {
   statementType: StatementEnum;
+  // 最大利用回数（未設定 = undefined → 無制限）
+  maxUsage?: number;
+  remainingUsage?: number;
+  disabled?: boolean;
 }
 
 export type FragmentItems = FragmentItem[];
@@ -122,6 +126,8 @@ export interface Challenge {
   difficulty?: Difficulty;
   requiredItems?: RequiredItem[]
   usableItems?: StatementJpEnum[]
+  // 例: { "Input": 3, "Output": 1 } など（キーは StatementJpEnum の文字列）
+  usableItemLimits?: Partial<Record<StatementJpEnum, number>>;
 }
 
 export interface ASTNode {

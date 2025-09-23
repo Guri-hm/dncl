@@ -410,8 +410,6 @@ export function DnclEditDialog({ type = StatementEnum.Input, isEdit = false, ...
                                 }
                             }
 
-                            console.log(formJson)
-
                             // 編集モードか新規追加モードかで処理を分岐
                             if (isEdit && params.editItem && params.item) {
                                 params.editItem({ editedItem: params.item, itemId: params.item.id });

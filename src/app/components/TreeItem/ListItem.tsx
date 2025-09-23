@@ -15,6 +15,9 @@ export interface Props extends HTMLAttributes<HTMLLIElement> {
   listeners?: SyntheticListenerMap;
   value: string;
   wrapperRef?(node: HTMLLIElement): void;
+  disabled?: boolean;
+  remaining?: number;
+  maxUsage?: number;
 }
 
 const ListItem = forwardRef<HTMLDivElement, Props>(
@@ -30,8 +33,11 @@ const ListItem = forwardRef<HTMLDivElement, Props>(
       style,
       value,
       wrapperRef,
-      ...props
-    },
+      disabled,
+      remaining,
+      maxUsage,
+      ...rest
+    }: Props,
     ref
   ) => {
     return (
@@ -41,21 +47,26 @@ const ListItem = forwardRef<HTMLDivElement, Props>(
           clone && styles.clone,
           ghost && styles.ghost,
           disableSelection && styles.disableSelection,
-          disableInteraction && styles.disableInteraction
+          disableInteraction && styles.disableInteraction,
+          disabled && styles.disabled
         )}
         ref={wrapperRef}
-        style={
-          {
-
-          } as React.CSSProperties
-        }
-        {...props}
+        style={{
+          ...style as React.CSSProperties,
+        }}
+        {...rest}
       >
         <div className={styles.TreeItem} ref={ref} style={style}>
-          <Handle {...attributes} {...listeners} />
+          {!disabled && attributes ? <Handle {...attributes} {...listeners} /> : <span className={styles.HandlePlaceholder} />}
           <span className={styles.Text}>{value}</span>
           {clone && childCount && childCount > 1 ? (
             <span className={styles.Count}>{childCount}</span>
+          ) : null}
+          {/* 残り回数表示 */}
+          {typeof maxUsage === 'number' ? (
+            <span className={styles.Usage}>
+              {(typeof remaining === 'number' ? remaining : maxUsage)}/{maxUsage}
+            </span>
           ) : null}
         </div>
       </li>

@@ -4,6 +4,33 @@
   padding-left: var(--spacing);
   margin-bottom: -1px;
 
+  &.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+
+    // 内部の主要表示を薄くする
+    .TreeItem {
+      background-color: #f9f9f9;
+      border-color: #e0e0e0;
+      color: #a0a0a0;
+    }
+
+    // ハンドル（存在するクラス名に合わせて調整）
+    .Handle,
+    .handle {
+      display: none !important;
+      visibility: hidden !important;
+    }
+
+    // ハンドルの置き場を確保する場合はプレースホルダーで幅を維持
+    .HandlePlaceholder {
+      display: inline-block;
+      width: 28px; // 実際のハンドル幅に合わせる
+      height: 20px;
+    }
+  }
+
   &.clone {
     display: inline-block;
     pointer-events: none;

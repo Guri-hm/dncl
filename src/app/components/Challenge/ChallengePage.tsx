@@ -144,7 +144,9 @@ const ChallengePage = ({ challenge }: Props) => {
         index: 0,
         parentId: null,
         depth: 0,
-        statementType: statementEnumMap[item]
+        statementType: statementEnumMap[item],
+        maxUsage: challenge.usableItemLimits ? challenge.usableItemLimits[item] : undefined,
+        remainingUsage: challenge.usableItemLimits ? challenge.usableItemLimits[item] : undefined,
     }))
         :
         defaultFragments;

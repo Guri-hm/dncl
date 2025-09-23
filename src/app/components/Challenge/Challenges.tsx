@@ -22,6 +22,9 @@ const practiceAssignment: Challenge = {
     usableItems: [
         StatementJpEnum.Input,
     ],
+    usableItemLimits: {
+        [StatementJpEnum.Input]: 1
+    },
 };
 const practiceOutput: Challenge = {
     id: "basic-2",
