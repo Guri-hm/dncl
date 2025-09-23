@@ -274,6 +274,7 @@ export const Operation: FC<Props> = ({ children, processType, treeItems = [], ri
                     {brakets}
                     <Stack direction="row" spacing={2} sx={{ marginTop: 1 }}>
                         <DraggableItem id={OperationEnum.Arithmetic} value={OperatorTypeJpEnum.Arithmetic} />
+                        <DraggableItem id={OperationEnum.Comparison} value={OperatorTypeJpEnum.Comparison} />
                     </Stack>
                 </DraggableOperatorsBox>
 
