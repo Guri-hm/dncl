@@ -46,6 +46,9 @@ const practiceOutput: Challenge = {
     usableItems: [
         StatementJpEnum.Output,
     ],
+    usableItemLimits: {
+        [StatementJpEnum.Output]: 1
+    },
 };
 const practiceArithmeticOperation: Challenge = {
     id: "basic-3",
@@ -85,7 +88,10 @@ const practiceArithmeticOperation: Challenge = {
             processIndex: ProcessEnum.SetValToVariableOrArray,
             variables: ["a"],
         },
-    ]
+    ],
+    usableItemLimits: {
+        [StatementJpEnum.Input]: 1
+    },
 };
 const practiceIf: Challenge = {
     id: "basic-4",
@@ -126,12 +132,15 @@ const practiceIf: Challenge = {
         }
     ],
     title: '条件分岐文の実行',
-    task: "条件を満たしましょう",
+    task: "「こんにちは」を出力しましょう",
     hint: "変数aの値を10より大きい値にします",
     answer: ["こんにちは"],
     usableItems: [
         StatementJpEnum.Input,
-    ]
+    ],
+    usableItemLimits: {
+        [StatementJpEnum.Input]: 1
+    },
 };
 
 const practiceArray: Challenge = {
@@ -158,7 +167,11 @@ const practiceArray: Challenge = {
     usableItems: [
         StatementJpEnum.Input,
         StatementJpEnum.Output,
-    ]
+    ],
+    usableItemLimits: {
+        [StatementJpEnum.Input]: 1,
+        [StatementJpEnum.Output]: 1
+    },
 };
 
 const practiceArrayLoop: Challenge = {
@@ -184,7 +197,11 @@ const practiceArrayLoop: Challenge = {
         StatementJpEnum.Output,
         StatementJpEnum.ConditionalLoopPreTest
     ],
-    // 必要なら requiredItems を追加して「繰り返し構文を使うこと」をチェックできます（後でルール追加可）
+    usableItemLimits: {
+        [StatementJpEnum.Input]: 2,
+        [StatementJpEnum.Output]: 1,
+        [StatementJpEnum.ConditionalLoopPreTest]: 2
+    },
 };
 
 export const basicChallenges: Challenge[] = [
@@ -219,7 +236,9 @@ const advancedLoop: Challenge = {
         StatementJpEnum.ConditionalLoopPostTest,
         StatementJpEnum.SequentialIteration,
     ],
-    // 必要なら requiredItems を追加して「繰り返し構文を使うこと」をチェックできます（後でルール追加可）
+    usableItemLimits: {
+        [StatementJpEnum.Input]: 2,
+    },
 };
 
 export const advancedChallenges: Challenge[] = [
