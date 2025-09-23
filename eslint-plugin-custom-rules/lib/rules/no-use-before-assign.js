@@ -103,30 +103,68 @@ module.exports = {
             },
             AssignmentExpression(node) {
                 // 直接代入を許可
-                if (node.left.type === "Identifier") {
-                    // 定数への代入をチェック
-                    if (declaredConstants.has(node.left.name)) {
-                        context.report({
-                            node: node.left,
-                            messageId: "constantReassignment",
-                            data: { name: node.left.name }
-                        });
-                        return;
-                    }
+                // if (node.left.type === "Identifier") {
+                //     // 定数への代入をチェック
+                //     if (declaredConstants.has(node.left.name)) {
+                //         context.report({
+                //             node: node.left,
+                //             messageId: "constantReassignment",
+                //             data: { name: node.left.name }
+                //         });
+                //         return;
+                //     }
 
-                    if (node.right.type === "ArrayExpression") {
-                        assignedVariables.set(node.left.name, "array"); // 配列が代入された場合
-                        arrayLengths.set(node.left.name, (node.right.elements || []).length);
-                    } else {
-                        assignedVariables.set(node.left.name, "other");
-                        if (arrayLengths.has(node.left.name)) arrayLengths.delete(node.left.name);
-                    }
-                    context.markVariableAsUsed(node.left.name);
-                }
+                //     if (node.right.type === "ArrayExpression") {
+                //         assignedVariables.set(node.left.name, "array"); // 配列が代入された場合
+                //         arrayLengths.set(node.left.name, (node.right.elements || []).length);
+                //     } else {
+                //         assignedVariables.set(node.left.name, "other");
+                //         if (arrayLengths.has(node.left.name)) arrayLengths.delete(node.left.name);
+                //     }
+                //     context.markVariableAsUsed(node.left.name);
+                // }
                 // if (node.left.type === "Identifier") {
                 //     assignedVariables.add(node.left.name); // 追跡リストに追加
                 //     context.markVariableAsUsed(node.left.name);
                 // }
+            },
+
+            // children（右辺）処理後に左辺を登録／検査する
+            "AssignmentExpression:exit"(node) {
+                // 左辺が識別子の場合のみ扱う
+                if (node.left && node.left.type === "Identifier") {
+                    const name = node.left.name;
+
+                    // 定数への再代入チェック（const 宣言済みなら報告）
+                    if (declaredConstants.has(name)) {
+                        context.report({
+                            node: node.left,
+                            messageId: "constantReassignment",
+                            data: { name }
+                        });
+                        return;
+                    }
+
+                    // 右辺が配列リテラルなら配列として登録して長さを保持
+                    if (node.right && node.right.type === "ArrayExpression") {
+                        assignedVariables.set(name, "array");
+                        arrayLengths.set(name, (node.right.elements || []).length);
+                    } else {
+                        // それ以外は一般変数として登録（既知の配列情報は消す）
+                        assignedVariables.set(name, "other");
+                        if (arrayLengths.has(name)) arrayLengths.delete(name);
+                    }
+
+                    // 代入済みとしてマーク（他行の RHS での許可に使う）
+                    try {
+                        // context.markVariableAsUsed がない環境もあるため安全に
+                        if (typeof context.markVariableAsUsed === 'function') {
+                            context.markVariableAsUsed(name);
+                        }
+                    } catch (e) {
+                        // noop
+                    }
+                }
             },
 
             // MemberExpression を監視して定数インデックスによる範囲外アクセスを検出
@@ -159,25 +197,11 @@ module.exports = {
             Identifier(node) {
                 const parent = node.parent;
 
-                // 変数宣言時の識別子は除外
-                if (
-                    parent &&
-                    parent.type === "VariableDeclarator" &&
-                    parent.id === node
-                ) {
-                    return;
-                }
+                // 変数宣言時の識別子・左辺での使用（代入左辺）は除外
+                if (parent && (parent.type === "VariableDeclarator" && parent.id === node)) return;
+                if (parent && (parent.type === "AssignmentExpression" && parent.left === node)) return;
 
-                // 左辺での使用（代入時）は除外
-                if (
-                    parent &&
-                    parent.type === "AssignmentExpression" &&
-                    parent.left === node
-                ) {
-                    return;
-                }
-
-                // 特定のグローバルオブジェクトのメソッドを許可
+                // MemberExpression の特別扱い（console.log 等）――既存ルールを維持
                 if (
                     parent &&
                     parent.type === "MemberExpression" &&
@@ -186,27 +210,16 @@ module.exports = {
                 ) {
                     return;
                 }
-                // プロパティアクセス (e.g., a.fill) の場合
+
                 if (parent && parent.type === "MemberExpression") {
-                    // 安全に object/property 名を取り出す
                     const objectIsIdentifier = parent.object && parent.object.type === 'Identifier';
                     const propertyIsIdentifier = parent.property && parent.property.type === 'Identifier';
                     const objectName = objectIsIdentifier ? parent.object.name : null;
                     const propertyName = propertyIsIdentifier ? parent.property.name : null;
-
-                    // 'fill' のような許容メソッドは無視
                     if (propertyName === "fill") return;
-
-                    // オブジェクトが識別子でない場合はここでの判定対象外
                     if (!objectName) return;
-
-                    // まだその変数が「既知の型」として追跡されていない（後で代入される可能性がある）場合は
-                    // 「配列ではない」エラーを出さずに use-before-declaration 側のエラーに任せる。
                     if (assignedVariables.has(objectName)) {
-                        // 追跡中で配列なら問題なし
                         if (assignedVariables.get(objectName) === "array") return;
-
-                        // 追跡中かつ配列でない -> エラーを報告
                         const errorKey = `${objectName}.${propertyName || '<prop>'}`;
                         if (!reportedErrors.has(errorKey)) {
                             context.report({
@@ -219,29 +232,54 @@ module.exports = {
                     }
                 }
 
-                // 許可されたグローバル変数はスキップ
-                if (Object.keys(allowedGlobalsWithMethods).includes(node.name)) {
+                // 許可されたグローバル変数や定義済み関数はスキップ
+                if (Object.keys(allowedGlobalsWithMethods).includes(node.name)) return;
+                if (definedFunctions.has(node.name)) return;
+
+                // scope を辿って変数情報を取得
+                let scope = context.getScope();
+                let variable = null;
+                while (scope) {
+                    if (scope.set && scope.set.has(node.name)) {
+                        variable = scope.set.get(node.name);
+                        break;
+                    }
+                    scope = scope.upper;
+                }
+
+                // 変数が見つかった場合
+                if (variable) {
+                    // まず、既に代入によって値が与えられている場合は許可する（sum = 1; のケース）
+                    if (assignedVariables.has(node.name)) return;
+
+                    // 関数宣言はホイスティングされるので使用前でも許可
+                    if (variable.defs && variable.defs.some(def => def.type === "FunctionName")) return;
+
+                    // 定義ノードの位置が分かれば使用位置と比較して報告
+                    if (variable.defs && variable.defs.length > 0) {
+                        const defNode = variable.defs[0].node;
+                        if (defNode && typeof defNode.range !== 'undefined' && typeof node.range !== 'undefined') {
+                            // 定義位置が使用位置より後なら use-before-declaration
+                            if (defNode.range[0] > node.range[0]) {
+                                context.report({
+                                    node,
+                                    messageId: "useBeforeDeclaration",
+                                    data: { name: node.name },
+                                });
+                            }
+                            return;
+                        }
+                    }
+
+                    // defs が無いが assignedVariables にあるなら許可（既に代入があった） -> ここは既に上で処理済み
+                    // それ以外は宣言済みと扱って許可
                     return;
                 }
 
-                // 定義された関数の使用を許可
-                if (definedFunctions.has(node.name)) {
-                    return;
-                }
+                // scope に見つからないが、暗黙代入で既に値が設定されていれば許可
+                if (assignedVariables.has(node.name)) return;
 
-                // 定義済みの変数（直接代入や関数引数）を許可
-                if (assignedVariables.has(node.name)) {
-                    return;
-                }
-
-                // 関数スコープ内で後に定義される関数宣言を許可
-                const scope = context.getScope();
-                const variable = scope.set.get(node.name);
-                if (variable && variable.defs.some((def) => def.type === "FunctionName")) {
-                    return;
-                }
-
-                // 未定義の変数かどうかをチェック
+                // 変数がスコープに見つからない場合は未定義として報告
                 context.report({
                     node,
                     messageId: "useBeforeDeclaration",

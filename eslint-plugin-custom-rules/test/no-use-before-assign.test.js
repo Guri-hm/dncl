@@ -7,27 +7,47 @@ const ruleTester = new RuleTester({
 
 ruleTester.run("no-use-before-assign", rule, {
     valid: [
-        // 配列を定義して範囲内アクセス
+        // 既存...
         "Ten = [30, 8]; console.log(Ten[1]);",
-        // 変数を先に定義してから利用
         "let x = 1; console.log(x);",
-        // 関数宣言は許可
         "function f(){} f();",
+
+        // 追加: 先に代入してから使うケースは有効
+        "sum = 2; sum = sum + 1;",
+        "const a = 2;",
+        // 追加: 配列アクセスで index が変数の場合は静的判定しない（エラー出さない）
+        "Ten = [1]; const i = 0; console.log(Ten[i]);",
+        // 追加: 関数宣言はホイスティングされて問題なし
+        "foo(); function foo() { return 1; }",
     ],
     invalid: [
+        // 既存...
         {
-            // use-before-declaration が検出されるケース
             code: "console.log(Ten); Ten = [1,2];",
             errors: [{ messageId: "useBeforeDeclaration" }],
         },
         {
-            // 配列の範囲外アクセス（静的判定：index が定数かつ配列リテラル）
             code: "Ten = [30,8]; console.log(Ten[4]);",
             errors: [{ messageId: "arrayIndexOOB" }],
         },
         {
-            // 宣言前にメンバーアクセス -> use-before-declaration が出るべきケース
             code: "console.log(Ten[0]); Ten = [1];",
+            errors: [{ messageId: "useBeforeDeclaration" }],
+        },
+        {
+            code: "sum = sum + 1;",
+            errors: [{ messageId: "useBeforeDeclaration" }],
+        },
+
+        // 追加: let の TDZ（宣言より前の使用でエラー期待）
+        {
+            code: "console.log(b); let b = 1;",
+            errors: [{ messageId: "useBeforeDeclaration" }],
+        },
+        // 追加: var ホイスティングをエラー扱いにしたい場合のテスト（意図によって期待を変える）
+        // もし var を許容するならこのテストを invalid から valid に移してください
+        {
+            code: "console.log(a); var a = 1;",
             errors: [{ messageId: "useBeforeDeclaration" }],
         },
     ],
