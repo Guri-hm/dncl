@@ -115,8 +115,6 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
 
     // スイッチの復元
     if (fieldName === `${name}_${index}_isArray`) {
-      console.log("値の復元", fieldName, value);
-
       setChecked(value === 'true');
       // 配列スイッチを復元する際、定数モードと排他にする
       const v = value === 'true';

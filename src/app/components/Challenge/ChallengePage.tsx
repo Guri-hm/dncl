@@ -171,101 +171,116 @@ const ChallengePage = ({ challenge }: Props) => {
         setOpenSuccessDialog(false);
     };
 
+    const itemsSnapshotAtRunRef = useRef<TreeItems>(items);
     useEffect(() => {
+        itemsSnapshotAtRunRef.current = items;
         lastMismatchRef.current = null;
         lastAnswerRef.current = null;
+        shownDialogRef.current = false;
     }, [items]);
 
     useEffect(() => {
-        if (challenge.answer.length === 0) return;
-        const answerString = challenge.answer.join('\n');
-
-        const normalizeForCompare = (s: string | null | undefined) => {
-            if (!s) return '';
-            // 終端 CRLF を正規化 -> 行ごとにトリム -> 空行を除去 -> カンマで結合
-            const lines = String(s).replace(/\r\n/g, '\n').split('\n').map(l => l.trim()).filter(Boolean);
-            return lines.join(',');
-        };
-
-        // runResults に正解が含まれていて、ページ内でまだダイアログを表示していなければ表示する
+        // 早期抜け：解答が定義されていない・結果が無い・既にダイアログ出している等
+        if (!challenge || !challenge.answer || challenge.answer.length === 0) return;
         if (shownDialogRef.current) return;
-
         const latest = runResults.length > 0 ? runResults[runResults.length - 1] : null;
         if (!latest) return;
 
-        if (latest === answerString || normalizeForCompare(latest) === normalizeForCompare(answerString)) {
-            if (challenge.requiredItems) {
-                const lines = getLines(items);
-                // requiredItems の様々な表現（line / rhs + lhs / variables / lineTokens）に対応する正規化
-                type LegacyReqShape = { line?: string; lineTokens?: unknown[]; rhs?: string; lhs?: string; variables?: unknown[] };
-                const normalizeReq = (req: RequiredItem | LegacyReqShape): { lhs?: string; rhs: string } | null => {
-                    const r = req as Record<string, unknown>;
-                    // 1) req.line が "a ← b" の形なら分解
-                    if (typeof r.line === 'string') {
-                        const parsed = parseAssignment(r.line);
-                        if (parsed) return parsed;
-                    }
-                    // 2) 明示的 rhs を持つ場合
-                    if (typeof r.rhs === 'string' && r.rhs.trim() !== '') {
-                        const lhs = typeof r.lhs === 'string'
-                            ? r.lhs
-                            : (Array.isArray(r.variables) && r.variables.length > 0 && typeof r.variables[0] === 'string' ? r.variables[0] as string : undefined);
-                        return { lhs, rhs: r.rhs.trim() };
-                    }
+        // スナップショットを使う（runResults が更新された瞬間の items）
+        const itemsAtRun = itemsSnapshotAtRunRef.current;
+        const lines = getLines(itemsAtRun);
 
-                    // 3) lineTokens 互換（互換性確保）
-                    if (Array.isArray(r.lineTokens) && r.lineTokens.length >= 2) {
-                        const first = r.lineTokens[0];
-                        const rest = r.lineTokens.slice(1).map(t => String(t));
-                        if (typeof first === 'string') {
-                            return { lhs: first, rhs: rest.join(' ') };
-                        }
-                    }
-                    // 4) 最終手段：line を rhs として扱う（lhs 不在）
-                    if (typeof r.line === 'string' && r.line.trim() !== '') {
-                        return { rhs: r.line.trim() };
-                    }
-                    return null;
-                };
+        const answerString = challenge.answer.join('\n');
+        const normalizeForCompare = (s: string | null | undefined) => {
+            if (!s) return '';
+            const ls = String(s).replace(/\r\n/g, '\n').split('\n').map(l => l.trim()).filter(Boolean);
+            return ls.join(',');
+        };
 
-                const allMatched = challenge.requiredItems.every((req: RequiredItem | LegacyReqShape) => {
-                    const reqNorm = normalizeReq(req);
-                    if (!reqNorm) return false;
+        if (!(latest === answerString || normalizeForCompare(latest) === normalizeForCompare(answerString))) {
+            return;
+        }
 
-                    // lines の中に意味的に一致する代入があるか確認
-                    return lines.some(line => {
-                        const candAssign = parseAssignment(line);
-                        if (!candAssign) return false;
-                        // lhs が指定されている場合は左辺一致を要求
-                        if (reqNorm.lhs && candAssign.lhs !== reqNorm.lhs) return false;
-                        // 右辺を意味的に比較（例: "a + 8" と "8 + a" を同一視）
-                        return expressionsAreEquivalent(reqNorm.rhs, candAssign.rhs);
-                    });
+        // requiredItems チェック（既存ロジックをそのまま使う）
+        if (challenge.requiredItems && challenge.requiredItems.length > 0) {
+            type LegacyReqShape = { line?: string; lineTokens?: unknown[]; rhs?: string; lhs?: string; variables?: unknown[] };
+            const normalizeReq = (req: RequiredItem | LegacyReqShape): { lhs?: string; rhs: string } | null => {
+                const r = req as Record<string, unknown>;
+                if (typeof r.line === 'string') {
+                    const parsed = parseAssignment(r.line);
+                    if (parsed) return parsed;
+                }
+                if (typeof r.rhs === 'string' && r.rhs.trim() !== '') {
+                    const lhs = typeof r.lhs === 'string'
+                        ? r.lhs
+                        : (Array.isArray(r.variables) && r.variables.length > 0 && typeof r.variables[0] === 'string' ? r.variables[0] as string : undefined);
+                    return { lhs, rhs: r.rhs.trim() };
+                }
+                if (Array.isArray(r.lineTokens) && r.lineTokens.length >= 2) {
+                    const first = r.lineTokens[0];
+                    const rest = r.lineTokens.slice(1).map(t => String(t));
+                    if (typeof first === 'string') {
+                        return { lhs: first, rhs: rest.join(' ') };
+                    }
+                }
+                if (typeof r.line === 'string' && r.line.trim() !== '') {
+                    return { rhs: r.line.trim() };
+                }
+                return null;
+            };
+
+            const allMatched = challenge.requiredItems.every((req: RequiredItem | LegacyReqShape) => {
+                const reqNorm = normalizeReq(req);
+                if (!reqNorm) return false;
+                return lines.some(line => {
+                    const candAssign = parseAssignment(line);
+                    if (!candAssign) return false;
+                    if (reqNorm.lhs && candAssign.lhs !== reqNorm.lhs) return false;
+                    return expressionsAreEquivalent(reqNorm.rhs, candAssign.rhs);
                 });
+            });
 
-                if (!allMatched) {
-                    // 同じ answerString に対して既に通知済みなら再通知しない（無限ループ防止）
-                    const mismatchKey = `${challenge.id}::${answerString}`;
-                    if (lastMismatchRef.current !== mismatchKey) {
-                        lastMismatchRef.current = mismatchKey;
-                        setSnackbar(prev => ({ ...prev, open: true, text: '適切な答えと一致しません' }));
+            if (!allMatched) {
+                const mismatchKey = `${challenge.id}::${answerString}`;
+                if (lastMismatchRef.current !== mismatchKey) {
+                    lastMismatchRef.current = mismatchKey;
+                    setSnackbar(prev => ({ ...prev, open: true, text: '適切な答えと一致しません' }));
+                }
+                return;
+            }
+        }
+
+        // prohibitedItems は常にスナップショット基準でチェック
+        if (challenge.prohibitedItems && challenge.prohibitedItems.length > 0) {
+            const parsedAssigns = lines.map(l => parseAssignment(l)).filter(Boolean) as { lhs?: string; rhs: string }[];
+            const prohibitedBaseKey = `${challenge.id}::prohibited`;
+            for (const p of challenge.prohibitedItems) {
+                const match = parsedAssigns.some(a => {
+                    if (p.lhs && a.lhs !== p.lhs) return false;
+                    if (p.rhs) return expressionsAreEquivalent(p.rhs, a.rhs);
+                    return !!p.lhs;
+                });
+                if (match) {
+                    const violationKey = `${prohibitedBaseKey}::${p.lhs ?? ''}::${p.rhs ?? ''}`;
+                    if (lastMismatchRef.current === violationKey) {
+                        return;
                     }
+                    lastMismatchRef.current = violationKey;
+                    setSnackbar(prev => ({ ...prev, open: true, text: '禁止された記述が検出されました' }));
                     return;
                 }
             }
-
-            // ページ内で一度表示したら再表示しない（永続的な達成情報は別途保持）
-            shownDialogRef.current = true;
-
-            // 永続的未達成なら記録する（達成済みでもダイアログは表示する）
-            const alreadyAchieved = !!achievements?.[challenge.id]?.isAchieved;
-            if (!alreadyAchieved) {
-                addAchievement(challenge.id, { isAchieved: true });
-            }
-
-            setOpenSuccessDialog(true);
         }
-    }, [runResults, addAchievement, challenge.answer, challenge.id, challenge.requiredItems, items, setSnackbar, achievements]);
+
+        // 正常クリア処理
+        shownDialogRef.current = true;
+        const alreadyAchieved = !!achievements?.[challenge.id]?.isAchieved;
+        if (!alreadyAchieved) {
+            addAchievement(challenge.id, { isAchieved: true });
+        }
+        setOpenSuccessDialog(true);
+
+    }, [runResults, challenge, addAchievement, achievements]);
 
     useEffect(() => {
         const updateDimensions = () => {

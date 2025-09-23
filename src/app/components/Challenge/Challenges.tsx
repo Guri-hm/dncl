@@ -82,7 +82,6 @@ const practiceArithmeticOperation: Challenge = {
     ],
     requiredItems: [
         {
-            id: uuidv4(),
             lhs: "a",
             rhs: "a + 8",
             processIndex: ProcessEnum.SetValToVariableOrArray,
@@ -239,6 +238,14 @@ const advancedLoop: Challenge = {
     usableItemLimits: {
         [StatementJpEnum.Input]: 2,
     },
+    prohibitedItems: [
+        {
+            lhs: "sum",
+            rhs: "55",
+            processIndex: ProcessEnum.SetValToVariableOrArray,
+            variables: ["sum"],
+        },
+    ],
 };
 
 export const advancedChallenges: Challenge[] = [

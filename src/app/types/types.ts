@@ -98,7 +98,7 @@ export interface TabItemsObj {
 type MatchType = 'assignment' | 'lineExact' | 'lineRegex' | 'processIndex' | 'containsTokens' | 'behavior';
 
 export interface RequiredItem {
-  id: string;
+  id?: string;
   matchType?: MatchType;
   // assignment 用
   lhs?: string;
@@ -125,6 +125,7 @@ export interface Challenge {
   id: string;
   difficulty?: Difficulty;
   requiredItems?: RequiredItem[]
+  prohibitedItems?: RequiredItem[];
   usableItems?: StatementJpEnum[]
   // 例: { "Input": 3, "Output": 1 } など（キーは StatementJpEnum の文字列）
   usableItemLimits?: Partial<Record<StatementJpEnum, number>>;
