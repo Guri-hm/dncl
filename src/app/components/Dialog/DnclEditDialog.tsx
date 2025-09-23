@@ -108,7 +108,6 @@ export function DnclEditDialog({ type = StatementEnum.Input, isEdit = false, ...
         statement = escapeHtml(cnvResult.convertedStr);
 
         if (sanitizeInput(statement) == "") {
-            console.log(`不適切な文字が使用されています: ${statement}`);
             setError(["不適切な文字が使用されています"]);
             return false;
         }
@@ -410,6 +409,8 @@ export function DnclEditDialog({ type = StatementEnum.Input, isEdit = false, ...
                                     uiState: uiState
                                 }
                             }
+
+                            console.log(formJson)
 
                             // 編集モードか新規追加モードかで処理を分岐
                             if (isEdit && params.editItem && params.item) {

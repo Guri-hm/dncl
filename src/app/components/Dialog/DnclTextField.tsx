@@ -114,7 +114,9 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
     }
 
     // スイッチの復元
-    if (fieldName === `${name}_${index}_switch`) {
+    if (fieldName === `${name}_${index}_isArray`) {
+      console.log("値の復元", fieldName, value);
+
       setChecked(value === 'true');
       // 配列スイッチを復元する際、定数モードと排他にする
       const v = value === 'true';
@@ -224,10 +226,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
                 <Grid size='grow'>
                   <ValidatedTextField name={`${name}_${index}`} label={tmpLabel} pattern={pattern} toUpperCase={isConstantMode} restoreValue={restoreValues[`${name}_${index}`]}></ValidatedTextField>
                 </Grid>
-                {/* 定数スイッチの追加 */}
-                {inputType === inputTypeEnum.SwitchVariableOrArrayWithConstant && (
-                  <input type="hidden" name={`${name}_${index}_isConstant`} value={isConstantMode.toString()} />
-                )}
+
                 {/* SwitchVariableOrNumberOrArray の場合は threeWayValue を使用 */}
                 {inputType === inputTypeEnum.SwitchVariableOrNumberOrArray && threeWayValue === inputTypeEnum.Array && (
                   <Grid container size='grow'>
@@ -269,9 +268,10 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
                 ) : (
                   // 配列スイッチ
                   <Grid>
-                    <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }} data-switch-name={`${name}_${index}_switch`}>
+                    <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }} data-switch-name={`${name}_${index}_isArray`}>
                       <AntSwitch checked={checked} onChange={(handleToggleArraySwitch)} inputProps={{ 'aria-label': 'ant design' }} />
                       <Typography>{SwitchJpEnum.Array}</Typography>
+                      <input type="hidden" name={`${name}_${index}_isArray`} value={checked.toString()} />
                     </Stack>
                   </Grid>
                 )}
@@ -281,6 +281,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
                     <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }} data-switch-name={`${name}_${index}_isConstant`}>
                       <AntSwitch checked={isConstantMode} onChange={handleToggleConstantSwitch} inputProps={{ 'aria-label': 'constant' }} />
                       <Typography>{SwitchJpEnum.Constant}</Typography>
+                      <input type="hidden" name={`${name}_${index}_isConstant`} value={isConstantMode.toString()} />
                     </Stack>
                   </Grid>
                 )}
