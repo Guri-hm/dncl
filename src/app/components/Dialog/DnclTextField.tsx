@@ -116,10 +116,18 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
     // スイッチの復元
     if (fieldName === `${name}_${index}_switch`) {
       setChecked(value === 'true');
+      // 配列スイッチを復元する際、定数モードと排他にする
+      const v = value === 'true';
+      setChecked(v);
+      if (v) setIsConstantMode(false);
     }
 
     if (fieldName === `${name}_${index}_isConstant`) {
       setIsConstantMode(value === 'true');
+      // 定数モードを復元する際、配列スイッチと排他にする
+      const v = value === 'true';
+      setIsConstantMode(v);
+      if (v) setChecked(false);
     }
 
     if (fieldName === `${name}_${index}` ||
@@ -147,15 +155,21 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
       setBoolString(newValue);
     }
   };
-  const handleChangeSwitch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setChecked(event.target.checked);
+  const handleToggleArraySwitch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const v = event.target.checked;
+    // 配列スイッチをONにする場合は定数モードを解除（排他）
+    setChecked(v);
+    if (v) setIsConstantMode(false);
   };
   const handleChangeRadio = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRadioValue((event.target as HTMLInputElement).value as inputTypeEnum);;
   };
 
-  const handleChangeConstant = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setIsConstantMode(event.target.checked);
+  const handleToggleConstantSwitch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const v = event.target.checked;
+    // 定数モードをONにする場合は配列スイッチを解除（排他）
+    setIsConstantMode(v);
+    if (v) setChecked(false);
   };
   const handleForValueTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setForValueType((event.target as HTMLInputElement).value as inputTypeEnum);
@@ -253,19 +267,19 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
                     <input type='hidden' name={`${name}_${index}_${keyPrefixEnum.Type}`} value={`${threeWayValue}`}></input>
                   </Grid>
                 ) : (
-                  // 従来の2つ選択のスイッチ
+                  // 配列スイッチ
                   <Grid>
                     <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }} data-switch-name={`${name}_${index}_switch`}>
-                      <AntSwitch checked={checked} onChange={(handleChangeSwitch)} inputProps={{ 'aria-label': 'ant design' }} />
+                      <AntSwitch checked={checked} onChange={(handleToggleArraySwitch)} inputProps={{ 'aria-label': 'ant design' }} />
                       <Typography>{SwitchJpEnum.Array}</Typography>
                     </Stack>
                   </Grid>
                 )}
-                {/* 定数スイッチの追加 */}
+                {/* 定数スイッチ */}
                 {inputType === inputTypeEnum.SwitchVariableOrArrayWithConstant && (
                   <Grid>
                     <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }} data-switch-name={`${name}_${index}_isConstant`}>
-                      <AntSwitch checked={isConstantMode} onChange={handleChangeConstant} inputProps={{ 'aria-label': 'constant' }} />
+                      <AntSwitch checked={isConstantMode} onChange={handleToggleConstantSwitch} inputProps={{ 'aria-label': 'constant' }} />
                       <Typography>{SwitchJpEnum.Constant}</Typography>
                     </Stack>
                   </Grid>
