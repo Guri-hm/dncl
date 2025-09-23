@@ -218,6 +218,24 @@ const advancedLoop: Challenge = {
     items: [
         {
             id: uuidv4(),
+            line: "i ← 1",
+            children: [],
+            lineTokens: ["i", "1"],
+            variables: ["i"],
+            processIndex: ProcessEnum.SetValToVariableOrArray,
+            fixed: true
+        },
+        {
+            id: uuidv4(),
+            line: "sum ← 0",
+            children: [],
+            lineTokens: ["sum", "0"],
+            variables: ["sum"],
+            processIndex: ProcessEnum.SetValToVariableOrArray,
+            fixed: true
+        },
+        {
+            id: uuidv4(),
             line: "sumを表示する",
             children: [],
             lineTokens: ["sum"],
@@ -225,7 +243,7 @@ const advancedLoop: Challenge = {
             fixed: true
         },
     ],
-    title: '繰り返し文による合計計算',
+    title: '繰り返し文による合計1',
     task: "1から10までの合計を計算し、変数sumに代入してコンソールに出力しましょう。",
     hint: "繰り返し（ループ）を使います。",
     answer: ["55"],
@@ -248,8 +266,65 @@ const advancedLoop: Challenge = {
     ],
 };
 
+const advancedLoopWithIf: Challenge = {
+    id: "adv-2",
+    difficulty: "advanced",
+    items: [
+        {
+            id: uuidv4(),
+            line: "i ← 1",
+            children: [],
+            lineTokens: ["i", "1"],
+            variables: ["i"],
+            processIndex: ProcessEnum.SetValToVariableOrArray,
+            fixed: true
+        },
+        {
+            id: uuidv4(),
+            line: "sum ← 0",
+            children: [],
+            lineTokens: ["sum", "0"],
+            variables: ["sum"],
+            processIndex: ProcessEnum.SetValToVariableOrArray,
+            fixed: true
+        },
+        {
+            id: uuidv4(),
+            line: "sumを表示する",
+            children: [],
+            lineTokens: ["sum"],
+            processIndex: ProcessEnum.Output,
+            fixed: true
+        },
+    ],
+    title: '繰り返し文による合計2',
+    task: "1から10までの合計を計算し、変数sumに代入してコンソールに出力しましょう。ただし，8は加算から除外します。",
+    hint: "繰り返し（ループ）を使います。",
+    answer: ["47"],
+    usableItems: [
+        StatementJpEnum.Input,
+        StatementJpEnum.ConditionalLoopPreTest,
+        StatementJpEnum.ConditionalLoopPostTest,
+        StatementJpEnum.SequentialIteration,
+        StatementJpEnum.Condition,
+    ],
+    usableItemLimits: {
+        [StatementJpEnum.Input]: 2,
+        [StatementJpEnum.Condition]: 2,
+    },
+    prohibitedItems: [
+        {
+            lhs: "sum",
+            rhs: "47",
+            processIndex: ProcessEnum.SetValToVariableOrArray,
+            variables: ["sum"],
+        },
+    ],
+};
+
 export const advancedChallenges: Challenge[] = [
     advancedLoop,
+    advancedLoopWithIf
 ];
 
 export const combinedChallenges: Challenge[] = (() => {
