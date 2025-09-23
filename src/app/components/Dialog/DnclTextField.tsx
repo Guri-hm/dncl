@@ -385,8 +385,12 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
 
       case inputTypeEnum.VariableOnly:
       case inputTypeEnum.ArrayWithoutSuffix:
+        tmpLabel = InputTypeJpEnum.Variable;
+        if (inputType === inputTypeEnum.ArrayWithoutSuffix) {
+          tmpLabel = InputTypeJpEnum.Array;
+        }
         return <Grid size="grow">
-          <ValidatedTextField name={`${name}_${index}`} label={InputTypeJpEnum.Variable} pattern={ValidationEnum.Variable} restoreValue={restoreValues[`${name}_${index}`]}></ValidatedTextField>
+          <ValidatedTextField name={`${name}_${index}`} label={tmpLabel} pattern={ValidationEnum.Variable} restoreValue={restoreValues[`${name}_${index}`]}></ValidatedTextField>
         </Grid>
 
       case inputTypeEnum.Array:
