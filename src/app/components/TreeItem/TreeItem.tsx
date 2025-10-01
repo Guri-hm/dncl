@@ -104,7 +104,7 @@ const TreeItem = forwardRef<HTMLDivElement, Props>(
     return (
       <li
         {...(fixed ? {} : (attributes ?? {}))}
-        {...(fixed ? {} : ((listeners as any) ?? {}))}
+        {...(fixed ? {} : (listeners ?? {}))}
         className={classNames(
           styles.Wrapper,
           clone && styles.clone,
