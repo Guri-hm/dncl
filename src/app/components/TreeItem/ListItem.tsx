@@ -56,6 +56,10 @@ const ListItem = forwardRef<HTMLDivElement, Props>(
         style={{
           ...style as React.CSSProperties,
           cursor: "grab",
+          // touch でのドラッグを安定させる（ブラウザの既定タッチ処理を無効化）
+          touchAction: "none",
+          // テキスト選択や長押し選択を防ぐとより安定する
+          userSelect: "none",
         }}
         {...rest}
       >

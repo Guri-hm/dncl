@@ -118,6 +118,10 @@ const TreeItem = forwardRef<HTMLDivElement, Props>(
           {
             "--spacing": `${indentationWidth * depth}px`,
             cursor: fixed || disableInteraction ? "default" : "grab",
+            // touch でのドラッグを安定させる（ブラウザの既定タッチ処理を無効化）
+            touchAction: fixed || disableInteraction ? "auto" : "none",
+            // テキスト選択や長押し選択を防ぐとより安定する
+            userSelect: fixed || disableInteraction ? "auto" : "none",
           } as React.CSSProperties
         }
         {...props}
