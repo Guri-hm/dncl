@@ -8,6 +8,7 @@ import styles from "./TreeItem.module.scss";
 import { DraggableAttributes } from "@dnd-kit/core";
 import { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import { Tooltip, Typography } from "@mui/material";
+import LockIcon from '@mui/icons-material/Lock';
 
 export interface Props extends HTMLAttributes<HTMLLIElement> {
   childCount?: number;
@@ -56,6 +57,7 @@ const TreeItem = forwardRef<HTMLDivElement, Props>(
     },
     ref
   ) => {
+    const stopPointer = (e: React.SyntheticEvent) => { e.stopPropagation(); };
     // fixedがtrueの場合は強制的にcanEditをfalseにする
     const effectiveCanEdit = fixed ? false : canEdit;
     const textRef = useRef<HTMLSpanElement | null>(null);
@@ -101,6 +103,8 @@ const TreeItem = forwardRef<HTMLDivElement, Props>(
 
     return (
       <li
+        {...(fixed ? {} : (attributes ?? {}))}
+        {...(fixed ? {} : ((listeners as any) ?? {}))}
         className={classNames(
           styles.Wrapper,
           clone && styles.clone,
@@ -113,15 +117,17 @@ const TreeItem = forwardRef<HTMLDivElement, Props>(
         style={
           {
             "--spacing": `${indentationWidth * depth}px`,
+            cursor: fixed || disableInteraction ? "default" : "grab",
           } as React.CSSProperties
         }
         {...props}
       >
         <div className={styles.TreeItem} ref={ref} style={style}>
           {fixed ?
-            null
+            <LockIcon />
             :
-            <Handle {...attributes} {...listeners} />
+            <Handle />
+            // <Handle {...attributes} {...listeners} />
           }
           {onCollapse && (
             <Action
@@ -130,6 +136,11 @@ const TreeItem = forwardRef<HTMLDivElement, Props>(
                 styles.Collapse,
                 collapsed && styles.collapsed
               )}
+              onPointerDown={stopPointer}
+              onMouseDown={stopPointer}
+              onTouchStart={stopPointer}
+              // ボタン上は grab を表示させない
+              style={{ cursor: "default" }}
             >
               {collapseIcon}
             </Action>
@@ -151,9 +162,22 @@ const TreeItem = forwardRef<HTMLDivElement, Props>(
             </Typography>
           </Tooltip>
           {!clone && !fixed && effectiveCanEdit && (
-            <Edit onClick={onEdit} />
+            <Edit
+              onClick={onEdit}
+              onPointerDown={stopPointer}
+              onMouseDown={stopPointer}
+              onTouchStart={stopPointer}
+              style={{ cursor: "default" }}
+            />
           )}
-          {!clone && !fixed && <Remove onClick={onRemove} />}
+          {!clone && !fixed &&
+            <Remove
+              onClick={onRemove}
+              onPointerDown={stopPointer}
+              onMouseDown={stopPointer}
+              onTouchStart={stopPointer}
+              style={{ cursor: "default" }}
+            />}
           {clone && childCount && childCount > 1 ? (
             <span className={styles.Count}>{childCount}</span>
           ) : null}

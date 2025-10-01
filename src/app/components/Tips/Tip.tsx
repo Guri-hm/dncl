@@ -12,21 +12,21 @@ interface Props {
 
 export const Tip = ({ onClose, hint = "ヒントなし", open = true }: Props) => {
     return (
-        <Box>
+        <Box sx={{ width: '100%', maxWidth: 250, display: open ? 'block' : 'none' }}>
             <Spotlight>
                 <SpeechBubbleImage open={open} msg={open ? hint : '・・・'}>
                     {(onClose && open) &&
                         <IconButton aria-label="close" sx={{
                             position: 'absolute',
                             right: -30,
-                            top: -50,
+                            top: -35,
                         }} onClick={() => onClose(false)}>
                             <CloseIcon />
                         </IconButton>
                     }
                     <Image
                         src={`${process.env.NEXT_PUBLIC_BASE_PATH}/look_back.svg`}
-                        alt="ヒントを出す"
+                        alt="ヒントを出す女の子"
                         width={300}
                         height={300}
                         priority

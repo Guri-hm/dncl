@@ -50,14 +50,21 @@ const ListItem = forwardRef<HTMLDivElement, Props>(
           disableInteraction && styles.disableInteraction,
           disabled && styles.disabled
         )}
+        {...attributes}
+        {...listeners}
         ref={wrapperRef}
         style={{
           ...style as React.CSSProperties,
+          cursor: "grab",
         }}
         {...rest}
       >
         <div className={styles.TreeItem} ref={ref} style={style}>
-          {!disabled && attributes ? <Handle {...attributes} {...listeners} /> : <span className={styles.HandlePlaceholder} />}
+          {!disabled && attributes ?
+            <Handle /> :
+            // <Handle {...attributes} {...listeners} /> :
+            <span className={styles.HandlePlaceholder} />
+          }
           <span className={styles.Text}>{value}</span>
           {clone && childCount && childCount > 1 ? (
             <span className={styles.Count}>{childCount}</span>
