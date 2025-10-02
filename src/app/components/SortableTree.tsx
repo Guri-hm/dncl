@@ -47,6 +47,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import SlideMenu from "@/app/components/SlideMenu";
 import { LineIconItem, FragmentsListItem, SortableTreeItem } from "@/app/components/TreeItem";
+import { Backdrop, Paper, Typography, Checkbox, FormControlLabel, Button } from "@mui/material";
 
 const measuring = {
   droppable: {
@@ -192,6 +193,24 @@ export function SortableTree({
 
   const [visible, setVisible] = useState(true);
   const ref = useRef<HTMLDivElement | null>(null);
+
+  const leftRef = useRef<HTMLDivElement | null>(null);
+  const [showGuide, setShowGuide] = useState<boolean>(() => {
+    try {
+      const v = localStorage.getItem('dncl_showGuide');
+      return v === null ? true : v === 'true';
+    } catch {
+      return true;
+    }
+  });
+  const [hideNext, setHideNext] = useState(false);
+
+  function closeGuide(savePreference: boolean) {
+    try {
+      if (savePreference) localStorage.setItem('dncl_showGuide', 'false');
+    } catch { /* ignore */ }
+    setShowGuide(false);
+  }
 
   // 編集可能かどうかを判定する関数を修正
   const canEditItem = (item: FlattenedItem): boolean => {
@@ -439,6 +458,31 @@ export function SortableTree({
     return null;
   }
 
+  const arrowCoords = (() => {
+    if (!leftRef.current || !ref.current) return null;
+    const l = leftRef.current.getBoundingClientRect();
+    const r = ref.current.getBoundingClientRect();
+    // start: center of left Box
+    const start = { x: l.left + l.width / 2, y: l.top + l.height / 2 };
+    // end: center-left area of right pane (a bit inset)
+    const end = { x: r.left + Math.min(60, r.width * 0.2), y: r.top + r.height / 2 };
+
+    // control points for smooth S-shaped curve
+    const cx = start.x + (end.x - start.x) * 0.5;
+    const control1 = { x: cx, y: start.y };
+    const control2 = { x: cx, y: end.y };
+
+    // compute mid point on cubic Bezier at t=0.5: B(0.5) = 1/8 P0 + 3/8 P1 + 3/8 P2 + 1/8 P3
+    const mid = {
+      x: (start.x * 0.125) + (control1.x * 0.375) + (control2.x * 0.375) + (end.x * 0.125),
+      y: (start.y * 0.125) + (control1.y * 0.375) + (control2.y * 0.375) + (end.y * 0.125) - 20
+    };
+
+    // path d for cubic bezier
+    const pathD = `M ${start.x} ${start.y} C ${control1.x} ${control1.y} ${control2.x} ${control2.y} ${end.x} ${end.y}`;
+    return { start, end, mid, pathD };
+  })();
+
   return (
     <>
       <DndContext
@@ -461,7 +505,7 @@ export function SortableTree({
               <ArrowButton setVisible={setVisible} visible={visible}></ArrowButton>
             </Allotment.Pane>
             <Allotment.Pane visible={visible} className={`${styles.leftPane} ${styles.paneBg}`} snap>
-              <Box sx={{ padding: '10px' }} className={`${cmnStyles.hFull} ${cmnStyles.overflowAuto}`}>
+              <Box ref={leftRef} sx={{ padding: '10px' }} className={`${cmnStyles.hFull} ${cmnStyles.overflowAuto}`}>
                 <DoNotDrag />
                 {fragments.map(({ id, line, statementType, maxUsage }) => {
                   const used = statementType !== undefined ? (usedCounts.get(statementType) || 0) : 0;
@@ -527,6 +571,61 @@ export function SortableTree({
                       />
                     ) : null}
                   </DragOverlay>,
+                  document.body
+                )}
+                {showGuide && isClient && arrowCoords && createPortal(
+                  <>
+                    {/* SVG arrow (on top) */}
+                    <svg
+                      style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', zIndex: 3000, pointerEvents: 'none' }}
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <defs>
+                        <marker id="arrowhead" markerUnits="strokeWidth" markerWidth="8" markerHeight="6" refX="1" refY="3" orient="auto">
+                          <polygon points="0 0, 8 3, 0 6" fill="#fff" stroke="none" />
+                        </marker>
+                      </defs>
+
+                      <path
+                        d={arrowCoords.pathD ?? `M ${arrowCoords.start.x} ${arrowCoords.start.y} L ${arrowCoords.end.x} ${arrowCoords.end.y}`}
+                        stroke="#fff"
+                        strokeWidth={3}
+                        strokeLinecap="butt"
+                        strokeLinejoin="miter"
+                        fill="none"
+                        markerEnd="url(#arrowhead)"
+                      />
+                    </svg>
+                    <Backdrop open sx={{ zIndex: 2001, bgcolor: 'rgba(0,0,0,0.35)', pointerEvents: 'auto' }}>
+                      <Paper
+                        elevation={8}
+                        sx={{
+                          position: 'absolute',
+                          left: arrowCoords.mid.x,
+                          top: arrowCoords.mid.y,
+                          transform: 'translate(-50%, -100%)',
+                          p: 2,
+                          maxWidth: 320,
+                          pointerEvents: 'auto'
+                        }}
+                      >
+                        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>ドラッグ＆ドロップします</Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                          左のブロックを右側へドラッグして追加します
+                        </Typography>
+
+                        <FormControlLabel
+                          control={<Checkbox checked={hideNext} onChange={(e) => setHideNext(e.target.checked)} />}
+                          label={<Typography variant="body2">次回から表示しない</Typography>}
+                          sx={{ mt: 1 }}
+                        />
+
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
+                          <Button variant="contained" color="primary" onClick={() => closeGuide(hideNext)}>閉じる</Button>
+                        </Box>
+                      </Paper>
+                    </Backdrop>
+                  </>,
                   document.body
                 )}
               </Allotment.Pane>
