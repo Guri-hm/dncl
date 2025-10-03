@@ -195,72 +195,117 @@ export const generateFlowchartXML = (ast: ASTNode) => {
     };
 
     const getExpressionString = (expression: InitExpression): string => {
-        if ('declarations' in expression) {
-            // VariableDeclaration の場合の処理
-            const declaration = expression.declarations[0];
-            // ここも = を ← に
-            return `${declaration.id.name} ${SimpleAssignmentOperator.Dncl} ${declaration.init.value}`;
-        } else {
-            // その他の Expression の場合の処理
-            if (expression) {
-                switch (expression.type) {
-                    case 'AssignmentExpression':
-                        const left = getExpressionString(expression.left as InitExpression);
-                        // 右辺が乱数式か判定
-                        const rightExpr = expression.right as Expression;
-                        const randomPattern = parseRandomExpression(rightExpr);
-                        if (randomPattern) {
-                            return `${left} ${SimpleAssignmentOperator.Dncl} 乱数(${randomPattern.min}, ${randomPattern.max})`;
-                        }
-                        // 代入演算子を ← に変換
-                        const operator = expression.operator === '=' ? '←' : expression.operator || "";
-                        let right = getExpressionString(expression.right as InitExpression);
+        if (!expression) return '';
 
-                        // 右辺が「!==」を含む場合は「≠」に変換
-                        if (right.includes('!==')) {
-                            right = right.replace('!==', ComparisonOperatorDncl.NotEqualToOperator);
-                        }
+        // VariableDeclaration 判定（declarations プロパティがある場合）
+        if ('declarations' in expression && Array.isArray((expression as VariableDeclaration).declarations)) {
+            const declaration = (expression as VariableDeclaration).declarations[0];
+            const initVal = declaration.init?.value ?? '';
+            return `${declaration.id.name} ${SimpleAssignmentOperator.Dncl} ${initVal}`;
+        }
 
-                        return `${left} ${operator} ${right}`;
-                    case 'UpdateExpression':
-                        const argument = getExpressionString(expression.argument as InitExpression);
-                        const updateOperator = expression.operator || "";
-                        return `${argument}${updateOperator}`;
-                    case 'UnaryExpression':
-                        // 型ガードで operator, argument に安全にアクセス
-                        if ('operator' in expression && 'argument' in expression) {
-                            const arg = getExpressionString(expression.argument as InitExpression);
-                            const op = expression.operator || '';
-                            return `(${op}${arg})`;
-                        }
-                        return "";
-                    case 'BinaryExpression':
-                        const leftBinary = getExpressionString(expression.left as InitExpression);
-                        // 比較演算子を DNCL 表記に変換（== -> =, !=/!== -> ≠ 等）
-                        const operatorBinary = mapComparisonOperator(expression.operator);
-                        const rightBinary = getExpressionString(expression.right as InitExpression);
-                        return `${leftBinary} ${operatorBinary} ${rightBinary}`;
-                    case 'ArrayExpression':
-                        const elements = expression.elements.map((el: InitExpression) => getExpressionString(el)).join(", ");
-                        return `[${elements}]`;
-                    case 'Identifier':
-                        return expression.name;
-                    case 'Literal':
-                        if (typeof expression.value === 'string') {
-                            return expression.value;
-                        } else if (typeof expression.value === 'number') {
-                            return expression.value.toString();
-                        } else if (typeof expression.value === 'boolean') {
-                            return expression.value ? 'true' : 'false';
-                        } else {
-                            return JSON.stringify(expression.value);
-                        }
-                    default:
-                        return "";
+        // 以下は Expression 系
+        const expr = expression as Expression;
+        if (!expr || !('type' in expr)) return '';
+
+        switch (expr.type) {
+            case 'ParenthesizedExpression':
+                return getExpressionString((expr as ParenthesizedExpression).expression as InitExpression);
+
+            case 'AssignmentExpression': {
+                const a = expr as AssignmentExpression;
+                const left = getExpressionString(a.left as InitExpression);
+                const rightExpr = a.right as Expression;
+                const randomPattern = parseRandomExpression(rightExpr);
+                if (randomPattern) {
+                    return `${left} ${SimpleAssignmentOperator.Dncl} 乱数(${randomPattern.min}, ${randomPattern.max})`;
+                }
+                const operator = a.operator === '=' ? '←' : a.operator || '';
+                let right = getExpressionString(a.right as InitExpression);
+                if (right.includes('!==')) right = right.replace(/!==/g, ComparisonOperatorDncl.NotEqualToOperator);
+                return `${left} ${operator} ${right}`.trim();
+            }
+
+            case 'UpdateExpression': {
+                const u = expr as UpdateExpression;
+                const arg = getExpressionString(u.argument as InitExpression);
+                const op = u.operator || '';
+                return `${arg}${op}`;
+            }
+
+            case 'UnaryExpression': {
+                const u = expr as UnaryExpression;
+                const arg = getExpressionString(u.argument as InitExpression);
+                const op = u.operator || '';
+                return `(${op}${arg})`;
+            }
+
+            case 'BinaryExpression': {
+                const b = expr as BinaryExpression;
+                // 両辺が数値リテラルなら数値計算を行う（+ のみ）
+                if (b.operator === '+') {
+                    const leftIsNum = b.left && (b.left as Literal).type === 'Literal' && typeof (b.left as Literal).value === 'number';
+                    const rightIsNum = b.right && (b.right as Literal).type === 'Literal' && typeof (b.right as Literal).value === 'number';
+                    if (leftIsNum && rightIsNum) {
+                        const sum = Number((b.left as Literal).value) + Number((b.right as Literal).value);
+                        return String(sum);
+                    }
+                    // 文字列結合寄りに扱う
+                    const leftStr = getExpressionString(b.left as InitExpression);
+                    const rightStr = getExpressionString(b.right as InitExpression);
+                    if (!leftStr) return rightStr;
+                    if (!rightStr) return leftStr;
+                    return `${leftStr}${rightStr}`;
+                } else {
+                    const leftStr = getExpressionString(b.left as InitExpression);
+                    const rightStr = getExpressionString(b.right as InitExpression);
+                    const opMapped = mapComparisonOperator(b.operator);
+                    return `${leftStr} ${opMapped} ${rightStr}`.trim();
                 }
             }
-            return "";
+
+            case 'ArrayExpression': {
+                const arr = expr as ArrayExpression;
+                const elems = (arr.elements || []).map(el => getExpressionString(el as InitExpression)).filter(Boolean).join(', ');
+                return `[${elems}]`;
+            }
+
+            case 'CallExpression': {
+                const c = expr as CallExpression;
+                // callee の文字列化（Identifier or MemberExpression）
+                let calleeStr = '';
+                if ((c.callee as Identifier).type === 'Identifier') {
+                    calleeStr = (c.callee as Identifier).name;
+                } else if ((c.callee as MemberExpression).type === 'MemberExpression') {
+                    const mem = c.callee as MemberExpression;
+                    const obj = mem.object && (mem.object as Identifier).name ? (mem.object as Identifier).name : getExpressionString(mem.object as InitExpression);
+                    const prop = mem.property && (mem.property as Identifier).name ? (mem.property as Identifier).name : getExpressionString(mem.property as InitExpression);
+                    calleeStr = prop ? `${obj}.${prop}` : obj;
+                } else {
+                    // fallback: try generic stringification
+                    calleeStr = getExpressionString(c.callee as InitExpression) || '';
+                }
+
+                const args = (c.arguments || []).map(a => getExpressionString(a as InitExpression)).filter(Boolean).join(', ');
+                return args ? `${calleeStr}(${args})` : `${calleeStr}()`;
+            }
+
+            case 'Identifier':
+                return (expr as Identifier).name || '';
+
+            case 'Literal': {
+                const v = (expr as Literal).value;
+                if (typeof v === 'string') return v;
+                if (typeof v === 'number') return String(v);
+                if (typeof v === 'boolean') return v ? 'true' : 'false';
+                return JSON.stringify(v);
+            }
+
+            // 既存型定義に無いノードが来た場合は空文字で安全に無視
+            default:
+                return '';
         }
+
     };
     // 式から数値リテラルを取り出す（Unary/Parenthesized/Literal を許容）
     const getNumericValue = (expr: Expression | InitExpression | null | undefined): number | null => {
@@ -382,13 +427,9 @@ export const generateFlowchartXML = (ast: ASTNode) => {
                             calleeName = (callee as MemberExpression).object.name;
                         }
 
-                        const args = expression.arguments.map((arg: Argument) => {
-                            if (arg.value !== undefined) {
-                                return `"${arg.value}"`;
-                            } else {
-                                return arg.name;
-                            }
-                        }).join(', ');
+                        const args = (expression.arguments as unknown[]).map((arg: unknown) => {
+                            return getExpressionString(arg as InitExpression);
+                        }).filter(s => s !== '').join(', ');
 
                         // MemberExpression 判定は型ガードで明示的に行う
                         if (calleeKind === 'MemberExpression') {
