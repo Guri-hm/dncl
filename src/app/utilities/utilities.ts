@@ -403,7 +403,7 @@ export const tryParseToJsFunction = (targetString: string): { errorMsgArray: str
   }
 
   function removeWord(str: string, removeWord: string) {
-    const regex = new RegExp(`\\b${removeWord}\\b\\s*`, 'g');
+    const regex = new RegExp(`\\b${removeWord}(?:\\b\\s*|(?=\\S))`, 'g');
     return str.replace(regex, '').replace(/\s+/g, ' ').trim();
   }
   targetString = squareString(targetString);
@@ -446,7 +446,7 @@ export const tryParseToPyFunc = (targetString: string): { errorMsgArray: string[
   }
 
   function removeWord(str: string, removeWord: string) {
-    const regex = new RegExp(`\\b${removeWord}\\b`, 'g');
+    const regex = new RegExp(`\\b${removeWord}(?:\\b\\s*|(?=\\S))`, 'g');
     return str.replace(regex, '').trim();
   }
   targetString = squareString(targetString);
@@ -494,7 +494,7 @@ export const tryParseToVbaFunc = (targetString: string): { errorMsgArray: string
   }
 
   function removeWord(str: string, removeWord: string) {
-    const regex = new RegExp(`\\b${removeWord}\\b`, 'g');
+    const regex = new RegExp(`\\b${removeWord}(?:\\b\\s*|(?=\\S))`, 'g');
     return str.replace(regex, '').trim();
   }
   targetString = squareString(targetString);
@@ -513,7 +513,10 @@ export const tryParseToVbaFunc = (targetString: string): { errorMsgArray: string
 
 }
 
-export const checkBraketPair = (targetStringArray: string[]): { errorMsgArray: string[]; hasError: boolean; } => {
+export const checkBraketPair = (
+  targetStringArray: string[],
+  allowEmptyParentheses = false
+): { errorMsgArray: string[]; hasError: boolean; } => {
 
   const errorMsgArray: string[] = [];
 
@@ -529,7 +532,7 @@ export const checkBraketPair = (targetStringArray: string[]): { errorMsgArray: s
   if (!result.isCorrectOrder) {
     errorMsgArray.push(`『 ${BraketSymbolEnum.RigthBraket} 』の前方には対になる『 ${BraketSymbolEnum.LeftBraket} 』が必要です`);
   }
-  if (result.hasEmptyParentheses) {
+  if (result.hasEmptyParentheses && !allowEmptyParentheses) {
     errorMsgArray.push(`『 ${BraketSymbolEnum.LeftBraket} 』と『 ${BraketSymbolEnum.RigthBraket} 』の内側には要素が必要です`);
   }
   if (errorMsgArray.length > 0) {
@@ -693,7 +696,12 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
 
     const isConstant = obj[`${keyword}_${i}_isConstant`] === 'true';
 
-    switch (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Type}`])) {
+    const hasFunction = toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Function}`]) !== "" ||
+      toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.FunctionName}`]) !== "";
+    if (proceccType !== ProcessEnum.DefineFunction &&
+      proceccType !== ProcessEnum.ExecuteUserDefinedFunction &&
+      !hasFunction) {
+      switch (toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Type}`])) {
       case inputTypeEnum.String:
 
         if (operandsMaxIndex > 0) {
@@ -733,6 +741,7 @@ export const ValidateObjValue = (obj: { [k: string]: string; }, operandsMaxIndex
           errorMsgArray.push(errorMsg);
         }
         break;
+      }
     }
 
     if (isReservedWord(obj[`${keyword}_${i}`])) {
@@ -977,11 +986,10 @@ export const cnvObjToArray = (obj: { [k: string]: string; }, operandsMaxIndex: n
       pushIfNotEmpty(tmpArguments, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Argument}_${j}`]));
     }
     const joinedStr = tmpArguments.join(",");
-    if (joinedStr.length > 0) {
-      //括弧内の値は両側に半角スペースを入れる→コード変換用の正規表現に利用
-      pushIfNotEmpty(strArray, `${functionName}( ${joinedStr} )`);
-    } else {
-      pushIfNotEmpty(strArray, `${functionName}`);
+    if (functionName === UserDefinedFuncDncl.UserDefined) {
+      pushIfNotEmpty(strArray, functionName);
+    } else if (functionName) {
+      pushIfNotEmpty(strArray, `${functionName}(${joinedStr})`);
     }
 
     pushIfNotEmpty(strArray, toEmptyIfNull(obj[`${keyword}_${i}_${keyPrefixEnum.Suffix}`]));
@@ -1109,6 +1117,60 @@ export const checkConstantReassignment = (flatten: FlattenedItem[], currentIndex
 
   return { hasError: errors.length > 0, errors };
 };
+
+function getFunctionVariableConflicts(items: FlattenedItem[], functionItem: FlattenedItem): string[] {
+  const itemsById = new Map(items.map(item => [item.id, item]));
+
+  const getEnclosingFunction = (item: FlattenedItem): FlattenedItem | undefined => {
+    if (item.processIndex === ProcessEnum.DefineFunction) {
+      return item;
+    }
+
+    let parentId = item.parentId;
+    while (parentId) {
+      const parent = itemsById.get(parentId);
+      if (!parent) {
+        return undefined;
+      }
+      if (parent.processIndex === ProcessEnum.DefineFunction) {
+        return parent;
+      }
+      parentId = parent.parentId;
+    }
+    return undefined;
+  };
+
+  const isDescendantOfFunction = (item: FlattenedItem) => {
+    let parentId = item.parentId;
+    while (parentId) {
+      if (parentId === functionItem.id) {
+        return true;
+      }
+      const parent = itemsById.get(parentId);
+      if (!parent) {
+        return false;
+      }
+      parentId = parent.parentId;
+    }
+    return false;
+  };
+
+  const parameters = functionItem.lineTokens?.[0]?.match(/\(([^()]*)\)/)?.[1]
+    ?.split(',')
+    .map(parameter => parameter.trim())
+    .filter(Boolean) ?? [];
+  const functionVariables = items
+    .filter(isDescendantOfFunction)
+    .flatMap(item => item.variables ?? []);
+  const globalVariables = new Set(
+    items
+      .filter(item => item.id !== functionItem.id && !getEnclosingFunction(item))
+      .flatMap(item => item.variables ?? [])
+  );
+
+  return [...new Set([...parameters, ...functionVariables])]
+    .filter(variable => globalVariables.has(variable));
+}
 
 export const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedItem, lineNum: number): ErrObj => {
 
@@ -1310,6 +1372,16 @@ export const checkDNCLSyntax = (items: FlattenedItem[], targetItem: FlattenedIte
     default:
       break;
 
+  }
+
+  if (processIndex === ProcessEnum.DefineFunction) {
+    const conflicts = getFunctionVariableConflicts(items, targetItem);
+    if (conflicts.length > 0) {
+      result.hasError = true;
+      result.errors.push(...conflicts.map(variable =>
+        `${lineNum}行目：関数内で外側と同じ名前の変数「${variable}」が定義されています`
+      ));
+    }
   }
 
   return result;

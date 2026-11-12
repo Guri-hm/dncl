@@ -18,6 +18,7 @@ import { useTheme } from '@mui/material/styles';
 import { SwiperTabs } from "@/app/components/Tab";
 import { SwiperSlide } from "swiper/react";
 import { ThemeToggleButton } from '@/app/components/Header';
+import { SampleCodeMenu } from '@/app/components/SampleDncl';
 import SaveIcon from '@mui/icons-material/Save';
 import ResizerHint from '@/app/components/ResizerHint';
 
@@ -140,6 +141,7 @@ export default function Home() {
         leftContent={<HeaderTitle />}
         rightContent={
           <>
+            <SampleCodeMenu treeItems={items} onSelect={handleItemsChange} />
             {process.env.NODE_ENV === "development" && (
               <HeaderButton onClick={handleLogTreeItems}>TreeItemsログ</HeaderButton>
             )}

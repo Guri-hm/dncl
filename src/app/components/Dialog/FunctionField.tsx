@@ -165,7 +165,12 @@ export function FunctionField({ name = "", parentIndex = 0, event, funcType, tre
       ArgumentFields.push(
         <Grid size="grow" key={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${newIndex}_${0}`}>
           <ValidatedTextField
-            name={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${0}`} label={InputTypeJpEnum.Argument} pattern={ValidationEnum.Parameters}></ValidatedTextField>
+            name={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${0}`}
+            label={InputTypeJpEnum.Argument}
+            pattern={ValidationEnum.Parameters}
+            restoreValue={argumentValues[0] ?? ""}
+            required={false}
+          />
         </Grid>
       );
       break;
@@ -198,7 +203,12 @@ export function FunctionField({ name = "", parentIndex = 0, event, funcType, tre
         {funcs.map(func => func.name)[newIndex] == UserDefinedFuncDncl.Define &&
           //新しい関数の定義
           <Grid size="grow">
-            <ValidatedTextField name={`${name}_${parentIndex}_${keyPrefixEnum.FunctionName}`} label={InputTypeJpEnum.Function} pattern={ValidationEnum.Function}></ValidatedTextField>
+            <ValidatedTextField
+              name={`${name}_${parentIndex}_${keyPrefixEnum.FunctionName}`}
+              label={InputTypeJpEnum.Function}
+              pattern={ValidationEnum.Function}
+              restoreValue={restoreValues?.[`${name}_${parentIndex}_${keyPrefixEnum.FunctionName}`]}
+            />
           </Grid>
         }
         {(funcs.map(func => func.name)[newIndex] == UserDefinedFuncDncl.UserDefined) && userDefinedFunctionInfoArray.length > 0 &&

@@ -10,6 +10,7 @@ type Props = {
   sx?: SxProps<Theme>;
   toUpperCase?: boolean;
   restoreValue?: string;
+  required?: boolean;
 }
 
 const getErrorMessage = (value: string, pattern: string): string => {
@@ -45,7 +46,7 @@ const getFirstMismatchIndex = (value: string, pattern: string): number => {
   return -1;
 };
 
-export function ValidatedTextField({ sx = [], name, label, pattern, restoreValue, toUpperCase = false, ...params }: Props) {
+export function ValidatedTextField({ sx = [], name, label, pattern, restoreValue, toUpperCase = false, required = true, ...params }: Props) {
 
   const [inputValue, setInputValue] = useState('');
   const [inputError, setInputError] = useState(false);
@@ -152,7 +153,7 @@ export function ValidatedTextField({ sx = [], name, label, pattern, restoreValue
       error={inputError}
       fullWidth
       size="small"
-      required
+      required={required}
       id="outlined-required"
       label={label}
       slotProps={{

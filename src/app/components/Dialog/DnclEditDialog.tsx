@@ -14,7 +14,7 @@ import { DnclEditorProps, TreeItems } from "@/app/types";
 import { StatementName, StatementDesc, EditorBox, ErrorMsgBox } from '@/app/components/Dialog';
 import { keyPrefixEnum } from './Enum';
 import { ArithmeticOperatorDncl, ArithmeticOperator, BooleanDncl, BooleanJpDncl, ComparisonOperatorDncl, ComparisonOperator, SimpleAssignmentOperator, ReturnFuncDncl, ReturnFuncJpDncl, StatementEnum, UserDefinedFuncDncl, UserDefinedFuncJpDncl, VoidFuncDncl, VoidFuncJpDncl, ProcessEnum, BraketSymbolEnum } from '@/app/enum';
-import { checkBraketPair, cnvAndOrOperator, cnvObjToArray, cnvToDivision, escapeHtml, getOperandsMaxIndex, getVariableNames, replaceToConcatenation, sanitizeInput, sanitizeJsonValues, transformNegation, tryParseToJsFunction, updateToWithSquareBrackets, ValidateObjValue, checkForLoopInfinite } from '@/app/utilities';
+import { checkBraketPair, cnvAndOrOperator, cnvObjToArray, cnvToDivision, escapeHtml, getOperandsMaxIndex, getUserDefinedFunctionInfoArray, getVariableNames, replaceToConcatenation, sanitizeInput, sanitizeJsonValues, transformNegation, tryParseToJsFunction, updateToWithSquareBrackets, ValidateObjValue, checkForLoopInfinite } from '@/app/utilities';
 import * as babelParser from '@babel/parser';
 
 type itemElms = {
@@ -43,7 +43,7 @@ export function DnclEditDialog({ type = StatementEnum.Input, isEdit = false, ...
 
         //直接変換できないためUnknown型をはさむ
         const processIndexUnknown: unknown = data.processIndex;
-        const processType: ProcessEnum = processIndexUnknown as ProcessEnum;
+        const processType = Number(processIndexUnknown) as ProcessEnum;
 
         //キーワードを含むオブジェクトを取得
         const obj = Object.fromEntries(Object.entries(data).filter(([key, value]) => key.includes(keyword)));
@@ -85,7 +85,18 @@ export function DnclEditDialog({ type = StatementEnum.Input, isEdit = false, ...
 
         const strArray: string[] = cnvObjToArray(updatedObj, operandsMaxIndex, keyword);
 
-        result = checkBraketPair(strArray);
+        const userDefinedFunctions = getUserDefinedFunctionInfoArray(treeItems);
+        const allowsEmptyArguments = processType === ProcessEnum.DefineFunction ||
+            Array.from({ length: operandsMaxIndex + 1 }, (_, index) => {
+                const functionName = updatedObj[`${keyword}_${index}_${keyPrefixEnum.FunctionName}`];
+                const argumentCount = Number(updatedObj[`${keyword}_${index}_${keyPrefixEnum.Argument}`]);
+                return functionName &&
+                    argumentCount === 0 &&
+                    userDefinedFunctions.some(info =>
+                        info.funcName === functionName && info.argumentCount === 0
+                    );
+            }).some(Boolean);
+        result = checkBraketPair(strArray, allowsEmptyArguments);
         if (result.hasError) {
             setError(result.errorMsgArray);
             return false;
