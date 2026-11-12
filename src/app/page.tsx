@@ -41,7 +41,7 @@ export default function Home() {
                 }}>
                   チャレンジモード
                 </Typography>
-                <Typography sx={{ mb: 1.5, marginTop: 0.5 }}>課題に挑み，全問クリアを目指します</Typography>
+                <Typography sx={{ mb: 1.5, marginTop: 0.5 }}>課題やコードの結果予想でDNCLを学びます</Typography>
               </BubblePaper>
             </Grid>
             <Grid size="grow">

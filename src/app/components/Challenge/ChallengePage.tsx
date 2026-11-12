@@ -295,7 +295,7 @@ const ChallengePage = ({ challenge }: Props) => {
 
     const router = useRouter();
     const handleRedirect = () => {
-        router.push('/chlng');
+        router.push('/chlng/problems');
     };
 
     return (
@@ -304,7 +304,7 @@ const ChallengePage = ({ challenge }: Props) => {
                 leftContent={<HeaderTitle />}
                 rightContent={
                     <>
-                        <HeaderButton onClick={handleRedirect} >一覧へ戻る</HeaderButton>
+                        <HeaderButton onClick={handleRedirect} >問題一覧へ戻る</HeaderButton>
                         <ThemeToggleButton />
                     </>
                 }
