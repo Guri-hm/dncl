@@ -3,6 +3,7 @@ import { render, fireEvent, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { DnclTextField } from './DnclTextField';
 import { inputTypeEnum } from './Enum/enum';
+import { ProcessEnum, StatementEnum } from '@/app/enum';
 
 // Material-UIのモック
 jest.mock('@mui/material/styles', () => ({
@@ -54,6 +55,31 @@ describe('DnclTextField UI統合テスト', () => {
             console.warn('VariableOnly rendering test failed:', error);
             expect(true).toBe(true);
         }
+    });
+
+    test('declared variables are offered as input suggestions', () => {
+        render(
+            <DnclTextField
+                name="test"
+                inputType={inputTypeEnum.VariableOnly}
+                treeItems={[
+                    {
+                        id: 'declared',
+                        line: 'score ← 0',
+                        statementType: StatementEnum.Input,
+                        processIndex: ProcessEnum.SetValToVariableOrArray,
+                        variables: ['score'],
+                        children: [],
+                    },
+                ]}
+            />
+        );
+
+        const input = screen.getByRole('combobox');
+        const listId = input.getAttribute('list');
+        expect(listId).toBeTruthy();
+        expect(document.getElementById(listId!)?.querySelector('option')).toHaveAttribute('value', 'score');
+        expect(screen.getByText('宣言済み変数から候補を選べます')).toBeInTheDocument();
     });
 
     test('inputTypeEnum.All の場合、ラジオボタンが表示される', () => {

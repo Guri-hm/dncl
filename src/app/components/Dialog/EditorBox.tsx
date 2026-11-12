@@ -55,7 +55,7 @@ export function EditorBox({ statementType, treeItems, formData }: EditorBoxProps
             case ProcessEnum.SetValToVariableOrArray:
                 return <>
                     <Operation processType={ProcessEnum.SetValToVariableOrArray} treeItems={treeItems} rightRestoreMap={rightRestoreMap}>
-                        <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArrayWithConstant} initialRestoreValues={leftInitial}></DnclTextField>
+                        <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArrayWithConstant} treeItems={treeItems} initialRestoreValues={leftInitial}></DnclTextField>
                         <Operator type={OperationEnum.ForDncl}></Operator>
                     </Operation>
                     {hdnInput(index)}
@@ -65,7 +65,7 @@ export function EditorBox({ statementType, treeItems, formData }: EditorBoxProps
                 //配列の初期化
                 return <>
                     <Operation treeItems={treeItems} processType={ProcessEnum.InitializeArray} rightRestoreMap={rightRestoreMap}>
-                        <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.ArrayWithoutSuffix} initialRestoreValues={leftInitial}></DnclTextField>
+                        <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.ArrayWithoutSuffix} treeItems={treeItems} initialRestoreValues={leftInitial}></DnclTextField>
                         <Operator type={OperationEnum.ForDncl}></Operator>
                     </Operation>
                     {hdnInput(index)}
@@ -73,18 +73,18 @@ export function EditorBox({ statementType, treeItems, formData }: EditorBoxProps
                 </>
             case ProcessEnum.BulkAssignToArray:
                 return <>
-                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.ArrayWithoutSuffix} initialRestoreValues={leftInitial}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.ArrayWithoutSuffix} treeItems={treeItems} initialRestoreValues={leftInitial}></DnclTextField>
                     <NowrapText text={'のすべての要素に'}></NowrapText>
-                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SwitchVariableOrNumberOrArray} initialRestoreValues={rightRestoreMap ? rightRestoreMap[0] : undefined}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SwitchVariableOrNumberOrArray} treeItems={treeItems} initialRestoreValues={rightRestoreMap ? rightRestoreMap[0] : undefined}></DnclTextField>
                     <NowrapText text={'を代入する'}></NowrapText>
                     {hdnInput(index)}
                 </>
             case ProcessEnum.Increment:
             case ProcessEnum.Decrement:
                 return <>
-                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArray} initialRestoreValues={leftInitial}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.LeftSide}_${index}`} name={keyPrefixEnum.LeftSide} inputType={inputTypeEnum.SwitchVariableOrArray} treeItems={treeItems} initialRestoreValues={leftInitial}></DnclTextField>
                     <NowrapText text={'を'}></NowrapText>
-                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SwitchVariableOrNumberOrArray} initialRestoreValues={rightRestoreMap ? rightRestoreMap[0] : undefined}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.SwitchVariableOrNumberOrArray} treeItems={treeItems} initialRestoreValues={rightRestoreMap ? rightRestoreMap[0] : undefined}></DnclTextField>
                     <NowrapText text={index == ProcessEnum.Increment ? '増やす' : '減らす'}></NowrapText>
                     {hdnInput(index)}
                 </>
@@ -159,21 +159,21 @@ export function EditorBox({ statementType, treeItems, formData }: EditorBoxProps
                     <Grid container spacing={1} direction='column'>
                         <Grid container direction='row'>
                             <Grid size='grow'>
-                                <DnclTextField key={`${keyPrefixEnum.RigthSide}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.VariableOnly} initialRestoreValues={rightRestoreMap ? rightRestoreMap[0] : undefined}></DnclTextField>
+                                <DnclTextField key={`${keyPrefixEnum.RigthSide}`} name={keyPrefixEnum.RigthSide} inputType={inputTypeEnum.VariableOnly} treeItems={treeItems} initialRestoreValues={rightRestoreMap ? rightRestoreMap[0] : undefined}></DnclTextField>
                             </Grid>
                             <NowrapText text={'を'}></NowrapText>
                             <Grid size='grow'>
-                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.InitialValue}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.InitialValue} inputType={inputTypeEnum.ForValue} label={"初期値"} initialRestoreValues={rightRestoreMap ? rightRestoreMap[0] : undefined}></DnclTextField>
+                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.InitialValue}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.InitialValue} inputType={inputTypeEnum.ForValue} label={"初期値"} treeItems={treeItems} initialRestoreValues={rightRestoreMap ? rightRestoreMap[0] : undefined}></DnclTextField>
                             </Grid>
                             <NowrapText text={'から'}></NowrapText>
                         </Grid>
                         <Grid container direction='row'>
                             <Grid size='grow'>
-                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.EndValue}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.EndValue} inputType={inputTypeEnum.ForValue} label={"終了値"} initialRestoreValues={rightRestoreMap ? rightRestoreMap[0] : undefined}></DnclTextField>
+                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.EndValue}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.EndValue} inputType={inputTypeEnum.ForValue} label={"終了値"} treeItems={treeItems} initialRestoreValues={rightRestoreMap ? rightRestoreMap[0] : undefined}></DnclTextField>
                             </Grid>
                             <NowrapText text={'まで'}></NowrapText>
                             <Grid size='grow'>
-                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.Difference}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.Difference} inputType={inputTypeEnum.ForValue} label={"差分"} initialRestoreValues={rightRestoreMap ? rightRestoreMap[0] : undefined}></DnclTextField>
+                                <DnclTextField key={`${keyPrefixEnum.RigthSide}_${keyPrefixEnum.Difference}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.Difference} inputType={inputTypeEnum.ForValue} label={"差分"} treeItems={treeItems} initialRestoreValues={rightRestoreMap ? rightRestoreMap[0] : undefined}></DnclTextField>
                             </Grid>
                             <NowrapText text={index == ProcessEnum.ForIncrement ? 'ずつ増やしながら，' : 'ずつ減らしながら，'}></NowrapText>
                         </Grid>
@@ -189,7 +189,7 @@ export function EditorBox({ statementType, treeItems, formData }: EditorBoxProps
                 return <>
                     <NowrapText text={'関数'}></NowrapText>
                     <Divider sx={{ marginRight: 1 }} orientation="vertical" flexItem />
-                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.UserDefinedfunction}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.UserDefinedfunction} inputType={inputTypeEnum.UserDefinedfunction}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.UserDefinedfunction}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.UserDefinedfunction} inputType={inputTypeEnum.UserDefinedfunction} treeItems={treeItems}></DnclTextField>
                     <Divider sx={{ marginLeft: 1 }} orientation="vertical" flexItem />
                     <NowrapText text={'を'}></NowrapText>
                     {hdnInput(index)}

@@ -2,7 +2,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import Switch from '@mui/material/Switch';
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Box from '@mui/material/Box';
 import { keyPrefixEnum, inputTypeEnum, ValidationEnum } from "./Enum";
 import Grid from '@mui/material/Grid2';
@@ -10,7 +10,7 @@ import { FormControlLabel, Radio, RadioGroup, ToggleButton, ToggleButtonGroup } 
 import { InputTypeJpEnum, OperationEnum, SwitchJpEnum } from '@/app/enum';
 import { FunctionField, ValidatedTextField, FixedHeightGrid } from '@/app/components/Dialog';
 import { TreeItems } from '@/app/types';
-import { getValidationPattern } from '@/app/utilities/validation-utils';
+import { getDeclaredVariableNames, getValidationPattern } from '@/app/utilities';
 
 export interface DnclTextFieldProps {
   label?: string | inputTypeEnum
@@ -93,6 +93,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
   // For文の各値用の状態管理
   const [forValueType, setForValueType] = useState<inputTypeEnum>(inputTypeEnum.Number);
   const [restoreValues, setRestoreValues] = useState<{ [key: string]: string }>({});
+  const variableSuggestions = useMemo(() => getDeclaredVariableNames(treeItems ?? []), [treeItems]);
 
   const handleThreeWayChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setThreeWayValue((event.target as HTMLInputElement).value as inputTypeEnum);
@@ -222,7 +223,7 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
             <Grid container spacing={0} direction='column' sx={{ marginBottom: 1 }}>
               <Grid container direction='row'>
                 <Grid size='grow'>
-                  <ValidatedTextField name={`${name}_${index}`} label={tmpLabel} pattern={pattern} toUpperCase={isConstantMode} restoreValue={restoreValues[`${name}_${index}`]}></ValidatedTextField>
+                  <ValidatedTextField name={`${name}_${index}`} label={tmpLabel} pattern={pattern} toUpperCase={isConstantMode} restoreValue={restoreValues[`${name}_${index}`]} suggestions={!isConstantMode ? variableSuggestions : undefined}></ValidatedTextField>
                 </Grid>
 
                 {/* SwitchVariableOrNumberOrArray の場合は threeWayValue を使用 */}
@@ -325,14 +326,20 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
                 {(radioValue == inputTypeEnum.Variable || radioValue == inputTypeEnum.Number || radioValue == inputTypeEnum.Array || radioValue == inputTypeEnum.String) &&
                   <>
                     <Grid size='grow'>
-                      <ValidatedTextField name={`${name}_${index}`} label={tmpLabel} pattern={pattern} restoreValue={restoreValues[`${name}_${index}`]}></ValidatedTextField>
+                      <ValidatedTextField
+                        name={`${name}_${index}`}
+                        label={tmpLabel}
+                        pattern={pattern}
+                        restoreValue={restoreValues[`${name}_${index}`]}
+                        suggestions={radioValue === inputTypeEnum.Variable || radioValue === inputTypeEnum.Array ? variableSuggestions : undefined}
+                      ></ValidatedTextField>
                     </Grid>
                   </>
                 }
                 <input type='hidden' name={`${name}_${index}_${keyPrefixEnum.Type}`} value={`${radioValue}`}></input>
                 {(radioValue == inputTypeEnum.ReturnFunction || radioValue == inputTypeEnum.Void) &&
                   <>
-                    <FunctionField name={`${name}`} parentIndex={index} funcType={radioValue} treeItems={treeItems} restoreValues={restoreValues}></FunctionField>
+                    <FunctionField name={`${name}`} parentIndex={index} funcType={radioValue} treeItems={treeItems} restoreValues={restoreValues} variableSuggestions={variableSuggestions}></FunctionField>
                   </>
                 }
                 {radioValue == inputTypeEnum.Array &&
@@ -388,13 +395,13 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
           tmpLabel = InputTypeJpEnum.Array;
         }
         return <Grid size="grow">
-          <ValidatedTextField name={`${name}_${index}`} label={tmpLabel} pattern={ValidationEnum.Variable} restoreValue={restoreValues[`${name}_${index}`]}></ValidatedTextField>
+          <ValidatedTextField name={`${name}_${index}`} label={tmpLabel} pattern={ValidationEnum.Variable} restoreValue={restoreValues[`${name}_${index}`]} suggestions={variableSuggestions}></ValidatedTextField>
         </Grid>
 
       case inputTypeEnum.Array:
         return <Grid container spacing={0}>
           <Grid size={'grow'}>
-            <ValidatedTextField name={`${name}_${index}`} label={InputTypeJpEnum.Array} pattern={ValidationEnum.Variable} restoreValue={restoreValues[`${name}_${index}`]}></ValidatedTextField>
+            <ValidatedTextField name={`${name}_${index}`} label={InputTypeJpEnum.Array} pattern={ValidationEnum.Variable} restoreValue={restoreValues[`${name}_${index}`]} suggestions={variableSuggestions}></ValidatedTextField>
           </Grid>
           <Grid container size='auto'>
             <FixedHeightGrid>[</FixedHeightGrid>
@@ -418,11 +425,11 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
         </Grid>;
       case inputTypeEnum.UserDefinedfunction:
         return <Grid size="grow">
-          <FunctionField name={`${name}`} parentIndex={index} funcType={inputTypeEnum.UserDefinedfunction} treeItems={treeItems} restoreValues={restoreValues}></FunctionField>
+          <FunctionField name={`${name}`} parentIndex={index} funcType={inputTypeEnum.UserDefinedfunction} treeItems={treeItems} restoreValues={restoreValues} variableSuggestions={variableSuggestions}></FunctionField>
         </Grid>
       case inputTypeEnum.ExecuteUserDefinedFunction:
         return <Grid size="grow">
-          <FunctionField name={`${name}`} parentIndex={index} funcType={inputTypeEnum.ExecuteUserDefinedFunction} treeItems={treeItems} restoreValues={restoreValues}></FunctionField>
+          <FunctionField name={`${name}`} parentIndex={index} funcType={inputTypeEnum.ExecuteUserDefinedFunction} treeItems={treeItems} restoreValues={restoreValues} variableSuggestions={variableSuggestions}></FunctionField>
         </Grid>
 
       case inputTypeEnum.ForValue:
@@ -437,7 +444,9 @@ export function DnclTextField({ label, name, inputType, index = 0, suffixValue, 
                   <ValidatedTextField
                     name={`${name}_${index}_${suffixValue}`}
                     label={label || tmpLabel}
-                    pattern={pattern} restoreValue={restoreValues[`${name}_${index}_${suffixValue}`]}
+                    pattern={pattern}
+                    restoreValue={restoreValues[`${name}_${index}_${suffixValue}`]}
+                    suggestions={forValueType === inputTypeEnum.Variable ? variableSuggestions : undefined}
                   />
                 </Grid>
                 <input type="hidden" name={`${name}_${index}_${suffixValue}_type`} value={forValueType} />

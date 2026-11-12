@@ -29,6 +29,7 @@ type Props = {
   funcType: inputTypeEnum
   treeItems?: TreeItems
   restoreValues?: { [key: string]: string };
+  variableSuggestions?: string[];
 }
 
 const ReturnFunctions = [
@@ -52,7 +53,7 @@ const ExecuteUserDefinedFunc = [
 //   return pattern;
 // }
 
-export function FunctionField({ name = "", parentIndex = 0, event, funcType, treeItems = [], restoreValues }: Props) {
+export function FunctionField({ name = "", parentIndex = 0, event, funcType, treeItems = [], restoreValues, variableSuggestions = [] }: Props) {
 
   const [operatorIndex, setOperatorIndex] = useState<number>(0);
   const [selectedValue, setSelectedValue] = useState<string>('0');
@@ -151,7 +152,7 @@ export function FunctionField({ name = "", parentIndex = 0, event, funcType, tre
           <React.Fragment key={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${newIndex}_${i}_fragment`}>
             {ArgumentFields.length > 0 && <Grid size="auto" key={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${newIndex}_${i}_comma`}><FixedHeightGrid>,</FixedHeightGrid></Grid>}
             <Grid size="grow" key={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${newIndex}_${i}`}>
-              <ValidatedTextField name={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${i}`} label={InputTypeJpEnum.Argument} pattern={ValidationEnum.VariableOrInteger} restoreValue={argumentValues?.[i] ?? ""}></ValidatedTextField>
+              <ValidatedTextField name={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${i}`} label={InputTypeJpEnum.Argument} pattern={ValidationEnum.VariableOrInteger} restoreValue={argumentValues?.[i] ?? ""} suggestions={variableSuggestions}></ValidatedTextField>
             </Grid>
           </React.Fragment>
         );
@@ -170,6 +171,7 @@ export function FunctionField({ name = "", parentIndex = 0, event, funcType, tre
             pattern={ValidationEnum.Parameters}
             restoreValue={argumentValues[0] ?? ""}
             required={false}
+            suggestions={variableSuggestions}
           />
         </Grid>
       );

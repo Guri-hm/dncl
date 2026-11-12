@@ -1,5 +1,5 @@
 import TextField from '@mui/material/TextField';
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { ValidationEnum } from "./Enum";
 import { SxProps, Theme } from '@mui/material/styles';
 
@@ -11,6 +11,7 @@ type Props = {
   toUpperCase?: boolean;
   restoreValue?: string;
   required?: boolean;
+  suggestions?: string[];
 }
 
 const getErrorMessage = (value: string, pattern: string): string => {
@@ -46,12 +47,13 @@ const getFirstMismatchIndex = (value: string, pattern: string): number => {
   return -1;
 };
 
-export function ValidatedTextField({ sx = [], name, label, pattern, restoreValue, toUpperCase = false, required = true, ...params }: Props) {
+export function ValidatedTextField({ sx = [], name, label, pattern, restoreValue, toUpperCase = false, required = true, suggestions = [], ...params }: Props) {
 
   const [inputValue, setInputValue] = useState('');
   const [inputError, setInputError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [hasRestored, setHasRestored] = useState(false);
+  const suggestionListId = useId();
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     let value = event.target.value;
@@ -145,30 +147,38 @@ export function ValidatedTextField({ sx = [], name, label, pattern, restoreValue
   }, [inputValue, pattern, toUpperCase]);
 
   return (
-    <TextField
-      sx={[
-        ...(Array.isArray(sx) ? sx : [sx]),
-      ]}
-      value={inputValue}
-      error={inputError}
-      fullWidth
-      size="small"
-      required={required}
-      id="outlined-required"
-      label={label}
-      slotProps={{
-        htmlInput: {
-          className: 'text-center',
-          pattern: pattern,
-          inputMode: 'text',
-          maxLength: 15
-        },
-      }}
+    <>
+      <TextField
+        sx={[
+          ...(Array.isArray(sx) ? sx : [sx]),
+        ]}
+        value={inputValue}
+        error={inputError}
+        fullWidth
+        size="small"
+        required={required}
+        id="outlined-required"
+        label={label}
+        slotProps={{
+          htmlInput: {
+            className: 'text-center',
+            pattern: pattern,
+            inputMode: 'text',
+            maxLength: 15,
+            ...(suggestions.length > 0 ? { list: suggestionListId } : {}),
+          },
+        }}
 
-      name={name}
-      helperText={inputError && errorMessage}
-      onChange={handleChange}
-      onFocus={handleFocus}
-    />
+        name={name}
+        helperText={inputError ? errorMessage : suggestions.length > 0 ? '宣言済み変数から候補を選べます' : undefined}
+        onChange={handleChange}
+        onFocus={handleFocus}
+      />
+      {suggestions.length > 0 && (
+        <datalist id={suggestionListId}>
+          {suggestions.map(suggestion => <option key={suggestion} value={suggestion} />)}
+        </datalist>
+      )}
+    </>
   );
 }

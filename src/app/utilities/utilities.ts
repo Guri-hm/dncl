@@ -2,7 +2,7 @@ import { arrayMove } from '@dnd-kit/sortable';
 import { UniqueIdentifier } from "@dnd-kit/core";
 
 import type { FlattenedItem, TreeItem, TreeItems, ErrObj } from '../types';
-import { BraketSymbolEnum, ReturnFuncDncl, ProcessEnum, UserDefinedFuncDncl, VoidFuncDncl, OperationEnum, ArithmeticOperator, ComparisonOperator } from '@/app/enum';
+import { BraketSymbolEnum, ReturnFuncDncl, ProcessEnum, StatementEnum, UserDefinedFuncDncl, VoidFuncDncl, OperationEnum, ArithmeticOperator, ComparisonOperator } from '@/app/enum';
 import { inputTypeEnum, keyPrefixEnum, ValidationEnum } from '../components/Dialog/Enum';
 
 import Kuroshiro from 'kuroshiro';
@@ -888,6 +888,48 @@ export const getVariableNames = (obj: { [k: string]: string; }, operandsMaxIndex
 
   return strArray;
 }
+
+export const getDeclaredVariableNames = (treeItems: TreeItems): string[] => {
+  const declaredNames = new Set<string>();
+  const variablePattern = /^[a-zA-Z][a-zA-Z0-9_]*$/;
+  const declarationProcesses = [
+    ProcessEnum.SetValToVariableOrArray,
+    ProcessEnum.InitializeArray,
+    ProcessEnum.BulkAssignToArray,
+  ];
+
+  const addNames = (names: string[]) => {
+    names.forEach(name => {
+      if (variablePattern.test(name)) declaredNames.add(name);
+    });
+  };
+
+  const visit = (items: TreeItems) => {
+    items.forEach(item => {
+      if (item.statementType === StatementEnum.Input) {
+        const processType = item.processIndex as ProcessEnum;
+        if (declarationProcesses.includes(processType) && !item.isConstant) {
+          addNames(item.variables ?? []);
+        }
+
+        if (processType === ProcessEnum.ForIncrement || processType === ProcessEnum.ForDecrement) {
+          addNames([item.formData?.[`${keyPrefixEnum.RigthSide}_0`] ?? '']);
+        }
+
+        if (processType === ProcessEnum.DefineFunction) {
+          const argumentsValue = item.formData?.[`${keyPrefixEnum.RigthSide}_0_${keyPrefixEnum.Argument}_0`] ?? '';
+          addNames(argumentsValue.split(',').map(name => name.trim()));
+        }
+      }
+
+      visit(item.children);
+    });
+  };
+
+  visit(treeItems);
+  return [...declaredNames];
+}
+
 export const getArrayNames = (obj: { [k: string]: string; }, operandsMaxIndex: number, keyword: keyPrefixEnum): string[] => {
 
   const strArray: string[] = [];
