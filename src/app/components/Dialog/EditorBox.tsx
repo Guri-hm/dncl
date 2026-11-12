@@ -189,7 +189,7 @@ export function EditorBox({ statementType, treeItems, formData }: EditorBoxProps
                 return <>
                     <NowrapText text={'関数'}></NowrapText>
                     <Divider sx={{ marginRight: 1 }} orientation="vertical" flexItem />
-                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.UserDefinedfunction}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.UserDefinedfunction} inputType={inputTypeEnum.UserDefinedfunction} treeItems={treeItems}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.UserDefinedfunction}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.UserDefinedfunction} inputType={inputTypeEnum.UserDefinedfunction} treeItems={treeItems} initialRestoreValues={rightRestoreMap?.[0]}></DnclTextField>
                     <Divider sx={{ marginLeft: 1 }} orientation="vertical" flexItem />
                     <NowrapText text={'を'}></NowrapText>
                     {hdnInput(index)}
@@ -201,7 +201,7 @@ export function EditorBox({ statementType, treeItems, formData }: EditorBoxProps
                 </>
             case ProcessEnum.ExecuteUserDefinedFunction:
                 return <>
-                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.UserDefinedfunction}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.UserDefinedfunction} inputType={inputTypeEnum.ExecuteUserDefinedFunction} treeItems={treeItems}></DnclTextField>
+                    <DnclTextField key={`${keyPrefixEnum.RigthSide}_${index}_${keyPrefixEnum.UserDefinedfunction}`} name={keyPrefixEnum.RigthSide} suffixValue={keyPrefixEnum.UserDefinedfunction} inputType={inputTypeEnum.ExecuteUserDefinedFunction} treeItems={treeItems} initialRestoreValues={rightRestoreMap?.[0]}></DnclTextField>
                     {hdnInput(index)}
                 </>
             default:

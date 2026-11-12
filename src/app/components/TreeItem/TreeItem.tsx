@@ -9,6 +9,7 @@ import { DraggableAttributes } from "@dnd-kit/core";
 import { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import { Tooltip, Typography } from "@mui/material";
 import LockIcon from '@mui/icons-material/Lock';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 export interface Props extends HTMLAttributes<HTMLLIElement> {
   childCount?: number;
@@ -28,6 +29,7 @@ export interface Props extends HTMLAttributes<HTMLLIElement> {
   onCollapse?(): void;
   onRemove?(): void;
   onEdit?(): void; // 編集ボタンのハンドラを追加
+  onDuplicate?(): void;
   wrapperRef?(node: HTMLLIElement): void;
 }
 
@@ -48,6 +50,7 @@ const TreeItem = forwardRef<HTMLDivElement, Props>(
       onCollapse,
       onRemove,
       onEdit, // 編集ハンドラを追加
+      onDuplicate,
       style,
       value,
       wrapperRef,
@@ -167,6 +170,7 @@ const TreeItem = forwardRef<HTMLDivElement, Props>(
           </Tooltip>
           {!clone && !fixed && effectiveCanEdit && (
             <Edit
+              aria-label="カードを編集"
               onClick={onEdit}
               onPointerDown={stopPointer}
               onMouseDown={stopPointer}
@@ -174,8 +178,22 @@ const TreeItem = forwardRef<HTMLDivElement, Props>(
               style={{ cursor: "default" }}
             />
           )}
+          {!clone && !fixed && onDuplicate && (
+            <Action
+              aria-label="カードを複製"
+              title="カードを複製"
+              onClick={onDuplicate}
+              onPointerDown={stopPointer}
+              onMouseDown={stopPointer}
+              onTouchStart={stopPointer}
+              style={{ cursor: "default" }}
+            >
+              <ContentCopyIcon sx={{ fontSize: 16 }} />
+            </Action>
+          )}
           {!clone && !fixed &&
             <Remove
+              aria-label="カードを削除"
               onClick={onRemove}
               onPointerDown={stopPointer}
               onMouseDown={stopPointer}

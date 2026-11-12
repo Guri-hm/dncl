@@ -47,7 +47,9 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import SlideMenu from "@/app/components/SlideMenu";
 import { LineIconItem, FragmentsListItem, SortableTreeItem } from "@/app/components/TreeItem";
-import { Backdrop, Paper, Typography, Checkbox, FormControlLabel, Button } from "@mui/material";
+import { Alert, Backdrop, Paper, Typography, Checkbox, FormControlLabel, Button } from "@mui/material";
+import { allTreeCards, cardUsageKey, duplicateTreeCard, getCardLimitError } from "@/app/utilities/treeCardOperations";
+import { GameCardDialog } from "./Challenge/GameCardDialog";
 
 const measuring = {
   droppable: {
@@ -114,6 +116,13 @@ export function SortableTree({
     setItems: setTreeItems
   });
   const [isClient, setIsClient] = useState(false);
+  const [cardError, setCardError] = useState<string>();
+
+  function commitItems(items: TreeItems) {
+    const error = getCardLimitError(items, fragments);
+    setCardError(error);
+    if (!error) setTreeItems(items);
+  }
 
   useEffect(() => {
     setIsClient(true);
@@ -147,14 +156,13 @@ export function SortableTree({
 
   // 各 statementType の現在の使用数を算出（ツリー内の既存要素）
   const usedCounts = useMemo(() => {
-    const map = new Map<StatementEnum, number>();
-    flattenedItems.forEach(item => {
-      if (item.statementType !== undefined) {
-        map.set(item.statementType, (map.get(item.statementType) || 0) + 1);
-      }
+    const map = new Map<string, number>();
+    allTreeCards(treeItems).forEach(item => {
+      const key = cardUsageKey(item);
+      map.set(key, (map.get(key) || 0) + 1);
     });
     return map;
-  }, [flattenedItems]);
+  }, [treeItems]);
 
   const projected =
     activeId && overId
@@ -224,14 +232,16 @@ export function SortableTree({
 
     if (frag) {
       // frag.statementType と frag.maxUsage から現在の使用数を参照して残りを計算
-      const used = frag.statementType !== undefined ? (usedCounts.get(frag.statementType) || 0) : 0;
+      const used = usedCounts.get(cardUsageKey(frag)) || 0;
       const max = frag.maxUsage;
       const remaining = typeof max === 'number' ? Math.max(0, max - used) : undefined;
 
       // 残りが 0 の場合はドラッグ開始をキャンセル
       if (typeof remaining === 'number' && remaining === 0) {
+        setCardError(`「${frag.line}」のカードは${max}枚までです。`);
         return;
       }
+      if (frag.disabled) return;
     }
     setActiveId(activeId.toString());
     setOverId(activeId.toString());
@@ -274,7 +284,7 @@ export function SortableTree({
       const updatedItems = treeItems.map(item =>
         updateItemRecursively(item, itemParams.itemId, itemParams.editedItem)
       );
-      setTreeItems(updatedItems);
+      commitItems(updatedItems);
       refrash();
     };
 
@@ -347,7 +357,7 @@ export function SortableTree({
       item: targetItem,
       editItem: editItemToTree,
       open: true,
-      type: targetItem.statementType || getStatementTypeFromProcessIndex(targetItem.processIndex || 0),
+      type: targetItem.statementType ?? getStatementTypeFromProcessIndex(targetItem.processIndex ?? 0),
       treeItems: treeItems,
       refresh: refrash,
       setEditor: setEditor,
@@ -386,7 +396,7 @@ export function SortableTree({
       const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
       const newItems = buildTree(sortedItems);
 
-      setTreeItems(newItems);
+      commitItems(newItems);
       refrash();
     }
 
@@ -396,6 +406,11 @@ export function SortableTree({
       const fragmentItem: FragmentItem | undefined = fragments.find(({ id }) => id === active.id);
 
       if (fragmentItem) {
+        if (fragmentItem.disabled || (fragmentItem.maxUsage !== undefined &&
+          (usedCounts.get(cardUsageKey(fragmentItem)) || 0) >= fragmentItem.maxUsage)) {
+          setCardError(`「${fragmentItem.line}」のカードはこれ以上追加できません。`);
+          return;
+        }
         let clonedItem: FlattenedItem = JSON.parse(JSON.stringify(fragmentItem));
         const newId = uuidv4();
 
@@ -447,6 +462,16 @@ export function SortableTree({
     setTreeItems(updatedItems);
   }
 
+  function handleDuplicate(id: string) {
+    try {
+      setTreeItems(duplicateTreeCard(treeItems, id, fragments));
+      setCardError(undefined);
+    } catch (error) {
+      if (!(error instanceof Error)) throw error;
+      setCardError(error.message);
+    }
+  }
+
   function handleCollapse(id: string) {
     const newItems = setProperty(treeItems, id, "collapsed", (item) => !item)
     setTreeItems(newItems)
@@ -496,7 +521,10 @@ export function SortableTree({
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
-        <DnclEditDialog {...editor}></DnclEditDialog>
+        {cardError && <Alert severity="warning" onClose={() => setCardError(undefined)}>{cardError}</Alert>}
+        {editor.item?.gameCard
+          ? editor.open && <GameCardDialog key={`${editor.item.id}-${editor.isEdit}`} {...editor} />
+          : <DnclEditDialog {...editor} />}
         {isSm ?
           <Allotment separator={false} className={styles.splitViewContainer} onVisibleChange={(_index, value) => {
             setVisible(value);
@@ -507,10 +535,11 @@ export function SortableTree({
             <Allotment.Pane visible={visible} className={`${styles.leftPane} ${styles.paneBg}`} snap>
               <Box ref={leftRef} sx={{ padding: '10px' }} className={`${cmnStyles.hFull} ${cmnStyles.overflowAuto}`}>
                 <DoNotDrag />
-                {fragments.map(({ id, line, statementType, maxUsage }) => {
-                  const used = statementType !== undefined ? (usedCounts.get(statementType) || 0) : 0;
+                {fragments.map(fragment => {
+                  const { id, line, maxUsage } = fragment;
+                  const used = usedCounts.get(cardUsageKey(fragment)) || 0;
                   const remaining = typeof maxUsage === 'number' ? Math.max(0, maxUsage - used) : undefined;
-                  const disabled = remaining === 0;
+                  const disabled = fragment.disabled || remaining === 0;
                   return (
                     <FragmentsListItem
                       key={id}
@@ -546,6 +575,7 @@ export function SortableTree({
                         onRemove={removable ? () => handleRemove(id) : undefined}
                         canEdit={canEditItem(flattenedItems[index])}
                         onEdit={() => handleEdit(id)}
+                        onDuplicate={allowEdit && !allTreeCards([flattenedItems[index]]).some(item => item.fixed) ? () => handleDuplicate(id) : undefined}
                         isError={dnclValidation?.lineNum.includes(index + 1)}
                         fixed={fixed}
                       />
@@ -636,15 +666,20 @@ export function SortableTree({
           <>
             <SlideMenu activeId={activeId} open={openDrawer} setOpen={setOpenDrawer}>
               <Box ref={specialElementsRefs && specialElementsRefs[0]} >
-                {fragments.map(({ id, line, statementType }) => (
-                  <LineIconItem
+                {fragments.map(fragment => {
+                  const { id, line, statementType, maxUsage } = fragment;
+                  const remaining = maxUsage === undefined ? undefined : Math.max(0, maxUsage - (usedCounts.get(cardUsageKey(fragment)) || 0));
+                  return <LineIconItem
                     key={id}
                     id={id}
                     value={line}
                     statementType={statementType}
                     isIcon={!openDrawer}
-                  />
-                ))}
+                    disabled={fragment.disabled || remaining === 0}
+                    remaining={remaining}
+                    maxUsage={maxUsage}
+                  />;
+                })}
               </Box>
             </SlideMenu>
             {(flattenedItems.length > 0) || editor.open ?
@@ -667,6 +702,7 @@ export function SortableTree({
                       onRemove={removable ? () => handleRemove(id) : undefined}
                       canEdit={canEditItem(flattenedItems[index])}
                       onEdit={() => handleEdit(id)}
+                      onDuplicate={allowEdit && !allTreeCards([flattenedItems[index]]).some(item => item.fixed) ? () => handleDuplicate(id) : undefined}
                       isError={dnclValidation?.lineNum.includes(index + 1)}
                       fixed={fixed}
                     />

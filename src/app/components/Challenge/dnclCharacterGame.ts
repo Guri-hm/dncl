@@ -14,6 +14,8 @@ export type DnclCharacterGameLevel = {
   goal: GamePosition;
   obstacles: GamePosition[];
   maxMoves: number;
+  maxMoveCards: number;
+  startDirection: CharacterDirection;
 };
 
 export type CharacterGameResult = {
@@ -29,27 +31,31 @@ export const dnclCharacterGameLevels: DnclCharacterGameLevel[] = [
   {
     id: 'straight-path',
     title: '右へ進もう',
-    instruction: 'DNCLで「右」を3回表示し、キャラクターをゴールへ進めましょう。繰り返しを使うと便利です。',
+    instruction: '右向きの女の子を3マス先のゴールへ。前進カードは1枚だけなので、繰り返しを使いましょう。',
     size: 5,
     start: { x: 0, y: 2 },
     goal: { x: 3, y: 2 },
     obstacles: [],
     maxMoves: 30,
+    maxMoveCards: 1,
+    startDirection: '右',
   },
   {
     id: 'turn-path',
     title: '曲がり道を進もう',
-    instruction: '壁を避けて、下に2回、右に4回進みましょう。繰り返しを使うと便利です。',
+    instruction: '向きを変え、下に2マス、右に4マス進みましょう。前進カードは2枚までです。',
     size: 5,
     start: { x: 0, y: 0 },
     goal: { x: 4, y: 2 },
     obstacles: [{ x: 2, y: 0 }, { x: 2, y: 1 }],
     maxMoves: 30,
+    maxMoveCards: 2,
+    startDirection: '右',
   },
   {
     id: 'wall-detour',
     title: '壁を越えて進もう',
-    instruction: '壁の上側を通ってゴールへ進みましょう。繰り返しで同じ方向の出力をまとめられます。',
+    instruction: '上向きでスタート。目の前に壁がない間進み、壁に着いたら右を向いてゴールへ。マップの端も壁です。前進カードは2枚までです。',
     size: 6,
     start: { x: 0, y: 5 },
     goal: { x: 5, y: 0 },
@@ -61,6 +67,8 @@ export const dnclCharacterGameLevels: DnclCharacterGameLevel[] = [
       { x: 2, y: 5 },
     ],
     maxMoves: 30,
+    maxMoveCards: 2,
+    startDirection: '上',
   },
 ];
 
@@ -84,7 +92,7 @@ export const runDnclCharacterProgram = (
     .map(line => line.trim())
     .filter(Boolean);
   const position = { ...level.start };
-  const path = [position];
+  const path = [{ ...position }];
   let hitWall = false;
   let invalidCommand: string | undefined;
   const moveLimitExceeded = outputs.length > level.maxMoves;

@@ -1,0 +1,20 @@
+.sprite {
+  width: 85%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-size: 300% 100%;
+  background-position: 0 0;
+}
+
+.walking {
+  animation: walk 0.3s steps(1) infinite;
+}
+
+@keyframes walk {
+  0%, 100% { background-position: 50% 0; }
+  50% { background-position: 100% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .walking { animation: none; }
+}

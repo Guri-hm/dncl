@@ -74,4 +74,52 @@ describe('DnclEditDialog function definition', () => {
     expect(addItem).toHaveBeenCalledTimes(1);
     expect(addItem.mock.calls[0][0].newItem.line).toBe('noArgs()');
   });
+
+  it('restores a saved definition through the full editor and saves its changes', () => {
+    const editItem = jest.fn();
+    render(<DnclEditDialog
+      open isEdit type={StatementEnum.UserDefinedfunction}
+      overIndex="definition" treeItems={[]} editItem={editItem}
+      item={{
+        id: 'definition', line: '関数 double(n) を', children: [], parentId: null, depth: 0, index: 0,
+        processIndex: ProcessEnum.DefineFunction,
+        formData: {
+          processIndex: String(ProcessEnum.DefineFunction),
+          RigthSide_0_FunctionName: 'double',
+          RigthSide_0_Argument_0: 'n',
+          RigthSide_0_Argument: '1',
+        },
+      }}
+    />);
+    const name = document.querySelector<HTMLInputElement>('input[name="RigthSide_0_FunctionName"]')!;
+    expect(name.value).toBe('double');
+    expect(document.querySelector<HTMLInputElement>('input[name="RigthSide_0_Argument_0"]')!.value).toBe('n');
+    fireEvent.change(name, { target: { value: 'triple' } });
+    fireEvent.click(screen.getByRole('button', { name: '更新' }));
+    expect(editItem).toHaveBeenCalledTimes(1);
+    expect(editItem.mock.calls[0][0].editedItem.line).toBe('関数 triple(n) を');
+  });
+
+  it('restores a call to the second defined function rather than selecting the first', () => {
+    const secondFunction = {
+      ...emptyArgumentFunction[0], id: 'second', lineTokens: ['second()'], line: '関数 second() を',
+    };
+    const editItem = jest.fn();
+    render(<DnclEditDialog
+      open isEdit type={StatementEnum.ExecuteUserDefinedFunction}
+      overIndex="call" treeItems={[...emptyArgumentFunction, secondFunction]} editItem={editItem}
+      item={{
+        id: 'call', line: 'second()', children: [], parentId: null, depth: 0, index: 0,
+        processIndex: ProcessEnum.ExecuteUserDefinedFunction,
+        formData: {
+          processIndex: String(ProcessEnum.ExecuteUserDefinedFunction),
+          RigthSide_0_FunctionName: 'second',
+          RigthSide_0_Argument: '0',
+        },
+      }}
+    />);
+    expect(document.querySelector<HTMLInputElement>('input[name="RigthSide_0_FunctionName"]')!.value).toBe('second');
+    fireEvent.click(screen.getByRole('button', { name: '更新' }));
+    expect(editItem.mock.calls[0][0].editedItem.line).toBe('second()');
+  });
 });

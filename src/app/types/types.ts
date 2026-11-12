@@ -2,6 +2,7 @@ import type { RefObject } from 'react';
 import { StatementEnum, StatementJpEnum } from "@/app/enum";
 import { UniqueIdentifier } from '@dnd-kit/core';
 import { Dispatch, SetStateAction } from 'react';
+import type { GameCard } from '@/app/components/Challenge/gameCards';
 
 export interface TreeItem {
   id: string;
@@ -15,6 +16,7 @@ export interface TreeItem {
   statementType?: StatementEnum;
   processIndex?: number;
   fixed?: boolean;
+  gameCard?: GameCard;
   formData?: { [key: string]: string };
   uiState?: {  // ← 新しく追加
     radioSelections?: { [key: string]: string };

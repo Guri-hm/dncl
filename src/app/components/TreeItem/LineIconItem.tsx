@@ -44,7 +44,7 @@ const WordWithRightSupscriptIcon: React.FC<WordIconProps> = ({ text, sup }) => {
     </SvgIcon>
   );
 };
-export function LineIconItem({ id, value, statementType, isIcon, ...props }: Props) {
+export function LineIconItem({ id, value, statementType, isIcon, disabled, remaining, maxUsage, ...props }: Props) {
   const {
     attributes,
     listeners,
@@ -55,6 +55,7 @@ export function LineIconItem({ id, value, statementType, isIcon, ...props }: Pro
   } = useSortable({
     id,
     animateLayoutChanges,
+    disabled,
   });
   const style: CSSProperties = {
     transform: CSS.Translate.toString(transform),
@@ -93,17 +94,21 @@ export function LineIconItem({ id, value, statementType, isIcon, ...props }: Pro
     <li
       ref={setDroppableNodeRef}
       style={style}
+      role="button"
+      aria-disabled={disabled}
+      tabIndex={disabled ? -1 : 0}
       {...props}
-      {...{ ...attributes, ...listeners }}
+      {...(disabled ? {} : { ...attributes, ...listeners })}
 
     >
-      <div className={styles.TreeItem} ref={setDraggableNodeRef} style={style}>
+      <div className={styles.TreeItem} ref={setDraggableNodeRef} style={{ ...style, opacity: disabled ? 0.4 : 1 }}>
         {isIcon ?
-          <Handle {...{ ...attributes, ...listeners }} svg={svg} className={`${handleStyles.IconHandle}`} />
+          <Handle svg={svg} className={`${handleStyles.IconHandle}`} />
           :
-          <Handle {...{ ...attributes, ...listeners }} />
+          <Handle />
         }
         <span>{value}</span>
+        {maxUsage !== undefined && <span className={styles.Usage}>{remaining}/{maxUsage}</span>}
       </div>
     </li>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Allotment } from 'allotment';
 import 'allotment/dist/style.css';
 import '@/app/components/allotment-custom.css';
@@ -10,6 +10,7 @@ import {
   CircularProgress,
   Paper,
   Typography,
+  Alert,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -21,21 +22,18 @@ import { FooterOverlay } from '@/app/components/Footer';
 import { HowToButton, HintButton } from '@/app/components/Tips';
 import { Question } from '@/app/components/Challenge';
 import { SwiperTabs } from '@/app/components/Tab';
-import type { DnclValidationType, TreeItems } from '@/app/types';
+import type { TreeItems } from '@/app/types';
 import {
-  type CharacterGameResult,
   type DnclCharacterGameLevel,
   dnclCharacterGameLevels,
-  runDnclCharacterProgram,
 } from '@/app/components/Challenge/dnclCharacterGame';
+import { gameCardFragments, runGameCards, type GameCardResult } from '@/app/components/Challenge/gameCards';
+import { GameCharacter } from '@/app/components/Challenge/GameCharacter';
 import { useRouter } from 'next/navigation';
 import ResizerHint from '@/app/components/ResizerHint';
 
 const SortableTree = lazy(() =>
   import('@/app/components/SortableTree').then(module => ({ default: module.SortableTree }))
-);
-const ConsoleWrapper = lazy(() =>
-  import('@/app/components/ConsoleWrapper').then(module => ({ default: module.ConsoleWrapper }))
 );
 
 const LoadingFallback = ({ label }: { label: string }) => (
@@ -49,7 +47,9 @@ interface GameBoardProps {
   level: DnclCharacterGameLevel;
   levelIndex: number;
   unlockedLevel: number;
-  result: CharacterGameResult | null;
+  result: GameCardResult | null;
+  error?: string;
+  onComplete: () => void;
   onSelectLevel: (index: number) => void;
   onNextLevel: () => void;
 }
@@ -59,10 +59,31 @@ function GameBoard({
   levelIndex,
   unlockedLevel,
   result,
+  error,
+  onComplete,
   onSelectLevel,
   onNextLevel,
 }: GameBoardProps) {
-  const currentPosition = result?.position ?? level.start;
+  const [frameIndex, setFrameIndex] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  useEffect(() => {
+    setFrameIndex(0);
+    setPlaying(Boolean(result && result.frames.length > 1));
+    if (!result) return;
+    let index = 0;
+    const timer = window.setInterval(() => {
+      if (index < result.frames.length - 1) {
+        setFrameIndex(++index);
+      } else {
+        setPlaying(false);
+        window.clearInterval(timer);
+        if (result.reachedGoal) onComplete();
+      }
+    }, 450);
+    return () => window.clearInterval(timer);
+  }, [result, onComplete]);
+  const frame = result?.frames[Math.min(frameIndex, result.frames.length - 1)];
+  const currentPosition = frame?.position ?? level.start;
   const cells = Array.from({ length: level.size * level.size }, (_, index) => {
     const position = { x: index % level.size, y: Math.floor(index / level.size) };
     const isCurrent = currentPosition.x === position.x && currentPosition.y === position.y;
@@ -71,10 +92,10 @@ function GameBoard({
     const isObstacle = level.obstacles.some(
       obstacle => obstacle.x === position.x && obstacle.y === position.y
     );
-    const isVisited = result?.path.some(
-      visited => visited.x === position.x && visited.y === position.y
+    const isVisited = result?.frames.slice(0, frameIndex + 1).some(
+      visited => visited.position.x === position.x && visited.position.y === position.y
     );
-    const symbol = isCurrent ? '🙂' : isObstacle ? '■' : isGoal ? '★' : isStart ? '出' : '';
+    const symbol = isObstacle ? '■' : isGoal ? '★' : isStart ? '出' : '';
     const label = isCurrent
       ? isStart ? 'キャラクター（スタート）' : 'キャラクター'
       : isObstacle
@@ -114,14 +135,12 @@ function GameBoard({
     );
   });
 
-  const status = !result
-    ? 'プログラムを組み立てると自動で実行され、出力に合わせて動きます。'
+  const status = error ? 'カードの組み合わせを確認してください。' : playing ? 'プログラムを実行中…' : !result
+    ? 'カードを組み立てると、スタートから自動で実行されます。'
     : result.reachedGoal
       ? 'ゴールに着きました！'
-      : result.invalidCommand
-        ? `「${result.invalidCommand}」は移動できません。上・右・下・左のどれかを表示してください。`
-        : result.hitWall
-          ? '壁かマップの端にぶつかりました。出力する方向を見直しましょう。'
+      : result.hitWall
+          ? '壁かマップの端にぶつかりました。向きや壁の条件を見直しましょう。'
           : result.moveLimitExceeded
             ? `1回の実行で動けるのは${level.maxMoves}回までです。`
             : 'まだゴールではありません。プログラムを見直して、もう一度実行しましょう。';
@@ -132,6 +151,8 @@ function GameBoard({
         DNCLゲーム：キャラクターを動かそう
       </Typography>
       <Typography sx={{ mb: 2 }}>{level.instruction}</Typography>
+      {error && <Alert severity="warning" sx={{ mb: 2 }}>{error}</Alert>}
+      <Typography sx={{ mb: 2 }}>前進カード：{level.maxMoveCards}枚まで ／ 1回の実行：{level.maxMoves}歩まで</Typography>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
         {dnclCharacterGameLevels.map((availableLevel, index) => (
           <Button
@@ -149,6 +170,7 @@ function GameBoard({
         aria-label={`${level.title}のマップ`}
         sx={{
           display: 'grid',
+          position: 'relative',
           gridTemplateColumns: `repeat(${level.size}, minmax(0, 1fr))`,
           gap: 0.5,
           width: '100%',
@@ -158,11 +180,23 @@ function GameBoard({
         }}
       >
         {cells}
+        <Box sx={{
+          position: 'absolute',
+          width: `calc((100% - ${(level.size - 1) * 4}px) / ${level.size})`,
+          height: `calc((100% - ${(level.size - 1) * 4}px) / ${level.size})`,
+          left: `calc(${currentPosition.x} * (100% + 4px) / ${level.size})`,
+          top: `calc(${currentPosition.y} * (100% + 4px) / ${level.size})`,
+          transition: playing ? 'left 400ms linear, top 400ms linear' : 'none',
+          '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
+          display: 'grid', placeItems: 'center', pointerEvents: 'none',
+        }}>
+          <GameCharacter direction={frame?.direction ?? level.startDirection} walking={playing && Boolean(frame?.walking)} />
+        </Box>
       </Box>
       <Typography role="status" aria-live="polite" sx={{ textAlign: 'center', mb: 1 }}>
         {status}
       </Typography>
-      {result?.reachedGoal && levelIndex < dnclCharacterGameLevels.length - 1 && (
+      {!playing && result?.reachedGoal && levelIndex < dnclCharacterGameLevels.length - 1 && (
         <Box sx={{ textAlign: 'center' }}>
           <Button variant="contained" onClick={onNextLevel}>
             次のステージへ
@@ -170,8 +204,9 @@ function GameBoard({
         </Box>
       )}
       <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-        構文チェックに通ると、プログラムは自動で実行されます。DNCLの表示文で「上」「右」「下」「左」を出力すると、その方向へ1マス動きます。
-        変数や繰り返しを使って、移動のプログラムを作ってみましょう。
+        「向く方向」で上下左右を選び、「前へ1マス進む」で向いている方向へ動きます。
+        繰り返しや条件の後には、対応する「終わり」のカードを置きます。
+        「目の前に壁がある／ない」は、実行中の位置と向きで判定します。マップの端も壁です。
       </Typography>
     </Box>
   );
@@ -179,8 +214,6 @@ function GameBoard({
 
 export default function DnclCharacterGamePage() {
   const [items, setItems] = useState<TreeItems>([]);
-  const [dnclValidation, setDnclValidation] = useState<DnclValidationType | null>(null);
-  const [runResults, setRunResults] = useState<string[]>([]);
   const [levelIndex, setLevelIndex] = useState(0);
   const [unlockedLevel, setUnlockedLevel] = useState(0);
   const specialElementRef1 = useRef<HTMLDivElement | null>(null);
@@ -190,25 +223,23 @@ export default function DnclCharacterGamePage() {
   const router = useRouter();
 
   const level = dnclCharacterGameLevels[levelIndex];
-  const latestOutput = runResults.length > 0 ? runResults[runResults.length - 1] : '';
-  const result = useMemo(
-    () => latestOutput ? runDnclCharacterProgram(level, latestOutput) : null,
-    [latestOutput, level]
-  );
-
-  useEffect(() => {
-    setRunResults([]);
-  }, [items]);
-
-  useEffect(() => {
-    if (result?.reachedGoal) {
-      setUnlockedLevel(current => Math.max(current, levelIndex + 1));
+  const fragments = useMemo(() => gameCardFragments(level), [level]);
+  const { result, error } = useMemo(() => {
+    if (!items.length) return { result: null };
+    try {
+      return { result: runGameCards(level, items) };
+    } catch (error) {
+      if (!(error instanceof Error)) throw error;
+      return { result: null, error: error.message };
     }
-  }, [levelIndex, result]);
+  }, [items, level]);
+  const handleComplete = useCallback(() => {
+    setUnlockedLevel(current => Math.max(current, Math.min(levelIndex + 1, dnclCharacterGameLevels.length - 1)));
+  }, [levelIndex]);
 
   const handleSelectLevel = (index: number) => {
     setLevelIndex(index);
-    setRunResults([]);
+    setItems([]);
   };
 
   const handleNextLevel = () => {
@@ -220,7 +251,8 @@ export default function DnclCharacterGamePage() {
       <SortableTree
         treeItems={items}
         setTreeItems={setItems}
-        dnclValidation={dnclValidation}
+        dnclValidation={null}
+        fragments={fragments}
         collapsible
         indicator
         removable
@@ -228,22 +260,22 @@ export default function DnclCharacterGamePage() {
     </Suspense>
   );
   const consolePanel = (
-    <Suspense fallback={<LoadingFallback label="コンソールを読み込み中..." />}>
-      <ConsoleWrapper
-        dnclValidation={dnclValidation}
-        setDnclValidation={setDnclValidation}
-        treeItems={items}
-        runResults={runResults}
-        setRunResults={setRunResults}
-      />
-    </Suspense>
+    <Paper sx={{ p: 2, height: '100%', overflowY: 'auto' }}>
+      <Typography variant="h6">実行した命令</Typography>
+      <Typography component="pre" sx={{ whiteSpace: 'pre-wrap' }}>
+        {error ?? result?.output.join('\n') ?? 'ここに実行した命令が表示されます'}
+      </Typography>
+    </Paper>
   );
   const gameBoard = (
     <GameBoard
+      key={level.id}
       level={level}
       levelIndex={levelIndex}
       unlockedLevel={unlockedLevel}
       result={result}
+      error={error}
+      onComplete={handleComplete}
       onSelectLevel={handleSelectLevel}
       onNextLevel={handleNextLevel}
     />
@@ -261,7 +293,7 @@ export default function DnclCharacterGamePage() {
         }
       />
       <Question>
-        DNCLのプログラムが出力した方向に、キャラクターが動きます。コードを作ってゴールを目指しましょう。
+        向きを変え、前へ進み、壁を調べるDNCLカードでゴールを目指しましょう。
       </Question>
       <ContentWrapper>
         <ResizerHint />

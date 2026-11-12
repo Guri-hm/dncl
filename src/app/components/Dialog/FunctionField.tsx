@@ -103,7 +103,7 @@ export function FunctionField({ name = "", parentIndex = 0, event, funcType, tre
 
   useEffect(() => {
     if (initializedRef.current) return;
-    const key = `${name}_${parentIndex}_${keyPrefixEnum.Function}`;
+    const key = `${name}_${parentIndex}_${funcType === inputTypeEnum.ExecuteUserDefinedFunction ? keyPrefixEnum.FunctionName : keyPrefixEnum.Function}`;
     const restored = restoreValues?.[key];
     if (!restored) return;
     if (funcType === inputTypeEnum.ExecuteUserDefinedFunction) {
@@ -152,7 +152,7 @@ export function FunctionField({ name = "", parentIndex = 0, event, funcType, tre
           <React.Fragment key={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${newIndex}_${i}_fragment`}>
             {ArgumentFields.length > 0 && <Grid size="auto" key={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${newIndex}_${i}_comma`}><FixedHeightGrid>,</FixedHeightGrid></Grid>}
             <Grid size="grow" key={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${newIndex}_${i}`}>
-              <ValidatedTextField name={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${i}`} label={InputTypeJpEnum.Argument} pattern={ValidationEnum.VariableOrInteger} restoreValue={argumentValues?.[i] ?? ""} suggestions={variableSuggestions}></ValidatedTextField>
+              <ValidatedTextField name={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${i}`} label={InputTypeJpEnum.Argument} pattern={ValidationEnum.VariableOrInteger} restoreValue={argumentValues[i]} suggestions={variableSuggestions}></ValidatedTextField>
             </Grid>
           </React.Fragment>
         );
@@ -169,7 +169,7 @@ export function FunctionField({ name = "", parentIndex = 0, event, funcType, tre
             name={`${name}_${parentIndex}_${keyPrefixEnum.Argument}_${0}`}
             label={InputTypeJpEnum.Argument}
             pattern={ValidationEnum.Parameters}
-            restoreValue={argumentValues[0] ?? ""}
+            restoreValue={argumentValues[0]}
             required={false}
             suggestions={variableSuggestions}
           />
