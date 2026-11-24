@@ -22,11 +22,9 @@ export async function OPTIONS(request: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-    const { code } = await req.json();
-    // const eslint = new ESLint();
-    const eslint = new ESLint({ overrideConfigFile: '.eslintrc.js' }); // 設定ファイルを指定
-
     try {
+        const { code } = await req.json();
+        const eslint = new ESLint({ overrideConfigFile: '.eslintrc.js' }); // 設定ファイルを指定
         // let test = "a = [1, 2, 4, 5];\nconsole.log(a);\na.fill(a[2]);"
         // console.log(test);
         // 変数定義をコードの先頭に追加

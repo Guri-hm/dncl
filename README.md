@@ -106,21 +106,35 @@ src/
 
 ## デプロイ
 
-### Vercel（推奨）
-このアプリケーションはAPIルートを使用しているため、Vercelでのデプロイが推奨されます。
+フロントエンドとAPIは別々に公開します。
 
-```bash
-# Vercel CLIをインストール
-npm install -g vercel
+### フロントエンド（GitHub Pages）
 
-# デプロイ
-vercel
+GitHub Actions の設定は `.github/workflows/deploy.yml` にあります。通常のビルドは静的エクスポートで、出力先は `out` です。API は静的サイトに含まれず、`NEXT_PUBLIC_API_BASE_URL` に設定した IIS の API を呼び出します。
+
+### API（Windows Server / IIS）
+
+IIS 用は静的エクスポートではなく、`/next/dncl` をベースパスとする Next.js サーバーです。`/next/dncl` や `/next/dncl/edit` などの API 以外のページは JSON の 404 を返します。フロントエンドは引き続き `https://dncl.solopg.com/` を使用します。
+
+更新手順：
+
+1. ビルド用の Windows 環境で依存関係をインストールし、`npm run build:iis` を実行します。続けて `npm run test:iis` で、ローカルの IIS 用ビルドのルーティング、API、カスタム ESLint ルール、CORS を確認できます。このテストは IIS 自体の設定を検査するものではありません。
+2. サーバーの IIS アプリケーションを停止し、**今回のビルドで生成された `.next` 全体**を `C:\next\dncl` に反映します。古い `.next` と新しい `.next` のファイルを混在させないでください。
+3. 同じバージョンの `next.config.js`、`package.json`、`package-lock.json`、`.eslintrc.js`、`eslint-plugin-custom-rules` と、対応する `node_modules` も配置します。ビルド環境とサーバーは互換性のある Node.js バージョン・OS・CPU アーキテクチャを使用してください。`eslint` ディレクトリ内の独自フォーマッターは現在の API では使用していません。`out`、`src`、テスト用 `api-test.js` は API の実行に不要です。既存の IIS 用 `web.config` は保持してください。
+4. `web.config` の `httpPlatformHandler` が `C:\next\dncl` を作業ディレクトリとして `next start` を起動し、IIS が指定するポートに接続することを確認します。起動時の環境変数に `BUILD_TARGET=iis` を設定します。`ESLINT_MODE=build` はビルド専用で、サーバー起動時には設定しないでください。これが残ると API のカスタムルールが無効になります。
+5. IIS アプリケーションを再開し、`https://solopg.com/next/dncl` が 404、両 `/api/execute` と `/api/lint` の POST と OPTIONS が正常に応答することを確認します。サイトのエディターと結果予想ページからも実行してください。
+
+`BUILD_TARGET` は、例えば既存の `web.config` の `<httpPlatform>` 内に次のように設定します。すでに `<environmentVariables>` がある場合は、その中に `<environmentVariable>` だけを追加してください。
+
+```xml
+<environmentVariables>
+  <environmentVariable name="BUILD_TARGET" value="iis" />
+</environmentVariables>
 ```
 
-### その他のプラットフォーム
-- Netlify
-- Railway
-- Render
+画像のサーバー配置にある `web.config` はこのリポジトリにはないため、上記の IIS 設定は実機での確認が必要です。IIS が OPTIONS を Next.js に転送し、404 や API のエラー応答を別の HTML に置き換えないことも確認してください。
+
+両 API は `https://dncl.solopg.com` に対する CORS ヘッダーを返します。IIS 側でも同じヘッダーを付ける場合は重複に注意してください。CORS はブラウザによる読み取りの制御であり、API の認証ではありません。
 
 ## 開発
 
@@ -131,11 +145,11 @@ vercel
 
 ### コードの実行機能
 コードの実行は以下のAPIエンドポイントで処理されます：
-- `/api/execute` - DNCLコードをJavaScriptに変換して実行
+- `/api/execute` - JavaScriptに変換済みのコードを実行
 - `/api/lint` - ESLintによる構文チェック
 
 特徴：
-- サンドボックス環境で安全にコードを実行
+- Node.js の `vm` でコードを実行（信頼できないコードに対する完全なセキュリティ境界ではありません）
 - タイムアウト設定（1秒）で無限ループを防止
 - カスタムconsole.logで出力をキャプチャ
 - リアルタイムの構文チェック

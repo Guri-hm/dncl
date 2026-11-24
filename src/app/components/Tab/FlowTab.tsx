@@ -3,6 +3,7 @@ import { parseCode, generateFlowchartXML, flattenTree } from '@/app/utilities';
 import { Box, BoxProps, Button } from '@mui/material';
 import { TreeItem, TreeItems } from '@/app/types';
 import { cnvToJs } from '@/app/utilities/cnvToJs';
+import { apiBaseUrl } from '@/app/utilities/apiBaseUrl';
 import { useTheme } from '@mui/material/styles';
 import React from 'react';
 
@@ -12,21 +13,6 @@ interface CustomBoxProps extends BoxProps {
   children: React.ReactNode;
   treeItems: TreeItems;
 }
-
-const apiBaseUrl = (() => {
-  // 強制的に本番APIを使用するフラグ
-  const useProdApi = process.env.NEXT_PUBLIC_USE_PROD_API === 'true';
-
-  if (useProdApi) {
-    return 'https://solopg.com/next/dncl';
-  }
-  // 開発環境では相対パス
-  if (process.env.NODE_ENV === 'development') {
-    return process.env.NEXT_PUBLIC_BASE_PATH || '';
-  }
-  // 本番環境では絶対URL
-  return process.env.NEXT_PUBLIC_API_BASE_URL || 'https://solopg.com/next/dncl';
-})();
 
 export const FlowTab: FC<CustomBoxProps> = React.memo(({ treeItems, children, sx, ...props }) => {
   const [nodes, setNodes] = useState<React.ReactNode>(children);

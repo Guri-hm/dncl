@@ -12,6 +12,20 @@ const nextConfig = {
 
   ...(isIISBuild && {
     basePath: '/next/dncl',
+    async rewrites() {
+      return {
+        beforeFiles: [
+          {
+            source: '/',
+            destination: '/api/not-found',
+          },
+          {
+            source: '/:path((?!api(?:/|$)).*)',
+            destination: '/api/not-found',
+          },
+        ],
+      };
+    },
   }),
 
   images: {

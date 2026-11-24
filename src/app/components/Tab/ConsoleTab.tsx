@@ -5,6 +5,7 @@ import { DnclValidationType, FlattenedItem, TreeItems } from "@/app/types";
 import { checkDNCLSyntax, flattenTree } from "@/app/utilities";
 import Divider from '@mui/material/Divider';
 import { cnvToJs } from "@/app/utilities/cnvToJs";
+import { apiBaseUrl } from "@/app/utilities/apiBaseUrl";
 import Image from 'next/image';
 import { useTheme } from '@mui/material/styles';
 
@@ -16,21 +17,6 @@ interface CustomBoxProps extends BoxProps {
     dnclValidation: DnclValidationType | null,
     setDnclValidation: (validation: DnclValidationType | null) => void;
 }
-
-const apiBaseUrl = (() => {
-    // 強制的に本番APIを使用するフラグ
-    const useProdApi = process.env.NEXT_PUBLIC_USE_PROD_API === 'true';
-
-    if (useProdApi) {
-        return 'https://solopg.com/next/dncl';
-    }
-    // 開発環境では相対パス
-    if (process.env.NODE_ENV === 'development') {
-        return process.env.NEXT_PUBLIC_BASE_PATH || '';
-    }
-    // 本番環境では絶対URL
-    return process.env.NEXT_PUBLIC_API_BASE_URL || 'https://solopg.com/next/dncl';
-})();
 
 // グローバルキャッシュ
 const codeConversionCache = new Map<string, string>();
